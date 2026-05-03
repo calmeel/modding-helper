@@ -190,3 +190,23 @@ function ensureVisibleActiveTab() {
     firstVisibleButton.click();
   }
 }
+
+const updateBtn = document.getElementById("updateBtn");
+const updateModal = document.getElementById("updateModal");
+const closeUpdate = document.getElementById("closeUpdate");
+
+if (updateBtn && updateModal && closeUpdate) {
+  updateBtn.addEventListener("click", () => {
+    updateModal.classList.remove("hidden");
+  });
+
+  closeUpdate.addEventListener("click", () => {
+    updateModal.classList.add("hidden");
+  });
+
+  updateModal.addEventListener("click", (e) => {
+    if (e.target === updateModal) {
+      updateModal.classList.add("hidden");
+    }
+  });
+}

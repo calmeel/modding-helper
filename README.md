@@ -14,6 +14,11 @@ Web-based modding helper for osu!taiko.
 - Supports `.osu` and `.osz`
 - Multi-difficulty analysis
 
+## 📘 Documentation
+
+- [English Documentation](https://calmeel.github.io/modding-helper/docs-en.html)
+- [日本語ドキュメント](https://calmeel.github.io/modding-helper/docs.html)
+
 ## 🌍 Language
 - English / 日本語
 

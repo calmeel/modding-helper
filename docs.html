@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Modding Helper Documentation</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #111;
+      color: #eee;
+    }
+
+    h1 {
+      border-bottom: 2px solid #444;
+      padding-bottom: 10px;
+    }
+
+    h2 {
+      margin-top: 40px;
+      color: #9fdcff;
+    }
+
+    h3 {
+      margin-top: 20px;
+      color: #c6f1ff;
+    }
+
+    code {
+      background: #222;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .advantage {
+      color: #ffcc66;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Modding Helper Documentation</h1>
+
+<h2>Clap / Whistle</h2>
+<p>
+Circle（<code>type=1/5</code>）のみを対象に、Whistle / Clap / Whistle + Clap の個数をカウントします。
+</p>
+<p>
+チェックボックスを有効にすると、それぞれのタイムポイントも表示されます。
+</p>
+
+<h2>1ms Offset</h2>
+<p>
+HitObject が snap 位置から ±1〜3 ms ずれている箇所を検出します。
+</p>
+<p>
+このツールでは、<code>.osu</code> ファイルの beatLength をもとに snap 位置を計算し、小数点以下を切り捨てて比較しています。
+</p>
+<p class="advantage">
+±1 ms のズレは Beatmap Verifier や AiMod では表示されません。<br>
+ただし、±1 ms は rankable である点に注意してください。
+</p>
+
+<h2>Kiai Compare</h2>
+<p>
+diff間の kiai time の総時間を比較します。
+</p>
+<p>
+総時間が異なる場合、どの区間で kiai 状態が一致していないかを表示します。<br>
+また、kiai time の終了地点が明示されていない場合も警告します。
+</p>
+<p class="advantage">
+Beatmap Verifier では総時間の比較はできますが、具体的にどの区間が異なるかは確認できません。
+</p>
+
+<h2>Kiai Snap</h2>
+<p>
+kiai の ON/OFF が snap に乗っているかを確認します。
+</p>
+<p>
+unsnapped な kiai line に加えて、1/8 snap などのズレも検出できます。
+</p>
+<p class="advantage">
+AiMod は unsnapped な timing point を検出できますが、1/8 snap などのズレは検出できません。
+</p>
+
+<h2>Double SV</h2>
+<p>
+指定した間隔以内にある、近すぎる SV line を検出します。
+</p>
+<p class="advantage">
+AiMod は同時刻の重複 SV は検出できますが、1 ms ズレの二重 SV は検出できません。
+</p>
+
+<h2>SV Volume</h2>
+<p>
+volume変更を伴う SV line が、HitObject に対して十分前倒しされているかを確認します。
+</p>
+<p>
+HitObject と同時刻に volume変更を置いた場合、プレイヤーが 1 ms 早く叩くと新しい volume が適用されない場合があります。
+</p>
+<p class="advantage">
+この検出は AiMod や Beatmap Verifier では行えません。
+</p>
+
+<h2>Red / Green Match</h2>
+<p>
+同時刻の赤線（BPM line）と緑線（SV line）を比較します。
+</p>
+<ul>
+  <li>volume の不一致</li>
+  <li>kiai ON/OFF の不一致</li>
+  <li>sampleset の不一致</li>
+</ul>
+<p class="advantage">
+この検出は AiMod や Beatmap Verifier では行えません。
+</p>
+
+<h2>SampleSet</h2>
+
+<h3>TimingPoints</h3>
+<p>
+赤線・緑線では、sampleset <code>2</code>（Soft）または <code>3</code>（Drum）が含まれる場合に表示します。
+</p>
+<p>
+sampleset <code>1</code>（Normal）は検出されません。
+</p>
+
+<h3>HitObjects</h3>
+<p>
+ノーツ、スライダー、スピナーでは、sampleset <code>2</code>（Soft）または <code>3</code>（Drum）が含まれる場合に表示します。
+</p>
+<p>
+sampleset <code>0</code>（Auto）および <code>1</code>（Normal）は検出されません。
+</p>
+
+</body>
+</html>
