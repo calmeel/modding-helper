@@ -140,7 +140,7 @@ function formatTimestampList(label, msList, t) {
   const sorted = [...msList].sort((a, b) => a - b);
 
   for (const ms of sorted) {
-    lines.push(msToTimestamp(ms));
+    lines.push(formatTimestampLink(ms));
   }
 
   return lines;
@@ -175,7 +175,7 @@ function formatShiftResult(result, t) {
         : "result-warn";
 
     lines.push(
-      `<span class="${cls}">${msToTimestamp(item.time)} | ${sign}${Math.abs(item.diff)} ms  [1/${item.snap} ${t("snap")}]</span>`
+      `<span class="${cls}">${formatTimestampLink(item.time)} | ${sign}${Math.abs(item.diff)} ms  [1/${item.snap} ${t("snap")}]</span>`
     );
   }
 
@@ -204,7 +204,7 @@ function formatDoubleSvResult(result, t) {
 
   for (const group of result.groups) {
     for (const item of group.items) {
-      lines.push(`${msToTimestamp(item.time)} | SV ${formatSvValue(item.beatLength)} | vol ${item.volume}`);
+      lines.push(`${formatTimestampLink(item.time)} | SV ${formatSvValue(item.beatLength)} | vol ${item.volume}`);
     }
     lines.push("");
   }
@@ -258,7 +258,7 @@ function formatKiaiCompareResult(results, t) {
       .filter(s => !s.kiai)
       .map(s => getDifficultyName(s.fileName));
 
-    lines.push(`  ${msToTimestamp(section.start)} - ${msToTimestamp(section.end)}`);
+    lines.push(`  ${formatTimestampLink(section.start)} - ${formatTimestampLink(section.end)}`);
     lines.push(`    ON : ${on.join(", ") || `(${t("none")})`}`);
     lines.push(`    OFF: ${off.join(", ") || `(${t("none")})`}`);
     lines.push("");
@@ -294,7 +294,7 @@ function formatKiaiSnapResult(result, t) {
         : ` | ${item.diff >= 0 ? "+" : "-"}${Math.abs(item.diff)} ms`;
 
     lines.push(
-      `${msToTimestamp(item.time)} | Kiai ${item.type} | ${item.snap} snap${diffText}`
+      `${formatTimestampLink(item.time)} | Kiai ${item.type} | ${item.snap} snap${diffText}`
     );
   }
 
@@ -325,7 +325,7 @@ function formatSvVolumeResult(result, t) {
     const sign = item.diff >= 0 ? "+" : "-";
 
     lines.push(
-      `${msToTimestamp(item.time)} | hitobject ${msToTimestamp(item.hitTime)} | ${sign}${Math.abs(item.diff)} ms | vol ${item.oldVolume} -> ${item.newVolume}`
+      `${formatTimestampLink(item.time)} | hitobject ${msToTimestamp(item.hitTime)} | ${sign}${Math.abs(item.diff)} ms | vol ${item.oldVolume} -> ${item.newVolume}`
     );
   }
 
@@ -353,7 +353,7 @@ function formatRedGreenMatchResult(result, t) {
   }
 
   for (const item of result.results) {
-    lines.push(`${msToTimestamp(item.time)}`);
+    lines.push(`${formatTimestampLink(item.time)}`);
 
     if (item.volumeMismatch) {
       lines.push(`  ${t("volumeMismatch")} | ${t("red")} ${item.redVolume}% / ${t("green")} ${item.greenVolume}%`);
@@ -403,7 +403,7 @@ function formatSampleSetResult(result, t) {
     lines.push(t("timingPoints"));
     for (const item of result.timingIssues) {
       lines.push(
-        `${msToTimestamp(item.time)} | ${item.lineType} | sampleSet ${item.sampleSet} (${item.sampleSetName})`
+        `${formatTimestampLink(item.time)} | ${item.lineType} | sampleSet ${item.sampleSet} (${item.sampleSetName})`
       );
     }
     lines.push("");
@@ -413,7 +413,7 @@ function formatSampleSetResult(result, t) {
     lines.push(t("hitObjects"));
     for (const item of result.objectIssues) {
       lines.push(
-        `${msToTimestamp(item.time)} | ${item.objectType} | ${item.field} ${item.sampleSet} (${item.sampleSetName})`
+        `${formatTimestampLink(item.time)} | ${item.objectType} | ${item.field} ${item.sampleSet} (${item.sampleSetName})`
       );
     }
   }
@@ -538,3 +538,10 @@ function escapeHtml(text) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
+/** タイムスタンプのリンク用 */
+function formatTimestampLink(ms) {
+  const ts = msToTimestamp(ms);
+  return `<a class="timestamp-link" href="osu://edit/${ts}">${ts}</a>`;
+}
+
