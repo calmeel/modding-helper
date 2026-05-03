@@ -1,5 +1,5 @@
 # Modding Helper
-
+![alt text](image.png)
 Web-based modding helper for osu!taiko.
 
 ## 🌐 Web App
