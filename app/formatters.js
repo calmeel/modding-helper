@@ -13,6 +13,18 @@ function formatDuration(ms) {
 }
 
 function getDifficultyName(fileName) {
+  if (!fileName) return "[Unknown]";
+
+  const match = fileName.match(/\[([^\[\]]+)\]\.osu$/i);
+
+  const name = match ? match[1] : fileName;
+
+  return `<span class="diff-name">[${name}]</span>`;
+}
+
+function getDifficultyNameText(fileName) {
+  if (!fileName) return "[Unknown]";
+
   const match = fileName.match(/\[([^\[\]]+)\]\.osu$/i);
 
   if (match) {
@@ -20,6 +32,10 @@ function getDifficultyName(fileName) {
   }
 
   return fileName;
+}
+
+function getDifficultyName(fileName) {
+  return `<span class="diff-name">${escapeHtml(getDifficultyNameText(fileName))}</span>`;
 }
 
 /** 表示整形関数 */
@@ -53,7 +69,7 @@ function formatMultipleResults(results, t, showClap, showWhistle) {
   for (const [mode, group] of groupByMode(results)) {
     const sortedGroup = sortResultsForDisplay(group);
 
-    lines.push(`[${getModeName(mode)}]`);
+    lines.push(`<span class="mode-name">[${getModeName(mode)}]</span>`);
     lines.push("");
 
     lines.push(formatClapWhistleSummaryTable(sortedGroup, t));
@@ -76,9 +92,11 @@ function formatMultipleResults(results, t, showClap, showWhistle) {
 }
 
 function formatClapWhistleSummaryTable(results, t) {
+  const diffNames = results.map(result => getDifficultyNameText(result.fileName));
+
   const diffWidth = Math.max(
     10,
-    ...results.map(result => getDifficultyName(result.fileName).length)
+    ...diffNames.map(name => name.length)
   );
 
   const whistleHeader = t("whistleOnly");
@@ -96,8 +114,13 @@ function formatClapWhistleSummaryTable(results, t) {
   );
 
   for (const result of results) {
+    const plainName = getDifficultyNameText(result.fileName);
+    const coloredName = getDifficultyName(result.fileName);
+
+    const padding = " ".repeat(diffWidth - plainName.length);
+
     lines.push(
-      `${getDifficultyName(result.fileName).padEnd(diffWidth)} | ` +
+      `${coloredName}${padding} | ` +
       `${String(result.counts.whistle).padStart(12)} | ` +
       `${String(result.counts.clap).padStart(12)} | ` +
       `${String(result.counts.both).padStart(12)}`
@@ -463,7 +486,7 @@ function formatByModeIfHybrid(results, formatter, t) {
   const lines = [];
 
   for (const [mode, group] of groupByMode(results)) {
-    lines.push(`[${getModeName(mode)}]`);
+    lines.push(`<span class="mode-name">[${getModeName(mode)}]</span>`);
     lines.push("");
 
     lines.push(

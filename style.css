@@ -321,3 +321,14 @@ pre {
 .timestamp-link:hover {
   text-decoration: underline;
 }
+
+/** [Diff名]の色 */
+.diff-name {
+  color: #6b9aff;
+  font-weight: 500;
+}
+
+.mode-name {
+  color: #ff6b6b;
+  font-weight: 500;
+}
