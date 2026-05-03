@@ -32,9 +32,15 @@ function findTimingPointSampleSetIssues(text) {
 
       const time = Math.round(parseFloat(parts[0]));
       const sampleSet = parseInt(parts[3], 10);
+      const sampleIndex = parseInt(parts[4], 10);
       const uninherited = parseInt(parts[6], 10);
 
-      if (Number.isNaN(time) || Number.isNaN(sampleSet) || Number.isNaN(uninherited)) {
+      if (
+        Number.isNaN(time) ||
+        Number.isNaN(sampleSet) ||
+        Number.isNaN(sampleIndex) ||
+        Number.isNaN(uninherited)
+      ) {
         continue;
       }
 
@@ -42,8 +48,19 @@ function findTimingPointSampleSetIssues(text) {
         issues.push({
           time,
           lineType: uninherited === 1 ? "BPM line" : "SV line",
+          field: "sampleSet",
           sampleSet,
           sampleSetName: getSampleSetName(sampleSet),
+          lineNo: i + 1
+        });
+      }
+
+      if (sampleIndex !== 0) {
+        issues.push({
+          time,
+          lineType: uninherited === 1 ? "BPM line" : "SV line",
+          field: "sampleIndex",
+          sampleIndex,
           lineNo: i + 1
         });
       }
@@ -79,12 +96,36 @@ function findHitObjectSampleSetIssues(text) {
 
       if (Number.isNaN(time) || Number.isNaN(type)) continue;
 
+      checkSliderEdgeIssues(parts, time, type, i + 1, issues);
+
       const hitSample = getHitSamplePart(parts, type);
-      if (!hitSample) continue;
 
       const sampleParts = hitSample.split(":");
       const normalSet = parseInt(sampleParts[0] || "0", 10);
       const additionSet = parseInt(sampleParts[1] || "0", 10);
+
+      const sampleIndex = parseInt(sampleParts[2] || "0", 10);
+      const customFileName = (sampleParts[4] || "").trim();
+
+      if (sampleIndex !== 0) {
+        issues.push({
+          time,
+          objectType: getObjectTypeName(type),
+          field: "sampleIndex",
+          sampleIndex,
+          lineNo: i + 1
+        });
+      }
+
+      if (customFileName !== "") {
+        issues.push({
+          time,
+          objectType: getObjectTypeName(type),
+          field: "customFileName",
+          customFileName,
+          lineNo: i + 1
+        });
+      }
 
       // 0 = auto, 1 = normal → OK
       // 2,3 などだけ検出
@@ -113,6 +154,71 @@ function findHitObjectSampleSetIssues(text) {
   }
 
   return issues;
+}
+
+function checkSliderEdgeIssues(parts, time, type, lineNo, issues) {
+  if (!isSliderType(type)) return;
+
+  const edgeSounds = parts[8] || "";
+  const edgeSets = parts[9] || "";
+
+  if (edgeSounds) {
+    const sounds = edgeSounds.split("|");
+
+    sounds.forEach((raw, index) => {
+      const sound = parseInt(raw || "0", 10);
+      if (Number.isNaN(sound)) return;
+
+      // 0 = normal only → OK
+      // 2 whistle, 4 finish, 8 clap などを検出
+      if (sound !== 0) {
+        issues.push({
+          time,
+          objectType: "Slider",
+          field: "edgeSounds",
+          edgeIndex: index,
+          edgeSound: sound,
+          lineNo
+        });
+      }
+    });
+  }
+
+  if (edgeSets) {
+    const sets = edgeSets.split("|");
+
+    sets.forEach((raw, index) => {
+      const setParts = raw.split(":");
+      const normalSet = parseInt(setParts[0] || "0", 10);
+      const additionSet = parseInt(setParts[1] || "0", 10);
+
+      // 0 = auto, 1 = normal → OK
+      // 2 = soft, 3 = drum を検出
+      if (normalSet > 1) {
+        issues.push({
+          time,
+          objectType: "Slider",
+          field: "edgeSets.normalSet",
+          edgeIndex: index,
+          sampleSet: normalSet,
+          sampleSetName: getSampleSetName(normalSet),
+          lineNo
+        });
+      }
+
+      if (additionSet > 1) {
+        issues.push({
+          time,
+          objectType: "Slider",
+          field: "edgeSets.additionSet",
+          edgeIndex: index,
+          sampleSet: additionSet,
+          sampleSetName: getSampleSetName(additionSet),
+          lineNo
+        });
+      }
+    });
+  }
 }
 
 function getHitSamplePart(parts, type) {
