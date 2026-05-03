@@ -15,40 +15,49 @@ async function analyzeOszFile(file) {
 
   for (const entry of osuFiles) {
     const text = await entry.async("text");
+    const mode = parseMode(text);
 
-    clapWhistleResults.push(
-      runClapWhistleCheck(text, entry.name)
-    );
+    clapWhistleResults.push({
+      ...runClapWhistleCheck(text, entry.name),
+      mode
+    });
 
-    shiftResults.push(
-      runOffset1msCheck(text, entry.name)
-    );
+    shiftResults.push({
+      ...runOffset1msCheck(text, entry.name),
+      mode
+    });
 
     doubleSvSources.push({
       text,
-      fileName: entry.name
+      fileName: entry.name,
+      mode
     });
 
-    kiaiResults.push(
-      runKiaiAnalyze(text, entry.name)
-    );
+    kiaiResults.push({
+      ...runKiaiAnalyze(text, entry.name),
+      mode
+    });
 
-    kiaiSnapResults.push(
-      runKiaiSnapCheck(text, entry.name)
-    );
+    kiaiSnapResults.push({
+      ...runKiaiSnapCheck(text, entry.name),
+      mode
+    });
 
     svVolumeSources.push({
       text,
-      fileName: entry.name
+      fileName: entry.name,
+      mode
     });
 
-    redGreenMatchResults.push(
-      runRedGreenMatchCheck(text, entry.name)
-    );
+    redGreenMatchResults.push({
+      ...runRedGreenMatchCheck(text, entry.name),
+      mode
+    });
 
-    sampleSetResults.push(
-      runSampleSetCheck(text, entry.name)
-    );
+    sampleSetResults.push({
+      ...runSampleSetCheck(text, entry.name),
+      mode
+    });
   }
 
   return {
@@ -70,35 +79,51 @@ async function processFile(file) {
 
   if (lowerName.endsWith(".osu")) {
     const text = await file.text();
+    const mode = parseMode(text);
 
     return {
       clapWhistle: [
-        runClapWhistleCheck(text, file.name)
+        {
+          ...runClapWhistleCheck(text, file.name),
+          mode
+        }
       ],
       offset: [
-        runOffset1msCheck(text, file.name)
+        {
+          ...runOffset1msCheck(text, file.name),
+          mode
+        }
       ],
       doubleSvSources: [
-        { text, fileName: file.name }
+        { text, fileName: file.name, mode }
       ],
       kiaiCompare: [
-        runKiaiAnalyze(text, file.name)
+        {
+          ...runKiaiAnalyze(text, file.name),
+          mode
+        }
       ],
       kiaiSnap: [
-        runKiaiSnapCheck(text, file.name)
+        {
+          ...runKiaiSnapCheck(text, file.name),
+          mode
+        }
       ],
-
       svVolumeSources: [
-        { text, fileName: file.name }
+        { text, fileName: file.name, mode }
       ],
-
       redGreenMatch: [
-        runRedGreenMatchCheck(text, file.name)
+        {
+          ...runRedGreenMatchCheck(text, file.name),
+          mode
+        }
       ],
-
       sampleSet: [
-        runSampleSetCheck(text, file.name)
-      ],
+        {
+          ...runSampleSetCheck(text, file.name),
+          mode
+        }
+      ]
     };
   }
 
