@@ -86,7 +86,9 @@ function findHitObjectSampleSetIssues(text) {
       const normalSet = parseInt(sampleParts[0] || "0", 10);
       const additionSet = parseInt(sampleParts[1] || "0", 10);
 
-      if (normalSet !== 0) {
+      // 0 = auto, 1 = normal → OK
+      // 2,3 などだけ検出
+      if (normalSet > 1) {
         issues.push({
           time,
           objectType: getObjectTypeName(type),
@@ -97,7 +99,7 @@ function findHitObjectSampleSetIssues(text) {
         });
       }
 
-      if (additionSet !== 0) {
+      if (additionSet > 1) {
         issues.push({
           time,
           objectType: getObjectTypeName(type),
