@@ -90,7 +90,7 @@ The snap values checked by this tool are:
 Other snap values are not detected.
 </p>
 <p class="advantage">
-Offsets of ±1 ms are not detected by Beatmap Verifier or AiMod.<br>
+Offsets of ±1 ms are not detected by Mapset Verifier or AiMod.<br>
 However, ±1 ms offsets are generally rankable.
 </p>
 
@@ -104,7 +104,7 @@ kiai state does not match.<br>
 It also warns when the end point of kiai time is not explicitly set.
 </p>
 <p class="advantage">
-Beatmap Verifier can compare total kiai duration, but it cannot show the exact mismatching sections.
+Mapset Verifier can compare total kiai duration, but it cannot show the exact mismatching sections.
 </p>
 
 <h2>Kiai Snap</h2>
@@ -136,7 +136,7 @@ If a volume-changing SV line is placed at the exact same timestamp as a HitObjec
 the new volume may not be applied when the player hits the note 1 ms early.
 </p>
 <p class="advantage">
-This check is not available in AiMod or Beatmap Verifier.
+This check is not available in AiMod or Mapset Verifier.
 </p>
 
 <h2>Red / Green Match</h2>
@@ -158,30 +158,39 @@ Also note that users may intentionally change volume at the first red/green line
 Before that timing point, the red line volume is applied, and after that point, the green line volume is applied.
 </p>
 <p class="advantage">
-This check is not available in AiMod or Beatmap Verifier.
+This check is not available in AiMod or Mapset Verifier.
 </p>
 
 <h2>SampleSet</h2>
 
 <h3>TimingPoints</h3>
 <p>
-For red and green lines, sampleset <code>2</code> (Soft) and
-<code>3</code> (Drum) are displayed.
+For red and green lines, the following are detected:
 </p>
-<p>
-sampleset <code>1</code> (Normal) is not detected.
-</p>
+<ul>
+  <li><code>sampleset ≠ 1 (normal)</code> (2: Soft / 3: Drum)</li>
+  <li><code>sampleIndex ≠ 0</code> → custom hitsounds</li>
+</ul>
 
 <h3>HitObjects</h3>
 <p>
-For notes, sliders, and spinners, sampleset <code>2</code> (Soft) and
-<code>3</code> (Drum) are displayed.
+For notes, sliders, and spinners, the following are detected:
 </p>
+<ul>
+  <li><code>normalSet > 1</code> (2: Soft / 3: Drum)</li>
+  <li><code>additionSet > 1</code> (2: Soft / 3: Drum)</li>
+  <li><code>sampleIndex ≠ 0</code> → custom hitsounds</li>
+  <li><code>filename is specified</code> → custom audio file</li>
+</ul>
 <p>
-sampleset <code>0</code> (Auto) and <code>1</code> (Normal) are not detected.
+Hitsounds assigned to slider edges are also detected:
 </p>
+<ul>
+  <li><code>edgeSets.normalSet > 1</code> → 2: Soft / 3: Drum</li>
+  <li><code>edgeSets.additionSet > 1</code> → 2: Soft / 3: Drum</li>
+</ul>
 <p class="advantage">
-This check is not available in AiMod or Beatmap Verifier.
+This check is not available in AiMod or Mapset Verifier.
 </p>
 
 </body>
