@@ -246,11 +246,25 @@ function formatKiaiCompareResult(results, t) {
   lines.push(t("kiaiTotalDuration"));
   lines.push("");
 
+  results = sortResultsForDisplay(results);
+
+  const diffNames = results.map(result => getDifficultyNameText(result.fileName));
+  const diffWidth = Math.max(
+    10,
+    ...diffNames.map(name => name.length)
+  );
+
   for (const result of results) {
-    lines.push(`  ${getDifficultyName(result.fileName)} : ${formatDuration(result.totalDuration)}`);
+    const plainName = getDifficultyNameText(result.fileName);
+    const coloredName = getDifficultyName(result.fileName);
+    const padding = " ".repeat(diffWidth - plainName.length);
+
+    lines.push(
+      `  ${coloredName}${padding} | ${formatDuration(result.totalDuration)}`
+    );
 
     if (result.hasImplicitKiaiEnd) {
-      lines.push(`    ${t("warningImplicitKiaiEnd")}`);
+      lines.push(`  ${" ".repeat(diffWidth)} | ${t("warningImplicitKiaiEnd")}`);
     }
   }
 
