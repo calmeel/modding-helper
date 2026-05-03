@@ -335,7 +335,7 @@ function formatRedGreenMatchResult(result, t) {
     lines.push(`${msToTimestamp(item.time)}`);
 
     if (item.volumeMismatch) {
-      lines.push(`  ${t("volumeMismatch")} | red ${item.redVolume} / green ${item.greenVolume}`);
+      lines.push(`  ${t("volumeMismatch")} | ${t("red")} ${item.redVolume}% / ${t("green")} ${item.greenVolume}%`);
     }
 
     if (item.kiaiMismatch) {
