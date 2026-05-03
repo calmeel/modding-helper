@@ -312,3 +312,12 @@ pre {
 .doc-btn:hover {
   background: #2d2d38;
 }
+
+.timestamp-link {
+  color: #9fdcff;
+  text-decoration: none;
+}
+
+.timestamp-link:hover {
+  text-decoration: underline;
+}

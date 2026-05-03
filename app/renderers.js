@@ -1,7 +1,7 @@
 function renderClapWhistleResult(results, dom, t) {
   if (!results || !dom.output) return;
 
-  dom.output.textContent = formatMultipleResults(
+  dom.output.innerHTML = formatMultipleResults(
     results,
     t,
     dom.showClap,
@@ -19,12 +19,12 @@ function renderDoubleSvResultFromSources(sources, dom, t) {
   if (!dom.doubleSvOutput) return;
 
   if (!sources) {
-    dom.doubleSvOutput.textContent = t("noFileLoaded");
+    dom.doubleSvOutput.innerHTML = t("noFileLoaded");
     return null;
   }
 
   const results = analyzeDoubleSvSourcesFromSources(sources, dom);
-  dom.doubleSvOutput.textContent = formatMultipleDoubleSvResults(results, t);
+  dom.doubleSvOutput.innerHTML = formatMultipleDoubleSvResults(results, t);
 
   return results;
 }
@@ -33,22 +33,22 @@ function renderKiaiCompareResult(results, dom, t) {
   if (!dom.kiaiOutput) return;
 
   if (!results) {
-    dom.kiaiOutput.textContent = t("noFileLoaded");
+    dom.kiaiOutput.innerHTML = t("noFileLoaded");
     return;
   }
 
-  dom.kiaiOutput.textContent = formatKiaiCompareResult(results, t);
+  dom.kiaiOutput.innerHTML = formatKiaiCompareResult(results, t);
 }
 
 function renderKiaiSnapResultFromResults(results, dom, t) {
   if (!dom.kiaiSnapOutput) return;
 
   if (!results) {
-    dom.kiaiSnapOutput.textContent = t("noFileLoaded");
+    dom.kiaiSnapOutput.innerHTML = t("noFileLoaded");
     return;
   }
 
-  dom.kiaiSnapOutput.textContent = formatMultipleKiaiSnapResults(results, t);
+  dom.kiaiSnapOutput.innerHTML = formatMultipleKiaiSnapResults(results, t);
 }
 
 function analyzeDoubleSvSourcesFromSources(sources, dom) {
@@ -75,7 +75,7 @@ function renderSvVolumeResultFromSources(sources, dom, t) {
   if (!dom.svVolumeOutput) return;
 
   if (!sources) {
-    dom.svVolumeOutput.textContent = t("noFileLoaded");
+    dom.svVolumeOutput.innerHTML = t("noFileLoaded");
     return null;
   }
 
@@ -90,7 +90,7 @@ function renderSvVolumeResultFromSources(sources, dom, t) {
     mode: source.mode
   }));
 
-  dom.svVolumeOutput.textContent = formatMultipleSvVolumeResults(results, t);
+  dom.svVolumeOutput.innerHTML = formatMultipleSvVolumeResults(results, t);
 
   return results;
 }
@@ -99,20 +99,20 @@ function renderRedGreenMatchResultFromResults(results, dom, t) {
   if (!dom.redGreenMatchOutput) return;
 
   if (!results) {
-    dom.redGreenMatchOutput.textContent = t("noFileLoaded");
+    dom.redGreenMatchOutput.innerHTML = t("noFileLoaded");
     return;
   }
 
-  dom.redGreenMatchOutput.textContent = formatMultipleRedGreenMatchResults(results, t);
+  dom.redGreenMatchOutput.innerHTML = formatMultipleRedGreenMatchResults(results, t);
 }
 
 function renderSampleSetResultFromResults(results, dom, t) {
   if (!dom.sampleSetOutput) return;
 
   if (!results) {
-    dom.sampleSetOutput.textContent = t("noFileLoaded");
+    dom.sampleSetOutput.innerHTML = t("noFileLoaded");
     return;
   }
 
-  dom.sampleSetOutput.textContent = formatMultipleSampleSetResults(results, t);
+  dom.sampleSetOutput.innerHTML = formatMultipleSampleSetResults(results, t);
 }
