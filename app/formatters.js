@@ -28,20 +28,51 @@ function formatMultipleResults(results, t, showClap, showWhistle) {
     return t("noOsuFiles");
   }
 
+  // Hybrid setではない場合：今まで通り、サマリー表を表示
+  if (!hasMultipleModes(results)) {
+    const sortedResults = sortResultsForDisplay(results);
+    const lines = [];
+
+    lines.push(formatClapWhistleSummaryTable(sortedResults, t));
+    lines.push("");
+    lines.push("==============================");
+    lines.push("");
+
+    lines.push(
+      sortedResults
+        .map(result => formatResult(result, t, showClap, showWhistle))
+        .join("\n\n==============================\n\n")
+    );
+
+    return lines.join("\n");
+  }
+
+  // Hybrid setの場合だけ：modeごとに分ける
   const lines = [];
 
-  lines.push(formatClapWhistleSummaryTable(results, t));
-  lines.push("");
-  lines.push("==============================");
-  lines.push("");
+  for (const [mode, group] of groupByMode(results)) {
+    const sortedGroup = sortResultsForDisplay(group);
 
-  lines.push(
-    results
-      .map(result => formatResult(result, t, showClap, showWhistle))
-      .join("\n\n==============================\n\n")
-  );
+    lines.push(`[${getModeName(mode)}]`);
+    lines.push("");
 
-  return lines.join("\n");
+    lines.push(formatClapWhistleSummaryTable(sortedGroup, t));
+    lines.push("");
+    lines.push("==============================");
+    lines.push("");
+
+    lines.push(
+      sortedGroup
+        .map(result => formatResult(result, t, showClap, showWhistle))
+        .join("\n\n==============================\n\n")
+    );
+
+    lines.push("");
+    lines.push("==============================");
+    lines.push("");
+  }
+
+  return lines.join("\n").trimEnd();
 }
 
 function formatClapWhistleSummaryTable(results, t) {
@@ -121,9 +152,7 @@ function formatMultipleShiftResults(results, t) {
     return t("noOsuFiles");
   }
 
-  return results
-    .map(result => formatShiftResult(result, t))
-    .join("\n\n==============================\n\n");
+  return formatByModeIfHybrid(results, formatShiftResult, t);
 }
 
 function formatShiftResult(result, t) {
@@ -159,9 +188,7 @@ function formatMultipleDoubleSvResults(results, t) {
     return t("noOsuFiles");
   }
 
-  return results
-    .map(result => formatDoubleSvResult(result, t))
-    .join("\n\n==============================\n\n");
+  return formatByModeIfHybrid(results, formatDoubleSvResult, t);
 }
 
 function formatDoubleSvResult(result, t) {
@@ -246,9 +273,7 @@ function formatMultipleKiaiSnapResults(results, t) {
     return t("noOsuFiles");
   }
 
-  return results
-    .map(result => formatKiaiSnapResult(result, t))
-    .join("\n\n==============================\n\n");
+  return formatByModeIfHybrid(results, formatKiaiSnapResult, t);
 }
 
 function formatKiaiSnapResult(result, t) {
@@ -282,9 +307,7 @@ function formatMultipleSvVolumeResults(results, t) {
     return t("noOsuFiles");
   }
 
-  return results
-    .map(result => formatSvVolumeResult(result, t))
-    .join("\n\n==============================\n\n");
+  return formatByModeIfHybrid(results, formatSvVolumeResult, t);
 }
 
 function formatSvVolumeResult(result, t) {
@@ -315,9 +338,7 @@ function formatMultipleRedGreenMatchResults(results, t) {
     return t("noOsuFiles");
   }
 
-  return results
-    .map(result => formatRedGreenMatchResult(result, t))
-    .join("\n\n==============================\n\n");
+  return formatByModeIfHybrid(results, formatRedGreenMatchResult, t);
 }
 
 function formatRedGreenMatchResult(result, t) {
@@ -364,9 +385,7 @@ function formatMultipleSampleSetResults(results, t) {
     return t("noOsuFiles");
   }
 
-  return results
-    .map(result => formatSampleSetResult(result, t))
-    .join("\n\n==============================\n\n");
+  return formatByModeIfHybrid(results, formatSampleSetResult, t);
 }
 
 function formatSampleSetResult(result, t) {
@@ -400,6 +419,114 @@ function formatSampleSetResult(result, t) {
   }
 
   return lines.join("\n").trimEnd();
+}
+
+/** modeのグループ関数 */
+function hasMultipleModes(results) {
+  const modes = new Set(results.map(result => result.mode ?? 0));
+  return modes.size >= 2;
+}
+
+function groupByMode(results) {
+  const groups = new Map();
+
+  for (const result of results) {
+    const mode = result.mode ?? 0;
+
+    if (!groups.has(mode)) {
+      groups.set(mode, []);
+    }
+
+    groups.get(mode).push(result);
+  }
+
+  return groups;
+}
+
+function getModeName(mode) {
+  switch (mode) {
+    case 0: return "Standard";
+    case 1: return "Taiko";
+    case 2: return "Catch";
+    case 3: return "Mania";
+    default: return `Mode ${mode}`;
+  }
+}
+
+function formatByModeIfHybrid(results, formatter, t) {
+  if (!hasMultipleModes(results)) {
+    return sortResultsForDisplay(results)
+      .map(result => formatter(result, t))
+      .join("\n\n==============================\n\n");
+  }
+
+  const lines = [];
+
+  for (const [mode, group] of groupByMode(results)) {
+    lines.push(`[${getModeName(mode)}]`);
+    lines.push("");
+
+    lines.push(
+      sortResultsForDisplay(group)
+        .map(result => formatter(result, t))
+        .join("\n\n==============================\n\n")
+    );
+
+    lines.push("");
+    lines.push("==============================");
+    lines.push("");
+  }
+
+  return lines.join("\n").trimEnd();
+}
+
+/** Taiko用ソート関数 */
+function sortResultsForDisplay(results) {
+  return [...results].sort((a, b) => {
+    const modeA = a.mode ?? 0;
+    const modeB = b.mode ?? 0;
+
+    // modeが違う場合は既存順を維持
+    if (modeA !== modeB) return 0;
+
+    // Taiko以外は既存順を維持
+    if (modeA !== 1) return 0;
+
+    return getTaikoDifficultySortKey(a.fileName) - getTaikoDifficultySortKey(b.fileName);
+  });
+}
+
+function getTaikoDifficultySortKey(fileName) {
+  const name = normalizeDifficultyName(getDifficultyName(fileName));
+
+  // Guest diff: "___'s Oni" → "Oni" を拾う
+  if (/\bkantan\b/.test(name)) return 10;
+  if (/\bfutsuu\b/.test(name)) return 20;
+  if (/\bmuzukashii\b/.test(name)) return 30;
+
+  // Hell Oni は Inner Oni より後ろ
+  if (/\bhell\s+oni\b/.test(name)) return 60;
+
+  // Inner / Ura / Extra / Another など + Oni
+  if (/\b(inner|ura)\s+oni\b/.test(name)) return 50;
+
+  // 通常 Oni
+  if (/\boni\b/.test(name)) return 40;
+
+  // それ以外のカスタム難易度
+  return 1000;
+}
+
+function normalizeDifficultyName(name) {
+  return String(name)
+    .replace(/^\[/, "")
+    .replace(/\]$/, "")
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/-/g, " ")
+    .replace(/[’`]/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /** HTMLエスケープ関数 */

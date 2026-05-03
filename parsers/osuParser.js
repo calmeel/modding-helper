@@ -233,3 +233,28 @@ function parseTimingPointsDetailed(text) {
   return timingPoints;
 }
 
+/** mode情報取得 */
+function parseMode(text) {
+  const lines = text.split(/\r?\n/);
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (trimmed.startsWith("Mode:")) {
+      const value = parseInt(trimmed.split(":")[1], 10);
+      if (!Number.isNaN(value)) return value;
+    }
+  }
+
+  return 0; // default = Standard
+}
+
+function getModeName(mode) {
+  switch (mode) {
+    case 0: return "Standard";
+    case 1: return "Taiko";
+    case 2: return "Catch";
+    case 3: return "Mania";
+    default: return `Mode ${mode}`;
+  }
+}

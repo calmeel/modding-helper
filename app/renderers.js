@@ -62,12 +62,13 @@ function analyzeDoubleSvSourcesFromSources(sources, dom) {
     ? dom.includeExactSameSv.checked
     : true;
 
-  return sources.map(source =>
-    runDoubleSvCheck(source.text, source.fileName, {
+  return sources.map(source => ({
+    ...runDoubleSvCheck(source.text, source.fileName, {
       maxGapMs,
       includeExactSame
-    })
-  );
+    }),
+    mode: source.mode
+  }));
 }
 
 function renderSvVolumeResultFromSources(sources, dom, t) {
@@ -82,11 +83,12 @@ function renderSvVolumeResultFromSources(sources, dom, t) {
     ? dom.svVolumeThreshold.value
     : "5ms";
 
-  const results = sources.map(source =>
-    runSvVolumeCheck(source.text, source.fileName, {
+  const results = sources.map(source => ({
+    ...runSvVolumeCheck(source.text, source.fileName, {
       thresholdMode
-    })
-  );
+    }),
+    mode: source.mode
+  }));
 
   dom.svVolumeOutput.textContent = formatMultipleSvVolumeResults(results, t);
 
