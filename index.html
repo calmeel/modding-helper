@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Modding Helper</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <h1>Modding Helper</h1>
+    <div class="language-switch">
+      <button id="langEn" class="lang-button active">English</button>
+      <button id="langJa" class="lang-button">日本語</button>
+    </div>
+    <p data-i18n="subtitle">osu!taiko modding support tool</p>
+
+    <section class="drop-area">
+      <div class="file-picker">
+        <label for="fileInput" class="file-button" data-i18n="selectFile">Select file</label>
+        <span id="fileName" class="file-name" data-i18n="noFileSelected">No file selected</span>
+        <input id="fileInput" class="file-input" type="file" accept=".osu,.osz" />
+      </div>
+      <p data-i18n="selectOsu">Select .osu / .osz</p>
+    </section>
+
+    <section class="tab-visibility-settings">
+      <button type="button" id="toggleTabSettings" class="settings-button" data-i18n="tabSettings">
+        Tab settings
+      </button>
+
+      <div id="tabSettingsPanel" class="tab-settings-panel hidden">
+        <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="clapWhistle" checked>
+          <span data-i18n="tabClapWhistle">Clap & Whistle</span>
+        </label>
+
+        <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="shift1ms" checked>
+          <span data-i18n="tabOffset">1ms Offset</span>
+        </label>
+
+        <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="kiaiCompare" checked>
+          <span data-i18n="tabKiaiCompare">Kiai Compare</span>
+        </label>
+
+        <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="kiaiSnap" checked>
+          <span data-i18n="tabKiaiSnap">Kiai Snap</span>
+        </label>
+
+        <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="doubleBarline" checked>
+          <span data-i18n="tabDoubleSv">Double SV</span>
+        </label>
+
+        <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="svVolume" checked>
+          <span data-i18n="tabSvVolume">SV Volume</span>
+        </label>
+
+        <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="redGreenMatch" checked>
+          <span data-i18n="tabRedGreenMatch">Red/Green Match</span>
+        </label>
+
+        <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="sampleSet" checked>
+          <span data-i18n="tabSampleSet">SampleSet</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="tabs">
+      <div class="tab-buttons">
+        <button class="tab-button active" data-tab="clapWhistle" data-i18n="tabClapWhistle">Clap & Whistle</button>
+        <button class="tab-button" data-tab="shift1ms" data-i18n="tabOffset">1ms Offset (1/24 snap)</button>
+        <button class="tab-button" data-tab="kiaiCompare" data-i18n="tabKiaiCompare">Kiai Compare</button>
+        <button class="tab-button" data-tab="kiaiSnap" data-i18n="tabKiaiSnap">Kiai Snap</button>
+        <button class="tab-button" data-tab="doubleBarline" data-i18n="tabDoubleSv">Double SV line</button>
+        <button class="tab-button" data-tab="svVolume">SV Volume</button>
+        <button class="tab-button" data-tab="redGreenMatch" data-i18n="tabRedGreenMatch">Red/Green Match</button>
+        <button class="tab-button" data-tab="sampleSet" data-i18n="tabSampleSet">SampleSet</button>
+      </div>
+
+      <section class="tab-panel active" id="tab-clapWhistle">
+        <div class="options">
+          <label>
+            <input type="checkbox" id="showClap">
+            <span data-i18n="showClap">Show Clap</span>
+          </label>
+
+          <label>
+            <input type="checkbox" id="showWhistle">
+            <span data-i18n="showWhistle">Show Whistle</span>
+          </label>
+        </div>
+
+        <pre id="output" data-i18n="noFileLoaded">No file loaded.</pre>
+      </section>
+
+      <section class="tab-panel" id="tab-shift1ms">
+        <pre id="shiftOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+      </section>
+
+      <section class="tab-panel" id="tab-kiaiCompare">
+        <pre id="kiaiOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+      </section>
+
+      <section class="tab-panel" id="tab-kiaiSnap">
+        <pre id="kiaiSnapOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+      </section>
+
+      <section class="tab-panel" id="tab-doubleBarline">
+        <div class="options">
+          <label>
+            <span data-i18n="detectGapUpTo">Detect gap up to:</span>
+            <select id="doubleSvGap">
+              <option value="1">1 ms</option>
+              <option value="2" selected>2 ms</option>
+              <option value="3">3 ms</option>
+              <option value="5">5 ms</option>
+            </select>
+          </label>
+
+          <label>
+            <input type="checkbox" id="includeExactSameSv" checked>
+            <span data-i18n="includeExactSameSv">Include exact same-ms overlaps</span>
+          </label>
+        </div>
+
+        <pre id="doubleSvOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+      </section>
+
+      <section class="tab-panel" id="tab-svVolume">
+        <div class="options">
+          <label>
+            <span data-i18n="DetectThreshold">Detect threshold:</span>
+            <select id="svVolumeThreshold">
+              <option value="5ms" selected>±5 ms</option>
+              <option value="16snap">±1/16 snap</option>
+            </select>
+          </label>
+        </div>
+
+        <pre id="svVolumeOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+      </section>
+
+      <section class="tab-panel" id="tab-redGreenMatch">
+        <pre id="redGreenMatchOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+      </section>
+
+      <section class="tab-panel" id="tab-sampleSet">
+        <pre id="sampleSetOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+      </section>
+
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  
+  <script src="parsers/osuParser.js"></script>
+  <script src="checks/clapWhistleCheck.js"></script>
+  <script src="checks/offset1msCheck.js"></script>
+  <script src="checks/kiaiCompareCheck.js"></script>
+  <script src="checks/kiaiSnapCheck.js"></script>
+  <script src="checks/doubleSvCheck.js"></script>
+  <script src="checks/svVolumeCheck.js"></script>
+  <script src="checks/redGreenMatchCheck.js"></script>
+  <script src="checks/sampleSetCheck.js"></script>
+  <script src="i18n.js"></script>
+  <script src="app/formatters.js"></script>
+  <script src="app/fileLoader.js"></script>
+  <script src="app/ui.js"></script>
+  <script src="app/renderers.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
