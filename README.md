@@ -3,7 +3,7 @@
 Web-based modding helper for osu!taiko.
 
 ## 🌐 Web App
-👉 [https://ユーザー名.github.io/modding-helper/](https://calmeel.github.io/modding-helper/)
+👉 https://calmeel.github.io/modding-helper/
 
 ## 🛠 Features
 - 1ms offset detection
