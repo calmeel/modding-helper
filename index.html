@@ -14,6 +14,12 @@
     </div>
     <p data-i18n="subtitle">osu!taiko modding support tool</p>
 
+    <div class="top-links">
+      <a href="docs.html" target="_blank">📘 説明書 (JP)</a>
+      <a href="docs-en.html" target="_blank">🌐 Docs (EN)</a>
+      <button id="updateBtn" class="doc-btn">📝 Update history</button>
+    </div>
+
     <section class="drop-area">
       <div class="file-picker">
         <label for="fileInput" class="file-button" data-i18n="selectFile">Select file</label>
@@ -157,8 +163,25 @@
     </section>
   </main>
 
+  <div id="updateModal" class="modal hidden">
+    <div class="modal-content">
+      <span id="closeUpdate" class="close">&times;</span>
+
+      <h2>Update History</h2>
+
+      <p><strong>2026/05/03</strong> Release</p>
+
+      <p><strong>2026/05/03</strong> Update</p>
+      <ul>
+        <li>Added documentation page</li>
+        <li>Support for hybrid beatmap sets</li>
+        <li>Added Taiko difficulty sorting (KFMO)</li>
+      </ul>
+
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  
   <script src="parsers/osuParser.js"></script>
   <script src="checks/clapWhistleCheck.js"></script>
   <script src="checks/offset1msCheck.js"></script>

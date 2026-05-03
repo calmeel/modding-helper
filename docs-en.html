@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Modding Helper Documentation</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #111;
+      color: #eee;
+    }
+
+    h1 {
+      border-bottom: 2px solid #444;
+      padding-bottom: 10px;
+    }
+
+    h2 {
+      margin-top: 40px;
+      color: #9fdcff;
+    }
+
+    h3 {
+      margin-top: 20px;
+      color: #c6f1ff;
+    }
+
+    code {
+      background: #222;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .advantage {
+      color: #ffcc66;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Modding Helper Documentation</h1>
+
+<h2>Clap / Whistle</h2>
+<p>
+Counts Whistle / Clap / Whistle + Clap for Circle objects only
+(<code>type=1/5</code>).
+</p>
+<p>
+When the checkboxes are enabled, the corresponding timestamps are also displayed.
+</p>
+
+<h2>1ms Offset</h2>
+<p>
+Detects HitObjects that are shifted by ±1–3 ms from their expected snap positions.
+</p>
+<p>
+Snap positions are calculated from the <code>.osu</code> file’s beatLength,
+and decimal values are truncated.
+</p>
+<p class="advantage">
+Offsets of ±1 ms are not detected by Beatmap Verifier or AiMod.<br>
+However, ±1 ms offsets are generally rankable.
+</p>
+
+<h2>Kiai Compare</h2>
+<p>
+Compares the total kiai time between difficulties.
+</p>
+<p>
+If the total kiai duration differs, the tool shows the exact sections where the
+kiai state does not match.<br>
+It also warns when the end point of kiai time is not explicitly set.
+</p>
+<p class="advantage">
+Beatmap Verifier can compare total kiai duration, but it cannot show the exact mismatching sections.
+</p>
+
+<h2>Kiai Snap</h2>
+<p>
+Checks whether kiai ON/OFF timing points are placed on proper snap positions.
+</p>
+<p>
+In addition to unsnapped kiai lines, this tool detects misaligned snaps such as 1/8 snap.
+</p>
+<p class="advantage">
+AiMod can detect unsnapped timing points, but it cannot detect these snap-based issues.
+</p>
+
+<h2>Double SV</h2>
+<p>
+Detects SV lines that are too close to each other within the selected threshold.
+</p>
+<p class="advantage">
+AiMod can detect SV lines stacked at the same timestamp, but it cannot detect
+double SV lines that are shifted by 1 ms.
+</p>
+
+<h2>SV Volume</h2>
+<p>
+Checks whether SV lines with volume changes are placed early enough before HitObjects.
+</p>
+<p>
+If a volume-changing SV line is placed at the exact same timestamp as a HitObject,
+the new volume may not be applied when the player hits the note 1 ms early.
+</p>
+<p class="advantage">
+This check is not available in AiMod or Beatmap Verifier.
+</p>
+
+<h2>Red / Green Match</h2>
+<p>
+Compares red lines (BPM lines) and green lines (SV lines) at the same timestamp.
+</p>
+<ul>
+  <li>volume mismatches</li>
+  <li>kiai ON/OFF mismatches</li>
+  <li>sampleset mismatches</li>
+</ul>
+<p class="advantage">
+This check is not available in AiMod or Beatmap Verifier.
+</p>
+
+<h2>SampleSet</h2>
+
+<h3>TimingPoints</h3>
+<p>
+For red and green lines, sampleset <code>2</code> (Soft) and
+<code>3</code> (Drum) are displayed.
+</p>
+<p>
+sampleset <code>1</code> (Normal) is not detected.
+</p>
+
+<h3>HitObjects</h3>
+<p>
+For notes, sliders, and spinners, sampleset <code>2</code> (Soft) and
+<code>3</code> (Drum) are displayed.
+</p>
+<p>
+sampleset <code>0</code> (Auto) and <code>1</code> (Normal) are not detected.
+</p>
+
+</body>
+</html>

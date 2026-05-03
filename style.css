@@ -226,3 +226,89 @@ pre {
 .tab-panel.hidden-tab {
   display: none !important;
 }
+
+.top-links {
+  margin-bottom: 12px;
+  display: flex;
+  gap: 12px;
+}
+
+.top-links a {
+  text-decoration: none;
+  color: #9fdcff;
+  font-size: 14px;
+}
+
+.top-links a:hover {
+  text-decoration: underline;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: #1e1e26;
+  padding: 20px 24px;
+  border-radius: 10px;
+  max-width: 500px;
+  width: 90%;
+  color: #eee;
+}
+
+.close {
+  float: right;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+/* ヘッダーを2列に分割 */
+.app {
+  position: relative;
+}
+
+/* 左側（タイトル + 言語 + 説明）をまとめる */
+.app > h1,
+.app > .language-switch,
+.app > p[data-i18n="subtitle"] {
+  margin-right: 220px; /* 右側のスペース確保 */
+}
+
+/* 右上に固定 */
+.top-links {
+  position: absolute;
+  top: 8px;
+  right: 0;
+
+  display: flex;
+  gap: 8px;
+}
+
+/* ボタン風に */
+.top-links a,
+.doc-btn {
+  padding: 6px 10px;
+  border: 1px solid #555;
+  border-radius: 6px;
+  background: #23232b;
+  color: #ddd;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.top-links a:hover,
+.doc-btn:hover {
+  background: #2d2d38;
+}
