@@ -83,6 +83,7 @@ function setupOptionEvents(options) {
     showClap,
     showWhistle,
     includeAdvancedOffsetSnaps,
+    renderShiftResult,
     doubleSvGap,
     includeExactSameSv,
     renderResult,
@@ -101,7 +102,7 @@ function setupOptionEvents(options) {
     showWhistle.addEventListener("change", renderResult);
   }
 
-  if (includeAdvancedOffsetSnaps) {
+  if (includeAdvancedOffsetSnaps && renderShiftResult) {
     includeAdvancedOffsetSnaps.addEventListener("change", renderShiftResult);
   }
 
