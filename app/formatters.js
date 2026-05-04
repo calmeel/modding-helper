@@ -195,7 +195,7 @@ function formatShiftResult(result, t) {
     const cls =
       item.snap !== 1
         ? "result-error"
-        : "result-warn";
+        : "";
 
     lines.push(
       `<span class="${cls}">${formatTimestampLink(item.time)} | ${sign}${Math.abs(item.diff)} ms  [1/${item.snap} ${t("snap")}]</span>`

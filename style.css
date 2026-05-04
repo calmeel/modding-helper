@@ -603,6 +603,31 @@ code {
   font-weight: 600;
 }
 
+/** プルダウン */
+select {
+  background-color: #2a2a2a;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 4px 6px;
+}
+
+/** ファイル選択ボタン */
+input[type="file"] {
+  color: #fff;
+}
+input[type="file"]::file-selector-button {
+  background-color: #2a2a2a;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+input[type="file"]::file-selector-button:hover {
+  background-color: #3a3a3a;
+}
+
 .result-warn {
   color: #fbbc04;
 }
