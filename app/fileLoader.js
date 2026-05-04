@@ -11,6 +11,7 @@ async function analyzeOszFile(file) {
   const redGreenMatchResults = [];
   const sampleSetResults = [];
   const tagResults = [];
+  const sliderSettingsResults = [];
 
   const osuFiles = Object.values(zip.files)
     .filter(entry => !entry.dir && entry.name.toLowerCase().endsWith(".osu"));
@@ -71,6 +72,11 @@ async function analyzeOszFile(file) {
       ...runTagCheck(text, entry.name),
       mode
     });
+
+    sliderSettingsResults.push({
+      ...runSliderSettingsCheck(text, entry.name),
+      mode
+    });
   }
 
   return {
@@ -83,7 +89,8 @@ async function analyzeOszFile(file) {
     svVolumeSources,
     redGreenMatchResults,
     sampleSetResults,
-    tagResults
+    tagResults,
+    sliderSettingsResults
   };
 }
 
@@ -151,6 +158,12 @@ async function processFile(file) {
           mode
         }
       ],
+      sliderSettings: [
+        {
+          ...runSliderSettingsCheck(text, file.name),
+          mode
+        }
+      ],
     };
   }
 
@@ -169,6 +182,7 @@ async function processFile(file) {
       redGreenMatch: analyzed.redGreenMatchResults,
       sampleSet: analyzed.sampleSetResults,
       tag: analyzed.tagResults,
+      sliderSettings: analyzed.sliderSettingsResults,
     };
   }
 

@@ -71,6 +71,13 @@ const i18n = {
     tagMultipleSpaces: "Multiple half-width spaces",
     tagFullWidthSpace: "Full-width space",
 
+    tabSliderSettings: "Slider Multiplier / TickRate",
+    noSliderSettingsIssues: "No SliderMultiplier / SliderTickRate issues found.",
+    sliderMultiplierIssue: "SliderMultiplier is not 1.4",
+    sliderTickRateIssue: "SliderTickRate does not match the expected value",
+    tripletSnapRatio: "1/3 snap ratio",
+    expected: "expected",
+
     tabBnCompare: "BN Review",
     bnBeforeOsz: "Before .osz",
     bnAfterOsz: "After .osz",
@@ -182,6 +189,13 @@ const i18n = {
     tagMissing: "Tags行が見つかりませんでした。",
     tagMultipleSpaces: "2つ以上の半角スペース",
     tagFullWidthSpace: "全角スペース",
+
+    tabSliderSettings: "スライダー感度・目盛り",
+    noSliderSettingsIssues: "SliderMultiplier / SliderTickRate の問題は見つかりませんでした。",
+    sliderMultiplierIssue: "SliderMultiplier が 1.4 ではありません",
+    sliderTickRateIssue: "SliderTickRate が推奨値と一致していません",
+    tripletSnapRatio: "1/3 snap割合",
+    expected: "推奨",
 
     tabBnCompare: "BN評価",
     bnBeforeOsz: "変更前 .osz",

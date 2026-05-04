@@ -190,7 +190,7 @@ This check is not available in AiMod or Mapset Verifier.
 
 <div class="section">
 <span class="label label-detect">■ Detection</span><br>
-Warns when volume-changing SV lines are placed too close to HitObjects (0–4 ms).
+Warns when volume-changing SV lines are placed too close to HitObjects.
 </div>
 
 
@@ -264,6 +264,33 @@ For slider edges:
   <li><code>edgeSets.normalSet > 1</code> → 2: Soft / 3: Drum</li>
   <li><code>edgeSets.additionSet > 1</code> → 2: Soft / 3: Drum</li>
 </ul>
+</div>
+
+<h2>Slider Multiplier / TickRate</h2>
+
+<div class="section">
+<span class="label label-bg">■ Background</span><br>
+In osu!taiko, <code>SliderMultiplier</code> should generally be set to <code>1.40</code>.<br>
+Reference:
+<a href="https://osu.ppy.sh/wiki/en/Ranking_criteria/osu%21taiko" target="_blank" rel="noopener noreferrer">
+  osu!taiko Ranking Criteria
+</a><br>
+<code>SliderTickRate</code> is normally set to <code>1</code>, while <code>3</code> is generally used for swing-rhythm songs.
+</div>
+
+<div class="section">
+<span class="label label-detect">■ Detection</span><br>
+This check warns when <code>SliderMultiplier</code> is not <code>1.40</code>.<br>
+It also calculates the ratio of HitObjects placed on <code>1/3 snap</code>. If the <code>1/3 snap</code> ratio is <code>30%</code> or higher, the map is treated as swing-rhythm for this check.<br>
+When the map is treated as swing-rhythm, <code>SliderTickRate = 3</code> is recommended; otherwise, <code>SliderTickRate = 1</code> is recommended. A warning is shown when the actual value does not match the recommended value.
+</div>
+
+<div class="section">
+<span class="label label-warning">■ Notes</span><br>
+For high-BPM low difficulties, <code>SliderMultiplier</code> values other than <code>1.4</code> may be used as exceptions (see Taiko Checklist V1.2).<br>
+Also, the <code>30%</code> threshold for the <code>1/3 snap</code> ratio is an arbitrary value chosen for this tool.<br>
+Therefore, some swing-rhythm maps may fall below this threshold, and some non-swing maps may exceed it.<br>
+Use this result as a guide, and make the final judgement based on the actual rhythm and mapping context.
 </div>
 
 <h2>Tag</h2>
