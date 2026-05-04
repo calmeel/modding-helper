@@ -243,6 +243,34 @@ pre {
   text-decoration: underline;
 }
 
+.top-links {
+  position: absolute;
+  top: 8px;
+  right: 0;
+
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap; /* ←追加（重要） */
+}
+
+.doc-btn {
+  padding: 6px 10px;
+  border: 1px solid #555;
+  border-radius: 6px;
+  background: #23232b;
+  color: #ddd;
+  font-size: 13px;
+}
+
+.doc-btn:hover {
+  background: #2d2d38;
+}
+
+/* 設定だけ少し強調 */
+#toggleTabSettings {
+  border-color: #777;
+}
+
 .modal {
   position: fixed;
   top: 0;
@@ -332,3 +360,4 @@ pre {
   color: #ff6b6b;
   font-weight: 500;
 }
+

@@ -140,3 +140,25 @@ function renderSampleSetResultFromResults(results, dom, t) {
 
   dom.sampleSetOutput.innerHTML = formatMultipleSampleSetResults(results, t);
 }
+
+function renderVolumeCompareResultFromSources(sources, dom, t) {
+  if (!dom.volumeCompareOutput) return null;
+
+  if (!sources) {
+    dom.volumeCompareOutput.innerHTML = t("noFileLoaded");
+    return null;
+  }
+
+  const thresholdOnly = dom.volumeCompareThresholdOnly
+    ? dom.volumeCompareThresholdOnly.checked
+    : true;
+
+  const result = runVolumeCompareCheck(sources, {
+    thresholdOnly,
+    thresholdPercent: 5
+  });
+
+  dom.volumeCompareOutput.innerHTML = formatVolumeCompareResult(result, t);
+
+  return result;
+}

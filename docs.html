@@ -15,7 +15,7 @@
     }
 
     a {
-      color: #9fdcff; /* 今のUIと統一（薄い水色） */
+      color: #9fdcff;
       text-decoration: none;
     }
 
@@ -24,7 +24,7 @@
     }
 
     a:visited {
-      color: #9fdcff; /* 訪問後も色変わらないように */
+      color: #9fdcff;
     }
 
     h1 {
@@ -48,9 +48,25 @@
       border-radius: 4px;
     }
 
-    .advantage {
-      color: #ffcc66;
-      margin-top: 8px;
+    .section {
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
+    .label {
+      font-weight: bold;
+    }
+
+    .label-bg {
+      color: #7fd1ff; /* 水色 */
+    }
+
+    .label-detect {
+      color: #ffd580; /* 緑 */
+    }
+
+    .label-warning {
+      color: #ff8a8a; /* 赤 */
     }
   </style>
 </head>
@@ -67,130 +83,186 @@
 </p>
 
 <p>
-このツールの snap 判定は beatLength を基準にしており、meter（拍子）は考慮していません。
+このツールの snap 判定は beatLength を基準にしており、meter（拍子）は考慮していません。<br>
 そのため、<code>1/1 snap</code> は小節頭ではなく「1拍ごとの位置」を意味します。
 </p>
 
 <h2>Clap / Whistle</h2>
-<p>
-Circle（<code>type=1/5</code>）のみを対象に、Whistle / Clap / Whistle + Clap の個数をカウントします。
-</p>
-<p>
+
+<div class="section">
+<span class="label label-bg">■ 背景</span><br>
+Kat には 2種類（Clap / Whistle）があります。<br>
+一部のBNは Whistle の音を好まないため、Clap に統一するのが望ましい場合があります。
+</div>
+
+<div class="section">
+<span class="label label-detect">■ 検出内容</span><br>
+Circle（<code>type=1/5</code>）の hitsound を解析し、Clap / Whistle / 両方 の個数を表示します。<br>
 チェックボックスを有効にすると、それぞれのタイムポイントも表示されます。
-</p>
+</div>
+
+<div class="section">
+<span class="label label-warning">■ 注意点</span><br>
+Whistle、Whistle + Clap の使用は必ずしも unrankable ではありません。
+</div>
+
 
 <h2>1msズレ</h2>
-<p>
-HitObject が snap 位置から ±1〜3 ms ずれている箇所を検出します。
-</p>
-<p>
-このツールでは、<code>.osu</code> ファイルの beatLength をもとに snap 位置を計算し、小数点以下を切り捨てて比較しています。
-</p>
-<p>
-チェック対象の snap は、
-<code>1/1</code>, <code>1/2</code>, <code>1/3</code>, <code>1/4</code>, <code>1/5</code>,
-<code>1/6</code>, <code>1/7</code>, <code>1/8</code>, <code>1/9</code>, <code>1/12</code>, <code>1/16</code> です。
-それ以外の snap は検出対象外です。
-</p>
-<p class="advantage">
-±1 ms のズレは Mapset Verifier や AiMod では表示されません。<br>
-ただし、±1 ms は rankable である点に注意してください。
-</p>
-<h2>Kiai比較</h2>
-<p>
-diff間の kiai time の総時間を比較します。
-</p>
-<p>
-総時間が異なる場合、どの区間で kiai 状態が一致していないかを表示します。<br>
-また、kiai time の終了地点が明示されていない場合も警告します。
-</p>
-<p class="advantage">
-Mapset Verifier では総時間の比較はできますが、具体的にどの区間が異なるかは確認できません。
-</p>
 
-<h2>Kiai Snap</h2>
-<p>
-kiai の ON/OFF が snap に乗っているかを確認します。
-</p>
-<p>
-unsnapped な kiai line に加えて、1/8 snap などのズレも検出できます。
-</p>
-<p class="advantage">
-AiMod は unsnapped な timing point を検出できますが、1/8 snap などのズレは検出できません。
-</p>
+<div class="section">
+<span class="label label-bg">■ 背景</span><br>
+60000 / BPM が循環小数になる場合、osu!editorでのコピペにより浮動小数誤差が発生し、1 ms のズレが生じることがあります。<br>
+1 msズレは SV線の未適用や SR計算の誤差につながるため、なるべく避けたほうが良いです。<br>
+Mapset Verifier や AiMod では ±1 ms のズレは表示されません（unrankable ではないため）。
+</div>
+
+<div class="section">
+<span class="label label-detect">■ 検出内容</span><br>
+HitObject が snap 位置から ±1〜3 ms ずれている箇所を検出します。<br>
+このツールでは、<code>.osu</code> ファイルの beatLength をもとに snap 位置を計算し、小数点以下を切り捨てて比較しています（osu!editorと一致するはずです）。<br>
+チェック対象の snap は、<code>1/1</code>, <code>1/2</code>, <code>1/3</code>, <code>1/4</code>, <code>1/5</code>, <code>1/6</code>, <code>1/7</code>, <code>1/8</code>, <code>1/9</code>, <code>1/12</code>, <code>1/16</code> です。<br>
+それ以外の snap は検出対象外です。
+</div>
+
+<div class="section">
+<span class="label label-warning">■ 注意点</span><br>
+±1 ms は unrankable ではないため、必ずしもすべて修正する必要はありません。
+</div>
+
+
+<h2>Kiai比較</h2>
+
+<div class="section">
+<span class="label label-bg">■ 背景</span><br>
+diffごとに kiai 総時間が異なる場合、どの区間で差があるのか分かりにくいことが多いです。<br>
+Mapset Verifier では総時間の比較はできますが、具体的にどの区間が異なるかは確認できません。
+</div>
+
+<div class="section">
+<span class="label label-detect">■ 検出内容</span><br>
+kiai 状態が一致していない区間を表示します。<br>
+また、kiai time の終了地点が明示されていない場合も警告を行います。
+</div>
+
+<div class="section">
+<span class="label label-warning">■ 注意点</span><br>
+diffごとに kiai を変えること自体は unrankable ではありません。特に Guest difficulty ではよく見られます。<br>
+ただし、同一作者の場合は揃えることが推奨されます。
+</div>
+
+
+<h2>Kiaiスナップ</h2>
+
+<div class="section">
+<span class="label label-bg">■ 背景</span><br>
+AiMod は unsnapped な timing point を検出できますが、1/4 や 1/8 snap など、snap単位でズレている場合は検出できません。
+</div>
+
+<div class="section">
+<span class="label label-detect">■ 検出内容</span><br>
+kiai の ON/OFF が 1/1 snap 以外に乗っている場合を検出します。<br>
+また、unsnapped な kiai line（1/1 snap + 1 ms など）も検出します。
+</div>
+
 
 <h2>二重SV</h2>
-<p>
-指定した間隔以内にある、近すぎる SV line を検出します。
-</p>
-<p class="advantage">
+
+<div class="section">
+<span class="label label-bg">■ 背景</span><br>
 AiMod は同時刻の重複 SV は検出できますが、1 ms ズレの二重 SV は検出できません。
-</p>
+</div>
 
-<h2>SV Volume</h2>
-<p>
-volume変更を伴う SV line が、HitObject に対して十分前倒しされているかを確認します。
-</p>
-<p>
-HitObject と同時刻に volume変更を置いた場合、プレイヤーが 1 ms 早く叩くと新しい volume が適用されない場合があります。
-</p>
-<p class="advantage">
+<div class="section">
+<span class="label label-detect">■ 検出内容</span><br>
+指定した間隔（1〜5 ms）以内にある、近すぎる SV line を検出します。
+</div>
+
+
+<h2>SV ボリューム</h2>
+
+<div class="section">
+<span class="label label-bg">■ 背景</span><br>
+HitObject と同時刻に volume変更を置いた場合、プレイヤーが 1 ms 早く叩くと新しい volume が適用されない場合があります。<br>
+そのため、volume変化を伴うSV線は、HitObject に対して 5 ms 以上前倒しして設置することが推奨されています（一般的には 5 ms または 1/16 snap ずらします）。<br>
 この検出は AiMod や Mapset Verifier では行えません。
-</p>
+</div>
 
-<h2>赤線&緑線の一致</h2>
-<p>
-同時刻の赤線（BPM line）と緑線（SV line）を比較します。
-</p>
-<ul>
-  <li>volume の不一致</li>
-  <li>kiai ON/OFF の不一致</li>
-  <li>sampleset の不一致</li>
-</ul>
-<p>
-最初の赤線は kiai ON にすることができません。
-そのため、最初の SV line が kiai ON の場合は、このチェックに引っかかります。
-</p>
+<div class="section">
+<span class="label label-detect">■ 検出内容</span><br>
+volume変更を伴う SV line が、HitObject と近すぎる（0〜4 ms）場合に警告します。
+</div>
 
-<p>
-また、最初の赤線と緑線では、ユーザーが意図的に volume を変更している場合があります。
-そのタイムポイントより前は赤線の volume が適用され、そのタイムポイント以降は緑線の volume が適用されるためです。
-</p>
-<p class="advantage">
+
+<h2>ボリューム比較</h2>
+
+<div class="section">
+<span class="label label-detect">■ 検出内容</span><br>
+diff間の SV volume を比較し、不一致がある区間を検出します。<br>
+「5%以上の差のみ表示」を有効にすると、volume差が 5%以上の区間のみを表示します。
+</div>
+
+
+<h2>赤線 & 緑線の一致</h2>
+
+<div class="section">
+<span class="label label-bg">■ 背景</span><br>
+同時刻の赤線（BPM line）と緑線（SV line）は、基本的に同じ設定である必要があります。<br>
 この検出は AiMod や Mapset Verifier では行えません。
-</p>
+</div>
+
+<div class="section">
+<span class="label label-detect">■ 検出内容</span><br>
+volume / kiai / sampleset の不一致を検出します。
+</div>
+
+<div class="section">
+<span class="label label-warning">■ 注意点</span><br>
+最初の赤線は kiai ON にすることができません。<br>
+そのため、最初の SV line が kiai ON の場合は、このチェックに引っかかります。<br>
+また、最初の赤線と緑線では、意図的に volume を変更している場合があります。<br>
+そのタイムポイントより前は赤線の volume が適用され、それ以降は緑線の volume が適用されるためです。
+</div>
+
 
 <h2>SampleSet</h2>
 
-<h3>TimingPoints</h3>
-<p>
-赤線・緑線では、以下を検出します：
-</p>
+<div class="section">
+<span class="label label-bg">■ 背景</span><br>
+BPM線（赤線）やSV線（緑線）、および各HitObjectには、<code>sampleset</code> と呼ばれる効果音の種類を割り当てることができます。<br>
+sampleset はヒット音の「音色」を決める設定で、主に以下の種類があります：
 <ul>
-  <li><code>sampleset ≠ 1 (normal)</code>（2: Soft / 3: Drum）</li>
+  <li>1: Normal</li>
+  <li>2: Soft</li>
+  <li>3: Drum</li>
+</ul>
+osu!taiko モードでは、通常 Normal (1) のみを使用することが前提となるため、それ以外の sampleset が含まれている場合は、意図しない効果音が混入している可能性があります。<br>
+この検出は AiMod や Mapset Verifier では行えません。
+</div>
+
+<div class="section">
+<span class="label label-detect">■ 検出内容</span><br>
+Normal以外の sampleset やカスタムヒットサウンドを検出します。<br><br>
+
+赤線・緑線では、以下を検出します：
+<ul>
+  <li><code>sampleset ≠ 1 (normal)</code> → 2: Soft / 3: Drum</li>
   <li><code>sampleIndex ≠ 0</code> → カスタムヒットサウンド</li>
 </ul>
 
-<h3>HitObjects</h3>
-<p>
 ノーツ、スライダー、スピナーでは、以下を検出します：
-</p>
 <ul>
-  <li><code>normalSet > 1</code>（2: Soft / 3: Drum）</li>
-  <li><code>additionSet > 1</code>（2: Soft / 3: Drum）</li>
+  <li><code>normalSet > 1</code> → 2: Soft / 3: Drum</li>
+  <li><code>additionSet > 1</code> → 2: Soft / 3: Drum</li>
   <li><code>sampleIndex ≠ 0</code> → カスタムヒットサウンド</li>
   <li><code>filename が指定されている</code> → カスタム音源</li>
 </ul>
-<p>
+
 スライダーの各エッジに設定されたヒットサウンドも検出します：
-</p>
 <ul>
   <li><code>edgeSets.normalSet > 1</code> → 2: Soft / 3: Drum</li>
   <li><code>edgeSets.additionSet > 1</code> → 2: Soft / 3: Drum</li>
 </ul>
-<p class="advantage">
-この検出は AiMod や Mapset Verifier では行えません。
-</p>
+</div>
 
 </body>
 </html>

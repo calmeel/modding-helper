@@ -369,6 +369,50 @@ function formatSvVolumeResult(result, t) {
   return lines.join("\n");
 }
 
+/** volume比較 */
+function formatVolumeCompareResult(result, t) {
+  const lines = [];
+
+  if (!result) {
+    return t("noFileLoaded");
+  }
+
+  if (result.needTwoDiffs) {
+    lines.push(t("needTwoDiffs"));
+    return lines.join("\n");
+  }
+
+  if (!result.results.length) {
+    lines.push(t("noVolumeCompareMismatch"));
+    return lines.join("\n");
+  }
+
+  for (const item of result.results) {
+    lines.push(`${formatTimestampLink(item.start)} - ${formatTimestampLink(item.end)} | diff ${item.diff}%`);
+
+    const sortedStates = sortResultsForDisplay(item.states);
+
+    const diffNames = sortedStates.map(state => getDifficultyNameText(state.fileName));
+    const diffWidth = Math.max(
+      10,
+      ...diffNames.map(name => name.length)
+    );
+
+    for (const state of sortedStates) {
+      const plainName = getDifficultyNameText(state.fileName);
+      const coloredName = getDifficultyName(state.fileName);
+      const padding = " ".repeat(diffWidth - plainName.length);
+      const volumeText = state.volume === null ? "N/A" : `${state.volume}%`;
+
+      lines.push(`  ${coloredName}${padding} | ${volumeText}`);
+    }
+
+    lines.push("");
+  }
+
+  return lines.join("\n").trimEnd();
+}
+
 /** 赤線&緑線 */
 function formatMultipleRedGreenMatchResults(results, t) {
   if (!results.length) {
