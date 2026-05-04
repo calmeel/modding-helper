@@ -48,6 +48,7 @@ const i18n = {
 
     DetectThreshold: "Detect threshold:",
     noSvVolumeIssues: "No suspicious SV volume changes.",
+    svVolumeLargeChangeOnly: "Show only volume changes of 15% or more",
 
     tabVolumeCompare: "Volume Compare",
     volumeCompareThresholdOnly: "Show only differences of 5% or more",
@@ -118,6 +119,7 @@ const i18n = {
 
     DetectThreshold: "検出閾値：",
     noSvVolumeIssues: "問題のあるSV volume変更は見つかりませんでした。",
+    svVolumeLargeChangeOnly: "15%以上のvolume変更のみ表示",
 
     tabVolumeCompare: "ボリューム比較",
     volumeCompareThresholdOnly: "5%以上の差のみ表示",

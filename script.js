@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const redGreenMatchOutput = document.getElementById("redGreenMatchOutput");
   const sampleSetOutput = document.getElementById("sampleSetOutput");
   const tagOutput = document.getElementById("tagOutput");
+  const svVolumeLargeChangeOnly = document.getElementById("svVolumeLargeChangeOnly");
 
   const i18nData = window.i18n;
 
@@ -51,6 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
     kiaiSnapOutput,
     svVolumeOutput,
     svVolumeThreshold,
+    svVolumeLargeChangeOnly,
     volumeCompareOutput,
     volumeCompareThresholdOnly,
     redGreenMatchOutput,
@@ -253,6 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
     doubleSvGap,
     includeExactSameSv,
     svVolumeThreshold,
+    svVolumeLargeChangeOnly,
     volumeCompareThresholdOnly
   });
 
@@ -266,6 +269,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderResult: renderResultAndUpdateTabs,
     renderDoubleSvResult: renderDoubleSvResultAndUpdateTabs,
     svVolumeThreshold,
+    svVolumeLargeChangeOnly,
     renderSvVolumeResult: renderSvVolumeResultAndUpdateTabs,
     volumeCompareThresholdOnly,
     renderVolumeCompareResult: renderVolumeCompareResultAndUpdateTabs

@@ -160,9 +160,14 @@
           <label>
             <span data-i18n="DetectThreshold">Detect threshold:</span>
             <select id="svVolumeThreshold">
-              <option value="5ms" selected>±5 ms</option>
-              <option value="16snap">±1/16 snap</option>
+              <option value="5ms">±5 ms</option>
+              <option value="16snap" selected>±1/16 snap</option>
             </select>
+          </label>
+
+          <label>
+            <input type="checkbox" id="svVolumeLargeChangeOnly">
+            <span data-i18n="svVolumeLargeChangeOnly">Show only volume changes of 15% or more</span>
           </label>
         </div>
 
