@@ -105,11 +105,11 @@ function renderSvVolumeResultFromSources(sources, dom, t) {
 
   const thresholdMode = dom.svVolumeThreshold
     ? dom.svVolumeThreshold.value
-    : "5ms";
+    : "16snap";
 
   const largeChangeOnly = dom.svVolumeLargeChangeOnly
     ? dom.svVolumeLargeChangeOnly.checked
-    : true;
+    : false;
 
   const results = sources.map(source => ({
     ...runSvVolumeCheck(source.text, source.fileName, {
@@ -157,7 +157,7 @@ function renderVolumeCompareResultFromSources(sources, dom, t) {
 
   const thresholdOnly = dom.volumeCompareThresholdOnly
     ? dom.volumeCompareThresholdOnly.checked
-    : true;
+    : false;
 
   const result = runVolumeCompareCheck(sources, {
     thresholdOnly,
