@@ -23,7 +23,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const i18nData = window.i18n;
 
-  let currentLang = localStorage.getItem("moddingHelperLang") || "en";
+  const savedLang = localStorage.getItem("moddingHelperLang");
+
+  let currentLang;
+
+  if (savedLang) {
+    currentLang = savedLang;
+  } else {
+    const browserLang = navigator.language || navigator.userLanguage;
+
+    if (browserLang && browserLang.startsWith("ja")) {
+      currentLang = "ja";
+    } else {
+      currentLang = "en";
+    }
+  }
 
   function t(key) {
     return i18nData[currentLang][key] || i18nData.en[key] || key;
