@@ -49,6 +49,10 @@ const i18n = {
     DetectThreshold: "Detect threshold:",
     noSvVolumeIssues: "No suspicious SV volume changes.",
 
+    tabVolumeCompare: "Volume Compare",
+    volumeCompareThresholdOnly: "Show only differences of 5% or more",
+    noVolumeCompareMismatch: "No SV volume mismatches found.",
+
     tabRedGreenMatch: "Red/Green Match",
     noRedGreenMismatch: "No red/green line mismatches.",
     volumeMismatch: "volume mismatch",
@@ -68,12 +72,12 @@ const i18n = {
     tabClapWhistle: "Clap / Whistle",
     tabOffset: "1msズレ",
     tabKiaiCompare: "Kiai比較",
-    tabKiaiSnap: "Kiai Snap",
+    tabKiaiSnap: "Kiaiスナップ",
     tabDoubleSv: "二重SV",
     showClap: "Clapを表示",
     showWhistle: "Whistleを表示",
     tabSettings: "タブ設定",
-    tabSvVolume: "SV Volume",
+    tabSvVolume: "SVボリューム",
     tabSampleSet: "Sampleset",
 
     noFileLoaded: "ファイルが読み込まれていません。",
@@ -109,7 +113,11 @@ const i18n = {
     DetectThreshold: "検出閾値：",
     noSvVolumeIssues: "問題のあるSV volume変更は見つかりませんでした。",
 
-    tabRedGreenMatch: "赤線&緑線の一致",
+    tabVolumeCompare: "Vol比較",
+    volumeCompareThresholdOnly: "5%以上の差のみ表示",
+    noVolumeCompareMismatch: "SV volumeの不一致は見つかりませんでした。",
+
+    tabRedGreenMatch: "赤線&緑線",
     noRedGreenMismatch: "赤線と緑線の不一致は見つかりませんでした。",
     volumeMismatch: "volume不一致",
     kiaiMismatch: "kiai不一致",

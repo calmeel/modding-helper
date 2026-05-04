@@ -88,7 +88,9 @@ function setupOptionEvents(options) {
     renderResult,
     renderDoubleSvResult,
     svVolumeThreshold,
-    renderSvVolumeResult
+    renderSvVolumeResult,
+    volumeCompareThresholdOnly,
+    renderVolumeCompareResult
   } = options;
 
   if (showClap) {
@@ -113,6 +115,10 @@ function setupOptionEvents(options) {
 
   if (svVolumeThreshold) {
     svVolumeThreshold.addEventListener("change", renderSvVolumeResult);
+  }
+
+  if (volumeCompareThresholdOnly) {
+    volumeCompareThresholdOnly.addEventListener("change", renderVolumeCompareResult);
   }
 }
 

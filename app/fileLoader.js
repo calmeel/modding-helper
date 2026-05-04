@@ -123,6 +123,9 @@ async function processFile(file) {
       svVolumeSources: [
         { text, fileName: file.name, mode }
       ],
+      volumeCompareSources: [
+        { text, fileName: file.name, mode }
+      ],
       redGreenMatch: [
         {
           ...runRedGreenMatchCheck(text, file.name),
@@ -149,6 +152,7 @@ async function processFile(file) {
       kiaiCompare: analyzed.kiaiResults,
       kiaiSnap: analyzed.kiaiSnapResults,
       svVolumeSources: analyzed.svVolumeSources,
+      volumeCompareSources: analyzed.svVolumeSources,
       redGreenMatch: analyzed.redGreenMatchResults,
       sampleSet: analyzed.sampleSetResults
     };

@@ -18,6 +18,7 @@
       <a href="docs.html" target="_blank">📘 説明書 (JP)</a>
       <a href="docs-en.html" target="_blank">🌐 Docs (EN)</a>
       <button id="updateBtn" class="doc-btn">📝 Update history</button>
+      <button id="toggleTabSettings" class="doc-btn">⚙</button>
     </div>
 
     <section class="drop-area">
@@ -30,9 +31,6 @@
     </section>
 
     <section class="tab-visibility-settings">
-      <button type="button" id="toggleTabSettings" class="settings-button" data-i18n="tabSettings">
-        Tab settings
-      </button>
 
       <div id="tabSettingsPanel" class="tab-settings-panel hidden">
         <label>
@@ -66,6 +64,11 @@
         </label>
 
         <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="volumeCompare" checked>
+          <span data-i18n="tabVolumeCompare">Volume Compare</span>
+        </label>
+
+        <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="redGreenMatch" checked>
           <span data-i18n="tabRedGreenMatch">Red/Green Match</span>
         </label>
@@ -84,7 +87,8 @@
         <button class="tab-button" data-tab="kiaiCompare" data-i18n="tabKiaiCompare">Kiai Compare</button>
         <button class="tab-button" data-tab="kiaiSnap" data-i18n="tabKiaiSnap">Kiai Snap</button>
         <button class="tab-button" data-tab="doubleBarline" data-i18n="tabDoubleSv">Double SV line</button>
-        <button class="tab-button" data-tab="svVolume">SV Volume</button>
+        <button class="tab-button" data-tab="svVolume" data-i18n="tabSvVolume">SV Volume</button>
+        <button class="tab-button" data-tab="volumeCompare" data-i18n="tabVolumeCompare">Volume Compare</button>
         <button class="tab-button" data-tab="redGreenMatch" data-i18n="tabRedGreenMatch">Red/Green Match</button>
         <button class="tab-button" data-tab="sampleSet" data-i18n="tabSampleSet">SampleSet</button>
       </div>
@@ -159,6 +163,17 @@
         <pre id="svVolumeOutput" data-i18n="noFileLoaded">No file loaded.</pre>
       </section>
 
+      <section class="tab-panel" id="tab-volumeCompare">
+        <div class="options">
+          <label>
+            <input type="checkbox" id="volumeCompareThresholdOnly" checked>
+            <span data-i18n="volumeCompareThresholdOnly">Show only differences of 5% or more</span>
+          </label>
+        </div>
+
+        <pre id="volumeCompareOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+      </section>
+
       <section class="tab-panel" id="tab-redGreenMatch">
         <pre id="redGreenMatchOutput" data-i18n="noFileLoaded">No file loaded.</pre>
       </section>
@@ -188,6 +203,7 @@
       <p><strong>2026/05/04</strong> Update</p>
       <ul>
         <li>Added 1/5, 1/7, and 1/9 snap options.</li>
+        <li>Added "Volume compare" tab.</li>
       </ul>
 
     </div>
@@ -201,6 +217,7 @@
   <script src="checks/kiaiSnapCheck.js"></script>
   <script src="checks/doubleSvCheck.js"></script>
   <script src="checks/svVolumeCheck.js"></script>
+  <script src="checks/volumeCompareCheck.js"></script>
   <script src="checks/redGreenMatchCheck.js"></script>
   <script src="checks/sampleSetCheck.js"></script>
   <script src="i18n.js"></script>

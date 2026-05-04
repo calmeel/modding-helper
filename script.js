@@ -16,6 +16,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const kiaiSnapOutput = document.getElementById("kiaiSnapOutput");
   const svVolumeOutput = document.getElementById("svVolumeOutput");
   const svVolumeThreshold = document.getElementById("svVolumeThreshold");
+  const volumeCompareOutput = document.getElementById("volumeCompareOutput");
+  const volumeCompareThresholdOnly = document.getElementById("volumeCompareThresholdOnly");
   const redGreenMatchOutput = document.getElementById("redGreenMatchOutput");
   const sampleSetOutput = document.getElementById("sampleSetOutput");
 
@@ -40,6 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
     kiaiSnapOutput,
     svVolumeOutput,
     svVolumeThreshold,
+    volumeCompareOutput,
+    volumeCompareThresholdOnly,
     redGreenMatchOutput,
     sampleSetOutput
   };
@@ -55,6 +59,8 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedFileName: null,
     svVolumeSources: null,
     svVolumeResults: null,
+    volumeCompareSources: null,
+    volumeCompareResult: null,
     redGreenMatch: null,
     sampleSet: null
   };
@@ -124,6 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderKiaiSnapResult();
     renderDoubleSvResult();
     renderSvVolumeResult();
+    renderVolumeCompareResult();
     renderRedGreenMatchResult();
     renderSampleSetResult();
   }
@@ -164,6 +171,14 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
+  function renderVolumeCompareResult() {
+    state.volumeCompareResult = renderVolumeCompareResultFromSources(
+      state.volumeCompareSources,
+      dom,
+      t
+    );
+  }
+
   function renderRedGreenMatchResult() {
     renderRedGreenMatchResultFromResults(
       state.redGreenMatch,
@@ -189,7 +204,9 @@ document.addEventListener("DOMContentLoaded", () => {
     renderResult,
     renderDoubleSvResult,
     svVolumeThreshold,
-    renderSvVolumeResult
+    renderSvVolumeResult,
+    volumeCompareThresholdOnly,
+    renderVolumeCompareResult,
   });
 
   async function handleFile(file) {
@@ -211,6 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
       state.kiaiCompare = result.kiaiCompare;
       state.kiaiSnap = result.kiaiSnap;
       state.svVolumeSources = result.svVolumeSources;
+      state.volumeCompareSources = result.volumeCompareSources;
       state.redGreenMatch = result.redGreenMatch;
       state.sampleSet = result.sampleSet;
 
@@ -220,6 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderKiaiResult();
       renderKiaiSnapResult();
       renderSvVolumeResult();
+      renderVolumeCompareResult();
       renderRedGreenMatchResult();
       renderSampleSetResult();
     } catch (err) {
