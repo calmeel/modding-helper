@@ -82,6 +82,11 @@
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="tag" checked>
           <span data-i18n="tabTag">Tag</span>
         </label>
+
+        <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="bnCompare">
+          <span data-i18n="tabBnCompare">BN評価</span>
+        </label>
       </div>
     </section>
 
@@ -97,6 +102,7 @@
         <button class="tab-button" data-tab="redGreenMatch" data-i18n="tabRedGreenMatch">Red/Green Match</button>
         <button class="tab-button" data-tab="sampleSet" data-i18n="tabSampleSet">SampleSet</button>
         <button class="tab-button" data-tab="tag" data-i18n="tabTag">Tag</button>
+        <button class="tab-button bn-tab-button hidden-tab" data-tab="bnCompare" data-i18n="tabBnCompare">BN評価</button>
       </div>
 
       <section class="tab-panel active" id="tab-clapWhistle">
@@ -197,6 +203,79 @@
         <pre id="tagOutput" data-i18n="noFileLoaded">No file loaded.</pre>
       </section>
 
+      <section class="tab-panel hidden-tab" id="tab-bnCompare">
+        <div class="bn-compare-panel">
+          <div class="bn-file-row">
+            <label class="bn-file-label">
+              <span data-i18n="bnBeforeOsz">Before .osz</span>
+              <input id="bnBeforeFileInput" type="file" accept=".osz">
+            </label>
+
+            <span id="bnBeforeFileName" class="bn-file-name" data-i18n="noFileSelected">No file selected</span>
+          </div>
+
+          <div class="bn-file-row">
+            <label class="bn-file-label">
+              <span data-i18n="bnAfterOsz">After .osz</span>
+              <input id="bnAfterFileInput" type="file" accept=".osz">
+            </label>
+
+            <span id="bnAfterFileName" class="bn-file-name" data-i18n="noFileSelected">No file selected</span>
+          </div>
+
+          <h3 data-i18n="bnDiffMatching">Diff matching</h3>
+          <div id="bnDiffMatchingArea" class="bn-diff-matching"></div>
+
+          <div class="bn-offset-controls">
+            <button id="bnApplyRedOffsetButton" class="doc-btn" type="button" data-i18n="bnApplyRedOffset">
+              赤線を元にオフセット補正
+            </button>
+            <span id="bnOffsetStatus" class="bn-offset-status">offset: 0 ms</span>
+          </div>
+
+          <button id="bnCompareRunButton" class="doc-btn" type="button" data-i18n="bnRunCompare">比較実行</button>
+
+          <div class="bn-result-controls">
+            <label>
+              <span data-i18n="bnDisplayDiff">表示するDiff:</span>
+              <select id="bnPairSelect"></select>
+            </label>
+          </div>
+
+          <span id="bnOffsetStatus"></span>
+
+          <div class="bn-subtabs">
+            <button class="bn-subtab-button active" data-bn-subtab="notes" data-i18n="bnNotesInfo">ノーツ情報</button>
+            <button class="bn-subtab-button" data-bn-subtab="timing" data-i18n="bnTimingInfo">SV情報</button>
+            <button class="bn-subtab-button" data-bn-subtab="metadata" data-i18n="bnMetadataInfo">メタデータ情報</button>
+          </div>
+
+          <div class="bn-subtab-panel active" id="bn-subtab-notes">
+            <pre id="bnNotesOutput" data-i18n="bnNoResult">No result.</pre>
+          </div>
+
+          <div class="bn-subtab-panel" id="bn-subtab-timing">
+
+              <div class="bn-timing-controls">
+              <label>
+                <span>SV変更フィルタ：</span>
+                <select id="bnSvChangeThreshold">
+                  <option value="all">すべて表示</option>
+                  <option value="0.01">0.01以上のみ</option>
+                  <option value="0.1">0.1以上のみ</option>
+                </select>
+              </label>
+            </div>
+
+            <pre id="bnTimingOutput" data-i18n="bnNoResult">No result.</pre>
+          </div>
+
+          <div class="bn-subtab-panel" id="bn-subtab-metadata">
+            <pre id="bnMetadataOutput" data-i18n="bnNoResult">No result.</pre>
+          </div>
+        </div>
+      </section>
+
     </section>
   </main>
 
@@ -236,11 +315,14 @@
   <script src="checks/redGreenMatchCheck.js"></script>
   <script src="checks/sampleSetCheck.js"></script>
   <script src="checks/tagCheck.js"></script>
+  <script src="checks/bnCompareCheck.js"></script>
   <script src="i18n.js"></script>
   <script src="app/formatters.js"></script>
   <script src="app/fileLoader.js"></script>
   <script src="app/ui.js"></script>
   <script src="app/renderers.js"></script>
+  <script src="app/bnCompareRenderers.js"></script>
+  <script src="app/bnCompareUi.js"></script>
   <script src="app/tabIssues.js"></script>
   <script src="script.js"></script>
 </body>

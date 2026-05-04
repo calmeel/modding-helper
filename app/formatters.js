@@ -664,4 +664,3 @@ function formatTimestampLink(ms) {
   const ts = msToTimestamp(ms);
   return `<a class="timestamp-link" href="osu://edit/${ts}">${ts}</a>`;
 }
-
