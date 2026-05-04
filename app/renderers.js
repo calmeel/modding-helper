@@ -107,13 +107,19 @@ function renderSvVolumeResultFromSources(sources, dom, t) {
     ? dom.svVolumeThreshold.value
     : "5ms";
 
+  const largeChangeOnly = dom.svVolumeLargeChangeOnly
+    ? dom.svVolumeLargeChangeOnly.checked
+    : true;
+
   const results = sources.map(source => ({
     ...runSvVolumeCheck(source.text, source.fileName, {
-      thresholdMode
+      thresholdMode,
+      largeChangeOnly,
+      largeChangeThreshold: 15
     }),
     mode: source.mode
   }));
-
+  
   dom.svVolumeOutput.innerHTML = formatMultipleSvVolumeResults(results, t);
 
   return results;

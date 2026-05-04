@@ -1,5 +1,7 @@
 function runSvVolumeCheck(text, fileName, options = {}) {
   const thresholdMode = options.thresholdMode || "5ms";
+  const largeChangeOnly = options.largeChangeOnly ?? true;
+  const largeChangeThreshold = options.largeChangeThreshold ?? 15;
 
   const svLines = parseInheritedTimingPoints(text);
   const hitObjects = parseHitObjects(text);
@@ -30,6 +32,12 @@ function runSvVolumeCheck(text, fileName, options = {}) {
 
     const diff = change.time - nearestHit;
 
+    const volumeDiff = Math.abs(change.newVolume - change.oldVolume);
+
+    if (largeChangeOnly && volumeDiff < largeChangeThreshold) {
+      continue;
+    }
+
     if (Math.abs(diff) < thresholdMs) {
       results.push({
         time: change.time,
@@ -37,6 +45,7 @@ function runSvVolumeCheck(text, fileName, options = {}) {
         diff,
         oldVolume: change.oldVolume,
         newVolume: change.newVolume,
+        volumeDiff,
         thresholdMs
       });
     }

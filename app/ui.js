@@ -90,6 +90,7 @@ function setupOptionEvents(options) {
     renderDoubleSvResult,
     svVolumeThreshold,
     renderSvVolumeResult,
+    svVolumeLargeChangeOnly,
     volumeCompareThresholdOnly,
     renderVolumeCompareResult
   } = options;
@@ -116,6 +117,10 @@ function setupOptionEvents(options) {
 
   if (svVolumeThreshold) {
     svVolumeThreshold.addEventListener("change", renderSvVolumeResult);
+  }
+
+  if (svVolumeLargeChangeOnly) {
+    svVolumeLargeChangeOnly.addEventListener("change", renderSvVolumeResult);
   }
 
   if (volumeCompareThresholdOnly) {
@@ -161,6 +166,12 @@ function setupPersistentOptions(options) {
       key: "moddingHelperSvVolumeThreshold",
       type: "select",
       defaultValue: "5ms"
+    },
+    {
+      element: options.svVolumeLargeChangeOnly,
+      key: "moddingHelperSvVolumeLargeChangeOnly",
+      type: "checkbox",
+      defaultValue: true
     },
     {
       element: options.volumeCompareThresholdOnly,
