@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const fileName = document.getElementById("fileName");
   const dropArea = document.querySelector(".drop-area");
   const shiftOutput = document.getElementById("shiftOutput");
+  const includeAdvancedOffsetSnaps = document.getElementById("includeAdvancedOffsetSnaps");
   const doubleSvOutput = document.getElementById("doubleSvOutput");
   const doubleSvGap = document.getElementById("doubleSvGap");
   const includeExactSameSv = document.getElementById("includeExactSameSv");
@@ -31,6 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
     showClap,
     showWhistle,
     shiftOutput,
+    includeAdvancedOffsetSnaps,
     doubleSvOutput,
     doubleSvGap,
     includeExactSameSv,
@@ -44,6 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const state = {
     clapWhistle: null,
+    offsetSources: null,
     offset: null,
     doubleSvSources: null,
     doubleSvResults: null,
@@ -58,16 +61,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   setupFileInput(fileInput, handleFile);
   setupDropArea(dropArea, handleFile);
-  setupOptionEvents({
-    showClap,
-    showWhistle,
-    doubleSvGap,
-    includeExactSameSv,
-    renderResult,
-    renderDoubleSvResult,
-    svVolumeThreshold,
-    renderSvVolumeResult
-  });
 
   setupLanguageButtons(
     langEn,
@@ -140,7 +133,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderShiftResult() {
-    renderOffsetResult(state.offset, dom, t);
+    state.offset = renderOffsetResultFromSources(
+      state.offsetSources,
+      dom,
+      t
+    );
   }
 
   function renderDoubleSvResult() {
@@ -183,6 +180,18 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
+  setupOptionEvents({
+    showClap,
+    showWhistle,
+    includeAdvancedOffsetSnaps,
+    doubleSvGap,
+    includeExactSameSv,
+    renderResult,
+    renderDoubleSvResult,
+    svVolumeThreshold,
+    renderSvVolumeResult
+  });
+
   async function handleFile(file) {
     if (!file) return;
 
@@ -196,6 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const result = await processFile(file);
 
       state.clapWhistle = result.clapWhistle;
+      state.offsetSources = result.offsetSources;
       state.offset = result.offset;
       state.doubleSvSources = result.doubleSvSources;
       state.kiaiCompare = result.kiaiCompare;

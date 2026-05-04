@@ -80,7 +80,7 @@
     <section class="tabs">
       <div class="tab-buttons">
         <button class="tab-button active" data-tab="clapWhistle" data-i18n="tabClapWhistle">Clap & Whistle</button>
-        <button class="tab-button" data-tab="shift1ms" data-i18n="tabOffset">1ms Offset (1/24 snap)</button>
+        <button class="tab-button" data-tab="shift1ms" data-i18n="tabOffset">1ms Offset</button>
         <button class="tab-button" data-tab="kiaiCompare" data-i18n="tabKiaiCompare">Kiai Compare</button>
         <button class="tab-button" data-tab="kiaiSnap" data-i18n="tabKiaiSnap">Kiai Snap</button>
         <button class="tab-button" data-tab="doubleBarline" data-i18n="tabDoubleSv">Double SV line</button>
@@ -106,6 +106,13 @@
       </section>
 
       <section class="tab-panel" id="tab-shift1ms">
+        <div class="options">
+          <label>
+            <input type="checkbox" id="includeAdvancedOffsetSnaps">
+            <span data-i18n="includeAdvancedOffsetSnaps">Include uncommon snaps (1/5, 1/7, 1/9)</span>
+          </label>
+        </div>
+
         <pre id="shiftOutput" data-i18n="noFileLoaded">No file loaded.</pre>
       </section>
 
@@ -173,9 +180,14 @@
 
       <p><strong>2026/05/03</strong> Update</p>
       <ul>
-        <li>Added documentation page</li>
-        <li>Support for hybrid beatmap sets</li>
-        <li>Added Taiko difficulty sorting (KFMO)</li>
+        <li>Added documentation page.</li>
+        <li>Support for hybrid beatmap sets.</li>
+        <li>Added Taiko difficulty sorting (KFMO).</li>
+      </ul>
+
+      <p><strong>2026/05/04</strong> Update</p>
+      <ul>
+        <li>Added 1/5, 1/7, and 1/9 snap options.</li>
       </ul>
 
     </div>

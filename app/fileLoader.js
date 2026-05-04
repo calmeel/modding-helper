@@ -3,6 +3,7 @@ async function analyzeOszFile(file) {
 
   const clapWhistleResults = [];
   const shiftResults = [];
+  const offsetSources = [];
   const doubleSvSources = [];
   const kiaiResults = [];
   const kiaiSnapResults = [];
@@ -24,6 +25,12 @@ async function analyzeOszFile(file) {
 
     shiftResults.push({
       ...runOffset1msCheck(text, entry.name),
+      mode
+    });
+
+    offsetSources.push({
+      text,
+      fileName: entry.name,
       mode
     });
 
@@ -63,6 +70,7 @@ async function analyzeOszFile(file) {
   return {
     clapWhistleResults,
     shiftResults,
+    offsetSources,
     doubleSvSources,
     kiaiResults,
     kiaiSnapResults,
@@ -87,6 +95,9 @@ async function processFile(file) {
           ...runClapWhistleCheck(text, file.name),
           mode
         }
+      ],
+      offsetSources: [
+        { text, fileName: file.name, mode }
       ],
       offset: [
         {
@@ -132,6 +143,7 @@ async function processFile(file) {
 
     return {
       clapWhistle: analyzed.clapWhistleResults,
+      offsetSources: analyzed.offsetSources,
       offset: analyzed.shiftResults,
       doubleSvSources: analyzed.doubleSvSources,
       kiaiCompare: analyzed.kiaiResults,

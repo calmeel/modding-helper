@@ -15,6 +15,30 @@ function renderOffsetResult(results, dom, t) {
   dom.shiftOutput.innerHTML = formatMultipleShiftResults(results, t);
 }
 
+function renderOffsetResultFromSources(sources, dom, t) {
+  if (!dom.shiftOutput) return null;
+
+  if (!sources) {
+    dom.shiftOutput.innerHTML = t("noFileLoaded");
+    return null;
+  }
+
+  const includeAdvancedSnaps = dom.includeAdvancedOffsetSnaps
+    ? dom.includeAdvancedOffsetSnaps.checked
+    : false;
+
+  const results = sources.map(source => ({
+    ...runOffset1msCheck(source.text, source.fileName, {
+      includeAdvancedSnaps
+    }),
+    mode: source.mode
+  }));
+
+  dom.shiftOutput.innerHTML = formatMultipleShiftResults(results, t);
+
+  return results;
+}
+
 function renderDoubleSvResultFromSources(sources, dom, t) {
   if (!dom.doubleSvOutput) return;
 
