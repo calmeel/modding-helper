@@ -1,6 +1,14 @@
-const DEFAULT_BEAT_SNAPS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16];
+const DEFAULT_BEAT_SNAPS = [1, 2, 3, 4, 6, 8, 12, 16];
+const ADVANCED_SNAPS = [5, 7, 9];
 
-function runOffset1msCheck(text, fileName) {
+function getBeatSnapCandidates(includeAdvancedSnaps = false) {
+  return includeAdvancedSnaps
+    ? [...DEFAULT_BEAT_SNAPS, ...ADVANCED_SNAPS]
+    : DEFAULT_BEAT_SNAPS;
+}
+
+function runOffset1msCheck(text, fileName, options = {}) {
+  const beatSnaps = getBeatSnapCandidates(options.includeAdvancedSnaps);
   const timingPoints = parseTimingPoints(text);
   const hitObjects = parseHitObjects(text);
 
@@ -22,7 +30,7 @@ function runOffset1msCheck(text, fileName) {
       time,
       currentTp.time,
       currentTp.beatLength,
-      DEFAULT_BEAT_SNAPS
+      beatSnaps
     );
 
     if (!best) continue;

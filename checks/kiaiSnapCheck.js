@@ -1,4 +1,4 @@
-const KIAI_SNAP_CANDIDATES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16];
+const KIAI_SNAP_CANDIDATES = [1, 2, 3, 4, 6, 8, 12, 16];
 const KIAI_SNAP_TOLERANCE_MS = 1;
 
 function runKiaiSnapCheck(text, fileName) {

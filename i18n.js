@@ -33,6 +33,7 @@ const i18n = {
     timestampsClap: "Timestamps for Clap only",
     timestampsWhistle: "Timestamps for Whistle only",
 
+    includeAdvancedOffsetSnaps: "Include uncommon snaps (1/5, 1/7, 1/9)",
     noOffset: "No 1ms offset snaps found.",
     noDoubleSv: "No double SV found.",
     noKiaiMismatch: "No kiai mismatches found.",
@@ -92,6 +93,7 @@ const i18n = {
     timestampsClap: "Clapのみ のタイムスタンプ",
     timestampsWhistle: "Whistleのみ のタイムスタンプ",
 
+    includeAdvancedOffsetSnaps: "特殊なsnapも含める（1/5, 1/7, 1/9）",
     noOffset: "1msズレは見つかりませんでした。",
     noDoubleSv: "Double SVは見つかりませんでした。",
     noKiaiMismatch: "Kiaiの不一致は見つかりませんでした。",
