@@ -165,19 +165,19 @@ function setupPersistentOptions(options) {
       element: options.svVolumeThreshold,
       key: "moddingHelperSvVolumeThreshold",
       type: "select",
-      defaultValue: "5ms"
+      defaultValue: "16snap"
     },
     {
       element: options.svVolumeLargeChangeOnly,
       key: "moddingHelperSvVolumeLargeChangeOnly",
       type: "checkbox",
-      defaultValue: true
+      defaultValue: false
     },
     {
       element: options.volumeCompareThresholdOnly,
       key: "moddingHelperVolumeCompareThresholdOnly",
       type: "checkbox",
-      defaultValue: true
+      defaultValue: false
     }
   ];
 
