@@ -69,6 +69,7 @@
       color: #ff8a8a; /* 赤 */
     }
 
+    /** 見た目強化 */
     h2 {
       margin-top: 40px;
       margin-bottom: 12px;
@@ -113,12 +114,66 @@
     .section:hover {
       background: #1c1c1c;
     }
+
+    /** 目次追加*/
+    #toc {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+
+      width: 220px;
+      max-height: 70vh;
+      overflow-y: auto;
+
+      background: #181818;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+
+      padding: 12px;
+      font-size: 14px;
+    }
+
+    #toc .toc-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #9fdcff;
+    }
+
+    #toc ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #toc li {
+      margin: 4px 0;
+    }
+
+    #toc a {
+      color: #ccc;
+      text-decoration: none;
+      display: block;
+    }
+
+    #toc a:hover {
+      color: #9fdcff;
+    }
+
+    #toc a.active {
+      color: #9fdcff;
+      font-weight: bold;
+    }
   </style>
 </head>
 
 <body>
 
 <h1>Modding Helper 説明書</h1>
+
+<nav id="toc">
+  <div class="toc-title">Contents</div>
+  <ul id="toc-list"></ul>
+</nav>
 
 <p>
   制作者：
@@ -380,4 +435,44 @@ Before / After で全体のオフセットが変わる場合は、「赤線を�
 </div>
 
 </body>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const tocList = document.getElementById("toc-list");
+  const headings = document.querySelectorAll("h2");
+
+  headings.forEach((h2, index) => {
+    const id = "section-" + index;
+    h2.id = id;
+
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+
+    a.href = "#" + id;
+    a.textContent = h2.textContent;
+
+    li.appendChild(a);
+    tocList.appendChild(li);
+  });
+});
+
+window.addEventListener("scroll", () => {
+  const links = document.querySelectorAll("#toc a");
+  const sections = document.querySelectorAll("h2");
+
+  let current = "";
+
+  sections.forEach(sec => {
+    const rect = sec.getBoundingClientRect();
+    if (rect.top <= 120) {
+      current = sec.id;
+    }
+  });
+
+  links.forEach(link => {
+    link.classList.toggle("active", link.getAttribute("href") === "#" + current);
+  });
+});
+</script>
+
 </html>
