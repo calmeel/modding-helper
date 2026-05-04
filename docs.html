@@ -189,7 +189,7 @@ HitObject と同時刻に volume変更を置いた場合、プレイヤーが 1 
 
 <div class="section">
 <span class="label label-detect">■ 検出内容</span><br>
-volume変更を伴う SV line が、HitObject と近すぎる（0〜4 ms）場合に警告します。
+volume変更を伴う SV line が、HitObject と近すぎる場合に警告します。
 </div>
 
 
@@ -262,6 +262,33 @@ Normal以外の sampleset やカスタムヒットサウンドを検出します
   <li><code>edgeSets.normalSet > 1</code> → 2: Soft / 3: Drum</li>
   <li><code>edgeSets.additionSet > 1</code> → 2: Soft / 3: Drum</li>
 </ul>
+</div>
+
+<h2>スライダー感度・目盛り</h2>
+
+<div class="section">
+<span class="label label-bg">■ 背景</span><br>
+osu!taiko では、スライダー感度（<code>SliderMultiplier</code>）は基本的に <code>1.40</code> に設定する必要があります。<br>
+参考：
+<a href="https://osu.ppy.sh/wiki/en/Ranking_criteria/osu%21taiko" target="_blank" rel="noopener noreferrer">
+  osu!taiko Ranking Criteria
+</a><br>
+また、スライダー目盛り（<code>SliderTickRate</code>）は通常 <code>1</code> を用いますが、swingリズムの曲では <code>3</code> を用いるのが基本です。
+</div>
+
+<div class="section">
+<span class="label label-detect">■ 検出内容</span><br>
+<code>SliderMultiplier</code> が <code>1.40</code> ではない場合に警告します。<br>
+また、HitObject の位置から <code>1/3 snap</code> の割合を計算し、<code>1/3 snap</code> の割合が <code>30%</code> 以上の場合は swingリズムとして扱います。<br>
+swingリズムと判定された場合は <code>SliderTickRate = 3</code>、それ以外の場合は <code>SliderTickRate = 1</code> を推奨値として表示し、実際の値と異なる場合に警告します。
+</div>
+
+<div class="section">
+<span class="label label-warning">■ 注意点</span><br>
+High BPM の low diff では、例外的に <code>SliderMultiplier = 1.4</code> 以外を用いることがあります（参照：Taiko Checklist V1.2）。<br>
+また、「<code>1/3 snap</code> の割合が <code>30%</code> 以上」という基準は、このツール上で便宜的に設定した値です。<br>
+そのため、この値を下回っている swingリズムの map や、この値を上回っている通常リズムの map が存在する可能性があります。<br>
+最終的には、曲のリズムや譜面内容を確認したうえで判断してください。
 </div>
 
 <h2>Tag</h2>

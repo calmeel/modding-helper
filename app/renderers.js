@@ -179,3 +179,14 @@ function renderTagResultFromResults(results, dom, t) {
 
   dom.tagOutput.innerHTML = formatMultipleTagResults(results, t);
 }
+
+function renderSliderSettingsResultFromResults(results, dom, t) {
+  if (!dom.sliderSettingsOutput) return;
+
+  if (!results) {
+    dom.sliderSettingsOutput.innerHTML = t("noFileLoaded");
+    return;
+  }
+
+  dom.sliderSettingsOutput.innerHTML = formatMultipleSliderSettingsResults(results, t);
+}

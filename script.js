@@ -22,6 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const sampleSetOutput = document.getElementById("sampleSetOutput");
   const tagOutput = document.getElementById("tagOutput");
   const svVolumeLargeChangeOnly = document.getElementById("svVolumeLargeChangeOnly");
+  const sliderSettingsOutput = document.getElementById("sliderSettingsOutput");
   /** BN評価 */
   const bnBeforeFileInput = document.getElementById("bnBeforeFileInput");
   const bnAfterFileInput = document.getElementById("bnAfterFileInput");
@@ -71,6 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
     volumeCompareThresholdOnly,
     redGreenMatchOutput,
     sampleSetOutput,
+    sliderSettingsOutput,
     tagOutput,
     bnNotesOutput,
     bnTimingOutput,
@@ -93,6 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
     volumeCompareResult: null,
     redGreenMatch: null,
     sampleSet: null,
+    sliderSettings: null,
     tag: null,
     bnCompare: {
       beforeFileName: null,
@@ -184,6 +187,10 @@ document.addEventListener("DOMContentLoaded", () => {
       tagOutput.textContent = t("noFileLoaded");
     }
 
+    if (!state.sliderSettings && sliderSettingsOutput) {
+      sliderSettingsOutput.textContent = t("noFileLoaded");
+    }
+
     renderResult();
     renderShiftResult();
     renderKiaiResult();
@@ -193,6 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderVolumeCompareResult();
     renderRedGreenMatchResult();
     renderSampleSetResult();
+    renderSliderSettingsResult();
     renderTagResult();
     updateTabIssueStates(state);
     bnCompareUi.renderBnSelectedResult();
@@ -253,6 +261,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderSampleSetResult() {
     renderSampleSetResultFromResults(
       state.sampleSet,
+      dom,
+      t
+    );
+  }
+
+  function renderSliderSettingsResult() {
+    renderSliderSettingsResultFromResults(
+      state.sliderSettings,
       dom,
       t
     );
@@ -341,6 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
       state.volumeCompareSources = result.volumeCompareSources;
       state.redGreenMatch = result.redGreenMatch;
       state.sampleSet = result.sampleSet;
+      state.sliderSettings = result.sliderSettings;
       state.tag = result.tag;
 
       renderResult();
@@ -352,6 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderVolumeCompareResult();
       renderRedGreenMatchResult();
       renderSampleSetResult();
+      renderSliderSettingsResult();
       renderTagResult();
       updateTabIssueStates(state);
     } catch (err) {

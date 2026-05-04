@@ -649,6 +649,61 @@ function normalizeDifficultyName(name) {
     .trim();
 }
 
+/** Slider設定 */
+function formatMultipleSliderSettingsResults(results, t) {
+  if (!results.length) {
+    return t("noOsuFiles");
+  }
+
+  return formatByModeIfHybrid(results, formatSliderSettingsResult, t);
+}
+
+function formatSliderSettingsResult(result, t) {
+  const lines = [];
+
+  lines.push(`${getDifficultyName(result.fileName)}`);
+  lines.push("");
+
+  const rows = [
+    [t("tripletSnapRatio"), `${(result.tripletRatio * 100).toFixed(1)}%`],
+    ["SliderMultiplier", `${formatSliderSettingValue(result.sliderMultiplier)} (${t("expected")}: 1.4)`],
+    ["SliderTickRate", `${formatSliderSettingValue(result.sliderTickRate)} (${t("expected")}: ${result.expectedTickRate})`],
+  ];
+
+  const labelWidth = Math.max(...rows.map(row => row[0].length));
+
+  for (const [label, value] of rows) {
+    lines.push(`${label.padEnd(labelWidth)} : ${value}`);
+  }
+
+  lines.push("");
+
+  if (!result.issues.length) {
+    lines.push(t("noSliderSettingsIssues"));
+    return lines.join("\n");
+  }
+
+  for (const issue of result.issues) {
+    if (issue.type === "sliderMultiplier") {
+      lines.push(
+        `<span class="result-error">${t("sliderMultiplierIssue")} | ${formatSliderSettingValue(issue.value)} (${t("expected")}: ${issue.expected})</span>`
+      );
+    }
+
+    if (issue.type === "sliderTickRate") {
+      lines.push(
+        `<span class="result-error">${t("sliderTickRateIssue")} | ${formatSliderSettingValue(issue.value)} (${t("expected")}: ${issue.expected})</span>`
+      );
+    }
+  }
+
+  return lines.join("\n");
+}
+
+function formatSliderSettingValue(value) {
+  return value === null || value === undefined ? "N/A" : String(value);
+}
+
 /** HTMLエスケープ関数 */
 function escapeHtml(text) {
   return String(text)

@@ -79,6 +79,11 @@
         </label>
 
         <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="sliderSettings" checked>
+          <span data-i18n="tabSliderSettings">スライダー感度・目盛り</span>
+        </label>
+
+        <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="tag" checked>
           <span data-i18n="tabTag">Tag</span>
         </label>
@@ -101,6 +106,7 @@
         <button class="tab-button" data-tab="volumeCompare" data-i18n="tabVolumeCompare">Volume Compare</button>
         <button class="tab-button" data-tab="redGreenMatch" data-i18n="tabRedGreenMatch">Red/Green Match</button>
         <button class="tab-button" data-tab="sampleSet" data-i18n="tabSampleSet">SampleSet</button>
+        <button class="tab-button" data-tab="sliderSettings" data-i18n="tabSliderSettings">スライダー感度・目盛り</button>
         <button class="tab-button" data-tab="tag" data-i18n="tabTag">Tag</button>
         <button class="tab-button bn-tab-button hidden-tab" data-tab="bnCompare" data-i18n="tabBnCompare">BN評価</button>
       </div>
@@ -197,6 +203,10 @@
 
       <section class="tab-panel" id="tab-sampleSet">
         <pre id="sampleSetOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+      </section>
+
+      <section class="tab-panel" id="tab-sliderSettings">
+        <pre id="sliderSettingsOutput" data-i18n="noFileLoaded">No file loaded.</pre>
       </section>
 
       <section class="tab-panel" id="tab-tag">
@@ -300,6 +310,12 @@
         <li>Added "Volume compare" "Tag" tab.</li>
       </ul>
 
+      <p><strong>2026/05/05</strong> Update</p>
+      <ul>
+        <li>Added "BN evaluation" tab for comparing .osz files before and after modding.</li>
+        <li>Added "Slider Multiplier / TickRate" tab.</li>
+      </ul>
+
     </div>
   </div>
 
@@ -314,6 +330,7 @@
   <script src="checks/volumeCompareCheck.js"></script>
   <script src="checks/redGreenMatchCheck.js"></script>
   <script src="checks/sampleSetCheck.js"></script>
+  <script src="checks/sliderSettingsCheck.js"></script>
   <script src="checks/tagCheck.js"></script>
   <script src="checks/bnCompareCheck.js"></script>
   <script src="i18n.js"></script>

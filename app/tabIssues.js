@@ -16,6 +16,7 @@ function updateTabIssueStates(state) {
   setTabIssue("redGreenMatch", hasRedGreenMatchIssues(state.redGreenMatch));
   setTabIssue("sampleSet", hasSampleSetIssues(state.sampleSet));
   setTabIssue("tag", hasTagIssues(state.tag));
+  setTabIssue("sliderSettings", hasSliderSettingsIssues(state.sliderSettings));
 }
 
 function hasClapWhistleIssues(results) {
@@ -67,4 +68,8 @@ function hasSampleSetIssues(results) {
 
 function hasTagIssues(results) {
   return results?.some(result => result.results?.length > 0) ?? false;
+}
+
+function hasSliderSettingsIssues(results) {
+  return results?.some(result => result.issues?.length > 0) ?? false;
 }
