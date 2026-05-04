@@ -361,3 +361,10 @@ pre {
   font-weight: 500;
 }
 
+code {
+  background: #1f2a38;        /* 濃い青系 */
+  color: #7fd1ff;             /* 薄い青（重要） */
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: Consolas, monospace;
+}

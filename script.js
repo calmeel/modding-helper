@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const volumeCompareThresholdOnly = document.getElementById("volumeCompareThresholdOnly");
   const redGreenMatchOutput = document.getElementById("redGreenMatchOutput");
   const sampleSetOutput = document.getElementById("sampleSetOutput");
+  const tagOutput = document.getElementById("tagOutput");
 
   const i18nData = window.i18n;
 
@@ -49,7 +50,8 @@ document.addEventListener("DOMContentLoaded", () => {
     volumeCompareOutput,
     volumeCompareThresholdOnly,
     redGreenMatchOutput,
-    sampleSetOutput
+    sampleSetOutput,
+    tagOutput,
   };
 
   const state = {
@@ -66,7 +68,8 @@ document.addEventListener("DOMContentLoaded", () => {
     volumeCompareSources: null,
     volumeCompareResult: null,
     redGreenMatch: null,
-    sampleSet: null
+    sampleSet: null,
+    tag: null,
   };
 
   setupFileInput(fileInput, handleFile);
@@ -124,9 +127,13 @@ document.addEventListener("DOMContentLoaded", () => {
       redGreenMatchOutput.textContent = t("noFileLoaded");
     }
 
-  if (!state.sampleSet && sampleSetOutput) {
-    sampleSetOutput.textContent = t("noFileLoaded");
-  }
+    if (!state.sampleSet && sampleSetOutput) {
+      sampleSetOutput.textContent = t("noFileLoaded");
+    }
+
+    if (!state.tag && tagOutput) {
+      tagOutput.textContent = t("noFileLoaded");
+    }
 
     renderResult();
     renderShiftResult();
@@ -137,6 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderVolumeCompareResult();
     renderRedGreenMatchResult();
     renderSampleSetResult();
+    renderTagResult();
   }
 
   function renderResult() {
@@ -199,6 +207,14 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
+  function renderTagResult() {
+    renderTagResultFromResults(
+      state.tag,
+      dom,
+      t
+    );
+  }
+
   setupPersistentOptions({
     showClap,
     showWhistle,
@@ -246,6 +262,7 @@ document.addEventListener("DOMContentLoaded", () => {
       state.volumeCompareSources = result.volumeCompareSources;
       state.redGreenMatch = result.redGreenMatch;
       state.sampleSet = result.sampleSet;
+      state.tag = result.tag;
 
       renderResult();
       renderShiftResult();
@@ -256,6 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderVolumeCompareResult();
       renderRedGreenMatchResult();
       renderSampleSetResult();
+      renderTagResult();
     } catch (err) {
       if (err.message === "invalidFile") {
         output.textContent = t("invalidFile");

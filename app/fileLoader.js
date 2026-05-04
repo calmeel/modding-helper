@@ -10,6 +10,7 @@ async function analyzeOszFile(file) {
   const svVolumeSources = [];
   const redGreenMatchResults = [];
   const sampleSetResults = [];
+  const tagResults = [];
 
   const osuFiles = Object.values(zip.files)
     .filter(entry => !entry.dir && entry.name.toLowerCase().endsWith(".osu"));
@@ -65,6 +66,11 @@ async function analyzeOszFile(file) {
       ...runSampleSetCheck(text, entry.name),
       mode
     });
+
+    tagResults.push({
+      ...runTagCheck(text, entry.name),
+      mode
+    });
   }
 
   return {
@@ -76,7 +82,8 @@ async function analyzeOszFile(file) {
     kiaiSnapResults,
     svVolumeSources,
     redGreenMatchResults,
-    sampleSetResults
+    sampleSetResults,
+    tagResults
   };
 }
 
@@ -137,7 +144,13 @@ async function processFile(file) {
           ...runSampleSetCheck(text, file.name),
           mode
         }
-      ]
+      ],
+      tag: [
+        {
+          ...runTagCheck(text, file.name),
+          mode
+        }
+      ],
     };
   }
 
@@ -154,7 +167,8 @@ async function processFile(file) {
       svVolumeSources: analyzed.svVolumeSources,
       volumeCompareSources: analyzed.svVolumeSources,
       redGreenMatch: analyzed.redGreenMatchResults,
-      sampleSet: analyzed.sampleSetResults
+      sampleSet: analyzed.sampleSetResults,
+      tag: analyzed.tagResults,
     };
   }
 

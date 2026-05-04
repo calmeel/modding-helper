@@ -77,6 +77,11 @@
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="sampleSet" checked>
           <span data-i18n="tabSampleSet">SampleSet</span>
         </label>
+
+        <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="tag" checked>
+          <span data-i18n="tabTag">Tag</span>
+        </label>
       </div>
     </section>
 
@@ -91,6 +96,7 @@
         <button class="tab-button" data-tab="volumeCompare" data-i18n="tabVolumeCompare">Volume Compare</button>
         <button class="tab-button" data-tab="redGreenMatch" data-i18n="tabRedGreenMatch">Red/Green Match</button>
         <button class="tab-button" data-tab="sampleSet" data-i18n="tabSampleSet">SampleSet</button>
+        <button class="tab-button" data-tab="tag" data-i18n="tabTag">Tag</button>
       </div>
 
       <section class="tab-panel active" id="tab-clapWhistle">
@@ -182,6 +188,10 @@
         <pre id="sampleSetOutput" data-i18n="noFileLoaded">No file loaded.</pre>
       </section>
 
+      <section class="tab-panel" id="tab-tag">
+        <pre id="tagOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+      </section>
+
     </section>
   </main>
 
@@ -203,7 +213,7 @@
       <p><strong>2026/05/04</strong> Update</p>
       <ul>
         <li>Added 1/5, 1/7, and 1/9 snap options.</li>
-        <li>Added "Volume compare" tab.</li>
+        <li>Added "Volume compare" "Tag" tab.</li>
       </ul>
 
     </div>
@@ -220,6 +230,7 @@
   <script src="checks/volumeCompareCheck.js"></script>
   <script src="checks/redGreenMatchCheck.js"></script>
   <script src="checks/sampleSetCheck.js"></script>
+  <script src="checks/tagCheck.js"></script>
   <script src="i18n.js"></script>
   <script src="app/formatters.js"></script>
   <script src="app/fileLoader.js"></script>

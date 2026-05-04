@@ -502,6 +502,45 @@ function formatSampleSetResult(result, t) {
   return lines.join("\n").trimEnd();
 }
 
+/** Tagチェック */
+function formatMultipleTagResults(results, t) {
+  if (!results.length) {
+    return t("noOsuFiles");
+  }
+
+  return formatByModeIfHybrid(results, formatTagResult, t);
+}
+
+function formatTagResult(result, t) {
+  const lines = [];
+
+  lines.push(`${getDifficultyName(result.fileName)}`);
+  lines.push("");
+
+  if (!result.results.length) {
+    lines.push(t("noTagIssues"));
+    return lines.join("\n");
+  }
+
+  for (const item of result.results) {
+    if (item.type === "missing") {
+      lines.push(t("tagMissing"));
+      continue;
+    }
+
+    const label =
+      item.type === "multipleSpaces"
+        ? t("tagMultipleSpaces")
+        : t("tagFullWidthSpace");
+
+    lines.push(`${label}: 検知されました`);
+    lines.push(`  <code>${escapeHtml(item.context)}</code>`);
+    lines.push("");
+  }
+
+  return lines.join("\n").trimEnd();
+}
+
 /** modeのグループ関数 */
 function hasMultipleModes(results) {
   const modes = new Set(results.map(result => result.mode ?? 0));

@@ -162,3 +162,14 @@ function renderVolumeCompareResultFromSources(sources, dom, t) {
 
   return result;
 }
+
+function renderTagResultFromResults(results, dom, t) {
+  if (!dom.tagOutput) return;
+
+  if (!results) {
+    dom.tagOutput.innerHTML = t("noFileLoaded");
+    return;
+  }
+
+  dom.tagOutput.innerHTML = formatMultipleTagResults(results, t);
+}
