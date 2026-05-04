@@ -368,3 +368,14 @@ code {
   border-radius: 4px;
   font-family: Consolas, monospace;
 }
+
+.tab-button.has-issues {
+  border-color: #ff6b6b;
+  color: #ff8a8a;
+}
+
+.tab-button.has-issues.active {
+  background: #4a252a;
+  border-color: #ff6b6b;
+  color: #fff;
+}

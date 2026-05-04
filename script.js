@@ -28,7 +28,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentLang = savedLang
     ? savedLang
-    : ((navigator.language || "").startsWith("ja") ? "ja" : "en");
+    : ((navigator.language || navigator.userLanguage || "").startsWith("ja") ? "ja" : "en");
+
+  if (!savedLang) {
+    localStorage.setItem("moddingHelperLang", currentLang);
+  }
 
   function t(key) {
     return i18nData[currentLang][key] || i18nData.en[key] || key;
@@ -145,6 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderRedGreenMatchResult();
     renderSampleSetResult();
     renderTagResult();
+    updateTabIssueStates(state);
   }
 
   function renderResult() {
@@ -215,6 +220,32 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
+  /** 警告tabのレンダー */
+  function renderResultAndUpdateTabs() {
+    renderResult();
+    updateTabIssueStates(state);
+  }
+
+  function renderShiftResultAndUpdateTabs() {
+    renderShiftResult();
+    updateTabIssueStates(state);
+  }
+
+  function renderDoubleSvResultAndUpdateTabs() {
+    renderDoubleSvResult();
+    updateTabIssueStates(state);
+  }
+
+  function renderSvVolumeResultAndUpdateTabs() {
+    renderSvVolumeResult();
+    updateTabIssueStates(state);
+  }
+
+  function renderVolumeCompareResultAndUpdateTabs() {
+    renderVolumeCompareResult();
+    updateTabIssueStates(state);
+  }
+
   setupPersistentOptions({
     showClap,
     showWhistle,
@@ -229,15 +260,15 @@ document.addEventListener("DOMContentLoaded", () => {
     showClap,
     showWhistle,
     includeAdvancedOffsetSnaps,
-    renderShiftResult,
+    renderShiftResult: renderShiftResultAndUpdateTabs,
     doubleSvGap,
     includeExactSameSv,
-    renderResult,
-    renderDoubleSvResult,
+    renderResult: renderResultAndUpdateTabs,
+    renderDoubleSvResult: renderDoubleSvResultAndUpdateTabs,
     svVolumeThreshold,
-    renderSvVolumeResult,
+    renderSvVolumeResult: renderSvVolumeResultAndUpdateTabs,
     volumeCompareThresholdOnly,
-    renderVolumeCompareResult
+    renderVolumeCompareResult: renderVolumeCompareResultAndUpdateTabs
   });
 
   async function handleFile(file) {
@@ -274,6 +305,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderRedGreenMatchResult();
       renderSampleSetResult();
       renderTagResult();
+      updateTabIssueStates(state);
     } catch (err) {
       if (err.message === "invalidFile") {
         output.textContent = t("invalidFile");
