@@ -25,19 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const savedLang = localStorage.getItem("moddingHelperLang");
 
-  let currentLang;
-
-  if (savedLang) {
-    currentLang = savedLang;
-  } else {
-    const browserLang = navigator.language || navigator.userLanguage;
-
-    if (browserLang && browserLang.startsWith("ja")) {
-      currentLang = "ja";
-    } else {
-      currentLang = "en";
-    }
-  }
+  let currentLang = savedLang
+    ? savedLang
+    : ((navigator.language || "").startsWith("ja") ? "ja" : "en");
 
   function t(key) {
     return i18nData[currentLang][key] || i18nData.en[key] || key;
@@ -223,6 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
     showClap,
     showWhistle,
     includeAdvancedOffsetSnaps,
+    renderShiftResult,
     doubleSvGap,
     includeExactSameSv,
     renderResult,
@@ -230,7 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
     svVolumeThreshold,
     renderSvVolumeResult,
     volumeCompareThresholdOnly,
-    renderVolumeCompareResult,
+    renderVolumeCompareResult
   });
 
   async function handleFile(file) {
