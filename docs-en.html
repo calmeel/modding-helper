@@ -279,5 +279,35 @@ AiMod and Mapset Verifier cannot detect cases where multiple half-width spaces o
 Warns when two or more half-width spaces or any full-width spaces are found between tags.
 </div>
 
+<h2>BN Review</h2>
+
+<div class="section">
+<span class="label label-bg">■ Background</span><br>
+This is a feature mainly intended for some BN / NAT use cases.<br>
+During BN evaluation, it compares the <code>.osz</code> before mod application and the <code>.osz</code> after mod application, making it easier to check what was changed.<br>
+Since difficulty names may be changed during the modding process, Before / After difficulties are matched manually after loading both files.
+</div>
+
+<div class="section">
+<span class="label label-detect">■ Detection</span><br>
+This feature compares the following three categories:
+<ul>
+  <li><strong>Notes</strong>: shows added notes, deleted notes, note type changes, added/deleted sliders and spinners, and slider/spinner tail movement.</li>
+  <li><strong>Timing</strong>: shows added/deleted/changed BPM or SV lines, volume mismatch sections, and kiai mismatch sections.</li>
+  <li><strong>Metadata</strong>: shows changes in Artist, Romanised Artist, Title, Romanised Title, Source, and Tags.</li>
+</ul>
+Tags are compared as space-separated entries, and removed / added tags are displayed separately.<br>
+For notes, differences are shown using <code>d</code> / <code>k</code> / <code>D</code> / <code>K</code>, Slider, and Spinner labels.<br>
+Note that <strong>1 ms note movement is intentionally hidden</strong>. However, if the note content changes at the same time, such as <code>d</code> → <code>k</code>, it will still be shown as a change.
+</div>
+
+<div class="section">
+<span class="label label-warning">■ Notes</span><br>
+If the global offset differs between Before and After, you can use “Apply offset from first red line”.<br>
+This calculates the offset difference by comparing the first red line position in Before and After.<br>
+However, it cannot handle cases where the red line position is shifted by a musical amount such as <code>1/1</code> beat due to adding an NC rest or similar edits.<br>
+In that case, align the first red line positions first, then try comparing again.<br>
+</div>
+
 </body>
 </html>

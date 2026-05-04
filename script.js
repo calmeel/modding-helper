@@ -22,6 +22,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const sampleSetOutput = document.getElementById("sampleSetOutput");
   const tagOutput = document.getElementById("tagOutput");
   const svVolumeLargeChangeOnly = document.getElementById("svVolumeLargeChangeOnly");
+  /** BN評価 */
+  const bnBeforeFileInput = document.getElementById("bnBeforeFileInput");
+  const bnAfterFileInput = document.getElementById("bnAfterFileInput");
+  const bnBeforeFileName = document.getElementById("bnBeforeFileName");
+  const bnAfterFileName = document.getElementById("bnAfterFileName");
+  const bnDiffMatchingArea = document.getElementById("bnDiffMatchingArea");
+  const bnCompareRunButton = document.getElementById("bnCompareRunButton");
+  const bnPairSelect = document.getElementById("bnPairSelect");
+  const bnNotesOutput = document.getElementById("bnNotesOutput");
+  const bnTimingOutput = document.getElementById("bnTimingOutput");
+  const bnMetadataOutput = document.getElementById("bnMetadataOutput");
+  const bnApplyRedOffsetButton = document.getElementById("bnApplyRedOffsetButton");
+  const bnOffsetStatus = document.getElementById("bnOffsetStatus");
+  const bnSvChangeThreshold = document.getElementById("bnSvChangeThreshold");
 
   const i18nData = window.i18n;
 
@@ -58,6 +72,10 @@ document.addEventListener("DOMContentLoaded", () => {
     redGreenMatchOutput,
     sampleSetOutput,
     tagOutput,
+    bnNotesOutput,
+    bnTimingOutput,
+    bnMetadataOutput,
+    bnSvChangeThreshold,
   };
 
   const state = {
@@ -76,6 +94,16 @@ document.addEventListener("DOMContentLoaded", () => {
     redGreenMatch: null,
     sampleSet: null,
     tag: null,
+    bnCompare: {
+      beforeFileName: null,
+      afterFileName: null,
+      beforeDiffs: [],
+      afterDiffs: [],
+      resultsByPair: [],
+      selectedPairId: null,
+      offsetMs: 0,
+      svChangeThreshold: "all"
+    }
   };
 
   setupFileInput(fileInput, handleFile);
@@ -93,6 +121,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   setupTabs();
   setupTabVisibilitySettings();
+  const bnCompareUi = setupBnCompareUi({
+    state,
+    dom,
+    t,
+    bnBeforeFileInput,
+    bnAfterFileInput,
+    bnBeforeFileName,
+    bnAfterFileName,
+    bnDiffMatchingArea,
+    bnCompareRunButton,
+    bnPairSelect,
+    bnApplyRedOffsetButton,
+    bnOffsetStatus,
+    bnSvChangeThreshold
+  });
 
   function applyLanguage() {
     document.documentElement.lang = currentLang === "ja" ? "ja" : "en";
@@ -152,6 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderSampleSetResult();
     renderTagResult();
     updateTabIssueStates(state);
+    bnCompareUi.renderBnSelectedResult();
   }
 
   function renderResult() {
