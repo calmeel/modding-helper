@@ -122,6 +122,82 @@ function setupOptionEvents(options) {
   }
 }
 
+/** 設定保存 */
+function setupPersistentOptions(options) {
+  const items = [
+    {
+      element: options.showClap,
+      key: "moddingHelperShowClap",
+      type: "checkbox",
+      defaultValue: false
+    },
+    {
+      element: options.showWhistle,
+      key: "moddingHelperShowWhistle",
+      type: "checkbox",
+      defaultValue: false
+    },
+    {
+      element: options.includeAdvancedOffsetSnaps,
+      key: "moddingHelperIncludeAdvancedOffsetSnaps",
+      type: "checkbox",
+      defaultValue: false
+    },
+    {
+      element: options.doubleSvGap,
+      key: "moddingHelperDoubleSvGap",
+      type: "select",
+      defaultValue: "2"
+    },
+    {
+      element: options.includeExactSameSv,
+      key: "moddingHelperIncludeExactSameSv",
+      type: "checkbox",
+      defaultValue: true
+    },
+    {
+      element: options.svVolumeThreshold,
+      key: "moddingHelperSvVolumeThreshold",
+      type: "select",
+      defaultValue: "5ms"
+    },
+    {
+      element: options.volumeCompareThresholdOnly,
+      key: "moddingHelperVolumeCompareThresholdOnly",
+      type: "checkbox",
+      defaultValue: true
+    }
+  ];
+
+  for (const item of items) {
+    if (!item.element) continue;
+
+    const saved = localStorage.getItem(item.key);
+
+    if (saved !== null) {
+      if (item.type === "checkbox") {
+        item.element.checked = saved === "true";
+      } else if (item.type === "select") {
+        item.element.value = saved;
+      }
+    } else {
+      if (item.type === "checkbox") {
+        item.element.checked = item.defaultValue;
+      } else if (item.type === "select") {
+        item.element.value = item.defaultValue;
+      }
+    }
+
+    item.element.addEventListener("change", () => {
+      if (item.type === "checkbox") {
+        localStorage.setItem(item.key, String(item.element.checked));
+      } else if (item.type === "select") {
+        localStorage.setItem(item.key, item.element.value);
+      }
+    });
+  }
+}
+
 /** タブの表示切り替え */
 function setupTabVisibilitySettings() {
   const toggleButton = document.getElementById("toggleTabSettings");

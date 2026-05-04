@@ -195,6 +195,16 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
+  setupPersistentOptions({
+    showClap,
+    showWhistle,
+    includeAdvancedOffsetSnaps,
+    doubleSvGap,
+    includeExactSameSv,
+    svVolumeThreshold,
+    volumeCompareThresholdOnly
+  });
+
   setupOptionEvents({
     showClap,
     showWhistle,
