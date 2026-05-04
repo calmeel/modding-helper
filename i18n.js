@@ -63,6 +63,12 @@ const i18n = {
     noSampleSetIssues: "No samplesets other than 'Normal' were found.",
     timingPoints: "TimingPoints",
     hitObjects: "HitObjects",
+
+    tabTag: "Tag",
+    noTagIssues: "No tag spacing issues found.",
+    tagMissing: "Tags line was not found.",
+    tagMultipleSpaces: "Multiple half-width spaces",
+    tagFullWidthSpace: "Full-width space",
   },
 
   ja: {
@@ -113,7 +119,7 @@ const i18n = {
     DetectThreshold: "検出閾値：",
     noSvVolumeIssues: "問題のあるSV volume変更は見つかりませんでした。",
 
-    tabVolumeCompare: "Vol比較",
+    tabVolumeCompare: "ボリューム比較",
     volumeCompareThresholdOnly: "5%以上の差のみ表示",
     noVolumeCompareMismatch: "SV volumeの不一致は見つかりませんでした。",
 
@@ -127,6 +133,12 @@ const i18n = {
     noSampleSetIssues: "Normal以外のsamplesetは見つかりませんでした。",
     timingPoints: "TimingPoints",
     hitObjects: "HitObjects",
+
+    tabTag: "Tag",
+    noTagIssues: "Tagのスペース問題は見つかりませんでした。",
+    tagMissing: "Tags行が見つかりませんでした。",
+    tagMultipleSpaces: "2つ以上の半角スペース",
+    tagFullWidthSpace: "全角スペース",
   }
 };
 
