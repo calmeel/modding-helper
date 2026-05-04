@@ -1,4 +1,4 @@
-const DEFAULT_BEAT_SNAPS = [1, 2, 3, 4, 8, 12, 16];
+const DEFAULT_BEAT_SNAPS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16];
 
 function runOffset1msCheck(text, fileName) {
   const timingPoints = parseTimingPoints(text);
