@@ -1,5 +1,5 @@
 async function analyzeOszFile(file) {
-  const zip = await JSZip.loadAsync(file);
+  const zip = await loadOszZip(file);
 
   const clapWhistleResults = [];
   const shiftResults = [];
@@ -15,6 +15,8 @@ async function analyzeOszFile(file) {
 
   const osuFiles = Object.values(zip.files)
     .filter(entry => !entry.dir && entry.name.toLowerCase().endsWith(".osu"));
+
+  console.log("osuFiles:", osuFiles.map(entry => entry.name));
 
   for (const entry of osuFiles) {
     const text = await entry.async("text");
