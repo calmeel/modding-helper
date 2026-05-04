@@ -686,13 +686,13 @@ function formatSliderSettingsResult(result, t) {
   for (const issue of result.issues) {
     if (issue.type === "sliderMultiplier") {
       lines.push(
-        `<span class="result-error">${t("sliderMultiplierIssue")} | ${formatSliderSettingValue(issue.value)} (${t("expected")}: ${issue.expected})</span>`
+        `<span class="result-warn">${t("sliderMultiplierIssue")} | ${formatSliderSettingValue(issue.value)} (${t("expected")}: ${issue.expected})</span>`
       );
     }
 
     if (issue.type === "sliderTickRate") {
       lines.push(
-        `<span class="result-error">${t("sliderTickRateIssue")} | ${formatSliderSettingValue(issue.value)} (${t("expected")}: ${issue.expected})</span>`
+        `<span class="result-warn">${t("sliderTickRateIssue")} | ${formatSliderSettingValue(issue.value)} (${t("expected")}: ${issue.expected})</span>`
       );
     }
   }

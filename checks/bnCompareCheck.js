@@ -8,7 +8,7 @@ async function readBnOszFile(file) {
     throw new Error("invalidBnOszFile");
   }
 
-  const zip = await JSZip.loadAsync(file);
+  const zip = await loadOszZip(file);
 
   const osuFiles = Object.values(zip.files)
     .filter(entry => !entry.dir && entry.name.toLowerCase().endsWith(".osu"));

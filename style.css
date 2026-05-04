@@ -602,3 +602,7 @@ code {
   color: #9fdcff;
   font-weight: 600;
 }
+
+.result-warn {
+  color: #fbbc04;
+}
