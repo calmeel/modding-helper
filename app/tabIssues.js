@@ -1,83 +1,217 @@
-function setTabIssue(tabName, hasIssue) {
+const TAB_LEVEL_NONE = "none";
+const TAB_LEVEL_WARN = "warn";
+const TAB_LEVEL_ERROR = "error";
+
+function setTabIssueLevel(tabName, level) {
   const button = document.querySelector(`.tab-button[data-tab="${tabName}"]`);
   if (!button) return;
 
-  button.classList.toggle("has-issues", !!hasIssue);
+  button.classList.remove("has-issues");
+  button.classList.remove("has-warnings");
+  button.classList.remove("has-errors");
+
+  if (level === TAB_LEVEL_WARN) {
+    button.classList.add("has-warnings");
+  }
+
+  if (level === TAB_LEVEL_ERROR) {
+    button.classList.add("has-errors");
+  }
 }
 
 function updateTabIssueStates(state) {
-  setTabIssue("clapWhistle", hasClapWhistleIssues(state.clapWhistle));
-  setTabIssue("shift1ms", hasOffsetIssues(state.offset));
-  setTabIssue("kiaiCompare", hasKiaiCompareIssues(state.kiaiCompare));
-  setTabIssue("kiaiSnap", hasKiaiSnapIssues(state.kiaiSnap));
-  setTabIssue("doubleBarline", hasDoubleSvIssues(state.doubleSvResults));
-  setTabIssue("svVolume", hasSvVolumeIssues(state.svVolumeResults));
-  setTabIssue("volumeCompare", hasVolumeCompareIssues(state.volumeCompareResult));
-  setTabIssue("redGreenMatch", hasRedGreenMatchIssues(state.redGreenMatch));
-  setTabIssue("sampleSet", hasSampleSetIssues(state.sampleSet));
-  setTabIssue("tag", hasTagIssues(state.tag));
-  setTabIssue("sliderSettings", hasSliderSettingsIssues(state.sliderSettings));
+  setTabIssueLevel("clapWhistle", getClapWhistleIssueLevel(state.clapWhistle));
+  setTabIssueLevel("shift1ms", getOffsetIssueLevel(state.offset));
+  setTabIssueLevel("kiaiCompare", getKiaiCompareIssueLevel(state.kiaiCompare));
+  setTabIssueLevel("kiaiSnap", getKiaiSnapIssueLevel(state.kiaiSnap));
+  setTabIssueLevel("doubleBarline", getDoubleSvIssueLevel(state.doubleSvResults));
+  setTabIssueLevel("svVolume", getSvVolumeIssueLevel(state.svVolumeSources));
+  setTabIssueLevel("volumeCompare", getVolumeCompareIssueLevel(state.volumeCompareSources));
+  setTabIssueLevel("redGreenMatch", getRedGreenMatchIssueLevel(state.redGreenMatch));
+  setTabIssueLevel("sampleSet", getSampleSetIssueLevel(state.sampleSet));
+  setTabIssueLevel("tag", getTagIssueLevel(state.tag));
+  setTabIssueLevel("sliderSettings", getSliderSettingsIssueLevel(state.sliderSettings));
 }
 
-function hasClapWhistleIssues(results) {
-  return results?.some(result => {
+function getClapWhistleIssueLevel(results) {
+  if (!results) return TAB_LEVEL_NONE;
+
+  const hasBoth = results.some(result => (result.counts?.both ?? 0) > 0);
+
+  if (hasBoth) {
+    return TAB_LEVEL_WARN;
+  }
+
+  const hasClapAndWhistleMixed = results.some(result => {
     const clap = result.counts?.clap ?? 0;
     const whistle = result.counts?.whistle ?? 0;
-    const both = result.counts?.both ?? 0;
+    return clap > 0 && whistle > 0;
+  });
 
-    return (clap > 0 && whistle > 0) || both > 0;
-  }) ?? false;
+  return hasClapAndWhistleMixed ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
 }
 
-function hasOffsetIssues(results) {
-  return results?.some(result => result.results?.length > 0) ?? false;
+function getOffsetIssueLevel(results) {
+  if (!results) return TAB_LEVEL_NONE;
+
+  let hasWarn = false;
+
+  for (const result of results) {
+    for (const item of result.results ?? []) {
+      const diff = Math.abs(item.diff);
+
+      if (diff >= 2 && diff <= 3) {
+        return TAB_LEVEL_ERROR;
+      }
+
+      if (diff === 1) {
+        hasWarn = true;
+      }
+    }
+  }
+
+  return hasWarn ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
 }
 
-function hasKiaiCompareIssues(results) {
-  if (!results || results.length < 2) return false;
+function getKiaiCompareIssueLevel(results) {
+  if (!results || results.length < 2) return TAB_LEVEL_NONE;
 
-  return compareKiaiResults(results).mismatchSections.length > 0;
+  const compared = compareKiaiResults(results);
+
+  return compared.mismatchSections.length > 0
+    ? TAB_LEVEL_WARN
+    : TAB_LEVEL_NONE;
 }
 
-function hasKiaiSnapIssues(results) {
-  return results?.some(result => result.results?.length > 0) ?? false;
+function getKiaiSnapIssueLevel(results) {
+  if (!results) return TAB_LEVEL_NONE;
+
+  let hasWarn = false;
+
+  for (const result of results) {
+    for (const item of result.results ?? []) {
+      if (item.snap === "unknown" || item.diff !== 0) {
+        return TAB_LEVEL_ERROR;
+      }
+
+      hasWarn = true;
+    }
+  }
+
+  return hasWarn ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
 }
 
-function hasDoubleSvIssues(results) {
-  return results?.some(result => result.groups?.length > 0) ?? false;
+function getDoubleSvIssueLevel(results) {
+  const hasDoubleSv =
+    results?.some(result => result.groups?.length > 0) ?? false;
+
+  return hasDoubleSv ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
 }
 
-function hasSvVolumeIssues(results) {
-  return results?.some(result => result.results?.length > 0) ?? false;
+function getSvVolumeIssueLevel(sources) {
+  if (!sources) return TAB_LEVEL_NONE;
+
+  let hasWarn = false;
+
+  for (const source of sources) {
+    const result = runSvVolumeCheck(source.text, source.fileName, {
+      thresholdMode: "16snap",
+      largeChangeOnly: false,
+      largeChangeThreshold: 15
+    });
+
+    for (const item of result.results ?? []) {
+      if ((item.volumeDiff ?? 0) >= 15) {
+        return TAB_LEVEL_ERROR;
+      }
+
+      hasWarn = true;
+    }
+  }
+
+  return hasWarn ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
 }
 
-function hasVolumeCompareIssues(result) {
-  return result?.results?.length > 0;
+function getVolumeCompareIssueLevel(sources) {
+  if (!sources) return TAB_LEVEL_NONE;
+
+  const result = runVolumeCompareCheck(sources, {
+    thresholdOnly: false,
+    thresholdPercent: 5
+  });
+
+  return result?.results?.length > 0
+    ? TAB_LEVEL_WARN
+    : TAB_LEVEL_NONE;
 }
 
-function hasRedGreenMatchIssues(results) {
-  return results?.some(result => result.results?.length > 0) ?? false;
+function getRedGreenMatchIssueLevel(results) {
+  const hasMismatch =
+    results?.some(result => result.results?.length > 0) ?? false;
+
+  return hasMismatch ? TAB_LEVEL_ERROR : TAB_LEVEL_NONE;
 }
 
-function hasSampleSetIssues(results) {
-  return results?.some(result =>
-    result.timingIssues?.length > 0 ||
-    result.objectIssues?.length > 0
-  ) ?? false;
+function getSampleSetIssueLevel(results) {
+  const hasSampleSetIssues =
+    results?.some(result =>
+      result.timingIssues?.length > 0 ||
+      result.objectIssues?.length > 0
+    ) ?? false;
+
+  return hasSampleSetIssues ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
 }
 
-function hasTagIssues(results) {
-  if (!results) return false;
+function getSliderSettingsIssueLevel(results) {
+  if (!results) return TAB_LEVEL_NONE;
 
-  const hasSpacingIssues =
-    results.some(result => result.results?.length > 0);
+  let hasWarn = false;
+
+  for (const result of results) {
+    for (const issue of result.issues ?? []) {
+      if (issue.type === "sliderMultiplier") {
+        return TAB_LEVEL_ERROR;
+      }
+
+      if (issue.type === "sliderTickRate") {
+        hasWarn = true;
+      }
+    }
+  }
+
+  return hasWarn ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
+}
+
+function getTagIssueLevel(results) {
+  if (!results) return TAB_LEVEL_NONE;
 
   const hasTagMismatch =
     compareTagsAcrossDiffs(results).hasMismatch;
 
-  return hasSpacingIssues || hasTagMismatch;
-}
+  if (hasTagMismatch) {
+    return TAB_LEVEL_ERROR;
+  }
 
-function hasSliderSettingsIssues(results) {
-  return results?.some(result => result.issues?.length > 0) ?? false;
+  const hasSpacingIssues =
+    results.some(result => result.results?.length > 0);
+
+  if (hasSpacingIssues) {
+    return TAB_LEVEL_ERROR;
+  }
+
+  const hasSpellingSuggestions =
+    results.some(result => result.spellingSuggestions?.length > 0);
+
+  if (hasSpellingSuggestions) {
+    return TAB_LEVEL_ERROR;
+  }
+
+  const hasRelatedSuggestions =
+    results.some(result => result.relatedSuggestions?.length > 0);
+
+  if (hasRelatedSuggestions) {
+    return TAB_LEVEL_WARN;
+  }
+
+  return TAB_LEVEL_NONE;
 }

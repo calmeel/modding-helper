@@ -12,39 +12,39 @@ function runOffset1msCheck(text, fileName, options = {}) {
   const timingPoints = parseTimingPoints(text);
   const hitObjects = parseHitObjects(text);
 
+  const svLines = parseInheritedTimingPoints(text);
+
   const results = [];
 
   for (const line of hitObjects) {
-    const parts = line.split(",");
-
-    if (parts.length < 3) continue;
-
-    const time = parseInt(parts[2], 10);
-
-    if (Number.isNaN(time)) continue;
-
-    const currentTp = findCurrentTimingPoint(timingPoints, time);
-    if (!currentTp) continue;
-
-    const best = findNearestSnapDiff(
-      time,
-      currentTp.time,
-      currentTp.beatLength,
-      beatSnaps
+    const items = getOffsetCheckTimesFromHitObject(
+      line,
+      timingPoints,
+      svLines,
     );
 
-    if (!best) continue;
+    for (const item of items) {
+      const currentTp = findCurrentTimingPoint(timingPoints, item.time);
+      if (!currentTp) continue;
 
-    // 完全一致なら正常
-    if (best.diff === 0) continue;
+      const best = findNearestSnapDiff(
+        item.time,
+        currentTp.time,
+        currentTp.beatLength,
+        beatSnaps
+      );
 
-    // ±1〜±3msだけ検出
-    if (Math.abs(best.diff) >= 1 && Math.abs(best.diff) <= 3) {
-      results.push({
-        time,
-        diff: best.diff,
-        snap: best.snap
-      });
+      if (!best) continue;
+      if (best.diff === 0) continue;
+
+      if (Math.abs(best.diff) >= 1 && Math.abs(best.diff) <= 3) {
+        results.push({
+          time: item.time,
+          diff: best.diff,
+          snap: best.snap,
+          target: item.target
+        });
+      }
     }
   }
 
@@ -52,6 +52,40 @@ function runOffset1msCheck(text, fileName, options = {}) {
     fileName,
     results
   };
+}
+
+function getOffsetCheckTimesFromHitObject(line, timingPoints, svLines, sliderMultiplier) {
+  const parts = line.split(",");
+  if (parts.length < 4) return [];
+
+  const startTime = parseInt(parts[2], 10);
+  const type = parseInt(parts[3], 10);
+
+  if (Number.isNaN(startTime) || Number.isNaN(type)) return [];
+
+  const items = [
+    {
+      time: startTime,
+      target: "start"
+    }
+  ];
+
+  if (isOffsetSpinnerType(type)) {
+    const endTime = parseInt(parts[5], 10);
+
+    if (!Number.isNaN(endTime)) {
+      items.push({
+        time: endTime,
+        target: "spinnerTail"
+      });
+    }
+  }
+
+  return items;
+}
+
+function isOffsetSpinnerType(type) {
+  return (type & 8) !== 0;
 }
 
 function findCurrentTimingPoint(timingPoints, time) {

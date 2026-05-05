@@ -369,12 +369,23 @@ code {
   font-family: Consolas, monospace;
 }
 
-.tab-button.has-issues {
+.tab-button.has-warnings {
+  border-color: #fbbc04;
+  color: #ffd580;
+}
+
+.tab-button.has-warnings.active {
+  background: #4a3a20;
+  border-color: #fbbc04;
+  color: #fff;
+}
+
+.tab-button.has-errors {
   border-color: #ff6b6b;
   color: #ff8a8a;
 }
 
-.tab-button.has-issues.active {
+.tab-button.has-errors.active {
   background: #4a252a;
   border-color: #ff6b6b;
   color: #fff;
@@ -636,4 +647,8 @@ input[type="file"]::file-selector-button:hover {
   font-size: 0.45em;
   color: #666;
   opacity: 0.8;
+}
+
+.result-error {
+  color: #ff6b6b;
 }
