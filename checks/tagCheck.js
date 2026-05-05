@@ -6,6 +6,7 @@ function runTagCheck(text, fileName) {
     return {
       fileName,
       tags: "",
+      normalizedTags: "",
       results: [
         {
           type: "missing",
@@ -16,6 +17,7 @@ function runTagCheck(text, fileName) {
   }
 
   const tags = tagsLine.value;
+  const normalizedTags = normalizeTagsForCompare(tags);
 
   const multiSpaceMatches = [...tags.matchAll(/ {2,}/g)];
   for (const match of multiSpaceMatches) {
@@ -44,6 +46,7 @@ function runTagCheck(text, fileName) {
   return {
     fileName,
     tags,
+    normalizedTags,
     results
   };
 }
@@ -74,6 +77,72 @@ function findMetadataTagsLine(text) {
   }
 
   return null;
+}
+
+function normalizeTagsForCompare(tags) {
+  return String(tags)
+    .trim()
+    .replace(/　/g, " ")
+    .replace(/\s+/g, " ");
+}
+
+function getTagWords(tags) {
+  const normalized = normalizeTagsForCompare(tags);
+
+  if (!normalized) return [];
+
+  return normalized.split(" ");
+}
+
+function compareTagsAcrossDiffs(results) {
+  if (!results || results.length < 2) {
+    return {
+      hasMismatch: false,
+      base: results?.[0] ?? null,
+      mismatches: []
+    };
+  }
+
+  const validResults = results.filter(result => result.normalizedTags !== undefined);
+
+  if (validResults.length < 2) {
+    return {
+      hasMismatch: false,
+      base: validResults[0] ?? null,
+      mismatches: []
+    };
+  }
+
+  const base = validResults[0];
+  const baseWords = getTagWords(base.tags);
+  const baseSet = new Set(baseWords);
+
+  const mismatches = [];
+
+  for (const result of validResults.slice(1)) {
+    if (result.normalizedTags === base.normalizedTags) continue;
+
+    const words = getTagWords(result.tags);
+    const set = new Set(words);
+
+    const removed = baseWords.filter(tag => !set.has(tag));
+    const added = words.filter(tag => !baseSet.has(tag));
+
+    mismatches.push({
+      fileName: result.fileName,
+      baseFileName: base.fileName,
+      removed,
+      added,
+      tags: result.tags,
+      baseTags: base.tags
+    });
+  }
+
+  return {
+    hasMismatch: mismatches.length > 0,
+    base,
+    mismatches
+  };
 }
 
 function getTagIssueContextAroundSpace(tags, index) {
