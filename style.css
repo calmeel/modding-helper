@@ -631,3 +631,9 @@ input[type="file"]::file-selector-button:hover {
 .result-warn {
   color: #fbbc04;
 }
+
+.author {
+  font-size: 0.45em;
+  color: #666;
+  opacity: 0.8;
+}
