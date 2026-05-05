@@ -18,7 +18,7 @@ const i18n = {
 
     noFileLoaded: "No file loaded.",
     noFileSelected: "No file selected",
-    noOsuFiles: "Error: No .osu files were found within the .osz directory.",
+    noOsuFiles: "Error: No taiko .osu files were found.",
     invalidFile: "Error: Please select a .osu or .osz file.",
 
     file: "File",
@@ -137,7 +137,7 @@ const i18n = {
 
     noFileLoaded: "ファイルが読み込まれていません。",
     noFileSelected: "ファイルが選択されていません",
-    noOsuFiles: "Error: .osz内に.osuファイルが見つかりません。",
+    noOsuFiles: "Error: taikoモードの.osuファイルが見つかりません。",
     invalidFile: "Error: .osu または .osz ファイルを選択してください。",
 
     file: "File",
