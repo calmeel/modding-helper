@@ -516,6 +516,53 @@ High BPM の low diff では、例外的に <code>SliderMultiplier = 1.4</code> 
 最終的には、曲のリズムや譜面内容を確認した上で判断してください。
 </div>
 
+<h2>プチフリ</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ 背景</span><br>
+osu! では、音源の読み込み時に一瞬のフリーズ（プチフリーズ）が発生する場合があります。<br>
+音源開始直後に最初のノーツが配置されていると、ノーツが画面に表示されている最中、または判定枠に近い位置でこのフリーズが発生し、正しいリズムで叩くことが難しくなる可能性があります。<br><br>
+
+そのため、最初のノーツが音源開始直後に置かれている場合は、音源ファイルの先頭に <code>500〜1000 ms</code> 程度の無音を挿入することが一般的に推奨されています。
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ 検出内容</span><br>
+最初のノーツが、音源開始時点で画面内のどの位置に表示されているかを推定します。<br>
+このチェックでは、最初の <code>Circle</code> オブジェクトのみを対象とし、Slider や Spinner は検出対象外です。<br><br>
+
+判定には、最初のノーツ時点で有効な BPM line（赤線）と SV line（緑線）を使用します。<br>
+BPM と SV から osu!taiko のスクロール速度を推定し、16:9 環境を基準として、ノーツが画面に入ってから判定枠に到達するまでの時間を計算します。<br><br>
+
+結果には、以下の情報を表示します：
+<ul>
+  <li><strong>Visible</strong>：ノーツが画面に入ってから判定枠に到達するまでの推定時間</li>
+  <li><strong>Remain</strong>：音源開始時点で、判定枠までどの程度残っているかの推定割合（音源開始時点でのノーツ位置）</li>
+</ul>
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ 判定基準</span><br>
+<ul>
+  <li>
+    <strong>Warning</strong>：音源開始時点で、最初のノーツが表示時間の半分以内の位置にある場合（<code>Remain ≤ 50%</code>）<br>
+  </li>
+  <li>
+    <strong>Error</strong>：音源開始時点で、最初のノーツが判定枠にかなり近い位置にある場合（<code>Remain ≤ 25%</code>）<br>
+  </li>
+</ul>
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ 注意点</span><br>
+この判定は、16:9 環境を基準にした推定です。<br>
+実際の見え方は、画面比率、スキン、HR の有無、osu!stable / osu!lazer の違い、PC環境などによって変わる可能性があります。<br><br>
+
+また、プチフリの発生タイミングや強さは環境依存です。<br>
+このチェックは「必ず問題が起こる」ことを示すものではなく、音源開始直後のノーツ配置が危険かどうかを確認するための目安として使用してください。
+</div>
+
+
 <h2>Tag</h2>
 
 <div class="section section-bg">

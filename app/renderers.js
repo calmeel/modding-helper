@@ -190,3 +190,14 @@ function renderSliderSettingsResultFromResults(results, dom, t) {
 
   dom.sliderSettingsOutput.innerHTML = formatMultipleSliderSettingsResults(results, t);
 }
+
+function renderEarlyNoteResultFromResults(results, dom, t) {
+  if (!dom.earlyNoteOutput) return;
+
+  if (!results) {
+    dom.earlyNoteOutput.innerHTML = t("noFileLoaded");
+    return;
+  }
+
+  dom.earlyNoteOutput.innerHTML = formatMultipleEarlyNoteResults(results, t);
+}

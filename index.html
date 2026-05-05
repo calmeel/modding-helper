@@ -87,6 +87,11 @@
         </label>
 
         <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="earlyNote" checked>
+          <span data-i18n="tabEarlyNote">プチフリ</span>
+        </label>
+
+        <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="tag" checked>
           <span data-i18n="tabTag">Tag</span>
         </label>
@@ -110,6 +115,7 @@
         <button class="tab-button" data-tab="redGreenMatch" data-i18n="tabRedGreenMatch">Red/Green Match</button>
         <button class="tab-button" data-tab="sampleSet" data-i18n="tabSampleSet">SampleSet</button>
         <button class="tab-button" data-tab="sliderSettings" data-i18n="tabSliderSettings">スライダー感度・目盛り</button>
+        <button class="tab-button" data-tab="earlyNote" data-i18n="tabEarlyNote">プチフリ</button>
         <button class="tab-button" data-tab="tag" data-i18n="tabTag">Tag</button>
         <button class="tab-button bn-tab-button hidden-tab" data-tab="bnCompare" data-i18n="tabBnCompare">BN評価</button>
       </div>
@@ -210,6 +216,10 @@
 
       <section class="tab-panel" id="tab-sliderSettings">
         <pre id="sliderSettingsOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+      </section>
+
+      <section class="tab-panel" id="tab-earlyNote">
+        <pre id="earlyNoteOutput" data-i18n="noFileLoaded">No file loaded.</pre>
       </section>
 
       <section class="tab-panel" id="tab-tag">
@@ -333,6 +343,7 @@
   <script src="checks/redGreenMatchCheck.js"></script>
   <script src="checks/sampleSetCheck.js"></script>
   <script src="checks/sliderSettingsCheck.js"></script>
+  <script src="checks/earlyNoteCheck.js"></script>
   <script src="checks/tagCheck.js"></script>
   <script src="checks/bnCompareCheck.js"></script>
   <script src="i18n.js"></script>
