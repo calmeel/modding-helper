@@ -20,9 +20,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const volumeCompareThresholdOnly = document.getElementById("volumeCompareThresholdOnly");
   const redGreenMatchOutput = document.getElementById("redGreenMatchOutput");
   const sampleSetOutput = document.getElementById("sampleSetOutput");
-  const tagOutput = document.getElementById("tagOutput");
   const svVolumeLargeChangeOnly = document.getElementById("svVolumeLargeChangeOnly");
   const sliderSettingsOutput = document.getElementById("sliderSettingsOutput");
+  const earlyNoteOutput = document.getElementById("earlyNoteOutput");
+  const tagOutput = document.getElementById("tagOutput");
   /** BN評価 */
   const bnBeforeFileInput = document.getElementById("bnBeforeFileInput");
   const bnAfterFileInput = document.getElementById("bnAfterFileInput");
@@ -73,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
     redGreenMatchOutput,
     sampleSetOutput,
     sliderSettingsOutput,
+    earlyNoteOutput,
     tagOutput,
     bnNotesOutput,
     bnTimingOutput,
@@ -96,6 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
     redGreenMatch: null,
     sampleSet: null,
     sliderSettings: null,
+    earlyNote: null,
     tag: null,
     bnCompare: {
       beforeFileName: null,
@@ -183,12 +186,16 @@ document.addEventListener("DOMContentLoaded", () => {
       sampleSetOutput.textContent = t("noFileLoaded");
     }
 
-    if (!state.tag && tagOutput) {
-      tagOutput.textContent = t("noFileLoaded");
-    }
-
     if (!state.sliderSettings && sliderSettingsOutput) {
       sliderSettingsOutput.textContent = t("noFileLoaded");
+    }
+
+    if (!state.earlyNote && earlyNoteOutput) {
+      earlyNoteOutput.textContent = t("noFileLoaded");
+    }
+
+    if (!state.tag && tagOutput) {
+      tagOutput.textContent = t("noFileLoaded");
     }
 
     renderResult();
@@ -201,6 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderRedGreenMatchResult();
     renderSampleSetResult();
     renderSliderSettingsResult();
+    renderEarlyNoteResult();
     renderTagResult();
     updateTabIssueStates(state);
     bnCompareUi.renderBnSelectedResult();
@@ -308,6 +316,10 @@ document.addEventListener("DOMContentLoaded", () => {
     updateTabIssueStates(state);
   }
 
+  function renderEarlyNoteResult() {
+    renderEarlyNoteResultFromResults(state.earlyNote, dom, t);
+  }
+
   setupPersistentOptions({
     showClap,
     showWhistle,
@@ -357,6 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
       state.volumeCompareSources = result.volumeCompareSources;
       state.redGreenMatch = result.redGreenMatch;
       state.sampleSet = result.sampleSet;
+      state.earlyNote = result.earlyNote;
       state.sliderSettings = result.sliderSettings;
       state.tag = result.tag;
 
@@ -370,6 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderRedGreenMatchResult();
       renderSampleSetResult();
       renderSliderSettingsResult();
+      renderEarlyNoteResult();
       renderTagResult();
       updateTabIssueStates(state);
     } catch (err) {

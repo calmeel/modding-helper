@@ -15,8 +15,9 @@ function createEmptyProcessResult() {
     volumeCompareSources: [],
     redGreenMatch: [],
     sampleSet: [],
-    tag: [],
-    sliderSettings: []
+    sliderSettings: [],
+    earlyNote: [],
+    tag: []
   };
 }
 
@@ -32,8 +33,9 @@ async function analyzeOszFile(file) {
   const svVolumeSources = [];
   const redGreenMatchResults = [];
   const sampleSetResults = [];
-  const tagResults = [];
   const sliderSettingsResults = [];
+  const earlyNoteResults = [];
+  const tagResults = [];
 
   const osuFiles = Object.values(zip.files)
     .filter(entry => !entry.dir && entry.name.toLowerCase().endsWith(".osu"));
@@ -97,13 +99,18 @@ async function analyzeOszFile(file) {
       mode
     });
 
-    tagResults.push({
-      ...runTagCheck(text, entry.name),
+    sliderSettingsResults.push({
+      ...runSliderSettingsCheck(text, entry.name),
       mode
     });
 
-    sliderSettingsResults.push({
-      ...runSliderSettingsCheck(text, entry.name),
+    earlyNoteResults.push({
+      ...runEarlyNoteCheck(text, entry.name),
+      mode
+    });
+
+    tagResults.push({
+      ...runTagCheck(text, entry.name),
       mode
     });
   }
@@ -118,8 +125,9 @@ async function analyzeOszFile(file) {
     svVolumeSources,
     redGreenMatchResults,
     sampleSetResults,
-    tagResults,
-    sliderSettingsResults
+    sliderSettingsResults,
+    earlyNoteResults,
+    tagResults
   };
 }
 
@@ -186,15 +194,21 @@ async function processFile(file) {
           mode
         }
       ],
-      tag: [
-        {
-          ...runTagCheck(text, file.name),
-          mode
-        }
-      ],
       sliderSettings: [
         {
           ...runSliderSettingsCheck(text, file.name),
+          mode
+        }
+      ],
+      earlyNote: [
+        {
+          ...runEarlyNoteCheck(text, file.name),
+          mode
+        }
+      ],
+      tag: [
+        {
+          ...runTagCheck(text, file.name),
           mode
         }
       ],
@@ -215,8 +229,9 @@ async function processFile(file) {
       volumeCompareSources: analyzed.svVolumeSources,
       redGreenMatch: analyzed.redGreenMatchResults,
       sampleSet: analyzed.sampleSetResults,
-      tag: analyzed.tagResults,
       sliderSettings: analyzed.sliderSettingsResults,
+      earlyNote: analyzed.earlyNoteResults,
+      tag: analyzed.tagResults,
     };
   }
 
