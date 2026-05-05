@@ -78,7 +78,7 @@ const i18n = {
     warning: "Warning",
     sliderSettingsIssueDetails: "Issue details",
 
-    tabEarlyNote: "Early Note",
+    tabEarlyNote: "First Note Lag",
     noEarlyNoteIssues: "No early-note freeze risk found.",
     earlyNoteNoCircle: "No circle objects found.",
     earlyNoteFirstNote: "First note",
