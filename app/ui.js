@@ -128,6 +128,33 @@ function setupOptionEvents(options) {
   }
 }
 
+/** スプレッド内サブタブ用 */
+function setupSpreadSubtabs() {
+  const buttons = document.querySelectorAll(".spread-subtab-button");
+  const panels = document.querySelectorAll(".spread-subtab-panel");
+
+  for (const button of buttons) {
+    button.addEventListener("click", () => {
+      const tabName = button.dataset.spreadSubtab;
+
+      for (const b of buttons) {
+        b.classList.remove("active");
+      }
+
+      for (const panel of panels) {
+        panel.classList.remove("active");
+      }
+
+      button.classList.add("active");
+
+      const targetPanel = document.getElementById(`spread-subtab-${tabName}`);
+      if (targetPanel) {
+        targetPanel.classList.add("active");
+      }
+    });
+  }
+}
+
 /** 設定保存 */
 function setupPersistentOptions(options) {
   const items = [
@@ -308,4 +335,82 @@ if (updateBtn && updateModal && closeUpdate) {
       updateModal.classList.add("hidden");
     }
   });
+}
+
+/** スプレッドタブの難易度マッチング用 */
+function setupSpreadOrderControls(params) {
+  const {
+    state,
+    dom,
+    renderSpreadResult
+  } = params;
+
+  if (dom.spreadResetOrderButton) {
+    dom.spreadResetOrderButton.addEventListener("click", () => {
+      const results = state.spread?.results;
+      if (!results) return;
+
+      state.spread.diffOrder = createSpreadDiffOrder(results);
+        renderSpreadResult();
+        updateTabIssueStates(state);
+    });
+  }
+
+  if (dom.spreadOrderOutput) {
+    dom.spreadOrderOutput.addEventListener("click", (e) => {
+      const button = e.target.closest("[data-spread-order-action]");
+      if (!button) return;
+
+      const action = button.dataset.spreadOrderAction;
+      const fileName = button.dataset.fileName;
+
+      if (!fileName || !state.spread?.diffOrder) return;
+
+      const index = state.spread.diffOrder.indexOf(fileName);
+      if (index === -1) return;
+
+      if (action === "up" && index > 0) {
+        swapSpreadOrder(state.spread.diffOrder, index, index - 1);
+      }
+
+      if (action === "down" && index < state.spread.diffOrder.length - 1) {
+        swapSpreadOrder(state.spread.diffOrder, index, index + 1);
+      }
+
+      renderSpreadResult();
+      updateTabIssueStates(state);
+    });
+  }
+
+  if (dom.spreadOrderOutput) {
+    dom.spreadOrderOutput.addEventListener("change", (e) => {
+      const select = e.target.closest(".spread-category-select");
+      if (!select) return;
+
+      const fileName = select.dataset.fileName;
+      const category = select.value;
+
+      const results = state.spread?.results;
+      if (!fileName || !category || !results) return;
+
+      state.spread.manualCategories[fileName] = category;
+
+      state.spread.diffOrder = moveSpreadDiffToCategory(
+        state.spread.diffOrder,
+        results,
+        fileName,
+        category,
+        state.spread.manualCategories
+      );
+
+      renderSpreadResult();
+      updateTabIssueStates(state);
+    });
+  }
+}
+
+function swapSpreadOrder(items, a, b) {
+  const temp = items[a];
+  items[a] = items[b];
+  items[b] = temp;
 }
