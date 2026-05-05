@@ -192,13 +192,22 @@ function formatShiftResult(result, t) {
   for (const item of result.results) {
     const sign = item.diff > 0 ? "+" : "-";
 
+    const absDiff = Math.abs(item.diff);
+
     const cls =
-      item.snap !== 1
+      absDiff >= 2
         ? "result-error"
         : "";
 
+    const targetText =
+      item.target === "sliderTail"
+        ? ` | ${t("sliderTail")}`
+        : item.target === "spinnerTail"
+          ? ` | ${t("spinnerTail")}`
+          : "";
+
     lines.push(
-      `<span class="${cls}">${formatTimestampLink(item.time)} | ${sign}${Math.abs(item.diff)} ms  [1/${item.snap} ${t("snap")}]</span>`
+      `<span class="${cls}">${formatTimestampLink(item.time)}${targetText} | ${sign}${Math.abs(item.diff)} ms  [1/${item.snap} ${t("snap")}]</span>`
     );
   }
 
@@ -502,6 +511,149 @@ function formatSampleSetResult(result, t) {
   return lines.join("\n").trimEnd();
 }
 
+/** Slider設定 */
+function formatMultipleSliderSettingsResults(results, t) {
+  if (!results.length) {
+    return t("noOsuFiles");
+  }
+
+  const sortedResults = sortResultsForDisplay(results);
+  const lines = [];
+
+  lines.push(formatSliderSettingsSummaryTable(sortedResults, t));
+
+  const issueResults = sortedResults.filter(result => result.issues.length > 0);
+
+  lines.push("");
+  lines.push("==============================");
+  lines.push("");
+
+  if (!issueResults.length) {
+    lines.push(t("noSliderSettingsIssues"));
+    return lines.join("\n");
+  }
+
+  lines.push(t("sliderSettingsIssueDetails"));
+  lines.push("");
+
+  lines.push(
+    issueResults
+      .map(result => formatSliderSettingsIssueDetail(result, t))
+      .join("\n\n==============================\n\n")
+  );
+
+  return lines.join("\n").trimEnd();
+}
+
+function formatSliderSettingsSummaryTable(results, t) {
+  const rows = results.map(result => {
+    const diff = getDifficultyNameText(result.fileName);
+    const ratio = `${(result.tripletRatio * 100).toFixed(1)}%`;
+    const sm = `${formatSliderSettingValue(result.sliderMultiplier)} (${t("expected")}: 1.4)`;
+    const str = `${formatSliderSettingValue(result.sliderTickRate)} (${t("expected")}: ${result.expectedTickRate})`;
+    const status = result.issues.length ? t("warning") : "OK";
+
+    return { result, diff, ratio, sm, str, status };
+  });
+
+  const headers = {
+    diff: "Diff",
+    ratio: t("tripletSnapRatio"),
+    sm: "SliderMultiplier",
+    str: "SliderTickRate",
+    status: t("status")
+  };
+
+  const widths = {
+    diff: Math.max(10, visibleWidth(headers.diff), ...rows.map(r => visibleWidth(r.diff))),
+    ratio: Math.max(10, visibleWidth(headers.ratio), ...rows.map(r => visibleWidth(r.ratio))),
+    sm: Math.max(16, visibleWidth(headers.sm), ...rows.map(r => visibleWidth(r.sm))),
+    str: Math.max(14, visibleWidth(headers.str), ...rows.map(r => visibleWidth(r.str))),
+    status: Math.max(7, visibleWidth(headers.status), ...rows.map(r => visibleWidth(r.status)))
+  };
+
+  const lines = [];
+
+  lines.push(
+    `${padEndVisual(headers.diff, widths.diff)} | ` +
+    `${padStartVisual(headers.ratio, widths.ratio)} | ` +
+    `${padStartVisual(headers.sm, widths.sm)} | ` +
+    `${padStartVisual(headers.str, widths.str)} | ` +
+    `${padStartVisual(headers.status, widths.status)}`
+  );
+
+  lines.push(
+    `${"-".repeat(widths.diff)}-+-` +
+    `${"-".repeat(widths.ratio)}-+-` +
+    `${"-".repeat(widths.sm)}-+-` +
+    `${"-".repeat(widths.str)}-+-` +
+    `${"-".repeat(widths.status)}`
+  );
+
+  for (const row of rows) {
+    const diffText = getDifficultyName(row.result.fileName) +
+      " ".repeat(widths.diff - visibleWidth(row.diff));
+
+    const statusPadded = padStartVisual(row.status, widths.status);
+    const statusText = row.result.issues.length
+      ? `<span class="result-warn">${escapeHtml(statusPadded)}</span>`
+      : `<span class="ok">${escapeHtml(statusPadded)}</span>`;
+
+    lines.push(
+      `${diffText} | ` +
+      `${padStartVisual(row.ratio, widths.ratio)} | ` +
+      `${padStartVisual(row.sm, widths.sm)} | ` +
+      `${padStartVisual(row.str, widths.str)} | ` +
+      `${statusText}`
+    );
+  }
+
+  return lines.join("\n");
+}
+
+function visibleWidth(text) {
+  return [...String(text)].reduce((sum, ch) => {
+    return sum + (/[^\x00-\xff]/.test(ch) ? 2 : 1);
+  }, 0);
+}
+
+function padEndVisual(text, width) {
+  const s = String(text);
+  return s + " ".repeat(Math.max(0, width - visibleWidth(s)));
+}
+
+function padStartVisual(text, width) {
+  const s = String(text);
+  return " ".repeat(Math.max(0, width - visibleWidth(s))) + s;
+}
+
+function formatSliderSettingsIssueDetail(result, t) {
+  const lines = [];
+
+  lines.push(`${getDifficultyName(result.fileName)}`);
+  lines.push("");
+
+  for (const issue of result.issues) {
+    if (issue.type === "sliderMultiplier") {
+      lines.push(
+        `<span class="result-warn">${t("sliderMultiplierIssue")} | ${formatSliderSettingValue(issue.value)} (${t("expected")}: ${issue.expected})</span>`
+      );
+    }
+
+    if (issue.type === "sliderTickRate") {
+      lines.push(
+        `<span class="result-warn">${t("sliderTickRateIssue")} | ${formatSliderSettingValue(issue.value)} (${t("expected")}: ${issue.expected})</span>`
+      );
+    }
+  }
+
+  return lines.join("\n");
+}
+
+function formatSliderSettingValue(value) {
+  return value === null || value === undefined ? "N/A" : String(value);
+}
+
 /** Tagチェック */
 function formatMultipleTagResults(results, t) {
   if (!results.length) {
@@ -552,19 +704,54 @@ function formatMultipleTagResults(results, t) {
 
   if (!spacingIssueResults.length) {
     lines.push(t("noTagIssues"));
-    return lines.join("\n").trimEnd();
+  } else {
+    lines.push(
+      spacingIssueResults
+        .map(result => formatTagSpacingResult(result, t))
+        .join("\n\n==============================\n\n")
+    );
   }
 
-  lines.push(
-    spacingIssueResults
-      .map(result => formatTagResult(result, t))
-      .join("\n\n==============================\n\n")
-  );
+  lines.push("");
+  lines.push("==============================");
+  lines.push("");
+  lines.push(t("tagSpellingCheck"));
+  lines.push("");
+
+  const spellingIssueResults = sortedResults.filter(result => result.spellingSuggestions?.length > 0);
+
+  if (!spellingIssueResults.length) {
+    lines.push(t("noTagSpellingSuggestions"));
+  } else {
+    lines.push(
+      spellingIssueResults
+        .map(result => formatTagSpellingResult(result, t))
+        .join("\n\n==============================\n\n")
+    );
+  }
+
+  lines.push("");
+  lines.push("==============================");
+  lines.push("");
+  lines.push(t("tagRelatedCheck"));
+  lines.push("");
+
+  const relatedIssueResults = sortedResults.filter(result => result.relatedSuggestions?.length > 0);
+
+  if (!relatedIssueResults.length) {
+    lines.push(t("noTagRelatedSuggestions"));
+  } else {
+    lines.push(
+      relatedIssueResults
+        .map(result => formatTagRelatedResult(result, t))
+        .join("\n\n==============================\n\n")
+    );
+  }
 
   return lines.join("\n").trimEnd();
 }
 
-function formatTagResult(result, t) {
+function formatTagSpacingResult(result, t) {
   const lines = [];
 
   lines.push(`${getDifficultyName(result.fileName)}`);
@@ -584,6 +771,38 @@ function formatTagResult(result, t) {
     lines.push(`${label}: ${t("detected")}`);
     lines.push(`  <code>${escapeHtml(item.context)}</code>`);
     lines.push("");
+  }
+
+  return lines.join("\n").trimEnd();
+}
+
+function formatTagSpellingResult(result, t) {
+  const lines = [];
+
+  lines.push(`${getDifficultyName(result.fileName)}`);
+  lines.push("");
+
+  for (const item of result.spellingSuggestions) {
+    lines.push(
+      `${t("tagPossibleTypo")}: <code>${escapeHtml(item.tag)}</code> → <code>${escapeHtml(item.suggestion)}</code>`
+    );
+  }
+
+  return lines.join("\n").trimEnd();
+}
+
+function formatTagRelatedResult(result, t) {
+  const lines = [];
+
+  lines.push(`${getDifficultyName(result.fileName)}`);
+  lines.push("");
+
+  for (const item of result.relatedSuggestions) {
+    lines.push(
+      `${t("tagRelatedSuggestion")}: ` +
+      `${item.present.map(tag => `<code>${escapeHtml(tag)}</code>`).join(" ")} ` +
+      `→ ${item.suggestions.map(tag => `<code>${escapeHtml(tag)}</code>`).join(" ")}`
+    );
   }
 
   return lines.join("\n").trimEnd();
@@ -695,61 +914,6 @@ function normalizeDifficultyName(name) {
     .replace(/[’`]/g, "'")
     .replace(/\s+/g, " ")
     .trim();
-}
-
-/** Slider設定 */
-function formatMultipleSliderSettingsResults(results, t) {
-  if (!results.length) {
-    return t("noOsuFiles");
-  }
-
-  return formatByModeIfHybrid(results, formatSliderSettingsResult, t);
-}
-
-function formatSliderSettingsResult(result, t) {
-  const lines = [];
-
-  lines.push(`${getDifficultyName(result.fileName)}`);
-  lines.push("");
-
-  const rows = [
-    [t("tripletSnapRatio"), `${(result.tripletRatio * 100).toFixed(1)}%`],
-    ["SliderMultiplier", `${formatSliderSettingValue(result.sliderMultiplier)} (${t("expected")}: 1.4)`],
-    ["SliderTickRate", `${formatSliderSettingValue(result.sliderTickRate)} (${t("expected")}: ${result.expectedTickRate})`],
-  ];
-
-  const labelWidth = Math.max(...rows.map(row => row[0].length));
-
-  for (const [label, value] of rows) {
-    lines.push(`${label.padEnd(labelWidth)} : ${value}`);
-  }
-
-  lines.push("");
-
-  if (!result.issues.length) {
-    lines.push(t("noSliderSettingsIssues"));
-    return lines.join("\n");
-  }
-
-  for (const issue of result.issues) {
-    if (issue.type === "sliderMultiplier") {
-      lines.push(
-        `<span class="result-warn">${t("sliderMultiplierIssue")} | ${formatSliderSettingValue(issue.value)} (${t("expected")}: ${issue.expected})</span>`
-      );
-    }
-
-    if (issue.type === "sliderTickRate") {
-      lines.push(
-        `<span class="result-warn">${t("sliderTickRateIssue")} | ${formatSliderSettingValue(issue.value)} (${t("expected")}: ${issue.expected})</span>`
-      );
-    }
-  }
-
-  return lines.join("\n");
-}
-
-function formatSliderSettingValue(value) {
-  return value === null || value === undefined ? "N/A" : String(value);
 }
 
 /** HTMLエスケープ関数 */
