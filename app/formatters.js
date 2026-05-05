@@ -894,14 +894,15 @@ function formatMultipleTagResults(results, t) {
   lines.push(t("tagSpellingCheck"));
   lines.push("");
 
-  const spellingIssueResults = sortedResults.filter(result => result.spellingSuggestions?.length > 0);
+  const spellingGroups = groupTagResultsByNormalizedTags(sortedResults)
+    .filter(group => group.representative.spellingSuggestions?.length > 0);
 
-  if (!spellingIssueResults.length) {
+  if (!spellingGroups.length) {
     lines.push(t("noTagSpellingSuggestions"));
   } else {
     lines.push(
-      spellingIssueResults
-        .map(result => formatTagSpellingResult(result, t))
+      spellingGroups
+        .map(group => formatTagSpellingResult(group.representative, t, group))
         .join("\n\n==============================\n\n")
     );
   }
@@ -912,14 +913,15 @@ function formatMultipleTagResults(results, t) {
   lines.push(t("tagRelatedCheck"));
   lines.push("");
 
-  const relatedIssueResults = sortedResults.filter(result => result.relatedSuggestions?.length > 0);
+  const relatedGroups = groupTagResultsByNormalizedTags(sortedResults)
+    .filter(group => group.representative.relatedSuggestions?.length > 0);
 
-  if (!relatedIssueResults.length) {
+  if (!relatedGroups.length) {
     lines.push(t("noTagRelatedSuggestions"));
   } else {
     lines.push(
-      relatedIssueResults
-        .map(result => formatTagRelatedResult(result, t))
+      relatedGroups
+        .map(group => formatTagRelatedResult(group.representative, t, group))
         .join("\n\n==============================\n\n")
     );
   }
@@ -952,10 +954,39 @@ function formatTagSpacingResult(result, t) {
   return lines.join("\n").trimEnd();
 }
 
-function formatTagSpellingResult(result, t) {
+function groupTagResultsByNormalizedTags(results) {
+  const groups = new Map();
+
+  for (const result of results) {
+    const key = result.normalizedTags ?? "";
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        representative: result,
+        fileNames: []
+      });
+    }
+
+    groups.get(key).fileNames.push(result.fileName);
+  }
+
+  return [...groups.values()];
+}
+
+function formatGroupedTagHeader(group) {
+  const names = group.fileNames.map(fileName => getDifficultyName(fileName));
+
+  if (names.length === 1) {
+    return names[0];
+  }
+
+  return names.join(", ");
+}
+
+function formatTagSpellingResult(result, t, group = null) {
   const lines = [];
 
-  lines.push(`${getDifficultyName(result.fileName)}`);
+  lines.push(group ? formatGroupedTagHeader(group) : getDifficultyName(result.fileName));
   lines.push("");
 
   for (const item of result.spellingSuggestions) {
@@ -967,10 +998,10 @@ function formatTagSpellingResult(result, t) {
   return lines.join("\n").trimEnd();
 }
 
-function formatTagRelatedResult(result, t) {
+function formatTagRelatedResult(result, t, group = null) {
   const lines = [];
 
-  lines.push(`${getDifficultyName(result.fileName)}`);
+  lines.push(group ? formatGroupedTagHeader(group) : getDifficultyName(result.fileName));
   lines.push("");
 
   for (const item of result.relatedSuggestions) {
