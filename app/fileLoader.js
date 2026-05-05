@@ -1,3 +1,25 @@
+/** ハイブリットセットの場合、taikoモード以外を弾く */
+function isTaikoMode(mode) {
+  return mode === 1;
+}
+
+function createEmptyProcessResult() {
+  return {
+    clapWhistle: [],
+    offsetSources: [],
+    offset: [],
+    doubleSvSources: [],
+    kiaiCompare: [],
+    kiaiSnap: [],
+    svVolumeSources: [],
+    volumeCompareSources: [],
+    redGreenMatch: [],
+    sampleSet: [],
+    tag: [],
+    sliderSettings: []
+  };
+}
+
 async function analyzeOszFile(file) {
   const zip = await loadOszZip(file);
 
@@ -21,6 +43,11 @@ async function analyzeOszFile(file) {
   for (const entry of osuFiles) {
     const text = await entry.async("text");
     const mode = parseMode(text);
+
+    // Taiko以外のdiffは完全に無視する
+    if (!isTaikoMode(mode)) {
+      continue;
+    }
 
     clapWhistleResults.push({
       ...runClapWhistleCheck(text, entry.name),
@@ -104,6 +131,11 @@ async function processFile(file) {
   if (lowerName.endsWith(".osu")) {
     const text = await file.text();
     const mode = parseMode(text);
+
+    // Taiko以外の.osuは読み込まない
+    if (!isTaikoMode(mode)) {
+      return createEmptyProcessResult();
+    }
 
     return {
       clapWhistle: [
