@@ -508,7 +508,60 @@ function formatMultipleTagResults(results, t) {
     return t("noOsuFiles");
   }
 
-  return formatByModeIfHybrid(results, formatTagResult, t);
+  const sortedResults = sortResultsForDisplay(results);
+  const compared = compareTagsAcrossDiffs(sortedResults);
+
+  const lines = [];
+
+  lines.push(t("tagConsistencyCheck"));
+  lines.push("");
+
+  if (compared.base) {
+    lines.push(`(${t("baseDiff")}: ${getDifficultyName(compared.base.fileName)})`);
+    lines.push("");
+  }
+
+  if (!compared.hasMismatch) {
+    lines.push(t("tagNoMismatch"));
+  } else {
+    lines.push(t("tagMismatchFound"));
+    lines.push("");
+
+    for (const mismatch of compared.mismatches) {
+      lines.push(`${getDifficultyName(mismatch.fileName)}`);
+
+      if (mismatch.removed.length) {
+        lines.push(`  ${t("tagRemoved")}: ${mismatch.removed.map(tag => `<code>${escapeHtml(tag)}</code>`).join(" ")}`);
+      }
+
+      if (mismatch.added.length) {
+        lines.push(`  ${t("tagAdded")}: ${mismatch.added.map(tag => `<code>${escapeHtml(tag)}</code>`).join(" ")}`);
+      }
+
+      lines.push("");
+    }
+  }
+
+  lines.push("");
+  lines.push("==============================");
+  lines.push("");
+  lines.push(t("tagSpacingCheck"));
+  lines.push("");
+
+  const spacingIssueResults = sortedResults.filter(result => result.results.length > 0);
+
+  if (!spacingIssueResults.length) {
+    lines.push(t("noTagIssues"));
+    return lines.join("\n").trimEnd();
+  }
+
+  lines.push(
+    spacingIssueResults
+      .map(result => formatTagResult(result, t))
+      .join("\n\n==============================\n\n")
+  );
+
+  return lines.join("\n").trimEnd();
 }
 
 function formatTagResult(result, t) {
@@ -516,11 +569,6 @@ function formatTagResult(result, t) {
 
   lines.push(`${getDifficultyName(result.fileName)}`);
   lines.push("");
-
-  if (!result.results.length) {
-    lines.push(t("noTagIssues"));
-    return lines.join("\n");
-  }
 
   for (const item of result.results) {
     if (item.type === "missing") {
@@ -533,7 +581,7 @@ function formatTagResult(result, t) {
         ? t("tagMultipleSpaces")
         : t("tagFullWidthSpace");
 
-    lines.push(`${label}: 検知されました`);
+    lines.push(`${label}: ${t("detected")}`);
     lines.push(`  <code>${escapeHtml(item.context)}</code>`);
     lines.push("");
   }

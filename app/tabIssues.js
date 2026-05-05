@@ -67,7 +67,15 @@ function hasSampleSetIssues(results) {
 }
 
 function hasTagIssues(results) {
-  return results?.some(result => result.results?.length > 0) ?? false;
+  if (!results) return false;
+
+  const hasSpacingIssues =
+    results.some(result => result.results?.length > 0);
+
+  const hasTagMismatch =
+    compareTagsAcrossDiffs(results).hasMismatch;
+
+  return hasSpacingIssues || hasTagMismatch;
 }
 
 function hasSliderSettingsIssues(results) {
