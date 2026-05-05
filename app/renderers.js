@@ -366,36 +366,36 @@ function formatSpreadDiffOrderTable(results, t, diffOrder = null, manualCategori
   });
 
   const headers = {
-    move: "Move",
-    category: "Category",
     order: "Order",
+    move: "Move",
     diff: "Diff",
+    category: "Category",
     estimated: "Estimated"
   };
 
   const widths = {
-    move: 7,
-    category: 16,
     order: Math.max(5, visibleWidth(headers.order), ...rows.map(r => visibleWidth(r.order))),
+    move: 7,
     diff: Math.max(10, visibleWidth(headers.diff), ...rows.map(r => visibleWidth(r.diff))),
+    category: 16,
     estimated: Math.max(12, visibleWidth(headers.estimated), ...rows.map(r => visibleWidth(r.estimated)))
   };
 
   const lines = [];
 
   lines.push(
-    `${padEndVisual(headers.move, widths.move)} | ` +
-    `${padEndVisual(headers.category, widths.category)} | ` +
     `${padStartVisual(headers.order, widths.order)} | ` +
+    `${padEndVisual(headers.move, widths.move)} | ` +
     `${padEndVisual(headers.diff, widths.diff)} | ` +
+    `${padEndVisual(headers.category, widths.category)} | ` +
     `${padEndVisual(headers.estimated, widths.estimated)}`
   );
 
   lines.push(
-    `${"-".repeat(widths.move)}-+-` +
-    `${"-".repeat(widths.category)}-+-` +
     `${"-".repeat(widths.order)}-+-` +
+    `${"-".repeat(widths.move)}-+-` +
     `${"-".repeat(widths.diff)}-+-` +
+    `${"-".repeat(widths.category)}-+-` +
     `${"-".repeat(widths.estimated)}`
   );
 
@@ -413,10 +413,10 @@ function formatSpreadDiffOrderTable(results, t, diffOrder = null, manualCategori
       " ".repeat(widths.diff - visibleWidth(row.diff));
 
     lines.push(
-      `${moveButtons} | ` +
-      `${categorySelect} | ` +
       `${padStartVisual(row.order, widths.order)} | ` +
+      `${moveButtons} | ` +
       `${diffText} | ` +
+      `${categorySelect} | ` +
       `${padEndVisual(row.estimated, widths.estimated)}`
     );
   }
@@ -471,6 +471,7 @@ function formatSpreadSortLabel(sortInfo) {
 
 function getSpreadOdHpRule(category) {
   switch (category) {
+    case "belowKantan":
     case "kantan":
       return { od: "<= 3", hp: ">= 8", odMax: 3, hpMin: 8 };
     case "futsuu":

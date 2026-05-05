@@ -80,8 +80,8 @@ const TAG_RELATED_RULES = [
     suggestGroup: ["synthesizer", "synthv", "v", "sv"]
   },
   {
-    trigger: ["東方project", "東方"],
-    suggestGroup: ["東方project", "東方", "project"]
+    trigger: ["東方project", "東方", "touhou"],
+    suggestGroup: ["東方project", "東方", "touhou", "project"]
   },
   {
     trigger: ["edm"],

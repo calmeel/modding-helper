@@ -876,14 +876,14 @@ function formatMultipleTagResults(results, t) {
   lines.push(t("tagSpacingCheck"));
   lines.push("");
 
-  const spacingIssueResults = sortedResults.filter(result => result.results.length > 0);
+  const spacingGroups = groupTagSpacingResults(sortedResults);
 
-  if (!spacingIssueResults.length) {
+  if (!spacingGroups.length) {
     lines.push(t("noTagIssues"));
   } else {
     lines.push(
-      spacingIssueResults
-        .map(result => formatTagSpacingResult(result, t))
+      spacingGroups
+        .map(group => formatTagSpacingGroupResult(group, t))
         .join("\n\n==============================\n\n")
     );
   }
@@ -929,13 +929,13 @@ function formatMultipleTagResults(results, t) {
   return lines.join("\n").trimEnd();
 }
 
-function formatTagSpacingResult(result, t) {
+function formatTagSpacingGroupResult(group, t) {
   const lines = [];
 
-  lines.push(`${getDifficultyName(result.fileName)}`);
+  lines.push(formatGroupedTagHeader(group));
   lines.push("");
 
-  for (const item of result.results) {
+  for (const item of group.items) {
     if (item.type === "missing") {
       lines.push(t("tagMissing"));
       continue;
@@ -952,6 +952,45 @@ function formatTagSpacingResult(result, t) {
   }
 
   return lines.join("\n").trimEnd();
+}
+
+function groupTagSpacingResults(results) {
+  const groups = new Map();
+
+  for (const result of results) {
+    for (const item of result.results ?? []) {
+      const key = getTagSpacingGroupKey(item);
+
+      if (!groups.has(key)) {
+        groups.set(key, {
+          representative: result,
+          fileNames: [],
+          items: []
+        });
+      }
+
+      const group = groups.get(key);
+
+      group.fileNames.push(result.fileName);
+
+      if (!group.items.length) {
+        group.items.push(item);
+      }
+    }
+  }
+
+  return [...groups.values()];
+}
+
+function getTagSpacingGroupKey(item) {
+  if (item.type === "missing") {
+    return "missing";
+  }
+
+  return [
+    item.type,
+    item.context ?? ""
+  ].join("::");
 }
 
 function groupTagResultsByNormalizedTags(results) {

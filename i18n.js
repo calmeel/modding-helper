@@ -120,6 +120,7 @@ const i18n = {
     tagRelatedSuggestion: "Additional candidates",
 
     tabSpread: "Spread Compare",
+    spreadAutoOrder: "Auto order",
     spreadOdHp: "OD / HP",
     noSpreadIssues: "No spread data found.",
     spreadDiffOrder: "Diff Order",
@@ -233,7 +234,7 @@ const i18n = {
     kiaiMismatch: "kiai不一致",
     sampleSetMismatch: "sampleset不一致",
 
-    tabSampleSet: "Sampleset",
+    tabSampleSet: "サンプルセット",
     noSampleSetIssues: "Normal以外のsamplesetは見つかりませんでした。",
     timingPoints: "TimingPoints",
     hitObjects: "HitObjects",
@@ -260,7 +261,7 @@ const i18n = {
     earlyNotePositionShort: "残り位置",
     earlyNoteIssueDetails: "プチフリリスクの詳細",
 
-    tabTag: "Tag",
+    tabTag: "タグ",
     noTagIssues: "Tagのスペース問題は見つかりませんでした。",
     tagMissing: "Tags行が見つかりませんでした。",
     tagMultipleSpaces: "2つ以上の半角スペース",
@@ -290,6 +291,7 @@ const i18n = {
     tagRelatedSuggestion: "追加候補",
 
     tabSpread: "スプレッド比較",
+    spreadAutoOrder: "自動並び替え",
     spreadOdHp: "OD / HP",
     noSpreadIssues: "スプレッド情報が見つかりませんでした。",
     spreadDiffOrder: "Diff順",
