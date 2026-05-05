@@ -32,6 +32,7 @@ function updateTabIssueStates(state) {
   setTabIssueLevel("sliderSettings", getSliderSettingsIssueLevel(state.sliderSettings));
   setTabIssueLevel("earlyNote", getEarlyNoteIssueLevel(state.earlyNote));
   setTabIssueLevel("tag", getTagIssueLevel(state.tag));
+  setTabIssueLevel("spread", getSpreadIssueLevel(state.spread));
 }
 
 function getClapWhistleIssueLevel(results) {
@@ -233,4 +234,43 @@ function getTagIssueLevel(results) {
   }
 
   return TAB_LEVEL_NONE;
+}
+
+function getSpreadIssueLevel(spreadState) {
+  const results = spreadState?.results;
+  const diffOrder = spreadState?.diffOrder;
+  const manualCategories = spreadState?.manualCategories ?? {};
+
+  if (!results || !results.length) return TAB_LEVEL_NONE;
+
+  const sortedResults = diffOrder
+    ? applySpreadDiffOrder(results, diffOrder)
+    : sortSpreadResults(results);
+
+  let hasWarn = false;
+
+  for (const result of sortedResults) {
+    const odHpLevel = getSpreadOdHpLevel(result, manualCategories);
+
+    if (odHpLevel === "error") return TAB_LEVEL_ERROR;
+    if (odHpLevel === "warn") hasWarn = true;
+  }
+
+  for (let i = 1; i < sortedResults.length; i++) {
+    const prev = sortedResults[i - 1];
+    const cur = sortedResults[i];
+
+    const prevNotes = prev.noteCount ?? 0;
+    const curNotes = cur.noteCount ?? 0;
+
+    if (prevNotes <= 0) continue;
+
+    const ratio = curNotes / prevNotes;
+    const level = getSpreadNoteRatioLevel(ratio);
+
+    if (level === "error") return TAB_LEVEL_ERROR;
+    if (level === "warn") hasWarn = true;
+  }
+
+  return hasWarn ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
 }

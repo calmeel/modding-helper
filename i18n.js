@@ -119,6 +119,16 @@ const i18n = {
     noTagRelatedSuggestions: "No related tag suggestions found.",
     tagRelatedSuggestion: "Additional candidates",
 
+    tabSpread: "Spread Compare",
+    spreadOdHp: "OD / HP",
+    noSpreadIssues: "No spread data found.",
+    spreadDiffOrder: "Diff Order",
+    spreadNoteCount: "Note Count",
+    spreadFinishers: "Finishers",
+    spreadFinishersMissing: "Missing finisher",
+    spreadFinishersMismatch: "D/K mismatch",
+    spreadFinishersMatched: "Fully matched",
+
     tabBnCompare: "BN Review",
     bnBeforeOsz: "Before .osz",
     bnAfterOsz: "After .osz",
@@ -278,6 +288,16 @@ const i18n = {
     tagRelatedCheck: "関連tag / abbreviation候補",
     noTagRelatedSuggestions: "追加候補のある関連tagは見つかりませんでした。",
     tagRelatedSuggestion: "追加候補",
+
+    tabSpread: "スプレッド比較",
+    spreadOdHp: "OD / HP",
+    noSpreadIssues: "スプレッド情報が見つかりませんでした。",
+    spreadDiffOrder: "Diff順",
+    spreadNoteCount: "ノーツ数",
+    spreadFinishers: "フィニッシャー",
+    spreadFinishersMissing: "フィニッシャー欠損",
+    spreadFinishersMismatch: "D/K 不一致",
+    spreadFinishersMatched: "完全一致",
 
     tabBnCompare: "BN評価",
     bnBeforeOsz: "変更前 .osz",

@@ -201,3 +201,822 @@ function renderEarlyNoteResultFromResults(results, dom, t) {
 
   dom.earlyNoteOutput.innerHTML = formatMultipleEarlyNoteResults(results, t);
 }
+
+/** スプレッドタブ */
+function renderSpreadResultFromResults(spreadState, dom, t) {
+  const results = spreadState?.results;
+
+  if (!results) {
+    if (dom.spreadOrderOutput) dom.spreadOrderOutput.innerHTML = t("noFileLoaded");
+    if (dom.spreadOdHpOutput) dom.spreadOdHpOutput.innerHTML = t("noFileLoaded");
+    if (dom.spreadNoteCountOutput) dom.spreadNoteCountOutput.innerHTML = t("noFileLoaded");
+    if (dom.spreadFinishersOutput) dom.spreadFinishersOutput.innerHTML = t("noFileLoaded");
+    return;
+  }
+
+  if (dom.spreadOrderOutput) {
+    dom.spreadOrderOutput.innerHTML = formatSpreadDiffOrderTable(
+      results,
+      t,
+      spreadState.diffOrder,
+      spreadState.manualCategories
+    );
+  }
+
+  if (dom.spreadOdHpOutput) {
+    dom.spreadOdHpOutput.innerHTML = formatSpreadOdHpTable(
+      results,
+      t,
+      spreadState.diffOrder,
+      spreadState.manualCategories
+    );
+  }
+
+  if (dom.spreadNoteCountOutput) {
+    dom.spreadNoteCountOutput.innerHTML = formatSpreadNoteCountTable(
+      results,
+      t,
+      spreadState.diffOrder
+    );
+  }
+
+  if (dom.spreadFinishersOutput) {
+    dom.spreadFinishersOutput.innerHTML = formatSpreadFinishersTable(
+      results,
+      t,
+      spreadState.diffOrder
+    );
+  }
+
+  updateSpreadSubtabIssueStates(spreadState);
+}
+
+function updateSpreadSubtabIssueStates(spreadState) {
+  const results = spreadState?.results;
+  const diffOrder = spreadState?.diffOrder;
+  const manualCategories = spreadState?.manualCategories ?? {};
+
+  setSpreadSubtabIssueLevel("order", "none");
+  setSpreadSubtabIssueLevel("odhp", "none");
+  setSpreadSubtabIssueLevel("notes", "none");
+
+  if (!results || !results.length) return;
+
+  const sortedResults = diffOrder
+    ? applySpreadDiffOrder(results, diffOrder)
+    : sortSpreadResults(results);
+
+  const hasUnknownCategory = sortedResults.some(result =>
+    getSpreadEffectiveCategory(result, manualCategories) === "unknown"
+  );
+
+  if (hasUnknownCategory) {
+    setSpreadSubtabIssueLevel("order", "error");
+  }
+
+  const hasOdHpWarning = sortedResults.some((result, index) => {
+    const prev = sortedResults[index - 1];
+
+    const odLevel = getSpreadOdLevel(result, manualCategories);
+    const hpLevel = getSpreadHpLevel(result, manualCategories);
+    const ruleLevel = getSpreadOdHpLevel(result, manualCategories);
+
+    let odDeltaWarn = false;
+    let hpDeltaWarn = false;
+
+    if (prev) {
+      if (prev.od !== null && prev.od !== undefined && result.od !== null && result.od !== undefined) {
+        odDeltaWarn = result.od - prev.od < 0;
+      }
+
+      if (prev.hp !== null && prev.hp !== undefined && result.hp !== null && result.hp !== undefined) {
+        hpDeltaWarn = result.hp - prev.hp > 0;
+      }
+    }
+
+    return (
+      odLevel === "warn" ||
+      hpLevel === "warn" ||
+      ruleLevel === "warn" ||
+      odDeltaWarn ||
+      hpDeltaWarn
+    );
+  });
+
+  if (hasOdHpWarning) {
+    setSpreadSubtabIssueLevel("odhp", "warn");
+  }
+
+  let noteLevel = "none";
+
+  for (let i = 1; i < sortedResults.length; i++) {
+    const prev = sortedResults[i - 1];
+    const cur = sortedResults[i];
+
+    const prevNotes = prev.noteCount ?? 0;
+    const curNotes = cur.noteCount ?? 0;
+
+    if (prevNotes <= 0) continue;
+
+    const ratio = curNotes / prevNotes;
+    const level = getSpreadNoteRatioLevel(ratio);
+
+    if (level === "error") {
+      noteLevel = "error";
+      break;
+    }
+
+    if (level === "warn") {
+      noteLevel = "warn";
+    }
+  }
+
+  setSpreadSubtabIssueLevel("notes", noteLevel);
+}
+
+function setSpreadSubtabIssueLevel(tabName, level) {
+  const button = document.querySelector(`.spread-subtab-button[data-spread-subtab="${tabName}"]`);
+  if (!button) return;
+
+  button.classList.remove("has-warnings", "has-errors");
+
+  if (level === "error") {
+    button.classList.add("has-errors");
+  } else if (level === "warn") {
+    button.classList.add("has-warnings");
+  }
+}
+
+function formatSpreadDiffOrderTable(results, t, diffOrder = null, manualCategories = {}) {
+  if (!results.length) {
+    return t("noOsuFiles");
+  }
+
+  const sortedResults = diffOrder
+    ? applySpreadDiffOrder(results, diffOrder)
+    : sortSpreadResults(results);
+
+  const rows = sortedResults.map((result, index) => {
+    const order = String(index + 1);
+    const diff = getDifficultyNameText(result.fileName);
+    const estimated = formatSpreadSortLabel(result.sortInfo);
+    const category = getSpreadEffectiveCategory(result, manualCategories);
+
+    return { result, order, diff, estimated, category, index };
+  });
+
+  const headers = {
+    move: "Move",
+    category: "Category",
+    order: "Order",
+    diff: "Diff",
+    estimated: "Estimated"
+  };
+
+  const widths = {
+    move: 7,
+    category: 16,
+    order: Math.max(5, visibleWidth(headers.order), ...rows.map(r => visibleWidth(r.order))),
+    diff: Math.max(10, visibleWidth(headers.diff), ...rows.map(r => visibleWidth(r.diff))),
+    estimated: Math.max(12, visibleWidth(headers.estimated), ...rows.map(r => visibleWidth(r.estimated)))
+  };
+
+  const lines = [];
+
+  lines.push(
+    `${padEndVisual(headers.move, widths.move)} | ` +
+    `${padEndVisual(headers.category, widths.category)} | ` +
+    `${padStartVisual(headers.order, widths.order)} | ` +
+    `${padEndVisual(headers.diff, widths.diff)} | ` +
+    `${padEndVisual(headers.estimated, widths.estimated)}`
+  );
+
+  lines.push(
+    `${"-".repeat(widths.move)}-+-` +
+    `${"-".repeat(widths.category)}-+-` +
+    `${"-".repeat(widths.order)}-+-` +
+    `${"-".repeat(widths.diff)}-+-` +
+    `${"-".repeat(widths.estimated)}`
+  );
+
+  for (const row of rows) {
+    const upDisabled = row.index === 0 ? " disabled" : "";
+    const downDisabled = row.index === rows.length - 1 ? " disabled" : "";
+
+    const moveButtons =
+      `<button class="spread-order-button" data-spread-order-action="up" data-file-name="${escapeHtml(row.result.fileName)}"${upDisabled}>↑</button>` +
+      `<button class="spread-order-button" data-spread-order-action="down" data-file-name="${escapeHtml(row.result.fileName)}"${downDisabled}>↓</button>`;
+
+    const categorySelect = formatSpreadCategorySelect(row.result.fileName, row.category);
+
+    const diffText = getDifficultyName(row.result.fileName) +
+      " ".repeat(widths.diff - visibleWidth(row.diff));
+
+    lines.push(
+      `${moveButtons} | ` +
+      `${categorySelect} | ` +
+      `${padStartVisual(row.order, widths.order)} | ` +
+      `${diffText} | ` +
+      `${padEndVisual(row.estimated, widths.estimated)}`
+    );
+  }
+
+  return `<pre>${lines.join("\n")}</pre>`;
+}
+
+function formatSpreadCategorySelect(fileName, selectedCategory) {
+  const options = [
+    ["kantan", "Kantan"],
+    ["futsuu", "Futsuu"],
+    ["muzukashii", "Muzukashii"],
+    ["oni", "Oni"],
+    ["innerPlus", "Inner Oni+"],
+    ["unknown", "Unknown"]
+  ];
+
+  const extraClass = selectedCategory === "unknown"
+    ? " spread-category-unknown"
+    : "";
+
+  return `<select class="spread-category-select${extraClass}" data-file-name="${escapeHtml(fileName)}">` +
+    options.map(([value, label]) => {
+      const selected = value === selectedCategory ? " selected" : "";
+      return `<option value="${escapeHtml(value)}"${selected}>${escapeHtml(label)}</option>`;
+    }).join("") +
+    `</select>`;
+}
+
+function formatSpreadSortLabel(sortInfo) {
+  if (!sortInfo) return "Unknown";
+
+  const baseNames = {
+    "-1": "Below Kantan",
+    "0": "Kantan",
+    "1": "Futsuu",
+    "2": "Muzukashii",
+    "3": "Oni",
+    "4": "Above Oni",
+    "999": "Unknown"
+  };
+
+  const base = baseNames[String(sortInfo.base)] ?? "Unknown";
+
+  if (sortInfo.modifier < 0) return `Lite ${base}`;
+  if (sortInfo.modifier === 1) return `Inner ${base}`;
+  if (sortInfo.modifier === 2) return `Ura ${base}`;
+  if (sortInfo.modifier >= 3) return `Above Inner ${base}`;
+
+  return base;
+}
+
+function getSpreadOdHpRule(category) {
+  switch (category) {
+    case "kantan":
+      return { od: "<= 3", hp: ">= 8", odMax: 3, hpMin: 8 };
+    case "futsuu":
+      return { od: "<= 4", hp: ">= 7", odMax: 4, hpMin: 7 };
+    case "muzukashii":
+      return { od: "<= 5", hp: ">= 6", odMax: 5, hpMin: 6 };
+    case "oni":
+      return { od: ">= 5", hp: ">= 5", odMin: 5, hpMin: 5 };
+    case "innerPlus":
+      return { od: ">= 6", hp: ">= 5", odMin: 6, hpMin: 5 };
+    default:
+      return null;
+  }
+}
+
+function getSpreadOdHpLevel(result, manualCategories = {}) {
+  const category = getSpreadEffectiveCategory(result, manualCategories);
+  const rule = getSpreadOdHpRule(category);
+
+  const od = result.od;
+  const hp = result.hp;
+
+  // ① Unknownカテゴリは常にWarning
+  if (category === "unknown" || !rule) {
+    return "warn";
+  }
+
+  // ③ ルール違反のみError
+  if (rule.odMax !== undefined && od > rule.odMax) return "warn";
+  if (rule.odMin !== undefined && od < rule.odMin) return "warn";
+  if (rule.hpMin !== undefined && hp < rule.hpMin) return "warn";
+
+  return "ok";
+}
+
+function getSpreadOdLevel(result, manualCategories = {}) {
+  const category = getSpreadEffectiveCategory(result, manualCategories);
+  const rule = getSpreadOdHpRule(category);
+
+  if (category === "unknown" || !rule) return "warn";
+
+  const od = result.od;
+  if (od === null || od === undefined) return "warn";
+
+  if (rule.odMax !== undefined && od > rule.odMax) return "warn";
+  if (rule.odMin !== undefined && od < rule.odMin) return "warn";
+
+  return "ok";
+}
+
+function getSpreadHpLevel(result, manualCategories = {}) {
+  const category = getSpreadEffectiveCategory(result, manualCategories);
+  const rule = getSpreadOdHpRule(category);
+
+  if (category === "unknown" || !rule) return "warn";
+
+  const hp = result.hp;
+  if (hp === null || hp === undefined) return "warn";
+
+  if (rule.hpMin !== undefined && hp < rule.hpMin) return "warn";
+
+  return "ok";
+}
+
+function formatSpreadOdHpRuleText(category) {
+  const rule = getSpreadOdHpRule(category);
+
+  if (!rule) return "Unknown";
+
+  return `OD ${rule.od} / HP ${rule.hp}`;
+}
+
+function formatSpreadOdHpStatus(level) {
+  if (level === "warn") return "Warning";
+  if (level === "error") return "Error";
+  return "ok";
+}
+
+function formatSpreadOdHpTable(results, t, diffOrder = null, manualCategories = {}) {
+  if (!results.length) {
+    return t("noOsuFiles");
+  }
+
+  const sortedResults = diffOrder
+    ? applySpreadDiffOrder(results, diffOrder)
+    : sortSpreadResults(results);
+
+  const rows = sortedResults.map((result, index) => {
+    const prev = sortedResults[index - 1];
+
+    const diff = getDifficultyNameText(result.fileName);
+    const od = formatSpreadValue(result.od);
+    const hp = formatSpreadValue(result.hp);
+
+    const category = getSpreadEffectiveCategory(result, manualCategories);
+    const rule = formatSpreadOdHpRuleText(category);
+
+    let odDelta = null;
+    let hpDelta = null;
+
+    if (prev) {
+      if (prev.od !== null && prev.od !== undefined && result.od !== null && result.od !== undefined) {
+        odDelta = result.od - prev.od;
+      }
+
+      if (prev.hp !== null && prev.hp !== undefined && result.hp !== null && result.hp !== undefined) {
+        hpDelta = result.hp - prev.hp;
+      }
+    }
+
+    const ruleLevel = getSpreadOdHpLevel(result, manualCategories);
+    const odLevel = getSpreadOdLevel(result, manualCategories);
+    const hpLevel = getSpreadHpLevel(result, manualCategories);
+
+    // ODは上がるのが正常。下がったらWarning（+0 もwarning）
+    const odDeltaLevel =
+      odDelta !== null && odDelta < 0
+        ? "warn"
+        : "ok";
+
+    // HPは下がるのが正常。上がったらWarning（+0 はwarningしない）
+    const hpDeltaLevel =
+      hpDelta !== null && hpDelta !== undefined && hpDelta > 0
+        ? "warn"
+        : "ok";
+
+    const statusLevel =
+      ruleLevel === "warn" || odDeltaLevel === "warn" || hpDeltaLevel === "warn"
+        ? "warn"
+        : "ok";
+
+    const status = formatSpreadOdHpStatus(statusLevel);
+
+    return {
+      result,
+      diff,
+      od,
+      hp,
+      odDelta,
+      hpDelta,
+      category,
+      rule,
+      ruleLevel,
+      odLevel,
+      hpLevel,
+      odDeltaLevel,
+      hpDeltaLevel,
+      statusLevel,
+      status
+    };
+  });
+
+  const headers = {
+    diff: "Diff",
+    od: "OD",
+    odDelta: "Delta OD",
+    hp: "HP",
+    hpDelta: "Delta HP",
+    rule: "Rule",
+    status: "Status"
+  };
+
+  const widths = {
+    diff: Math.max(10, visibleWidth(headers.diff), ...rows.map(r => visibleWidth(r.diff))),
+    od: Math.max(4, visibleWidth(headers.od), ...rows.map(r => visibleWidth(r.od))),
+    odDelta: Math.max(4, visibleWidth(headers.odDelta), ...rows.map(r => visibleWidth(formatSpreadDelta(r.odDelta)))),
+    hp: Math.max(4, visibleWidth(headers.hp), ...rows.map(r => visibleWidth(r.hp))),
+    hpDelta: Math.max(4, visibleWidth(headers.hpDelta), ...rows.map(r => visibleWidth(formatSpreadDelta(r.hpDelta)))),
+    rule: Math.max(16, visibleWidth(headers.rule), ...rows.map(r => visibleWidth(r.rule))),
+    status: Math.max(7, visibleWidth(headers.status), ...rows.map(r => visibleWidth(r.status)))
+  };
+
+  const lines = [];
+
+  // ヘッダー：1回だけ
+  lines.push(
+    `${padEndVisual(headers.diff, widths.diff)} | ` +
+    `${padStartVisual(headers.od, widths.od)} | ` +
+    `${padStartVisual(headers.odDelta, widths.odDelta)} | ` +
+    `${padStartVisual(headers.hp, widths.hp)} | ` +
+    `${padStartVisual(headers.hpDelta, widths.hpDelta)} | ` +
+    `${padEndVisual(headers.rule, widths.rule)} | ` +
+    `${padStartVisual(headers.status, widths.status)}`
+  );
+
+  // 区切り線：1回だけ
+  lines.push(
+    `${"-".repeat(widths.diff)}-+-` +
+    `${"-".repeat(widths.od)}-+-` +
+    `${"-".repeat(widths.odDelta)}-+-` +
+    `${"-".repeat(widths.hp)}-+-` +
+    `${"-".repeat(widths.hpDelta)}-+-` +
+    `${"-".repeat(widths.rule)}-+-` +
+    `${"-".repeat(widths.status)}`
+  );
+
+  // データ行：ここだけループ
+  for (const row of rows) {
+    const diffText = getDifficultyName(row.result.fileName) +
+      " ".repeat(widths.diff - visibleWidth(row.diff));
+
+    const odText = padStartVisual(row.od, widths.od);
+    const odDeltaText = padStartVisual(formatSpreadDelta(row.odDelta), widths.odDelta);
+    const hpText = padStartVisual(row.hp, widths.hp);
+    const hpDeltaText = padStartVisual(formatSpreadDelta(row.hpDelta), widths.hpDelta);
+    const ruleText = padEndVisual(row.rule, widths.rule);
+    const statusText = padStartVisual(row.status, widths.status);
+
+    lines.push(
+      `${diffText} | ` +
+      `${wrapSpreadLevel(odText, row.odLevel)} | ` +
+      `${wrapSpreadLevel(odDeltaText, row.odDeltaLevel)} | ` +
+      `${wrapSpreadLevel(hpText, row.hpLevel)} | ` +
+      `${wrapSpreadLevel(hpDeltaText, row.hpDeltaLevel)} | ` +
+      `${wrapSpreadLevel(ruleText, row.ruleLevel)} | ` +
+      `${wrapSpreadLevel(statusText, row.statusLevel)}`
+    );
+  }
+
+  return lines.join("\n");
+}
+
+function sortSpreadResults(results) {
+  return [...results].sort((a, b) => {
+    const sa = a.sortInfo?.score ?? 9999;
+    const sb = b.sortInfo?.score ?? 9999;
+
+    if (sa !== sb) return sa - sb;
+
+    return getDifficultyNameText(a.fileName).localeCompare(getDifficultyNameText(b.fileName));
+  });
+}
+
+function formatSpreadValue(value) {
+  return value === null || value === undefined ? "N/A" : String(value);
+}
+
+function getSpreadNoteRatioLevel(ratio) {
+  if (ratio === null || ratio === undefined) return "none";
+
+  if (ratio < 1.05) return "error";
+  if (ratio < 1.15) return "warn";
+  if (ratio < 1.50) return "ok";
+  if (ratio < 2.00) return "warn";
+  return "error";
+}
+
+function formatSpreadDelta(delta) {
+  if (delta === null || delta === undefined) return "N/A";
+
+  const rounded = Math.round(delta * 100) / 100;
+  const text = Number.isInteger(rounded) ? String(rounded) : String(rounded);
+  return rounded >= 0 ? `+${text}` : text;
+}
+
+function formatSpreadRatio(ratio) {
+  if (ratio === null || ratio === undefined) return "N/A";
+  return `x${ratio.toFixed(2)}`;
+}
+
+function wrapSpreadLevel(text, level) {
+  if (level === "error") {
+    return `<span class="result-error">${escapeHtml(text)}</span>`;
+  }
+
+  if (level === "warn") {
+    return `<span class="result-warn">${escapeHtml(text)}</span>`;
+  }
+
+  return escapeHtml(text);
+}
+
+function formatSpreadNoteCountTable(results, t, diffOrder = null) {
+  if (!results.length) {
+    return t("noOsuFiles");
+  }
+
+  const sortedResults = diffOrder
+    ? applySpreadDiffOrder(results, diffOrder)
+    : sortSpreadResults(results);
+
+  const rows = sortedResults.map((result, index) => {
+    const prev = sortedResults[index - 1];
+
+    const diff = getDifficultyNameText(result.fileName);
+    const notes = result.noteCount ?? 0;
+
+    let delta = null;
+    let ratio = null;
+
+    if (prev) {
+      const prevNotes = prev.noteCount ?? 0;
+      delta = notes - prevNotes;
+      ratio = prevNotes > 0 ? notes / prevNotes : null;
+    }
+
+    const deltaText = formatSpreadDelta(delta);
+    const ratioText = formatSpreadRatio(ratio);
+    const level = getSpreadNoteRatioLevel(ratio);
+
+    return {
+      result,
+      diff,
+      notes,
+      delta,
+      ratio,
+      deltaText,
+      ratioText,
+      level
+    };
+  });
+
+  const headers = {
+    diff: "Diff",
+    notes: "Notes",
+    delta: "Delta prev",
+    ratio: "Ratio",
+    status: "Status"
+  };
+
+  const widths = {
+    diff: Math.max(10, visibleWidth(headers.diff), ...rows.map(r => visibleWidth(r.diff))),
+    notes: Math.max(5, visibleWidth(headers.notes), ...rows.map(r => visibleWidth(String(r.notes)))),
+    delta: Math.max(6, visibleWidth(headers.delta), ...rows.map(r => visibleWidth(r.deltaText))),
+    ratio: Math.max(5, visibleWidth(headers.ratio), ...rows.map(r => visibleWidth(r.ratioText))),
+    status: Math.max(7, visibleWidth(headers.status), ...rows.map(r => visibleWidth(formatSpreadNoteStatus(r.level))))
+  };
+
+  const lines = [];
+
+  lines.push(
+    `${padEndVisual(headers.diff, widths.diff)} | ` +
+    `${padStartVisual(headers.notes, widths.notes)} | ` +
+    `${padStartVisual(headers.delta, widths.delta)} | ` +
+    `${padStartVisual(headers.ratio, widths.ratio)} | ` +
+    `${padStartVisual(headers.status, widths.status)}`
+  );
+
+  lines.push(
+    `${"-".repeat(widths.diff)}-+-` +
+    `${"-".repeat(widths.notes)}-+-` +
+    `${"-".repeat(widths.delta)}-+-` +
+    `${"-".repeat(widths.ratio)}-+-` +
+    `${"-".repeat(widths.status)}`
+  );
+
+  for (const row of rows) {
+    const diffText = getDifficultyName(row.result.fileName) +
+      " ".repeat(widths.diff - visibleWidth(row.diff));
+
+    const statusText = formatSpreadNoteStatus(row.level);
+
+    lines.push(
+      `${diffText} | ` +
+      `${padStartVisual(String(row.notes), widths.notes)} | ` +
+      `${wrapSpreadLevel(padStartVisual(row.deltaText, widths.delta), row.level)} | ` +
+      `${wrapSpreadLevel(padStartVisual(row.ratioText, widths.ratio), row.level)} | ` +
+      `${wrapSpreadLevel(padStartVisual(statusText, widths.status), row.level)}`
+    );
+  }
+
+  return lines.join("\n");
+}
+
+function formatSpreadNoteStatus(level) {
+  if (level === "error") return "Error";
+  if (level === "warn") return "Warning";
+  if (level === "ok") return "OK";
+  return "N/A";
+}
+
+function formatSpreadOdHpDelta(odDelta, hpDelta) {
+  if (odDelta === null && hpDelta === null) return "N/A";
+
+  const odText =
+    odDelta === null ? "-" : (odDelta >= 0 ? `+${odDelta}` : `${odDelta}`);
+
+  const hpText =
+    hpDelta === null ? "-" : (hpDelta >= 0 ? `+${hpDelta}` : `${hpDelta}`);
+
+  return `OD:${odText} HP:${hpText}`;
+}
+
+function formatSpreadFinishersTable(results, t, diffOrder = null) {
+  if (!results.length) {
+    return t("noOsuFiles");
+  }
+
+  const sortedResults = diffOrder
+    ? applySpreadDiffOrder(results, diffOrder)
+    : sortSpreadResults(results);
+
+  const times = collectAllSpreadFinisherTimes(sortedResults);
+
+  if (!times.length) {
+    return "No finishers found.";
+  }
+
+  const groups = classifySpreadFinisherTimes(sortedResults, times);
+
+  const sections = [];
+
+  sections.push(formatSpreadFinisherSection(
+    t("spreadFinishersMissing"),
+    groups.missing,
+    sortedResults
+  ));
+
+  sections.push(formatSpreadFinisherSection(
+    t("spreadFinishersMismatch"),
+    groups.mismatch,
+    sortedResults
+  ));
+
+  sections.push(formatSpreadFinisherSection(
+    t("spreadFinishersMatched"),
+    groups.matched,
+    sortedResults
+  ));
+
+  return sections.filter(Boolean).join("\n\n==============================\n\n");
+}
+
+function classifySpreadFinisherTimes(results, times) {
+  const groups = {
+    missing: [],
+    mismatch: [],
+    matched: []
+  };
+
+  for (const time of times) {
+    const values = results.map(result => getSpreadFinisherAtTime(result, time));
+
+    const hasMissing = values.some(value => value === "-");
+
+    if (hasMissing) {
+      groups.missing.push(time);
+      continue;
+    }
+
+    const unique = new Set(values);
+
+    if (unique.size === 1) {
+      groups.matched.push(time);
+    } else {
+      groups.mismatch.push(time);
+    }
+  }
+
+  return groups;
+}
+
+function formatSpreadFinisherSection(title, times, sortedResults) {
+  const lines = [];
+
+  lines.push(`[${title}]`);
+  lines.push("");
+
+  if (!times.length) {
+    lines.push("(none)");
+    return lines.join("\n");
+  }
+
+  lines.push(formatSpreadFinisherTimeTable(times, sortedResults));
+
+  return lines.join("\n");
+}
+
+function formatSpreadFinisherTimeTable(times, sortedResults) {
+  const diffNames = sortedResults.map(result =>
+    getDifficultyNameText(result.fileName)
+  );
+
+  const colWidths = diffNames.map((name, index) => {
+    let maxWidth = visibleWidth(name);
+
+    for (const time of times) {
+      const value = getSpreadFinisherAtTime(sortedResults[index], time);
+      maxWidth = Math.max(maxWidth, visibleWidth(value));
+    }
+
+    return Math.max(maxWidth, 3);
+  });
+
+  const timeWidth = Math.max(
+    visibleWidth("Time"),
+    ...times.map(time => visibleWidth(msToTimestamp(time)))
+  );
+
+  const lines = [];
+
+  lines.push(
+    `${padEndVisual("Time", timeWidth)} | ` +
+    diffNames.map((name, i) =>
+      padEndVisual(name, colWidths[i])
+    ).join(" | ")
+  );
+
+  lines.push(
+    `${"-".repeat(timeWidth)}-+-` +
+    colWidths.map(width => "-".repeat(width)).join("-+-")
+  );
+
+  for (const time of times) {
+    const row = [];
+
+    row.push(padEndVisual(formatTimestampLink(time), timeWidth));
+
+    sortedResults.forEach((result, i) => {
+      const value = getSpreadFinisherAtTime(result, time);
+      const padded = padEndVisual(value, colWidths[i]);
+
+      row.push(formatSpreadFinisherCellPadded(value, padded));
+    });
+
+    lines.push(row.join(" | "));
+  }
+
+  return lines.join("\n");
+}
+
+function formatSpreadFinisherCellPadded(value, padded) {
+  if (value === "D") {
+    return `<span class="spread-finisher-d">${padded}</span>`;
+  }
+
+  if (value === "K") {
+    return `<span class="spread-finisher-k">${padded}</span>`;
+  }
+
+  return `<span class="ok">${padded}</span>`;
+}
+
+function collectAllSpreadFinisherTimes(results) {
+  const set = new Set();
+
+  for (const result of results) {
+    for (const item of result.finishers ?? []) {
+      set.add(item.time);
+    }
+  }
+
+  return [...set].sort((a, b) => a - b);
+}
+
+function getSpreadFinisherAtTime(result, time) {
+  const item = (result.finishers ?? []).find(finisher => finisher.time === time);
+  return item ? item.kind : "-";
+}

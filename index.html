@@ -97,6 +97,11 @@
         </label>
 
         <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="spread" checked>
+          <span data-i18n="tabSpread">Spread</span>
+        </label>
+
+        <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="bnCompare">
           <span data-i18n="tabBnCompare">BN評価</span>
         </label>
@@ -117,6 +122,7 @@
         <button class="tab-button" data-tab="sliderSettings" data-i18n="tabSliderSettings">スライダー感度・目盛り</button>
         <button class="tab-button" data-tab="earlyNote" data-i18n="tabEarlyNote">プチフリ</button>
         <button class="tab-button" data-tab="tag" data-i18n="tabTag">Tag</button>
+        <button class="tab-button" data-tab="spread" data-i18n="tabSpread">Spread</button>
         <button class="tab-button bn-tab-button hidden-tab" data-tab="bnCompare" data-i18n="tabBnCompare">BN評価</button>
       </div>
 
@@ -226,6 +232,48 @@
         <pre id="tagOutput" data-i18n="noFileLoaded">No file loaded.</pre>
       </section>
 
+      <section class="tab-panel" id="tab-spread">
+        <div class="bn-subtabs">
+          <button class="spread-subtab-button active" data-spread-subtab="order" data-i18n="spreadDiffOrder">
+            Diff Order
+          </button>
+
+          <button class="spread-subtab-button" data-spread-subtab="odhp" data-i18n="spreadOdHp">
+            OD / HP
+          </button>
+
+          <button class="spread-subtab-button" data-spread-subtab="notes" data-i18n="spreadNoteCount">
+            Note Count
+          </button>
+
+          <button class="spread-subtab-button" data-spread-subtab="finishers" data-i18n="spreadFinishers">
+            Finishers
+          </button>
+        </div>
+
+        <div class="spread-subtab-panel active" id="spread-subtab-order">
+          <div class="spread-order-actions">
+            <button id="spreadResetOrderButton" class="doc-btn" type="button">
+              Auto order
+            </button>
+          </div>
+
+          <div id="spreadOrderOutput" data-i18n="noFileLoaded">No file loaded.</div>
+        </div>
+
+        <div class="spread-subtab-panel" id="spread-subtab-odhp">
+          <pre id="spreadOdHpOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+        </div>
+
+        <div class="spread-subtab-panel" id="spread-subtab-notes">
+          <pre id="spreadNoteCountOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+        </div>
+
+        <div class="spread-subtab-panel" id="spread-subtab-finishers">
+          <pre id="spreadFinishersOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+        </div>
+      </section>
+
       <section class="tab-panel hidden-tab" id="tab-bnCompare">
         <div class="bn-compare-panel">
           <div class="bn-file-row">
@@ -329,6 +377,11 @@
         <li>「プチフリのリスク検知」機能を追加</li>
       </ul>
 
+      <p><strong>2026/05/06</strong> Update</p>
+      <ul>
+        <li>「スプレッド比較」機能を追加</li>
+      </ul>
+
     </div>
   </div>
 
@@ -347,6 +400,7 @@
   <script src="checks/sliderSettingsCheck.js"></script>
   <script src="checks/earlyNoteCheck.js"></script>
   <script src="checks/tagCheck.js"></script>
+  <script src="checks/spreadCheck.js"></script>
   <script src="checks/bnCompareCheck.js"></script>
   <script src="i18n.js"></script>
   <script src="app/formatters.js"></script>

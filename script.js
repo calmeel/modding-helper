@@ -24,6 +24,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const sliderSettingsOutput = document.getElementById("sliderSettingsOutput");
   const earlyNoteOutput = document.getElementById("earlyNoteOutput");
   const tagOutput = document.getElementById("tagOutput");
+  const spreadOdHpOutput = document.getElementById("spreadOdHpOutput");
+  const spreadOrderOutput = document.getElementById("spreadOrderOutput");
+  const spreadResetOrderButton = document.getElementById("spreadResetOrderButton");
+  const spreadNoteCountOutput = document.getElementById("spreadNoteCountOutput");
+  const spreadFinishersOutput = document.getElementById("spreadFinishersOutput");
   /** BN評価 */
   const bnBeforeFileInput = document.getElementById("bnBeforeFileInput");
   const bnAfterFileInput = document.getElementById("bnAfterFileInput");
@@ -76,6 +81,11 @@ document.addEventListener("DOMContentLoaded", () => {
     sliderSettingsOutput,
     earlyNoteOutput,
     tagOutput,
+    spreadOdHpOutput,
+    spreadOrderOutput,
+    spreadResetOrderButton,
+    spreadNoteCountOutput,
+    spreadFinishersOutput,
     bnNotesOutput,
     bnTimingOutput,
     bnMetadataOutput,
@@ -100,6 +110,11 @@ document.addEventListener("DOMContentLoaded", () => {
     sliderSettings: null,
     earlyNote: null,
     tag: null,
+    spread: {
+      results: null,
+      diffOrder: [],
+      manualCategories: {}
+    },
     bnCompare: {
       beforeFileName: null,
       afterFileName: null,
@@ -126,6 +141,16 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   setupTabs();
+  
+  setupSpreadSubtabs();
+  
+  setupSpreadOrderControls({
+    state,
+    dom,
+    t,
+    renderSpreadResult
+  });
+
   setupTabVisibilitySettings();
   const bnCompareUi = setupBnCompareUi({
     state,
@@ -198,6 +223,10 @@ document.addEventListener("DOMContentLoaded", () => {
       tagOutput.textContent = t("noFileLoaded");
     }
 
+    if (!state.spread && spreadOdHpOutput) {
+      spreadOdHpOutput.textContent = t("noFileLoaded");
+    }
+
     renderResult();
     renderShiftResult();
     renderKiaiResult();
@@ -210,6 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderSliderSettingsResult();
     renderEarlyNoteResult();
     renderTagResult();
+    renderSpreadResult();
     updateTabIssueStates(state);
     bnCompareUi.renderBnSelectedResult();
   }
@@ -288,6 +318,10 @@ document.addEventListener("DOMContentLoaded", () => {
       dom,
       t
     );
+  }
+
+  function renderSpreadResult() {
+    renderSpreadResultFromResults(state.spread, dom, t);
   }
 
   /** 警告tabのレンダー */
@@ -372,6 +406,9 @@ document.addEventListener("DOMContentLoaded", () => {
       state.earlyNote = result.earlyNote;
       state.sliderSettings = result.sliderSettings;
       state.tag = result.tag;
+      state.spread.results = result.spread;
+      state.spread.diffOrder = createSpreadDiffOrder(result.spread);
+      state.spread.manualCategories = {};
 
       renderResult();
       renderShiftResult();
@@ -385,6 +422,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderSliderSettingsResult();
       renderEarlyNoteResult();
       renderTagResult();
+      renderSpreadResult();
       updateTabIssueStates(state);
     } catch (err) {
       if (err.message === "invalidFile") {
