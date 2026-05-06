@@ -168,7 +168,7 @@ function setupPersistentOptions(options) {
       element: options.showWhistle,
       key: "moddingHelperShowWhistle",
       type: "checkbox",
-      defaultValue: false
+      defaultValue: true
     },
     {
       element: options.includeAdvancedOffsetSnaps,
