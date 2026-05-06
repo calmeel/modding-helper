@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Warning / Error 判定一覧</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      line-height: 1.7;
+
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px;
+
+      background: #111;
+      color: #eee;
+    }
+
+    h1 {
+      color: #9fdcff;
+      border-bottom: 2px solid #333;
+      padding-bottom: 10px;
+      margin-bottom: 30px;
+    }
+
+    p {
+      color: #ccc;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+
+      background: #181818;
+      border: 1px solid #2a2a2a;
+    }
+
+    th {
+      background: #202020;
+      color: #9fdcff;
+
+      text-align: left;
+      padding: 12px;
+
+      border-bottom: 1px solid #333;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #2a2a2a;
+      vertical-align: top;
+    }
+
+    tr:hover {
+      background: #1d1d1d;
+    }
+
+    code {
+      background: #222;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .warn {
+      color: #ffd580;
+      font-weight: bold;
+    }
+
+    .error {
+      color: #ff9090;
+      font-weight: bold;
+    }
+
+    .none {
+      color: #888;
+    }
+
+    .notes {
+      margin-top: 30px;
+      padding: 14px 16px;
+
+      background: #181818;
+      border-left: 4px solid #ffd580;
+    }
+
+    .notes-title {
+      color: #ffd580;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .warn-cell {
+      background: rgba(255, 213, 128, 0.06);
+      color: #ffd580;
+    }
+
+    .error-cell {
+      background: rgba(255, 144, 144, 0.06);
+      color: #ff9090;
+    }
+
+    .warn-cell strong,
+    .error-cell strong {
+      color: inherit;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>警告 / エラー 判定一覧</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 20%;">タブ</th>
+      <th style="width: 40%;"><span class="warn">警告</span></th>
+      <th style="width: 40%;"><span class="error">エラー</span></th>
+    </tr>
+  </thead>
+
+  <tbody>
+
+    <tr>
+      <td>Clap / Whistle</td>
+      <td class="warn-cell">
+        ・同一 difficulty 内で Clap と Whistle が混在している<br>
+        ・Whistle + Clap 同時使用が存在する
+      </td>
+      <td class="none">なし</td>
+    </tr>
+
+    <tr>
+      <td>1msズレ</td>
+      <td class="warn-cell">
+        ・±1 ms unsnapped が存在する
+      </td>
+      <td class="error-cell">
+        ・±2〜3 ms unsnapped が存在する
+      </td>
+    </tr>
+
+    <tr>
+      <td>Kiai比較</td>
+      <td class="warn-cell">
+        ・diff 間で Kiai 状態が一致していない
+      </td>
+      <td class="none">なし</td>
+    </tr>
+
+    <tr>
+      <td>Kiaiスナップ</td>
+      <td class="warn-cell">
+        ・Kiai ON/OFF が 1/1 snap 以外にが存在する
+      </td>
+      <td class="error-cell">
+        ・kiai unsnapped が存在する<br>
+      </td>
+    </tr>
+
+    <tr>
+      <td>二重SV</td>
+      <td class="warn-cell">
+        ・二重SV線が存在する
+      </td>
+      <td class="none">なし</td>
+    </tr>
+
+    <tr>
+      <td>SVボリューム</td>
+      <td class="warn-cell">
+        ヒットオブジェクトの近く（± 1/16 snap）に ボリューム変化が存在する
+      </td>
+      <td class="error-cell">
+        ・そのボリューム変化の差が 15%以上である
+      </td>
+    </tr>
+
+    <tr>
+      <td>ボリューム比較</td>
+      <td class="warn-cell">
+        ・diff 間でボリュームが一致していないタイムポイントが存在する
+      </td>
+      <td class="none">なし</td>
+    </tr>
+
+    <tr>
+      <td>赤線&緑線</td>
+      <td class="none">なし</td>
+      <td class="error-cell">
+        ・同時刻の 赤線・緑線 で以下が一致していない：
+        <ul>
+          <li>ボリューム</li>
+          <li>Kiai ON/OFF</li>
+          <li>サンプルセット</li>
+        </ul>
+      </td>
+    </tr>
+
+    <tr>
+      <td>サンプルセット</td>
+      <td class="warn-cell">
+        ・1 : Normal 以外のサンプルセットが存在する <br>
+        ・カスタムサンプルセットが存在する
+      </td>
+      <td class="none">なし</td>
+    </tr>
+
+    <tr>
+      <td>スライダー感度・目盛り</td>
+      <td class="warn-cell">
+        ・SliderTickRate が推奨値（1 or 3）ではない <br>
+        ・SliderMultiplier が <code>1.4</code> ではない
+      </td>
+      <td class="none">なし</td>
+    </tr>
+
+    <tr>
+      <td>プチフリ</td>
+      <td class="warn-cell">
+        ・音源読込み時の最初のノーツの位置が判定枠まで 50% 以下
+      </td>
+      <td class="error-cell">
+        ・音源読込み時の最初のノーツの位置が判定枠まで 25% 以下
+      </td>
+    </tr>
+
+    <tr>
+      <td>タグ</td>
+      <td class="warn-cell">
+        ・関連 tag / abbreviation 候補あり
+      </td>
+      <td class="error-cell">
+        ・diff 間で Tags が一致していない<br>
+        ・スペース問題あり<br>
+        ・スペルミス候補あり
+      </td>
+    </tr>
+
+    <tr>
+      <td>その他1：プレビューポイント</td>
+      <td class="warn-cell">
+        ・プレビューポイントが unsnapped である
+      </td>
+      <td class="none">なし</td>
+    </tr>
+
+    <tr>
+      <td>その他2：Source</td>
+      <td class="warn-cell">
+        ・不明な東方の作品名が表示されている
+      </td>
+      <td class="error-cell">
+        ・東方の作品名にスペルミスあり<br>
+      </td>
+    </tr>
+
+    <tr>
+      <td>スプレッド比較：Diff順 </td>
+      <td class="none">なし</td>
+      </td>
+      <td class="error-cell">
+        ・Diff 名より自動で spread 順を推定できないため、修正が必要
+      </td>
+    </tr>
+
+    <tr>
+      <td>スプレッド比較：OD / HP </td>
+      <td class="warn-cell">
+        ・RC条件に遵守していない<br>
+        ・OD が前の Diff と同じ または減少している<br>
+        ・HP が前の Diff より増加している
+      </td>
+      <td class="none">なし</td>
+    </tr>
+
+    <tr>
+      <td>スプレッド比較：ノーツ数 </td>
+      <td class="warn-cell">
+        ・Ratio が 1.05 ≤ Ratio < 1.15 または 1.50 ≤ Ratio < 2.00
+      </td>
+      <td class="error-cell">
+        ・Ratio が < 1.05 または ≥ 2.00
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<div class="notes">
+  <div class="notes-title">注意事項</div>
+
+  Warning や Error が表示された場合でも、必ずしも unrankable を意味するわけではありません。<br>
+  最終的には BN や mapper が内容を確認してください。
+</div>
+
+</body>
+</html>

@@ -60,6 +60,10 @@ function formatMultipleResults(results, t, showClap, showWhistle) {
         .join("\n\n==============================\n\n")
     );
 
+    lines.push("");
+    lines.push("=".repeat(60));
+    lines.push("");
+
     return lines.join("\n");
   }
 
@@ -933,7 +937,7 @@ function formatMultipleEarlyNoteResults(results, t) {
     return lines.join("\n");
   }
 
-  lines.push(t("earlyNoteIssueDetails"));
+  lines.push(formatSectionTitle(t("earlyNoteIssueDetails")));
   lines.push("");
 
   lines.push(
@@ -1096,11 +1100,11 @@ function formatMultipleTagResults(results, t) {
 
   const lines = [];
 
-  lines.push(t("tagConsistencyCheck"));
+  lines.push(formatSectionTitle(t("tagConsistencyCheck")));
   lines.push("");
 
   if (compared.base) {
-    lines.push(`(${t("baseDiff")}: ${getDifficultyName(compared.base.fileName)})`);
+    lines.push(`(${t("baseDiff")}: ${getDifficultyNameText(compared.base.fileName)})`);
     lines.push("");
   }
 
@@ -1111,7 +1115,7 @@ function formatMultipleTagResults(results, t) {
     lines.push("");
 
     for (const mismatch of compared.mismatches) {
-      lines.push(`${getDifficultyName(mismatch.fileName)}`);
+      lines.push(`${getDifficultyNameText(mismatch.fileName)}`);
 
       if (mismatch.removed.length) {
         lines.push(`  ${t("tagRemoved")}: ${mismatch.removed.map(tag => `<code>${escapeHtml(tag)}</code>`).join(" ")}`);
@@ -1126,9 +1130,9 @@ function formatMultipleTagResults(results, t) {
   }
 
   lines.push("");
-  lines.push("==============================");
+  lines.push(formatSeparator());
   lines.push("");
-  lines.push(t("tagSpacingCheck"));
+  lines.push(formatSectionTitle(t("tagSpacingCheck")));
   lines.push("");
 
   const spacingGroups = groupTagSpacingResults(sortedResults);
@@ -1139,14 +1143,14 @@ function formatMultipleTagResults(results, t) {
     lines.push(
       spacingGroups
         .map(group => formatTagSpacingGroupResult(group, t))
-        .join("\n\n==============================\n\n")
+        .join("\n\n" + formatSeparator() + "\n\n")
     );
   }
 
   lines.push("");
-  lines.push("==============================");
+  lines.push(formatSeparator());
   lines.push("");
-  lines.push(t("tagSpellingCheck"));
+  lines.push(formatSectionTitle(t("tagSpellingCheck")));
   lines.push("");
 
   const spellingGroups = groupTagResultsByNormalizedTags(sortedResults)
@@ -1158,14 +1162,14 @@ function formatMultipleTagResults(results, t) {
     lines.push(
       spellingGroups
         .map(group => formatTagSpellingResult(group.representative, t, group))
-        .join("\n\n==============================\n\n")
+        .join("\n\n" + formatSeparator() + "\n\n")
     );
   }
 
   lines.push("");
-  lines.push("==============================");
+  lines.push(formatSeparator());
   lines.push("");
-  lines.push(t("tagRelatedCheck"));
+  lines.push(formatSectionTitle(t("tagRelatedCheck")));
   lines.push("");
 
   const relatedGroups = groupTagResultsByNormalizedTags(sortedResults)
@@ -1177,7 +1181,7 @@ function formatMultipleTagResults(results, t) {
     lines.push(
       relatedGroups
         .map(group => formatTagRelatedResult(group.representative, t, group))
-        .join("\n\n==============================\n\n")
+        .join("\n\n" + formatSeparator() + "\n\n")
     );
   }
 
@@ -1268,7 +1272,7 @@ function groupTagResultsByNormalizedTags(results) {
 }
 
 function formatGroupedTagHeader(group) {
-  const names = group.fileNames.map(fileName => getDifficultyName(fileName));
+  const names = group.fileNames.map(fileName => getDifficultyNameText(fileName));
 
   if (names.length === 1) {
     return names[0];
@@ -1280,7 +1284,7 @@ function formatGroupedTagHeader(group) {
 function formatTagSpellingResult(result, t, group = null) {
   const lines = [];
 
-  lines.push(group ? formatGroupedTagHeader(group) : getDifficultyName(result.fileName));
+  lines.push(group ? formatGroupedTagHeader(group) : getDifficultyNameText(result.fileName));
   lines.push("");
 
   for (const item of result.spellingSuggestions) {
@@ -1295,7 +1299,7 @@ function formatTagSpellingResult(result, t, group = null) {
 function formatTagRelatedResult(result, t, group = null) {
   const lines = [];
 
-  lines.push(group ? formatGroupedTagHeader(group) : getDifficultyName(result.fileName));
+  lines.push(group ? formatGroupedTagHeader(group) : getDifficultyNameText(result.fileName));
   lines.push("");
 
   for (const item of result.relatedSuggestions) {
@@ -1385,7 +1389,7 @@ function formatSourceGroupResult(group, t) {
   // Diff一覧
   lines.push(
     group.fileNames
-      .map(name => getDifficultyName(name))
+      .map(name => getDifficultyNameText(name))
       .join(", ")
   );
 
@@ -1437,6 +1441,91 @@ function formatSourceGroupResult(group, t) {
   );
 
   return lines.join("\n");
+}
+
+/** その他：プレビューポイント */
+function formatPreviewPointResult(results, t) {
+  if (!results || !results.length) {
+    return t("noOsuFiles");
+  }
+
+  const validResults = results.filter(result => result.previewTime !== null);
+
+  if (!validResults.length) {
+    return t("previewPointNotFound");
+  }
+
+  const groups = groupPreviewPointResults(validResults);
+
+  const lines = [];
+
+  if (groups.length === 1) {
+    const item = groups[0].items[0];
+    lines.push(formatPreviewPointSingleResult(item, t));
+    return lines.join("\n");
+  }
+
+  lines.push(t("previewPointMismatch"));
+  lines.push("");
+
+  for (const group of groups) {
+    const item = group.items[0];
+    lines.push(formatPreviewPointSingleResult(item, t));
+
+    lines.push(
+      group.items
+        .map(result => getDifficultyNameText(result.fileName))
+        .join(", ")
+    );
+
+    lines.push("");
+  }
+
+  return lines.join("\n").trimEnd();
+}
+
+function groupPreviewPointResults(results) {
+  const map = new Map();
+
+  for (const result of results) {
+    const key = [
+      result.previewTime,
+      result.snap,
+      result.diff
+    ].join("|");
+
+    if (!map.has(key)) {
+      map.set(key, []);
+    }
+
+    map.get(key).push(result);
+  }
+
+  return [...map.values()].map(items => ({ items }));
+}
+
+function formatPreviewPointSingleResult(item, t) {
+  const diffText =
+    item.diff === null
+      ? "-"
+      : `${item.diff >= 0 ? "+" : "-"}${Math.abs(item.diff)} ms`;
+
+  const levelClass =
+    item.level === "warn"
+      ? "result-warn"
+      : "";
+
+  const status =
+    item.level === "warn"
+      ? t("warning")
+      : t("sourceOk");
+
+  return `<span class="${levelClass}">` +
+    `${formatTimestampLink(item.previewTime)} | ` +
+    `${item.snap} snap | ` +
+    `${diffText} | ` +
+    `${status}` +
+    `</span>`;
 }
 
 /** modeのグループ関数 */
@@ -1555,6 +1644,15 @@ function escapeHtml(text) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function formatSectionTitle(text) {
+  return `<h3 class="result-section-title">${escapeHtml(text)}</h3>`;
+}
+
+/** 区切り線 */
+function formatSeparator() {
+  return '<span class="result-separator-line"></span>';
 }
 
 /** タイムスタンプのリンク用 */
