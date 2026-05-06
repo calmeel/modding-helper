@@ -225,6 +225,96 @@ function getSpreadEffectiveCategory(result, manualCategories = {}) {
   return manualCategories[result.fileName] || getSpreadAutoCategory(result.sortInfo);
 }
 
+/** spreadのノーツratio条件 */
+const SPREAD_NOTE_RATIO_RULES = {
+  kantanToFutsuu: {
+    errorLow: 1.20,
+    warnLow: 1.40,
+    warnHigh: 2.20,
+    errorHigh: 2.60
+  },
+  futsuuToMuzukashii: {
+    errorLow: 1.15,
+    warnLow: 1.25,
+    warnHigh: 1.90,
+    errorHigh: 2.20
+  },
+  muzukashiiToOni: {
+    errorLow: 1.10,
+    warnLow: 1.15,
+    warnHigh: 1.60,
+    errorHigh: 1.90
+  },
+  oniToInnerPlus: {
+    errorLow: 1.05,
+    warnLow: 1.08,
+    warnHigh: 1.40,
+    errorHigh: 1.70
+  },
+  innerPlusToInnerPlus: {
+    errorLow: 1.03,
+    warnLow: 1.05,
+    warnHigh: 1.30,
+    errorHigh: 1.55
+  }
+};
+
+function getSpreadNoteRatioLevel(ratio, prevResult = null, curResult = null, manualCategories = {}) {
+  if (ratio === null || ratio === undefined || !Number.isFinite(ratio)) {
+    return "none";
+  }
+
+  const rule = getSpreadNoteRatioRule(prevResult, curResult, manualCategories);
+
+  if (ratio < rule.errorLow) return "error";
+  if (ratio < rule.warnLow) return "warn";
+  if (ratio > rule.errorHigh) return "error";
+  if (ratio > rule.warnHigh) return "warn";
+
+  return "ok";
+}
+
+function getSpreadNoteRatioRule(prevResult, curResult, manualCategories = {}) {
+  const prevCategory = prevResult
+    ? getSpreadEffectiveCategory(prevResult, manualCategories)
+    : "unknown";
+
+  const curCategory = curResult
+    ? getSpreadEffectiveCategory(curResult, manualCategories)
+    : "unknown";
+
+  if (
+    (prevCategory === "belowKantan" && curCategory === "kantan") ||
+    (prevCategory === "kantan" && curCategory === "futsuu")
+  ) {
+    return SPREAD_NOTE_RATIO_RULES.kantanToFutsuu;
+  }
+
+  if (prevCategory === "futsuu" && curCategory === "muzukashii") {
+    return SPREAD_NOTE_RATIO_RULES.futsuuToMuzukashii;
+  }
+
+  if (prevCategory === "muzukashii" && curCategory === "oni") {
+    return SPREAD_NOTE_RATIO_RULES.muzukashiiToOni;
+  }
+
+  if (prevCategory === "oni" && curCategory === "innerPlus") {
+    return SPREAD_NOTE_RATIO_RULES.oniToInnerPlus;
+  }
+
+  if (prevCategory === "innerPlus" && curCategory === "innerPlus") {
+    return SPREAD_NOTE_RATIO_RULES.innerPlusToInnerPlus;
+  }
+
+  // カテゴリが飛んでいる / Unknown / カスタム順の場合の安全側フォールバック
+  if (curCategory === "futsuu") return SPREAD_NOTE_RATIO_RULES.kantanToFutsuu;
+  if (curCategory === "muzukashii") return SPREAD_NOTE_RATIO_RULES.futsuuToMuzukashii;
+  if (curCategory === "oni") return SPREAD_NOTE_RATIO_RULES.muzukashiiToOni;
+  if (curCategory === "innerPlus") return SPREAD_NOTE_RATIO_RULES.oniToInnerPlus;
+
+  return SPREAD_NOTE_RATIO_RULES.muzukashiiToOni;
+}
+
 function getSpreadCategoryOrder(category) {
   return SPREAD_CATEGORY_ORDER[category] ?? SPREAD_CATEGORY_ORDER.unknown;
 }

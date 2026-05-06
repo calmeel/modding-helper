@@ -324,7 +324,7 @@ function getSpreadIssueLevel(spreadState) {
     if (prevNotes <= 0) continue;
 
     const ratio = curNotes / prevNotes;
-    const level = getSpreadNoteRatioLevel(ratio);
+    const level = getSpreadNoteRatioLevel(ratio, prev, cur, manualCategories);
 
     if (level === "error") return TAB_LEVEL_ERROR;
     if (level === "warn") hasWarn = true;
