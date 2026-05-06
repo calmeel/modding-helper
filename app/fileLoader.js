@@ -19,6 +19,7 @@ function createEmptyProcessResult() {
     earlyNote: [],
     tag: [],
     source: [],
+    previewPoint: [],
     spread: []
   };
 }
@@ -39,6 +40,7 @@ async function analyzeOszFile(file) {
   const earlyNoteResults = [];
   const tagResults = [];
   const sourceResults = [];
+  const previewPointResults = [];
   const spreadResults = [];
 
   const osuFiles = Object.values(zip.files)
@@ -123,6 +125,11 @@ async function analyzeOszFile(file) {
       mode
     });
 
+    previewPointResults.push({
+      ...runPreviewPointCheck(text, entry.name),
+      mode
+    });
+
     spreadResults.push({
       ...runSpreadCheck(text, entry.name),
       mode
@@ -143,6 +150,7 @@ async function analyzeOszFile(file) {
     earlyNoteResults,
     tagResults,
     sourceResults,
+    previewPointResults,
     spreadResults
   };
 }
@@ -234,6 +242,12 @@ async function processFile(file) {
           mode
         }
       ],
+      previewPoint: [
+        {
+          ...runPreviewPointCheck(text, file.name),
+          mode
+        }
+      ],
       spread: [
         {
           ...runSpreadCheck(text, file.name),
@@ -261,6 +275,7 @@ async function processFile(file) {
       earlyNote: analyzed.earlyNoteResults,
       tag: analyzed.tagResults,
       source: analyzed.sourceResults,
+      previewPoint: analyzed.previewPointResults,
       spread: analyzed.spreadResults,
     };
   }

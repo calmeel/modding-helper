@@ -32,7 +32,7 @@ function updateTabIssueStates(state) {
   setTabIssueLevel("sliderSettings", getSliderSettingsIssueLevel(state.sliderSettings));
   setTabIssueLevel("earlyNote", getEarlyNoteIssueLevel(state.earlyNote));
   setTabIssueLevel("tag", getTagIssueLevel(state.tag));
-  setTabIssueLevel("misc", getSourceIssueLevel(state.source));
+  setTabIssueLevel("misc", getMiscIssueLevel(state));
   setTabIssueLevel("spread", getSpreadIssueLevel(state.spread));
 }
 
@@ -173,7 +173,7 @@ function getSliderSettingsIssueLevel(results) {
   for (const result of results) {
     for (const issue of result.issues ?? []) {
       if (issue.type === "sliderMultiplier") {
-        return TAB_LEVEL_ERROR;
+        hasWarn = true;
       }
 
       if (issue.type === "sliderTickRate") {
@@ -238,6 +238,45 @@ function getTagIssueLevel(results) {
 }
 
 function getSourceIssueLevel(results) {
+  if (!results) return TAB_LEVEL_NONE;
+
+  let hasWarn = false;
+
+  for (const result of results) {
+    if (result.level === "error") {
+      return TAB_LEVEL_ERROR;
+    }
+
+    if (result.level === "warn") {
+      hasWarn = true;
+    }
+  }
+
+  return hasWarn ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
+}
+
+function getMiscIssueLevel(state) {
+  const sourceLevel = getSourceIssueLevel(state.source);
+  const previewPointLevel = getPreviewPointIssueLevel(state.previewPoint);
+
+  if (
+    sourceLevel === TAB_LEVEL_ERROR ||
+    previewPointLevel === TAB_LEVEL_ERROR
+  ) {
+    return TAB_LEVEL_ERROR;
+  }
+
+  if (
+    sourceLevel === TAB_LEVEL_WARN ||
+    previewPointLevel === TAB_LEVEL_WARN
+  ) {
+    return TAB_LEVEL_WARN;
+  }
+
+  return TAB_LEVEL_NONE;
+}
+
+function getPreviewPointIssueLevel(results) {
   if (!results) return TAB_LEVEL_NONE;
 
   let hasWarn = false;

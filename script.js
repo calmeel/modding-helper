@@ -25,6 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const earlyNoteOutput = document.getElementById("earlyNoteOutput");
   const tagOutput = document.getElementById("tagOutput");
   const sourceOutput = document.getElementById("sourceOutput");
+  const previewPointOutput = document.getElementById("previewPointOutput");
   const spreadOdHpOutput = document.getElementById("spreadOdHpOutput");
   const spreadOrderOutput = document.getElementById("spreadOrderOutput");
   const spreadResetOrderButton = document.getElementById("spreadResetOrderButton");
@@ -83,6 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
     earlyNoteOutput,
     tagOutput,
     sourceOutput,
+    previewPointOutput,
     spreadOdHpOutput,
     spreadOrderOutput,
     spreadResetOrderButton,
@@ -247,6 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderEarlyNoteResult();
     renderTagResult();
     renderSourceResult();
+    renderPreviewPointResult();
     renderSpreadResult();
     updateTabIssueStates(state);
     bnCompareUi.renderBnSelectedResult();
@@ -331,6 +334,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderSourceResult() {
     renderSourceResultFromResults(
       state.source,
+      dom,
+      t
+    );
+  }
+
+  function renderPreviewPointResult() {
+    renderPreviewPointResultFromResults(
+      state.previewPoint,
       dom,
       t
     );
@@ -423,6 +434,7 @@ document.addEventListener("DOMContentLoaded", () => {
       state.sliderSettings = result.sliderSettings;
       state.tag = result.tag;
       state.source = result.source;
+      state.previewPoint = result.previewPoint;
       state.spread.results = result.spread;
       state.spread.diffOrder = createSpreadDiffOrder(result.spread);
       state.spread.manualCategories = {};
@@ -440,6 +452,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderEarlyNoteResult();
       renderTagResult();
       renderSourceResult();
+      renderPreviewPointResult();
       renderSpreadResult();
       updateTabIssueStates(state);
     } catch (err) {

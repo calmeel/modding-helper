@@ -739,6 +739,26 @@ input[type="file"]::file-selector-button:hover {
   color: #fff;
 }
 
+/** 区切り線 */
+.result-separator {
+  border-top: 1px solid #444;
+  margin: 18px 0;
+}
+
+.result-separator-line {
+  display: block;
+  border-top: 1px solid #444;
+  margin: 16px 0;
+}
+
+/** 見出しの色 */
+.result-section-title {
+  margin: 14px 0 10px;
+  color: #f3f3f3;
+  font-size: 1.17em;
+  font-weight: 700;
+}
+
 /** スプレッドタブのFinisher */
 .spread-finisher-d {
   color: #ff6b6b;

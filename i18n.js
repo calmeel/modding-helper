@@ -132,6 +132,10 @@ const i18n = {
     sourceExpected: "Expected",
     sourceUnknownTouhou: "This Touhou work was not found in the checklist, so it could not be validated. Please search and verify the correct source manually.",
 
+    previewPointSnapTitle: "Preview point snap",
+    previewPointNotFound: "Preview point was not found.",
+    previewPointMismatch: "Preview point differs between difficulties.",
+
     tabSpread: "Spread Compare",
     spreadAutoOrder: "Auto order",
     spreadOdHp: "OD / HP",
@@ -300,6 +304,10 @@ const i18n = {
     sourceNotTouhou: "東方作品ではないため、Sourceチェックの対象外です。",
     sourceExpected: "推奨表記",
     sourceUnknownTouhou: "チェックリストに該当する東方作品がなかったためチェックできませんでした。\n正しい作品を検索してご自身でご確認ください。",
+
+    previewPointSnapTitle: "プレビューポイントのsnap",
+    previewPointNotFound: "PreviewTime が見つかりませんでした。",
+    previewPointMismatch: "diff間でプレビューポイントが一致していません。",
 
     tagConsistencyCheck: "全diffのTags一致チェック",
     tagNoMismatch: "全diffでTagsは一致しています。",

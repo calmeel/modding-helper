@@ -162,7 +162,7 @@ function runSourceCheck(text, fileName) {
   // 全然違う
   return {
     fileName,
-    level: "error",
+    level: "warn",
     source,
     type: "unknown"
   };

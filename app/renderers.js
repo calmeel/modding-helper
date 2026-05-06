@@ -1086,3 +1086,15 @@ function renderSourceResult(results, dom, t) {
 
   dom.sourceOutput.innerHTML = lines.join("\n");
 }
+
+/** その他タブ：プレビューポイント */
+function renderPreviewPointResultFromResults(results, dom, t) {
+  if (!dom.previewPointOutput) return;
+
+  if (!results) {
+    dom.previewPointOutput.innerHTML = t("noFileLoaded");
+    return;
+  }
+
+  dom.previewPointOutput.innerHTML = formatPreviewPointResult(results, t);
+}

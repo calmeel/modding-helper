@@ -18,8 +18,8 @@
     <p data-i18n="subtitle">osu!taiko modding support tool</p>
 
     <div class="top-links">
-      <a href="docs.html" target="_blank">📘 説明書 (JP)</a>
-      <a href="docs-en.html" target="_blank">🌐 Docs (EN)</a>
+      <a href="docs/docs.html" target="_blank">📘 説明書 (JP)</a>
+      <a href="docs/docs-en.html" target="_blank">🌐 Docs (EN)</a>
       <button id="updateBtn" class="doc-btn">📝 Update history</button>
       <button id="toggleTabSettings" class="doc-btn">⚙</button>
     </div>
@@ -240,6 +240,13 @@
 
       <section class="tab-panel" id="tab-misc">
         <div class="misc-section">
+          <h3 data-i18n="previewPointSnapTitle">Preview point snap</h3>
+          <pre id="previewPointOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+        </div>
+
+        <div class="result-separator"></div>
+
+        <div class="misc-section">
           <h3 data-i18n="sourceCheckTitle">Source check</h3>
           <pre id="sourceOutput" data-i18n="noFileLoaded">No file loaded.</pre>
         </div>
@@ -414,6 +421,7 @@
   <script src="checks/earlyNoteCheck.js"></script>
   <script src="checks/tagCheck.js"></script>
   <script src="checks/sourceCheck.js"></script>
+  <script src="checks/previewPointCheck.js"></script>
   <script src="checks/spreadCheck.js"></script>
   <script src="checks/bnCompareCheck.js"></script>
   <script src="i18n.js"></script>
