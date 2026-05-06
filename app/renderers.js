@@ -247,7 +247,8 @@ function renderSpreadResultFromResults(spreadState, dom, t) {
     dom.spreadNoteCountOutput.innerHTML = formatSpreadNoteCountTable(
       results,
       t,
-      spreadState.diffOrder
+      spreadState.diffOrder,
+      spreadState.manualCategories
     );
   }
 
@@ -330,7 +331,7 @@ function updateSpreadSubtabIssueStates(spreadState) {
     if (prevNotes <= 0) continue;
 
     const ratio = curNotes / prevNotes;
-    const level = getSpreadNoteRatioLevel(ratio);
+    const level = getSpreadNoteRatioLevel(ratio, prev, cur, manualCategories);
 
     if (level === "error") {
       noteLevel = "error";
@@ -720,16 +721,6 @@ function formatSpreadValue(value) {
   return value === null || value === undefined ? "N/A" : String(value);
 }
 
-function getSpreadNoteRatioLevel(ratio) {
-  if (ratio === null || ratio === undefined) return "none";
-
-  if (ratio < 1.05) return "error";
-  if (ratio < 1.15) return "warn";
-  if (ratio < 1.50) return "ok";
-  if (ratio < 2.00) return "warn";
-  return "error";
-}
-
 function formatSpreadDelta(delta) {
   if (delta === null || delta === undefined) return "N/A";
 
@@ -755,7 +746,7 @@ function wrapSpreadLevel(text, level) {
   return escapeHtml(text);
 }
 
-function formatSpreadNoteCountTable(results, t, diffOrder = null) {
+function formatSpreadNoteCountTable(results, t, diffOrder = null, manualCategories = {}) {
   if (!results.length) {
     return t("noOsuFiles");
   }
@@ -781,7 +772,7 @@ function formatSpreadNoteCountTable(results, t, diffOrder = null) {
 
     const deltaText = formatSpreadDelta(delta);
     const ratioText = formatSpreadRatio(ratio);
-    const level = getSpreadNoteRatioLevel(ratio);
+    const level = getSpreadNoteRatioLevel(ratio, prev, result, manualCategories);
 
     return {
       result,

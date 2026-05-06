@@ -10,7 +10,7 @@ const TAG_SPELLING_DICTIONARY = [
   "gothic", "speedcore", "splittercore", "otogecore", "frenchcore",
   "200step", "dubstep", "drumstep", "chiptune", "breakcore", "piano",
   "mechakuchacore", "hypertrance", "terrorcore", "jungle", "metal",
-  "gabber", "gabba", "guitar", "glitch", "hop", "celtic", "music",
+  "gabber", "gabba", "guitar", "glitch", "celtic", "music",
   "schranz", "trap", "nightcore", "house", "ballade", "ballad",
   "hip-hop", "funk", "folk", "funkot", "mákina", "eurodance",
   "eurobeat", "jodeln", "reggae", "waltz", "bootleg",
@@ -151,12 +151,12 @@ const TAG_RELATED_RULES = [
     suggestGroup: ["歌ってみた", "utattemita"]
   },
   {
-    trigger: ["音mad", "音ｍａｄ", "音窓", "otomad", "oto-mad"],
-    suggestGroup: ["音mad", "音ｍａｄ", "音窓", "oto", "mad", "otomad", "oto-mad"]
+    trigger: ["音mad", "音窓", "otomad", "oto-mad"],
+    suggestGroup: ["音mad", "音窓", "oto", "mad", "otomad", "oto-mad"]
   },
   {
     triggerAll: ["oto", "mad"],
-    suggestGroup: ["音mad", "音ｍａｄ", "音窓", "otomad", "oto-mad"]
+    suggestGroup: ["音mad", "音窓", "otomad", "oto-mad"]
   },
   {
     trigger: ["ニコニコ動画", "niconico", "nnd"],
