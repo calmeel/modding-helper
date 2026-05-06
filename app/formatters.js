@@ -234,10 +234,43 @@ function formatDoubleSvResult(result, t) {
     return lines.join("\n");
   }
 
+  const allItems = result.groups.flatMap(group => group.items);
+
+  const timeWidth = Math.max(
+    visibleWidth("Time"),
+    ...allItems.map(item => visibleWidth(msToTimestamp(item.time)))
+  );
+
+  const svTexts = allItems.map(item => `SV ${formatSvValue(item.beatLength)}`);
+  const svWidth = Math.max(
+    visibleWidth("SV"),
+    ...svTexts.map(text => visibleWidth(text))
+  );
+
+  const volumeTexts = allItems.map(item => `vol ${item.volume}`);
+  const volumeWidth = Math.max(
+    visibleWidth("Volume"),
+    ...volumeTexts.map(text => visibleWidth(text))
+  );
+
   for (const group of result.groups) {
     for (const item of group.items) {
-      lines.push(`${formatTimestampLink(item.time)} | SV ${formatSvValue(item.beatLength)} | vol ${item.volume}`);
+      const timeText = formatTimestampLink(item.time);
+      const plainTime = msToTimestamp(item.time);
+
+      const svText = `SV ${formatSvValue(item.beatLength)}`;
+      const volumeText = `vol ${item.volume}`;
+
+      const timePadding =
+        " ".repeat(timeWidth - visibleWidth(plainTime));
+
+      lines.push(
+        `${timeText}${timePadding} | ` +
+        `${padEndVisual(svText, svWidth)} | ` +
+        `${padEndVisual(volumeText, volumeWidth)}`
+      );
     }
+
     lines.push("");
   }
 
@@ -295,22 +328,88 @@ function formatKiaiCompareResult(results, t) {
     return lines.join("\n");
   }
 
-  for (const section of compared.mismatchSections) {
-    const on = section.states
-      .filter(s => s.kiai)
-      .map(s => getDifficultyName(s.fileName));
+  lines.push(formatKiaiMismatchTable(compared.mismatchSections, results, t));
+  return lines.join("\n").trimEnd();
+}
 
-    const off = section.states
-      .filter(s => !s.kiai)
-      .map(s => getDifficultyName(s.fileName));
+function formatKiaiMismatchTable(sections, results, t) {
+  const sortedResults = sortResultsForDisplay(results);
 
-    lines.push(`  ${formatTimestampLink(section.start)} - ${formatTimestampLink(section.end)}`);
-    lines.push(`    ON : ${on.join(", ") || `(${t("none")})`}`);
-    lines.push(`    OFF: ${off.join(", ") || `(${t("none")})`}`);
-    lines.push("");
+  const diffHeaders = sortedResults.map(result => ({
+    plain: getDifficultyNameText(result.fileName),
+    html: getDifficultyName(result.fileName)
+  }));
+
+  const rows = sections.map(section => {
+    const values = sortedResults.map(result => {
+      const state = section.states.find(s => s.fileName === result.fileName);
+      const plain = state?.kiai ? "ON" : "OFF";
+
+      return {
+        plain: state?.kiai ? "ON" : "- ",
+        html: state?.kiai
+          ? "ON"
+          : "- "
+      };
+    });
+
+    const timeText =
+      `${formatTimestampLink(section.start)} - ${formatTimestampLink(section.end)}`;
+
+    const plainTimeText =
+      `${msToTimestamp(section.start)} - ${msToTimestamp(section.end)}`;
+
+    return {
+      timeText,
+      plainTimeText,
+      values
+    };
+  });
+
+  const timeWidth = Math.max(
+    visibleWidth("Time"),
+    ...rows.map(row => visibleWidth(row.plainTimeText))
+  );
+
+  const colWidths = diffHeaders.map((header, index) => {
+    let maxWidth = visibleWidth(header.plain);
+
+    for (const row of rows) {
+      maxWidth = Math.max(maxWidth, visibleWidth(row.values[index].plain));
+    }
+
+    return Math.max(maxWidth, 3);
+  });
+
+  const lines = [];
+
+  lines.push(
+    `${padEndVisual("Time", timeWidth)} | ` +
+    diffHeaders.map((header, index) => {
+      const padding = " ".repeat(colWidths[index] - visibleWidth(header.plain));
+      return header.html + padding;
+    }).join(" | ")
+  );
+
+  lines.push(
+    `${"-".repeat(timeWidth)}-+-` +
+    colWidths.map(width => "-".repeat(width)).join("-+-")
+  );
+
+  for (const row of rows) {
+    const timePadding =
+      " ".repeat(timeWidth - visibleWidth(row.plainTimeText));
+
+    lines.push(
+      `${row.timeText}${timePadding} | ` +
+      row.values.map((value, index) => {
+        const padding = " ".repeat(colWidths[index] - visibleWidth(value.plain));
+        return value.html + padding;
+      }).join(" | ")
+    );
   }
 
-  return lines.join("\n").trimEnd();
+  return lines.join("\n");
 }
 
 /** Kiai Snap系の表示関数 */
@@ -333,14 +432,59 @@ function formatKiaiSnapResult(result, t) {
     return lines.join("\n");
   }
 
-  for (const item of result.results) {
+  // 列幅計算
+  const timeWidth = Math.max(
+    visibleWidth("Time"),
+    ...result.results.map(item => visibleWidth(msToTimestamp(item.time)))
+  );
+
+  const typeTexts = result.results.map(item => `Kiai ${item.type}`);
+  const typeWidth = Math.max(
+    visibleWidth("Type"),
+    ...typeTexts.map(text => visibleWidth(text))
+  );
+
+  const snapTexts = result.results.map(item => `${item.snap} snap`);
+  const snapWidth = Math.max(
+    visibleWidth("Snap"),
+    ...snapTexts.map(text => visibleWidth(text))
+  );
+
+  const diffTexts = result.results.map(item =>
+    item.diff === null
+      ? "-"
+      : `${item.diff >= 0 ? "+" : "-"}${Math.abs(item.diff)} ms`
+  );
+
+  const diffWidth = Math.max(
+    visibleWidth("Diff"),
+    ...diffTexts.map(text => visibleWidth(text))
+  );
+
+  // 本体
+  for (let i = 0; i < result.results.length; i++) {
+    const item = result.results[i];
+
+    const timeText = formatTimestampLink(item.time);
+
+    const plainTime = msToTimestamp(item.time);
+
+    const typeText = `Kiai ${item.type}`;
+    const snapText = `${item.snap} snap`;
+
     const diffText =
       item.diff === null
-        ? ""
-        : ` | ${item.diff >= 0 ? "+" : "-"}${Math.abs(item.diff)} ms`;
+        ? "-"
+        : `${item.diff >= 0 ? "+" : "-"}${Math.abs(item.diff)} ms`;
+
+    const timePadding =
+      " ".repeat(timeWidth - visibleWidth(plainTime));
 
     lines.push(
-      `${formatTimestampLink(item.time)} | Kiai ${item.type} | ${item.snap} snap${diffText}`
+      `${timeText}${timePadding} | ` +
+      `${padEndVisual(typeText, typeWidth)} | ` +
+      `${padEndVisual(snapText, snapWidth)} | ` +
+      `${padEndVisual(diffText, diffWidth)}`
     );
   }
 
@@ -367,11 +511,57 @@ function formatSvVolumeResult(result, t) {
     return lines.join("\n");
   }
 
-  for (const item of result.results) {
+  const timeWidth = Math.max(
+    visibleWidth("Time"),
+    ...result.results.map(item => visibleWidth(msToTimestamp(item.time)))
+  );
+
+  const hitTexts = result.results.map(item =>
+    `hitobject ${msToTimestamp(item.hitTime)}`
+  );
+
+  const hitWidth = Math.max(
+    visibleWidth("HitObject"),
+    ...hitTexts.map(text => visibleWidth(text))
+  );
+
+  const diffTexts = result.results.map(item => {
     const sign = item.diff >= 0 ? "+" : "-";
+    return `${sign}${Math.abs(item.diff)} ms`;
+  });
+
+  const diffWidth = Math.max(
+    visibleWidth("Diff"),
+    ...diffTexts.map(text => visibleWidth(text))
+  );
+
+  const volumeTexts = result.results.map(item =>
+    `vol ${item.oldVolume} -> ${item.newVolume}`
+  );
+
+  const volumeWidth = Math.max(
+    visibleWidth("Volume"),
+    ...volumeTexts.map(text => visibleWidth(text))
+  );
+
+  for (let i = 0; i < result.results.length; i++) {
+    const item = result.results[i];
+
+    const timeText = formatTimestampLink(item.time);
+    const plainTime = msToTimestamp(item.time);
+
+    const hitText = hitTexts[i];
+    const diffText = diffTexts[i];
+    const volumeText = volumeTexts[i];
+
+    const timePadding =
+      " ".repeat(timeWidth - visibleWidth(plainTime));
 
     lines.push(
-      `${formatTimestampLink(item.time)} | hitobject ${msToTimestamp(item.hitTime)} | ${sign}${Math.abs(item.diff)} ms | vol ${item.oldVolume} -> ${item.newVolume}`
+      `${timeText}${timePadding} | ` +
+      `${padEndVisual(hitText, hitWidth)} | ` +
+      `${padEndVisual(diffText, diffWidth)} | ` +
+      `${padEndVisual(volumeText, volumeWidth)}`
     );
   }
 
@@ -396,30 +586,95 @@ function formatVolumeCompareResult(result, t) {
     return lines.join("\n");
   }
 
-  for (const item of result.results) {
-    lines.push(`${formatTimestampLink(item.start)} - ${formatTimestampLink(item.end)} | diff ${item.diff}%`);
+  const allStates = result.results.flatMap(item => item.states ?? []);
+  const sortedStates = sortResultsForDisplay(allStates);
 
-    const sortedStates = sortResultsForDisplay(item.states);
-
-    const diffNames = sortedStates.map(state => getDifficultyNameText(state.fileName));
-    const diffWidth = Math.max(
-      10,
-      ...diffNames.map(name => name.length)
-    );
-
-    for (const state of sortedStates) {
-      const plainName = getDifficultyNameText(state.fileName);
-      const coloredName = getDifficultyName(state.fileName);
-      const padding = " ".repeat(diffWidth - plainName.length);
-      const volumeText = state.volume === null ? "N/A" : `${state.volume}%`;
-
-      lines.push(`  ${coloredName}${padding} | ${volumeText}`);
+  const uniqueFileNames = [];
+  for (const state of sortedStates) {
+    if (!uniqueFileNames.includes(state.fileName)) {
+      uniqueFileNames.push(state.fileName);
     }
-
-    lines.push("");
   }
 
-  return lines.join("\n").trimEnd();
+  const diffHeaders = uniqueFileNames.map(fileName => ({
+    fileName,
+    plain: getDifficultyNameText(fileName),
+    html: getDifficultyName(fileName)
+  }));
+
+  const rows = result.results.map(item => {
+    const timePlain =
+      `${msToTimestamp(item.start)} - ${msToTimestamp(item.end)}`;
+
+    const timeHtml =
+      `${formatTimestampLink(item.start)} - ${formatTimestampLink(item.end)}`;
+
+    const diffText = `diff ${item.diff}%`;
+
+    const values = diffHeaders.map(header => {
+      const state = item.states.find(s => s.fileName === header.fileName);
+      return state?.volume === null || state?.volume === undefined
+        ? "N/A"
+        : `${state.volume}%`;
+    });
+
+    return {
+      timePlain,
+      timeHtml,
+      diffText,
+      values
+    };
+  });
+
+  const timeWidth = Math.max(
+    visibleWidth("Time"),
+    ...rows.map(row => visibleWidth(row.timePlain))
+  );
+
+  const diffWidth = Math.max(
+    visibleWidth("Diff"),
+    ...rows.map(row => visibleWidth(row.diffText))
+  );
+
+  const colWidths = diffHeaders.map((header, index) => {
+    let maxWidth = visibleWidth(header.plain);
+
+    for (const row of rows) {
+      maxWidth = Math.max(maxWidth, visibleWidth(row.values[index]));
+    }
+
+    return Math.max(maxWidth, 3);
+  });
+
+  lines.push(
+    `${padEndVisual("Time", timeWidth)} | ` +
+    `${padEndVisual("Diff", diffWidth)} | ` +
+    diffHeaders.map((header, index) => {
+      const padding = " ".repeat(colWidths[index] - visibleWidth(header.plain));
+      return header.html + padding;
+    }).join(" | ")
+  );
+
+  lines.push(
+    `${"-".repeat(timeWidth)}-+-` +
+    `${"-".repeat(diffWidth)}-+-` +
+    colWidths.map(width => "-".repeat(width)).join("-+-")
+  );
+
+  for (const row of rows) {
+    const timePadding =
+      " ".repeat(timeWidth - visibleWidth(row.timePlain));
+
+    lines.push(
+      `${row.timeHtml}${timePadding} | ` +
+      `${padEndVisual(row.diffText, diffWidth)} | ` +
+      row.values.map((value, index) =>
+        padEndVisual(value, colWidths[index])
+      ).join(" | ")
+    );
+  }
+
+  return lines.join("\n");
 }
 
 /** 赤線&緑線 */
@@ -1130,7 +1385,7 @@ function formatSourceGroupResult(group, t) {
   // Diff一覧
   lines.push(
     group.fileNames
-      .map(name => `[${getDifficultyName(name)}]`)
+      .map(name => getDifficultyName(name))
       .join(", ")
   );
 
