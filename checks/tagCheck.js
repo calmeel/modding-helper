@@ -3,7 +3,7 @@ const TAG_SPELLING_DICTIONARY = [
   "featured", "artist", "mappers'", "guild", "tiebreaker",
 
   // genres / style
-  "artcore", "anime", "ambient", "extratone", "hardcore", "hardtek",
+  "artcore", "anime", "ambient", "edm", "ethnic", "extratone", "hardcore", "hardtek",
   "melodic", "techno", "hardstyle", "psystyle", "psytrance", "trance",
   "electropop", "future", "bass", "female", "vocals", "vocalist",
   "vocaloid", "jazz", "electronic", "instrumental", "hitech", "hi-tech",
@@ -13,20 +13,23 @@ const TAG_SPELLING_DICTIONARY = [
   "gabber", "gabba", "guitar", "glitch", "hop", "celtic", "music",
   "schranz", "trap", "nightcore", "house", "ballade", "ballad",
   "hip-hop", "funk", "folk", "funkot", "mákina", "eurodance",
-  "eurobeat", "jodeln", "reggae", "waltz", "ethnic", "bootleg",
+  "eurobeat", "jodeln", "reggae", "waltz", "bootleg",
   "remix", "lolicore", "utattemita"
 ];
 
 const TAG_RELATED_RULES = [
   {
-    trigger: ["featured", "artist"],
-    suggestGroup: ["featured", "artist", "fa"]
+    triggerAll: ["featured", "artist"],
+    suggestGroup: ["fa"]
   },
   {
-    trigger: ["mappers'", "guild"],
-    suggestGroup: ["mappers'", "guild", "mg", "mpg"]
+    trigger: ["mpg"],
+    suggestGroup: ["mappers'", "guild", "mg"]
   },
-
+  {
+    triggerAll: ["mappers'", "guild"],
+    suggestGroup: ["mg", "mpg"]
+  },
   {
     trigger: ["j-core", "jcore"],
     suggestGroup: ["j-core", "jcore"]
@@ -48,6 +51,10 @@ const TAG_RELATED_RULES = [
     suggestGroup: ["hiphop", "hip", "hop", "hip-hop"]
   },
   {
+    triggerAll: ["hip", "hop"],
+    suggestGroup: ["hiphop", "hip-hop"]
+  },
+  {
     trigger: ["hitech", "hi-tech"],
     suggestGroup: ["hitech", "hi-tech"]
   },
@@ -60,23 +67,27 @@ const TAG_RELATED_RULES = [
     suggestGroup: ["ballade", "ballad"]
   },
   {
-    trigger: ["female"],
+    triggerAll: ["female", "vocals"],
     suggestGroup: ["female", "vocals", "vocalist"]
   },
   {
-    trigger: ["male"],
+    triggerAll: ["male", "vocals"],
     suggestGroup: ["male", "vocals", "vocalist"]
   },
   {
-    trigger: ["psytrance", "psychedelic"],
+    trigger: ["psytrance"],
     suggestGroup: ["psychedelic", "trance", "psytrance"]
+  },
+  {
+    triggerAll: ["psychedelic", "trance"],
+    suggestGroup: ["psytrance"]
   },
   {
     trigger: ["ボカロ", "ボーカロイド", "vocaloid"],
     suggestGroup: ["ボカロ", "ボーカロイド", "vocaloid"]
   },
   {
-    trigger: ["synthesizer", "synthv"],
+    triggerAll: ["synthesizer", "v"],
     suggestGroup: ["synthesizer", "synthv", "v", "sv"]
   },
   {
@@ -84,28 +95,56 @@ const TAG_RELATED_RULES = [
     suggestGroup: ["東方project", "東方", "touhou", "project"]
   },
   {
+    triggerAll: ["東方", "project"],
+    suggestGroup: ["東方project", "touhou"]
+  },
+  {
     trigger: ["edm"],
-    suggestGroup: ["electronic", "dance", "music", "edm"]
+    suggestGroup: ["electronic", "dance", "music"]
+  },
+  {
+    triggerAll: ["electronic", "dance", "music"],
+    suggestGroup: ["edm"]
   },
   {
     trigger: ["drum'n'bass", "dnb", "d&b", "d'n'b"],
-    suggestGroup: ["drum", "and", "bass", "drum'n'bass", "dnb", "d&b", "d'n'b"]
+    suggestGroup: ["drum", "and", "&", "bass", "drum'n'bass", "dnb", "d&b", "d'n'b"]
+  },
+  {
+    triggerAll: ["drum", "bass"],
+    suggestGroup: ["drum", "and", "&", "bass", "drum'n'bass", "dnb", "d&b", "d'n'b"]
   },
   {
     trigger: ["vtuber"],
     suggestGroup: ["virtual", "youtuber", "vtuber"]
   },
   {
+    triggerAll: ["virtual", "youtuber"],
+    suggestGroup: ["vtuber"]
+  },
+  {
     trigger: ["vn"],
-    suggestGroup: ["visual", "novel", "vn"]
+    suggestGroup: ["visual", "novel"]
+  },
+  {
+    triggerAll: ["visual", "novel"],
+    suggestGroup: ["vn"]
   },
   {
     trigger: ["ost"],
-    suggestGroup: ["original", "soundtrack", "ost"]
+    suggestGroup: ["original", "soundtrack"]
+  },
+  {
+    triggerAll: ["original", "soundtrack"],
+    suggestGroup: ["ost"]
   },
   {
     trigger: ["vgm"],
-    suggestGroup: ["video", "game", "vgm"]
+    suggestGroup: ["video", "game"]
+  },
+  {
+    triggerAll: ["video", "game"],
+    suggestGroup: ["vgm"]
   },
   {
     trigger: ["歌ってみた", "utattemita"],
@@ -116,12 +155,29 @@ const TAG_RELATED_RULES = [
     suggestGroup: ["音mad", "音ｍａｄ", "音窓", "oto", "mad", "otomad", "oto-mad"]
   },
   {
+    triggerAll: ["oto", "mad"],
+    suggestGroup: ["音mad", "音ｍａｄ", "音窓", "otomad", "oto-mad"]
+  },
+  {
     trigger: ["ニコニコ動画", "niconico", "nnd"],
     suggestGroup: ["ニコニコ動画", "niconico", "nico", "douga", "nnd"]
   },
+
   {
     trigger: ["プロセカ", "proseka", "puroseka", "prsk", "pjsk"],
     suggestGroup: ["プロセカ", "proseka", "puroseka", "project", "sekai", "colorful", "stage!", "prsk", "pjsk"]
+  },
+  {
+    triggerAll: ["project", "sekai"],
+    suggestGroup: ["プロセカ", "proseka", "puroseka", "colorful", "stage!", "prsk", "pjsk"]
+  },
+  {
+    trigger: ["太鼓の達人"],
+    suggestGroup: ["太鼓の達人", "taiko", "no", "tatsujin", "tnt"]
+  },
+  {
+    triggerAll: ["taiko", "no", "tatsujin"],
+    suggestGroup: ["太鼓の達人", "tnt"]
   },
   {
     trigger: ["opening", "op"],
@@ -131,10 +187,13 @@ const TAG_RELATED_RULES = [
     trigger: ["ending", "ed"],
     suggestGroup: ["ending", "ed"]
   },
-
   {
     trigger: ["ro16"],
     suggestGroup: ["round", "of", "16", "ro16"]
+  },
+  {
+    triggerAll: ["round", "of", "16"],
+    suggestGroup: ["ro16"]
   },
   {
     trigger: ["quarterfinals", "qf"],
@@ -145,13 +204,17 @@ const TAG_RELATED_RULES = [
     suggestGroup: ["semifinals", "sf"]
   },
   {
-    trigger: ["grandfinals", "grand", "gf"],
+    trigger: ["grandfinals", "gf"],
     suggestGroup: ["grandfinals", "grand", "finals", "gf"]
+  },
+  {
+    triggerAll: ["grand", "finals"],
+    suggestGroup: ["grandfinals", "gf"]
   },
   {
     trigger: ["tiebreaker", "tb"],
     suggestGroup: ["tiebreaker", "tb"]
-  }
+  },
 ];
 
 function runTagCheck(text, fileName) {
@@ -357,23 +420,53 @@ function findTagSpellingSuggestions(tags) {
 function findTagRelatedSuggestions(tags) {
   const words = getNormalizedTagWords(tags);
   const wordSet = new Set(words);
+
   const suggestions = [];
 
   for (const rule of TAG_RELATED_RULES) {
-    const trigger = rule.trigger.map(normalizeTagToken);
-    const suggestGroup = rule.suggestGroup.map(normalizeTagToken);
 
-    const presentTriggers = trigger.filter(tag => wordSet.has(tag));
+    const trigger =
+      (rule.trigger ?? []).map(normalizeTagToken);
 
-    // triggerに含まれるtagが1つも無い場合は発火しない
-    if (!presentTriggers.length) continue;
+    const triggerAll =
+      (rule.triggerAll ?? []).map(normalizeTagToken);
 
-    const missing = suggestGroup.filter(tag => !wordSet.has(tag));
+    const suggestGroup =
+      rule.suggestGroup.map(normalizeTagToken);
+
+    let matched = false;
+    let presentTriggers = [];
+
+    // 従来: どれか1つ含まれる
+    if (trigger.length) {
+      presentTriggers = trigger.filter(tag => wordSet.has(tag));
+
+      if (presentTriggers.length) {
+        matched = true;
+      }
+    }
+
+    // 新規: 全部含まれる
+    if (!matched && triggerAll.length) {
+      const allPresent =
+        triggerAll.every(tag => wordSet.has(tag));
+
+      if (allPresent) {
+        matched = true;
+        presentTriggers = triggerAll;
+      }
+    }
+
+    if (!matched) continue;
+
+    const missing =
+      suggestGroup.filter(tag => !wordSet.has(tag));
 
     if (!missing.length) continue;
 
     suggestions.push({
       present: presentTriggers,
+      presentSuggestions: suggestGroup.filter(tag => wordSet.has(tag)),
       suggestions: missing
     });
   }
@@ -397,18 +490,32 @@ function dedupeTagSpellingSuggestions(items) {
 }
 
 function dedupeTagRelatedSuggestions(items) {
-  const seen = new Set();
-  const deduped = [];
+  const map = new Map();
 
   for (const item of items) {
-    const key = `${item.present.join("|")}->${item.suggestions.join("|")}`;
-    if (seen.has(key)) continue;
+    const suggestions = [...new Set(item.suggestions)].sort();
+    if (!suggestions.length) continue;
 
-    seen.add(key);
-    deduped.push(item);
+    const key = suggestions.join("|");
+
+    if (!map.has(key)) {
+      map.set(key, {
+        present: [],
+        presentSuggestions: [],
+        suggestions
+      });
+    }
+
+    const existing = map.get(key);
+
+    existing.present.push(...(item.present ?? []));
+    existing.presentSuggestions.push(...(item.presentSuggestions ?? []));
+
+    existing.present = [...new Set(existing.present)].sort();
+    existing.presentSuggestions = [...new Set(existing.presentSuggestions)].sort();
   }
 
-  return deduped;
+  return [...map.values()];
 }
 
 function levenshteinDistance(a, b) {

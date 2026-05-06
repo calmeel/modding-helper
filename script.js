@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const sliderSettingsOutput = document.getElementById("sliderSettingsOutput");
   const earlyNoteOutput = document.getElementById("earlyNoteOutput");
   const tagOutput = document.getElementById("tagOutput");
+  const sourceOutput = document.getElementById("sourceOutput");
   const spreadOdHpOutput = document.getElementById("spreadOdHpOutput");
   const spreadOrderOutput = document.getElementById("spreadOrderOutput");
   const spreadResetOrderButton = document.getElementById("spreadResetOrderButton");
@@ -81,6 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
     sliderSettingsOutput,
     earlyNoteOutput,
     tagOutput,
+    sourceOutput,
     spreadOdHpOutput,
     spreadOrderOutput,
     spreadResetOrderButton,
@@ -110,6 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
     sliderSettings: null,
     earlyNote: null,
     tag: null,
+    source: null,
     spread: {
       results: null,
       diffOrder: [],
@@ -223,6 +226,10 @@ document.addEventListener("DOMContentLoaded", () => {
       tagOutput.textContent = t("noFileLoaded");
     }
 
+    if (!state.source && sourceOutput) {
+      sourceOutput.textContent = t("noFileLoaded");
+    }
+
     if (!state.spread && spreadOdHpOutput) {
       spreadOdHpOutput.textContent = t("noFileLoaded");
     }
@@ -239,6 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderSliderSettingsResult();
     renderEarlyNoteResult();
     renderTagResult();
+    renderSourceResult();
     renderSpreadResult();
     updateTabIssueStates(state);
     bnCompareUi.renderBnSelectedResult();
@@ -315,6 +323,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderTagResult() {
     renderTagResultFromResults(
       state.tag,
+      dom,
+      t
+    );
+  }
+
+  function renderSourceResult() {
+    renderSourceResultFromResults(
+      state.source,
       dom,
       t
     );
@@ -406,6 +422,7 @@ document.addEventListener("DOMContentLoaded", () => {
       state.earlyNote = result.earlyNote;
       state.sliderSettings = result.sliderSettings;
       state.tag = result.tag;
+      state.source = result.source;
       state.spread.results = result.spread;
       state.spread.diffOrder = createSpreadDiffOrder(result.spread);
       state.spread.manualCategories = {};
@@ -422,6 +439,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderSliderSettingsResult();
       renderEarlyNoteResult();
       renderTagResult();
+      renderSourceResult();
       renderSpreadResult();
       updateTabIssueStates(state);
     } catch (err) {
