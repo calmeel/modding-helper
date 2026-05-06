@@ -180,6 +180,17 @@ function renderTagResultFromResults(results, dom, t) {
   dom.tagOutput.innerHTML = formatMultipleTagResults(results, t);
 }
 
+function renderSourceResultFromResults(results, dom, t) {
+  if (!dom.sourceOutput) return;
+
+  if (!results) {
+    dom.sourceOutput.innerHTML = t("noFileLoaded");
+    return;
+  }
+
+  dom.sourceOutput.innerHTML = formatMultipleSourceResults(results, t);
+}
+
 function renderSliderSettingsResultFromResults(results, dom, t) {
   if (!dom.sliderSettingsOutput) return;
 
@@ -1020,4 +1031,39 @@ function collectAllSpreadFinisherTimes(results) {
 function getSpreadFinisherAtTime(result, time) {
   const item = (result.finishers ?? []).find(finisher => finisher.time === time);
   return item ? item.kind : "-";
+}
+
+/** その他タブ：東方のソースチェック */
+function renderSourceResult(results, dom, t) {
+  if (!dom.sourceOutput) return;
+
+  if (!results) {
+    dom.sourceOutput.innerHTML = t("noFileLoaded");
+    return;
+  }
+
+  const lines = [];
+
+  for (const result of results) {
+    lines.push(`${getDifficultyName(result.fileName)}`);
+    lines.push("");
+
+    if (result.level === "ok") {
+      lines.push(`OK`);
+      lines.push(`<a href="${result.link}" target="_blank">${result.link}</a>`);
+    } else if (result.type === "generic") {
+      lines.push(`作品名を記述する必要があるかもしれません`);
+    } else if (result.type === "partial") {
+      lines.push(`表記が不正です`);
+      lines.push(`→ ${result.expected}`);
+    } else if (result.type === "unknown") {
+      lines.push(`自分で検索して正しいSourceを確認してください`);
+    }
+
+    lines.push("");
+    lines.push("==============================");
+    lines.push("");
+  }
+
+  dom.sourceOutput.innerHTML = lines.join("\n");
 }

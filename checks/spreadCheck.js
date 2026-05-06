@@ -81,6 +81,7 @@ function parseSpreadDifficulty(text) {
 
 function getSpreadSortInfo(fileName) {
   const diffName = getDifficultyNameText(fileName);
+
   const normalized = diffName
     .toLowerCase()
     .replace(/[\[\]]/g, "")
@@ -91,36 +92,48 @@ function getSpreadSortInfo(fileName) {
 
   const has = (...words) => words.some(word => normalized.includes(word));
 
+  const isGuestOni =
+    /\b.+?'s\s+oni\b/.test(normalized);
+
+  const isPlainOni =
+    normalized.trim() === "oni";
+
+  const isModifiedOni =
+    /\boni\b/.test(normalized) &&
+    !isGuestOni &&
+    !isPlainOni;
+
   if (has("shokyuu", "syokyuu", "shoshinsha", "beginner")) {
     base = -1;
-  } else if (has("kantan", "easy")) {
+  } else if (has("kantan")) {
     base = 0;
-  } else if (has("futsuu", "normal")) {
+  } else if (has("futsuu")) {
     base = 1;
-  } else if (has("muzukashii", "hard")) {
+  } else if (has("muzukashii")) {
     base = 2;
-  } else if (has("extra", "insane")) {
-    base = 4;
-  } else if (has("oni", "expert")) {
+  } else if (has("oni")) {
     base = 3;
+
+    // Oni系の並び順
+    // Oni / Guest's Oni      -> 0
+    // Inner Oni              -> 1
+    // Ura Oni                -> 2
+    // その他の「~~~ Oni」    -> 4
+    // Hell / Lunatic Oni     -> 3
+    if (has("hell", "lunatic")) {
+      modifier = 3;
+    } else if (has("ura")) {
+      modifier = 2;
+    } else if (has("inner")) {
+      modifier = 1;
+    } else if (isModifiedOni) {
+      modifier = 4;
+    }
   }
 
   // 下位寄りの修飾子
   if (has("lite", "light", "basic")) {
     modifier -= 1;
-  }
-
-  // 通常Oniより上に置きたいOni派生
-  if (has("inner")) {
-    modifier += 1;
-  }
-
-  if (has("ura")) {
-    modifier += 2;
-  }
-
-  if (has("hell", "lunatic", "psychopathic")) {
-    modifier += 3;
   }
 
   return {

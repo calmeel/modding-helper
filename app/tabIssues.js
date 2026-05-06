@@ -32,6 +32,7 @@ function updateTabIssueStates(state) {
   setTabIssueLevel("sliderSettings", getSliderSettingsIssueLevel(state.sliderSettings));
   setTabIssueLevel("earlyNote", getEarlyNoteIssueLevel(state.earlyNote));
   setTabIssueLevel("tag", getTagIssueLevel(state.tag));
+  setTabIssueLevel("misc", getSourceIssueLevel(state.source));
   setTabIssueLevel("spread", getSpreadIssueLevel(state.spread));
 }
 
@@ -234,6 +235,24 @@ function getTagIssueLevel(results) {
   }
 
   return TAB_LEVEL_NONE;
+}
+
+function getSourceIssueLevel(results) {
+  if (!results) return TAB_LEVEL_NONE;
+
+  let hasWarn = false;
+
+  for (const result of results) {
+    if (result.level === "error") {
+      return TAB_LEVEL_ERROR;
+    }
+
+    if (result.level === "warn") {
+      hasWarn = true;
+    }
+  }
+
+  return hasWarn ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
 }
 
 function getSpreadIssueLevel(spreadState) {

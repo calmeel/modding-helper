@@ -1044,14 +1044,144 @@ function formatTagRelatedResult(result, t, group = null) {
   lines.push("");
 
   for (const item of result.relatedSuggestions) {
-    lines.push(
-      `${t("tagRelatedSuggestion")}: ` +
-      `${item.present.map(tag => `<code>${escapeHtml(tag)}</code>`).join(" ")} ` +
-      `→ ${item.suggestions.map(tag => `<code>${escapeHtml(tag)}</code>`).join(" ")}`
-    );
+    const present = item.present
+      .map(tag => `<code>${escapeHtml(tag)}</code>`)
+      .join(" ");
+
+    const alreadyIncluded = (item.presentSuggestions ?? [])
+      .map(tag => `<code>${escapeHtml(tag)}</code>`)
+      .join(" ");
+
+    const suggestions = item.suggestions
+      .map(tag => `<code>${escapeHtml(tag)}</code>`)
+      .join(" ");
+
+    lines.push(`${t("tagRelatedTrigger")}: ${present}`);
+
+    if (alreadyIncluded) {
+      lines.push(`${t("tagAlreadyIncluded")}: ${alreadyIncluded}`);
+    }
+
+    lines.push(`${t("tagSuggestedAdditions")}: ${suggestions}`);
+    lines.push("");
   }
 
   return lines.join("\n").trimEnd();
+}
+
+/** その他：東方チェック */
+function formatMultipleSourceResults(results, t) {
+  if (!results.length) {
+    return t("noOsuFiles");
+  }
+
+  const groups = groupSourceResults(results);
+
+  if (!groups.length) {
+    return t("noSourceIssues");
+  }
+
+  return groups
+    .map(group => formatSourceGroupResult(group, t))
+    .join("\n\n==============================\n\n");
+}
+
+function groupSourceResults(results) {
+  const groups = new Map();
+
+  for (const result of results) {
+    const key = getSourceGroupKey(result);
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        representative: result,
+        fileNames: [],
+        results: []
+      });
+    }
+
+    const group = groups.get(key);
+
+    group.fileNames.push(result.fileName);
+
+    // 同じ内容は1回だけ保持
+    if (!group.results.length) {
+      group.results.push(result);
+    }
+  }
+
+  return [...groups.values()];
+}
+
+function getSourceGroupKey(result) {
+  return [
+    result.level,
+    result.type,
+    result.source ?? "",
+    result.expected ?? "",
+    result.link ?? ""
+  ].join("::");
+}
+
+function formatSourceGroupResult(group, t) {
+  const result = group.results[0];
+  const lines = [];
+
+  // Diff一覧
+  lines.push(
+    group.fileNames
+      .map(name => `[${getDifficultyName(name)}]`)
+      .join(", ")
+  );
+
+  lines.push("");
+
+  if (result.source) {
+    lines.push(`Source: <code>${escapeHtml(result.source)}</code>`);
+    lines.push("");
+  }
+
+  if (result.level === "ok") {
+    lines.push(`<span class="ok">${escapeHtml(t("sourceOk"))}</span>`);
+
+    if (result.link) {
+      lines.push(
+        `<a href="${escapeHtml(result.link)}" target="_blank">${escapeHtml(result.link)}</a>`
+      );
+    }
+
+    return lines.join("\n");
+  }
+
+  if (result.type === "generic") {
+    lines.push(`<span class="result-warn">${escapeHtml(t("sourceGenericTouhou"))}</span>`);
+    return lines.join("\n");
+  }
+
+  if (result.type === "partial") {
+    lines.push(`<span class="result-error">${escapeHtml(t("sourceInvalidTouhou"))}</span>`);
+    lines.push(`${escapeHtml(t("sourceExpected"))}: <code>${escapeHtml(result.expected)}</code>`);
+
+    if (result.link) {
+      lines.push(
+        `<a href="${escapeHtml(result.link)}" target="_blank">${escapeHtml(result.link)}</a>`
+      );
+    }
+
+    return lines.join("\n");
+  }
+
+  if (result.type === "unknown") {
+    lines.push(`<span class="result-error">${escapeHtml(t("sourceUnknownTouhou"))}</span>`);
+    return lines.join("\n");
+  }
+
+  // 東方作品ではない場合
+  lines.push(
+    `<span class="result-info">${escapeHtml(t("sourceNotTouhou"))}</span>`
+  );
+
+  return lines.join("\n");
 }
 
 /** modeのグループ関数 */
