@@ -1016,21 +1016,40 @@ function formatSpreadFinisherCellPadded(value, padded) {
   return `<span class="ok">${padded}</span>`;
 }
 
+const SPREAD_FINISHER_TIME_TOLERANCE_MS = 1;
+
 function collectAllSpreadFinisherTimes(results) {
-  const set = new Set();
+  const times = [];
 
   for (const result of results) {
     for (const item of result.finishers ?? []) {
-      set.add(item.time);
+      const existingTime = findSpreadFinisherMatchingTime(times, item.time);
+
+      if (existingTime === null) {
+        times.push(item.time);
+      }
     }
   }
 
-  return [...set].sort((a, b) => a - b);
+  return times.sort((a, b) => a - b);
 }
 
 function getSpreadFinisherAtTime(result, time) {
-  const item = (result.finishers ?? []).find(finisher => finisher.time === time);
+  const item = (result.finishers ?? []).find(finisher =>
+    Math.abs(finisher.time - time) <= SPREAD_FINISHER_TIME_TOLERANCE_MS
+  );
+
   return item ? item.kind : "-";
+}
+
+function findSpreadFinisherMatchingTime(times, targetTime) {
+  for (const time of times) {
+    if (Math.abs(time - targetTime) <= SPREAD_FINISHER_TIME_TOLERANCE_MS) {
+      return time;
+    }
+  }
+
+  return null;
 }
 
 /** その他タブ：東方のソースチェック */
