@@ -1,6 +1,7 @@
-function renderBnCompareResult(result, dom, t, options = {}) {
+function renderBnCompareResult(result, dom, t, options = {}, state = null) {
   if (!result) {
     if (dom.bnNotesOutput) dom.bnNotesOutput.innerHTML = t("bnNoResult");
+    if (dom.bnTimelineOutput) dom.bnTimelineOutput.innerHTML = t("bnNoResult");
     if (dom.bnTimingOutput) dom.bnTimingOutput.innerHTML = t("bnNoResult");
     if (dom.bnMetadataOutput) dom.bnMetadataOutput.innerHTML = t("bnNoResult");
     return;
@@ -10,12 +11,24 @@ function renderBnCompareResult(result, dom, t, options = {}) {
     dom.bnNotesOutput.innerHTML = formatBnNotesResult(result.notes, t);
   }
 
+  if (dom.bnTimelineOutput) {
+    dom.bnTimelineOutput.innerHTML = formatBnTimelineResult(result.timeline, t);
+  }
+
   if (dom.bnTimingOutput) {
     dom.bnTimingOutput.innerHTML = formatBnTimingResult(result.timing, t, options);
   }
 
   if (dom.bnMetadataOutput) {
     dom.bnMetadataOutput.innerHTML = formatBnMetadataResult(result.metadata, t);
+  }
+
+  if (dom.bnDifficultyOutput) {
+    dom.bnDifficultyOutput.innerHTML =
+      formatBnDifficultyTable(
+        state.bnCompare.resultsByPair,
+        t
+      );
   }
 }
 
@@ -269,6 +282,132 @@ function formatBnObjectLabel(kind, t) {
 
   if (kind === "spinner") {
     return `<span class="bn-note bn-spinner">${escapeHtml(t("bnSpinner"))}</span>`;
+  }
+
+  return `<span class="bn-note">${escapeHtml(kind)}</span>`;
+}
+
+/** OD/HP */
+function formatBnDifficultyTable(resultsByPair, t) {
+  if (!resultsByPair?.length) {
+    return t("bnNoResult");
+  }
+
+  const rows = resultsByPair.map(result => {
+    const before = result.difficulty.before;
+    const after = result.difficulty.after;
+
+    const beforeOd = before.od ?? "-";
+    const afterOd = after.od ?? "-";
+    const beforeHp = before.hp ?? "-";
+    const afterHp = after.hp ?? "-";
+
+    const odChanged = beforeOd !== afterOd;
+    const hpChanged = beforeHp !== afterHp;
+
+    return `
+      <tr>
+        <td>${escapeHtml(result.label)}</td>
+        <td>
+          ${escapeHtml(String(beforeOd))} →
+          ${odChanged
+            ? `<span class="result-info">${escapeHtml(String(afterOd))}</span>`
+            : escapeHtml(String(afterOd))}
+        </td>
+        <td>
+          ${escapeHtml(String(beforeHp))} →
+          ${hpChanged
+            ? `<span class="result-info">${escapeHtml(String(afterHp))}</span>`
+            : escapeHtml(String(afterHp))}
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  return `
+    <table class="bn-difficulty-table">
+      <thead>
+        <tr>
+          <th>Diff</th>
+          <th>OD</th>
+          <th>HP</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+  `;
+}
+
+/** タイムライン表示 */
+function formatBnTimelineResult(items, t) {
+  if (!items || !items.length) {
+    return t("bnNoTimelineChanges");
+  }
+
+  return items.map(item => {
+    if (item.unsupported) {
+      return `
+        <div class="bn-timeline-block">
+          <div class="bn-timeline-header">
+            ${formatTimestampLink(item.start)} - ${formatTimestampLink(item.end)}
+          </div>
+          <div class="bn-timeline-warning">${escapeHtml(t("bnTimelineUnsupported"))}</div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="bn-timeline-block">
+        <div class="bn-timeline-header">
+          ${formatTimestampLink(item.start)} - ${formatTimestampLink(item.end)}
+          <span class="bn-timeline-grid">[1/${item.snap}]</span>
+        </div>
+
+        <div class="bn-timeline-row">
+          <span class="bn-timeline-label">Before</span>
+          <span class="bn-timeline-cells">${formatBnTimelineCells(item.before, t)}</span>
+        </div>
+
+        <div class="bn-timeline-row">
+          <span class="bn-timeline-label">After</span>
+          <span class="bn-timeline-cells">${formatBnTimelineCells(item.after, t)}</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function formatBnTimelineCells(cells, t) {
+  return cells.map(cell => {
+    if (cell.overflow) {
+      return `<span class="bn-timeline-cell bn-overflow">!</span>`;
+    }
+
+    if (!cell.kind) {
+      return `<span class="bn-timeline-cell bn-empty">-</span>`;
+    }
+
+    return `<span class="bn-timeline-cell">${formatBnTimelineKind(cell.kind, t)}</span>`;
+  }).join("");
+}
+
+function formatBnTimelineKind(kind, t) {
+  if (kind === "d" || kind === "D") {
+    return `<span class="bn-note bn-d">${kind}</span>`;
+  }
+
+  if (kind === "k" || kind === "K") {
+    return `<span class="bn-note bn-k">${kind}</span>`;
+  }
+
+  if (kind === "slider") {
+    return `<span class="bn-note bn-slider">S</span>`;
+  }
+
+  if (kind === "spinner") {
+    return `<span class="bn-note bn-spinner">S</span>`;
   }
 
   return `<span class="bn-note">${escapeHtml(kind)}</span>`;

@@ -231,6 +231,12 @@ const i18n = {
     bnNoKiaiSections: "No kiai mismatches.",
     bnBefore: "Before",
     bnAfter: "After",
+    bnDifficultyTab: "OD / HP",
+    bnNoDifficultyChanges: "No OD / HP changes found.",
+    
+    bnTimelineTab: "Timeline",
+    bnNoTimelineChanges: "No timeline changes found.",
+    bnTimelineUnsupported: "Some objects could not be placed on the timeline grid.",
   },
 
   ja: {
@@ -463,6 +469,12 @@ const i18n = {
     bnNoKiaiSections: "Kiai相違区間はありません。",
     bnBefore: "Before",
     bnAfter: "After",
+    bnDifficultyTab: "OD / HP",
+    bnNoDifficultyChanges: "OD / HP の変更は見つかりませんでした。",
+
+    bnTimelineTab: "タイムライン",
+    bnNoTimelineChanges: "タイムライン上の変更は見つかりませんでした。",
+    bnTimelineUnsupported: "一部のオブジェクトはタイムライングリッドに配置できませんでした。",
   }
 };
 

@@ -375,12 +375,21 @@
 
           <div class="bn-subtabs">
             <button class="bn-subtab-button active" data-bn-subtab="notes" data-i18n="bnNotesInfo">ノーツ情報</button>
+            <button class="bn-subtab-button" data-bn-subtab="timeline" data-i18n="bnTimelineTab">Timeline</button>
             <button class="bn-subtab-button" data-bn-subtab="timing" data-i18n="bnTimingInfo">SV情報</button>
             <button class="bn-subtab-button" data-bn-subtab="metadata" data-i18n="bnMetadataInfo">メタデータ情報</button>
+            <button class="bn-subtab-button" data-bn-subtab="difficulty" data-i18n="bnDifficultyTab">OD / HP</button>
           </div>
 
           <div class="bn-subtab-panel active" id="bn-subtab-notes">
             <pre id="bnNotesOutput" data-i18n="bnNoResult">No result.</pre>
+          </div>
+
+          <div
+            id="bn-subtab-timeline"
+            class="bn-subtab-panel">
+
+            <div id="bnTimelineOutput" data-i18n="bnNoResult">No result.</div>
           </div>
 
           <div class="bn-subtab-panel" id="bn-subtab-timing">
@@ -401,6 +410,10 @@
 
           <div class="bn-subtab-panel" id="bn-subtab-metadata">
             <pre id="bnMetadataOutput" data-i18n="bnNoResult">No result.</pre>
+          </div>
+
+          <div class="bn-subtab-panel" id="bn-subtab-difficulty">
+            <div id="bnDifficultyOutput" data-i18n="bnNoResult">No result.</div>
           </div>
         </div>
       </section>

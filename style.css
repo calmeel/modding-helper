@@ -810,3 +810,104 @@ input[type="file"]::file-selector-button:hover {
   font-family: Consolas, monospace;
   font-size: 0.95em;
 }
+
+/** BNタブのOD/HP */
+.bn-difficulty-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  background: #111;
+}
+
+.bn-difficulty-table th,
+.bn-difficulty-table td {
+  border: 1px solid #333;
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.bn-difficulty-table thead th {
+  background: #23232b;
+  color: #ddd;
+}
+
+.bn-difficulty-table tbody td:first-child {
+  color: #9fdcff;
+  font-family: Consolas, monospace;
+}
+
+.result-info {
+  color: #8ecdfc;
+  font-weight: 600;
+}
+
+.bn-difficulty-table th:nth-child(2),
+.bn-difficulty-table th:nth-child(3),
+.bn-difficulty-table td:nth-child(2),
+.bn-difficulty-table td:nth-child(3) {
+  min-width: 90px;
+  white-space: nowrap;
+}
+
+/** BNタイムライン表示 */
+.bn-timeline-block {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  background: #111;
+}
+
+.bn-timeline-header {
+  margin-bottom: 8px;
+  color: #ddd;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 13px;
+}
+
+.bn-timeline-grid {
+  margin-left: 8px;
+  color: #aaa;
+}
+
+.bn-timeline-row {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.bn-timeline-label {
+  color: #aaa;
+  font-size: 12px;
+}
+
+.bn-timeline-cells {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  line-height: 1.6;
+}
+
+.bn-timeline-cell {
+  display: inline-block;
+  width: 14px;
+  text-align: center;
+}
+
+.bn-empty {
+  color: #555;
+}
+
+.bn-overflow {
+  color: #fbbc04;
+  font-weight: bold;
+}
+
+.bn-timeline-warning {
+  color: #fbbc04;
+  font-size: 13px;
+}
