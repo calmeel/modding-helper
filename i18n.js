@@ -190,6 +190,9 @@ const i18n = {
     spreadFinishersMissing: "Missing finisher",
     spreadFinishersMismatch: "D/K mismatch",
     spreadFinishersMatched: "Fully matched",
+    spreadScrollSpeed: "Scroll Speed",
+    spreadRapidScrollChanges: "Rapid scroll speed changes:",
+    spreadNoRapidScrollChanges: "No rapid scroll speed changes found.",
 
     tabBnCompare: "BN Review",
     bnBeforeOsz: "Before .osz",
@@ -428,6 +431,9 @@ const i18n = {
     spreadFinishersMissing: "フィニッシャー欠損",
     spreadFinishersMismatch: "D/K 不一致",
     spreadFinishersMatched: "完全一致",
+    spreadScrollSpeed: "スクロール速度",
+    spreadRapidScrollChanges: "急激なスクロール速度変化:",
+    spreadNoRapidScrollChanges: "急激なスクロール速度変化は見つかりませんでした。",
 
     tabBnCompare: "BN評価",
     bnBeforeOsz: "変更前 .osz",

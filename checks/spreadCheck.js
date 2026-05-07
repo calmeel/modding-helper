@@ -5,8 +5,10 @@ function runSpreadCheck(text, fileName) {
     fileName,
     od: difficulty.od,
     hp: difficulty.hp,
+    sliderMultiplier: difficulty.sliderMultiplier,
     noteCount: countCircleNotes(text),
     finishers: collectSpreadFinishers(text),
+    scrollSpeed: analyzeSpreadScrollSpeed(text, difficulty),
     sortInfo: getSpreadSortInfo(fileName)
   };
 }
@@ -50,6 +52,7 @@ function parseSpreadDifficulty(text) {
 
   let od = null;
   let hp = null;
+  let sliderMultiplier = 1.4; /** .osu に SliderMultiplier: が存在しないケース */
 
   for (const line of lines) {
     const trimmed = line.trim();
@@ -70,12 +73,20 @@ function parseSpreadDifficulty(text) {
       if (trimmed.startsWith("HPDrainRate:")) {
         hp = parseFloat(trimmed.slice(trimmed.indexOf(":") + 1));
       }
+
+      if (trimmed.startsWith("SliderMultiplier:")) {
+        const value = parseFloat(trimmed.slice(trimmed.indexOf(":") + 1));
+        if (Number.isFinite(value)) {
+          sliderMultiplier = value;
+        }
+      }
     }
   }
 
   return {
     od: Number.isFinite(od) ? od : null,
-    hp: Number.isFinite(hp) ? hp : null
+    hp: Number.isFinite(hp) ? hp : null,
+    sliderMultiplier
   };
 }
 
@@ -346,4 +357,304 @@ function moveSpreadDiffToCategory(diffOrder, results, fileName, category, manual
 
   withoutTarget.splice(insertIndex, 0, fileName);
   return withoutTarget;
+}
+
+/** 低難易度のスクロール速度 */
+const SPREAD_SCROLL_BASE_PX_PER_BEAT = 175;
+
+const SPREAD_SCROLL_RAPID_RULES = {
+  belowKantan: {
+    minDeltaPxPerSecond: 180,
+    minRatio: 1.35,
+    maxGapMs: 1500
+  },
+  kantan: {
+    minDeltaPxPerSecond: 180,
+    minRatio: 1.35,
+    maxGapMs: 1500
+  },
+  futsuu: {
+    minDeltaPxPerSecond: 240,
+    minRatio: 1.45,
+    maxGapMs: 1200
+  },
+  muzukashii: {
+    minDeltaPxPerSecond: 320,
+    minRatio: 1.55,
+    maxGapMs: 1000
+  },
+  oni: {
+    minDeltaPxPerSecond: Infinity,
+    minRatio: Infinity,
+    maxGapMs: 0
+  },
+  innerPlus: {
+    minDeltaPxPerSecond: Infinity,
+    minRatio: Infinity,
+    maxGapMs: 0
+  },
+  unknown: {
+    minDeltaPxPerSecond: 320,
+    minRatio: 1.55,
+    maxGapMs: 1000
+  }
+};
+
+function analyzeSpreadScrollSpeed(text, difficulty = null) {
+  const sliderMultiplier = difficulty?.sliderMultiplier ?? parseSpreadDifficulty(text).sliderMultiplier ?? 1.4;
+
+  const redLines = parseSpreadRedLines(text);
+  const greenLines = parseSpreadGreenLines(text);
+  const noteTimes = parseSpreadCircleNoteTimes(text);
+
+  if (!redLines.length || !noteTimes.length) {
+    return {
+      sliderMultiplier,
+      samples: [],
+      summary: null,
+      rapidChanges: []
+    };
+  }
+
+  const samples = noteTimes.map(time => {
+    const red = getCurrentSpreadTimingPoint(redLines, time);
+    const green = getCurrentSpreadTimingPoint(greenLines, time);
+
+    const bpm = red ? 60000 / red.beatLength : null;
+    const sv = green ? green.sv : 1;
+
+    const pxPerBeat =
+      SPREAD_SCROLL_BASE_PX_PER_BEAT *
+      sliderMultiplier *
+      sv;
+
+    const pxPerSecond =
+      bpm !== null
+        ? pxPerBeat * bpm / 60
+        : null;
+
+    return {
+      time,
+      bpm,
+      sv,
+      sliderMultiplier,
+      pxPerBeat,
+      pxPerSecond
+    };
+  }).filter(sample =>
+    Number.isFinite(sample.pxPerSecond)
+  );
+
+  if (!samples.length) {
+    return {
+      sliderMultiplier,
+      samples: [],
+      summary: null,
+      rapidChanges: []
+    };
+  }
+
+  const speeds = samples.map(sample => sample.pxPerSecond);
+  const minSpeed = Math.min(...speeds);
+  const maxSpeed = Math.max(...speeds);
+
+  const svValues = samples.map(sample => sample.sv);
+  const minSv = Math.min(...svValues);
+  const maxSv = Math.max(...svValues);
+
+  const rapidChanges = [];
+
+  for (let i = 1; i < samples.length; i++) {
+    const prev = samples[i - 1];
+    const cur = samples[i];
+
+    const gapMs = cur.time - prev.time;
+    if (gapMs <= 0) continue;
+
+    const delta = cur.pxPerSecond - prev.pxPerSecond;
+    const absDelta = Math.abs(delta);
+
+    const min = Math.min(prev.pxPerSecond, cur.pxPerSecond);
+    const max = Math.max(prev.pxPerSecond, cur.pxPerSecond);
+    const ratio = min > 0 ? max / min : null;
+
+    rapidChanges.push({
+      fromTime: prev.time,
+      toTime: cur.time,
+      gapMs,
+      beforeSpeed: prev.pxPerSecond,
+      afterSpeed: cur.pxPerSecond,
+      delta,
+      absDelta,
+      ratio,
+      beforeSv: prev.sv,
+      afterSv: cur.sv,
+      beforeBpm: prev.bpm,
+      afterBpm: cur.bpm
+    });
+  }
+
+  return {
+    sliderMultiplier,
+    samples,
+    summary: {
+      minSpeed,
+      maxSpeed,
+      deltaSpeed: maxSpeed - minSpeed,
+      ratio: minSpeed > 0 ? maxSpeed / minSpeed : null,
+      minSv,
+      maxSv
+    },
+    rapidChanges
+  };
+}
+
+function parseSpreadRedLines(text) {
+  const lines = text.split(/\r?\n/);
+  let inTimingPoints = false;
+  const points = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (trimmed === "[TimingPoints]") {
+      inTimingPoints = true;
+      continue;
+    }
+
+    if (inTimingPoints) {
+      if (trimmed.startsWith("[")) break;
+      if (!trimmed || trimmed.startsWith("//")) continue;
+
+      const parts = trimmed.split(",").map(p => p.trim());
+      if (parts.length < 7) continue;
+
+      const time = Math.round(parseFloat(parts[0]));
+      const beatLength = parseFloat(parts[1]);
+      const uninherited = parseInt(parts[6], 10);
+
+      if (
+        uninherited === 1 &&
+        Number.isFinite(time) &&
+        Number.isFinite(beatLength) &&
+        beatLength > 0
+      ) {
+        points.push({
+          time,
+          beatLength
+        });
+      }
+    }
+  }
+
+  points.sort((a, b) => a.time - b.time);
+  return points;
+}
+
+function parseSpreadGreenLines(text) {
+  const lines = text.split(/\r?\n/);
+  let inTimingPoints = false;
+  const points = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (trimmed === "[TimingPoints]") {
+      inTimingPoints = true;
+      continue;
+    }
+
+    if (inTimingPoints) {
+      if (trimmed.startsWith("[")) break;
+      if (!trimmed || trimmed.startsWith("//")) continue;
+
+      const parts = trimmed.split(",").map(p => p.trim());
+      if (parts.length < 7) continue;
+
+      const time = Math.round(parseFloat(parts[0]));
+      const beatLength = parseFloat(parts[1]);
+      const uninherited = parseInt(parts[6], 10);
+
+      if (
+        uninherited === 0 &&
+        Number.isFinite(time) &&
+        Number.isFinite(beatLength) &&
+        beatLength !== 0
+      ) {
+        points.push({
+          time,
+          beatLength,
+          sv: beatLength < 0 ? -100 / beatLength : 1
+        });
+      }
+    }
+  }
+
+  points.sort((a, b) => a.time - b.time);
+  return points;
+}
+
+function parseSpreadCircleNoteTimes(text) {
+  const hitObjects = parseHitObjects(text);
+  const times = [];
+
+  for (const line of hitObjects) {
+    const parts = line.split(",");
+    if (parts.length < 5) continue;
+
+    const time = parseInt(parts[2], 10);
+    const type = parseInt(parts[3], 10);
+
+    if (Number.isNaN(time) || Number.isNaN(type)) continue;
+
+    // taikoの通常ノーツのみ対象。Slider / Spinnerはここでは除外
+    if ((type & 1) === 0) continue;
+
+    times.push(time);
+  }
+
+  times.sort((a, b) => a - b);
+  return times;
+}
+
+function getCurrentSpreadTimingPoint(points, time) {
+  if (!points || !points.length) return null;
+
+  let current = points[0];
+
+  for (const point of points) {
+    if (point.time <= time) {
+      current = point;
+    } else {
+      break;
+    }
+  }
+
+  return current;
+}
+
+function getSpreadRapidScrollRule(category) {
+  return SPREAD_SCROLL_RAPID_RULES[category] ?? SPREAD_SCROLL_RAPID_RULES.unknown;
+}
+
+function getSpreadRapidScrollLevel(change, category) {
+  const rule = getSpreadRapidScrollRule(category);
+
+  if (!Number.isFinite(rule.minDeltaPxPerSecond)) {
+    return "ok";
+  }
+
+  if (change.gapMs > rule.maxGapMs) {
+    return "ok";
+  }
+
+  if (
+    change.absDelta >= rule.minDeltaPxPerSecond &&
+    change.ratio !== null &&
+    change.ratio >= rule.minRatio
+  ) {
+    return "warn";
+  }
+
+  return "ok";
 }
