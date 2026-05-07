@@ -160,8 +160,10 @@ function renderVolumeCompareResultFromSources(sources, dom, t) {
     : false;
 
   const result = runVolumeCompareCheck(sources, {
-    thresholdOnly,
-    thresholdPercent: 5
+    thresholdOnly: dom.volumeCompareThresholdOnly?.checked ?? true,
+    thresholdPercent: 5,
+    minDurationOnly: dom.volumeCompareMinDurationOnly?.checked ?? true,
+    minDurationMs: 50
   });
 
   dom.volumeCompareOutput.innerHTML = formatVolumeCompareResult(result, t);

@@ -176,7 +176,7 @@ function getVolumeCompareIssueLevel(sources) {
 
   const result = runVolumeCompareCheck(sources, {
     thresholdOnly: false,
-    thresholdPercent: 5
+    minDurationOnly: false
   });
 
   return result?.results?.length > 0

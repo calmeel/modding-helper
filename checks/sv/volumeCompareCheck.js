@@ -1,6 +1,8 @@
 function runVolumeCompareCheck(sources, options = {}) {
   const thresholdOnly = options.thresholdOnly ?? true;
   const thresholdPercent = options.thresholdPercent ?? 5;
+  const minDurationOnly = options.minDurationOnly ?? true;
+  const minDurationMs = options.minDurationMs ?? 50;
 
   if (!sources || sources.length < 2) {
     return {
@@ -58,8 +60,16 @@ function runVolumeCompareCheck(sources, options = {}) {
     });
   }
 
+  let mergedResults = mergeAdjacentVolumeCompareSections(results);
+
+  if (minDurationOnly) {
+    mergedResults = mergedResults.filter(section =>
+      (section.end - section.start) >= minDurationMs
+    );
+  }
+
   return {
-    results: mergeAdjacentVolumeCompareSections(results),
+    results: mergedResults,
     needTwoDiffs: false
   };
 }

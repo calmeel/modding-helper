@@ -160,20 +160,7 @@ function applySpreadDiffOrder(results, diffOrder) {
 
     if (ai !== bi) return ai - bi;
 
-    const aCategory = getSpreadAutoCategory(a.sortInfo);
-    const bCategory = getSpreadAutoCategory(b.sortInfo);
-
-    if (
-      aCategory === "unknown" &&
-      bCategory === "unknown"
-    ) {
-      if (a.noteCount !== b.noteCount) {
-        return a.noteCount - b.noteCount;
-      }
-    }
-
-    return getDifficultyNameText(a.fileName)
-      .localeCompare(getDifficultyNameText(b.fileName));
+    return getDifficultyNameText(a.fileName).localeCompare(getDifficultyNameText(b.fileName));
   });
 }
 
