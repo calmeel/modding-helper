@@ -1,6 +1,6 @@
 const TAG_SPELLING_DICTIONARY = [
   // MPG / mapping
-  "featured", "artist", "mappers'", "guild", "tiebreaker",
+  "featured", "artist", "mappers'", "guild", "tiebreaker", "qualifiers", "quarterfinals", "semifinals", "grand","finals",
 
   // genres / style
   "artcore", "anime", "ambient", "edm", "ethnic", "extratone", "hardcore", "hardtek",
@@ -14,7 +14,7 @@ const TAG_SPELLING_DICTIONARY = [
   "schranz", "trap", "nightcore", "house", "ballade", "ballad",
   "hip-hop", "funk", "folk", "funkot", "mákina", "eurodance",
   "eurobeat", "jodeln", "reggae", "waltz", "bootleg",
-  "remix", "lolicore", "utattemita"
+  "remix", "lolicore", "utattemita", "nerdcore"
 ];
 
 const TAG_RELATED_RULES = [
@@ -99,14 +99,6 @@ const TAG_RELATED_RULES = [
     suggestGroup: ["東方project", "touhou"]
   },
   {
-    trigger: ["edm"],
-    suggestGroup: ["electronic", "dance", "music"]
-  },
-  {
-    triggerAll: ["electronic", "dance", "music"],
-    suggestGroup: ["edm"]
-  },
-  {
     trigger: ["drum'n'bass", "dnb", "d&b", "d'n'b"],
     suggestGroup: ["drum", "and", "&", "bass", "drum'n'bass", "dnb", "d&b", "d'n'b"]
   },
@@ -188,6 +180,10 @@ const TAG_RELATED_RULES = [
     suggestGroup: ["ending", "ed"]
   },
   {
+    trigger: ["qualifiers", "qlf"],
+    suggestGroup: ["qualifiers", "qlf"]
+  },
+  {
     trigger: ["ro16"],
     suggestGroup: ["round", "of", "16", "ro16"]
   },
@@ -204,12 +200,8 @@ const TAG_RELATED_RULES = [
     suggestGroup: ["semifinals", "sf"]
   },
   {
-    trigger: ["grandfinals", "gf"],
-    suggestGroup: ["grandfinals", "grand", "finals", "gf"]
-  },
-  {
     triggerAll: ["grand", "finals"],
-    suggestGroup: ["grandfinals", "gf"]
+    suggestGroup: ["gf"]
   },
   {
     trigger: ["tiebreaker", "tb"],
