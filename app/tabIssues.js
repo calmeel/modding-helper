@@ -19,6 +19,26 @@ function setTabIssueLevel(tabName, level) {
   }
 }
 
+function setSubtabIssueLevel(subtabName, level) {
+  const button = document.querySelector(
+    `[data-bn-subtab="${subtabName}"], [data-spread-subtab="${subtabName}"]`
+  );
+
+  if (!button) return;
+
+  button.classList.remove("has-issues");
+  button.classList.remove("has-warnings");
+  button.classList.remove("has-errors");
+
+  if (level === TAB_LEVEL_WARN) {
+    button.classList.add("has-warnings");
+  }
+
+  if (level === TAB_LEVEL_ERROR) {
+    button.classList.add("has-errors");
+  }
+}
+
 function updateTabIssueStates(state) {
   setTabIssueLevel("clapWhistle", getClapWhistleIssueLevel(state.clapWhistle));
   setTabIssueLevel("shift1ms", getOffsetIssueLevel(state.offset));
@@ -31,8 +51,10 @@ function updateTabIssueStates(state) {
   setTabIssueLevel("sampleSet", getSampleSetIssueLevel(state.sampleSet));
   setTabIssueLevel("sliderSettings", getSliderSettingsIssueLevel(state.sliderSettings));
   setTabIssueLevel("earlyNote", getEarlyNoteIssueLevel(state.earlyNote));
-  setTabIssueLevel("tag", getTagIssueLevel(state.tag));
-  setTabIssueLevel("misc", getMiscIssueLevel(state));
+  setTabIssueLevel("metadata", getMetadataIssueLevel(state));
+  setSubtabIssueLevel("metadata-tag", getTagIssueLevel(state.tag));
+  setSubtabIssueLevel("metadata-source", getSourceIssueLevel(state.source));
+  setTabIssueLevel("misc", getPreviewPointIssueLevel(state.previewPoint));
   setTabIssueLevel("spread", getSpreadIssueLevel(state.spread));
 }
 
@@ -77,7 +99,18 @@ function getOffsetIssueLevel(results) {
 }
 
 function getKiaiCompareIssueLevel(results) {
-  if (!results || results.length < 2) return TAB_LEVEL_NONE;
+  if (!results) return TAB_LEVEL_NONE;
+
+  const hasImplicitKiaiEnd =
+    results.some(result => result.hasImplicitKiaiEnd);
+
+  if (hasImplicitKiaiEnd) {
+    return TAB_LEVEL_WARN;
+  }
+
+  if (results.length < 2) {
+    return TAB_LEVEL_NONE;
+  }
 
   const compared = compareKiaiResults(results);
 
@@ -236,6 +269,28 @@ function getTagIssueLevel(results) {
 
   return TAB_LEVEL_NONE;
 }
+
+function getMetadataIssueLevel(state) {
+  const tagLevel = getTagIssueLevel(state.tag);
+  const sourceLevel = getSourceIssueLevel(state.source);
+
+  if (
+    tagLevel === TAB_LEVEL_ERROR ||
+    sourceLevel === TAB_LEVEL_ERROR
+  ) {
+    return TAB_LEVEL_ERROR;
+  }
+
+  if (
+    tagLevel === TAB_LEVEL_WARN ||
+    sourceLevel === TAB_LEVEL_WARN
+  ) {
+    return TAB_LEVEL_WARN;
+  }
+
+  return TAB_LEVEL_NONE;
+}
+
 
 function getSourceIssueLevel(results) {
   if (!results) return TAB_LEVEL_NONE;

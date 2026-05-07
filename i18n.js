@@ -88,7 +88,9 @@ const i18n = {
     earlyNoteBpm: "BPM",
     earlyNoteSv: "SV",
     earlyNotePositionShort: "Position",
-    earlyNoteIssueDetails: "Early-note risk details",
+    earlyNoteIssueDetails: "First-note lag risk details",
+
+    tabMetadata: "Metadata",
 
     tabTag: "Tag",
     noTagIssues: "No tag spacing issues found.",
@@ -123,7 +125,7 @@ const i18n = {
     tagRelatedTrigger: "Related tags",
 
     tabMisc: "Misc",
-    sourceCheckTitle: "Touhou Source check",
+    sourceCheckTitle: "Source",
     noSourceIssues: "No source issues found.",
     sourceOk: "OK",
     sourceGenericTouhou: "The Source may need a specific Touhou work title.",
@@ -278,6 +280,8 @@ const i18n = {
     earlyNotePositionShort: "残り位置",
     earlyNoteIssueDetails: "プチフリリスクの詳細",
 
+    tabMetadata: "メタデータ",
+
     tabTag: "タグ",
     noTagIssues: "Tagのスペース問題は見つかりませんでした。",
     tagMissing: "Tags行が見つかりませんでした。",
@@ -296,7 +300,7 @@ const i18n = {
     tagRelatedTrigger: "関連タグ",
 
     tabMisc: "その他",
-    sourceCheckTitle: "東方Sourceチェック",
+    sourceCheckTitle: "ソース",
     noSourceIssues: "Sourceの問題は見つかりませんでした。",
     sourceOk: "OK",
     sourceGenericTouhou: "Sourceには東方作品名を記述する必要があるかもしれません。",

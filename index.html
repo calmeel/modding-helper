@@ -92,8 +92,8 @@
         </label>
 
         <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="tag" checked>
-          <span data-i18n="tabTag">Tag</span>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="metadata" checked>
+          <span data-i18n="tabMetadata">メタデータ</span>
         </label>
 
         <label>
@@ -126,7 +126,7 @@
         <button class="tab-button" data-tab="sampleSet" data-i18n="tabSampleSet">SampleSet</button>
         <button class="tab-button" data-tab="sliderSettings" data-i18n="tabSliderSettings">スライダー感度・目盛り</button>
         <button class="tab-button" data-tab="earlyNote" data-i18n="tabEarlyNote">プチフリ</button>
-        <button class="tab-button" data-tab="tag" data-i18n="tabTag">Tag</button>
+        <button class="tab-button" data-tab="metadata" data-i18n="tabMetadata">メタデータ</button>
         <button class="tab-button" data-tab="misc" data-i18n="tabMisc">その他</button>
         <button class="tab-button" data-tab="spread" data-i18n="tabSpread">Spread</button>
         <button class="tab-button bn-tab-button hidden-tab" data-tab="bnCompare" data-i18n="tabBnCompare">BN評価</button>
@@ -234,21 +234,36 @@
         <pre id="earlyNoteOutput" data-i18n="noFileLoaded">No file loaded.</pre>
       </section>
 
-      <section class="tab-panel" id="tab-tag">
-        <pre id="tagOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+      <section class="tab-panel" id="tab-metadata">
+
+        <div class="bn-subtabs">
+          <button class="bn-subtab-button active"
+                  data-bn-subtab="metadata-tag"
+                  data-i18n="tabTag">
+            Tag
+          </button>
+
+          <button class="bn-subtab-button"
+                  data-bn-subtab="metadata-source"
+                  data-i18n="sourceCheckTitle">
+            Source check
+          </button>
+        </div>
+
+        <div class="bn-subtab-panel active" id="bn-subtab-metadata-tag">
+          <pre id="tagOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+        </div>
+
+        <div class="bn-subtab-panel" id="bn-subtab-metadata-source">
+          <pre id="sourceOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+        </div>
+
       </section>
 
       <section class="tab-panel" id="tab-misc">
         <div class="misc-section">
           <h3 data-i18n="previewPointSnapTitle">Preview point snap</h3>
           <pre id="previewPointOutput" data-i18n="noFileLoaded">No file loaded.</pre>
-        </div>
-
-        <div class="result-separator"></div>
-
-        <div class="misc-section">
-          <h3 data-i18n="sourceCheckTitle">Source check</h3>
-          <pre id="sourceOutput" data-i18n="noFileLoaded">No file loaded.</pre>
         </div>
       </section>
 

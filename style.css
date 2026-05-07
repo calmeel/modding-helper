@@ -769,3 +769,25 @@ input[type="file"]::file-selector-button:hover {
   color: #6b9aff;
   font-weight: bold;
 }
+
+.bn-subtab-button.has-warnings {
+  border-color: #fbbc04;
+  color: #fbbc04;
+}
+
+.bn-subtab-button.has-errors {
+  border-color: #ff6b6b;
+  color: #ff6b6b;
+}
+
+.bn-subtab-button.active.has-warnings {
+  background: #4a3a20;
+  border-color: #fbbc04;
+  color: #fff;
+}
+
+.bn-subtab-button.active.has-errors {
+  background: #4a2020;
+  border-color: #ff6b6b;
+  color: #fff;
+}
