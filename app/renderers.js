@@ -374,6 +374,12 @@ function updateSpreadSubtabIssueStates(spreadState) {
     }
   }
 
+  const consistency = analyzeSpreadScrollChangeConsistency(sortedResults, manualCategories);
+
+  if (consistency.issueGroups.length) {
+    scrollLevel = "warn";
+  }
+
   setSpreadSubtabIssueLevel("scroll", scrollLevel);
 }
 
@@ -1174,6 +1180,10 @@ function formatSpreadScrollSpeedResult(results, t, diffOrder = null, manualCateg
   lines.push("=".repeat(60));
   lines.push("");
   lines.push(formatSpreadRapidScrollChanges(sortedResults, t, manualCategories));
+  lines.push("");
+  lines.push("=".repeat(60));
+  lines.push("");
+  lines.push(formatSpreadScrollChangeConsistency(sortedResults, t, manualCategories));
 
   return lines.join("\n").trimEnd();
 }
@@ -1326,4 +1336,256 @@ function formatSpreadSv(value) {
   }
 
   return value.toFixed(2);
+}
+
+/** スクロール変化量 */
+const SPREAD_SCROLL_CONSISTENCY_GROUP_TOLERANCE_MS = 10;
+const SPREAD_SCROLL_CONSISTENCY_MIN_ABS_DELTA = 80;
+const SPREAD_SCROLL_CONSISTENCY_STRONGER_RATIO = 1.5;
+const SPREAD_SCROLL_CONSISTENCY_STRONGER_DELTA = 150;
+const SPREAD_SCROLL_CONSISTENCY_DIRECTION_DELTA = 120;
+
+function formatSpreadScrollChangeConsistency(results, t, manualCategories = {}) {
+  const analysis = analyzeSpreadScrollChangeConsistency(results, manualCategories);
+
+  const lines = [];
+
+  lines.push(t("spreadScrollChangeConsistency"));
+
+  if (!analysis.issueGroups.length) {
+    lines.push("");
+    lines.push(t("spreadNoScrollChangeConsistencyIssues"));
+    return lines.join("\n");
+  }
+
+  for (const group of analysis.issueGroups) {
+    lines.push("");
+    lines.push(`${formatTimestampLink(group.time)}`);
+
+    lines.push(formatSpreadScrollChangeConsistencyTable(group, results));
+
+    lines.push("");
+    lines.push(t("spreadScrollChangeConsistencyReview"));
+
+    for (const issue of group.issues) {
+      if (issue.type === "strongerLowerDiff") {
+        lines.push(
+          `<span class="result-warn">` +
+          `${getDifficultyName(issue.lower.fileName)} ${t("spreadHasStrongerScrollChangeThan")} ${getDifficultyName(issue.higher.fileName)} ` +
+          `(|Δ| ${formatSpreadScrollSpeed(issue.lower.event.absDelta)} > ${formatSpreadScrollSpeed(issue.higher.event.absDelta)})` +
+          `</span>`
+        );
+      }
+
+      if (issue.type === "directionMismatch") {
+        lines.push(
+          `<span class="result-warn">` +
+          `${getDifficultyName(issue.lower.fileName)} / ${getDifficultyName(issue.higher.fileName)} ${t("spreadScrollDirectionMismatch")}` +
+          `</span>`
+        );
+      }
+    }
+  }
+
+  return lines.join("\n");
+}
+
+function analyzeSpreadScrollChangeConsistency(results, manualCategories = {}) {
+  const comparableResults = results.filter(result => {
+    const category = getSpreadEffectiveCategory(result, manualCategories);
+    return category !== "unknown";
+  });
+
+  const events = [];
+
+  for (const result of comparableResults) {
+    for (const change of result.scrollSpeed?.rapidChanges ?? []) {
+      if (change.absDelta < SPREAD_SCROLL_CONSISTENCY_MIN_ABS_DELTA) continue;
+
+      events.push({
+        fileName: result.fileName,
+        time: change.toTime,
+        event: change
+      });
+    }
+  }
+
+  events.sort((a, b) => a.time - b.time);
+
+  const groups = [];
+
+  for (const event of events) {
+    const last = groups[groups.length - 1];
+
+    if (
+      last &&
+      Math.abs(event.time - last.time) <= SPREAD_SCROLL_CONSISTENCY_GROUP_TOLERANCE_MS
+    ) {
+      last.items.push(event);
+      last.time = Math.round(
+        last.items.reduce((sum, item) => sum + item.time, 0) / last.items.length
+      );
+    } else {
+      groups.push({
+        time: event.time,
+        items: [event]
+      });
+    }
+  }
+
+  const issueGroups = [];
+
+  for (const group of groups) {
+    const issues = [];
+
+    const byFileName = new Map(
+      group.items.map(item => [item.fileName, item.event])
+    );
+
+    for (let i = 1; i < comparableResults.length; i++) {
+      const lower = comparableResults[i - 1];
+      const higher = comparableResults[i];
+
+      const lowerEvent = byFileName.get(lower.fileName);
+      const higherEvent = byFileName.get(higher.fileName);
+
+      if (!lowerEvent || !higherEvent) continue;
+
+      const lowerAbs = lowerEvent.absDelta;
+      const higherAbs = higherEvent.absDelta;
+
+      if (
+        higherAbs > 0 &&
+        lowerAbs >= higherAbs * SPREAD_SCROLL_CONSISTENCY_STRONGER_RATIO &&
+        lowerAbs - higherAbs >= SPREAD_SCROLL_CONSISTENCY_STRONGER_DELTA
+      ) {
+        issues.push({
+          type: "strongerLowerDiff",
+          lower: {
+            fileName: lower.fileName,
+            event: lowerEvent
+          },
+          higher: {
+            fileName: higher.fileName,
+            event: higherEvent
+          }
+        });
+      }
+
+      const lowerDirection = Math.sign(lowerEvent.delta);
+      const higherDirection = Math.sign(higherEvent.delta);
+
+      if (
+        lowerDirection !== 0 &&
+        higherDirection !== 0 &&
+        lowerDirection !== higherDirection &&
+        lowerAbs >= SPREAD_SCROLL_CONSISTENCY_DIRECTION_DELTA &&
+        higherAbs >= SPREAD_SCROLL_CONSISTENCY_DIRECTION_DELTA
+      ) {
+        issues.push({
+          type: "directionMismatch",
+          lower: {
+            fileName: lower.fileName,
+            event: lowerEvent
+          },
+          higher: {
+            fileName: higher.fileName,
+            event: higherEvent
+          }
+        });
+      }
+    }
+
+    if (issues.length) {
+      issueGroups.push({
+        ...group,
+        issues
+      });
+    }
+  }
+
+  return {
+    groups,
+    issueGroups
+  };
+}
+
+function formatSpreadScrollChangeConsistencyTable(group, results) {
+  const byFileName = new Map(
+    group.items.map(item => [item.fileName, item.event])
+  );
+
+  const rows = results.map(result => {
+    const event = byFileName.get(result.fileName);
+
+    return {
+      fileName: result.fileName,
+      diff: getDifficultyNameText(result.fileName),
+      event
+    };
+  });
+
+  const headers = {
+    diff: "Diff",
+    delta: "Δ px/s",
+    speed: "Speed Multiplier",
+    interval: "Note Interval"
+  };
+
+  const rowTexts = rows.map(row => {
+    if (!row.event) {
+      return {
+        ...row,
+        delta: "-",
+        speed: "-",
+        interval: "-"
+      };
+    }
+
+    const sign = row.event.delta >= 0 ? "+" : "";
+
+    return {
+      ...row,
+      delta: `${sign}${formatSpreadScrollSpeed(row.event.delta)}`,
+      speed:
+        `${formatSpreadScrollSpeed(row.event.beforeSpeed)} -> ` +
+        `${formatSpreadScrollSpeed(row.event.afterSpeed)} ` +
+        `(${formatSpreadRatio(row.event.ratio)})`,
+      interval: `${row.event.gapMs} ms`
+    };
+  });
+
+  const widths = {
+    diff: Math.max(10, visibleWidth(headers.diff), ...rowTexts.map(r => visibleWidth(r.diff))),
+    delta: Math.max(7, visibleWidth(headers.delta), ...rowTexts.map(r => visibleWidth(r.delta))),
+    speed: Math.max(18, visibleWidth(headers.speed), ...rowTexts.map(r => visibleWidth(r.speed))),
+    interval: Math.max(13, visibleWidth(headers.interval), ...rowTexts.map(r => visibleWidth(r.interval)))
+  };
+
+  const lines = [];
+
+  lines.push(
+    `${padEndVisual(headers.diff, widths.diff)} | ` +
+    `${padStartVisual(headers.delta, widths.delta)} | ` +
+    `${padEndVisual(headers.speed, widths.speed)} | ` +
+    `${padStartVisual(headers.interval, widths.interval)}`
+  );
+
+  lines.push(
+    `${"-".repeat(widths.diff)}-+-` +
+    `${"-".repeat(widths.delta)}-+-` +
+    `${"-".repeat(widths.speed)}-+-` +
+    `${"-".repeat(widths.interval)}`
+  );
+
+  for (const row of rowTexts) {
+    lines.push(
+      `${getDifficultyName(row.fileName)}${" ".repeat(widths.diff - visibleWidth(row.diff))} | ` +
+      `${padStartVisual(row.delta, widths.delta)} | ` +
+      `${padEndVisual(row.speed, widths.speed)} | ` +
+      `${padStartVisual(row.interval, widths.interval)}`
+    );
+  }
+
+  return lines.join("\n");
 }
