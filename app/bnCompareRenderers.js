@@ -1,9 +1,11 @@
-function renderBnCompareResult(result, dom, t, options = {}, state = null) {
+function renderBnCompareResult(result, dom, t, options = {}) {
   if (!result) {
     if (dom.bnNotesOutput) dom.bnNotesOutput.innerHTML = t("bnNoResult");
     if (dom.bnTimelineOutput) dom.bnTimelineOutput.innerHTML = t("bnNoResult");
     if (dom.bnTimingOutput) dom.bnTimingOutput.innerHTML = t("bnNoResult");
     if (dom.bnMetadataOutput) dom.bnMetadataOutput.innerHTML = t("bnNoResult");
+    if (dom.bnDifficultyOutput) {dom.bnDifficultyOutput.innerHTML = formatBnDifficultyTable(options.resultsByPair ?? [], t);
+  }
     return;
   }
 
@@ -26,7 +28,7 @@ function renderBnCompareResult(result, dom, t, options = {}, state = null) {
   if (dom.bnDifficultyOutput) {
     dom.bnDifficultyOutput.innerHTML =
       formatBnDifficultyTable(
-        state.bnCompare.resultsByPair,
+        options.resultsByPair ?? [],
         t
       );
   }
@@ -196,10 +198,11 @@ function formatBnMetadataResult(items, t) {
       return `
         <tr>
           <th>${escapeHtml(item.label)}</th>
-          <td colspan="2" class="bn-meta-same">${t("bnNoChange")}</td>
+          <td class="bn-meta-same">${beforeText}</td>
+          <td class="bn-meta-same">${afterText}</td>
         </tr>
       `;
-    }
+}
 
     return `
       <tr>
@@ -233,26 +236,58 @@ function formatBnMetadataResult(items, t) {
 }
 
 function formatBnTagsMetadataBlock(item, t) {
-  if (!item || item.type === "same") {
+  if (!item) return "";
+
+  const beforeTags = splitBnMetadataTags(item.beforeValue ?? "");
+  const afterTags = splitBnMetadataTags(item.afterValue ?? "");
+
+  const beforeHtml = beforeTags.length
+    ? beforeTags.map(tag => `<span class="bn-tag">${escapeHtml(tag)}</span>`).join(" ")
+    : `<span class="bn-meta-same">${t("none")}</span>`;
+
+  const afterHtml = afterTags.length
+    ? afterTags.map(tag => `<span class="bn-tag">${escapeHtml(tag)}</span>`).join(" ")
+    : `<span class="bn-meta-same">${t("none")}</span>`;
+
+  if (item.type === "same") {
     return `
       <div class="bn-tags-block">
         <h4>Tags</h4>
-        <div class="bn-meta-same">${t("bnNoChange")}</div>
+
+        <div class="bn-tags-row">
+          <span class="bn-tags-label">Before:</span>
+          <div class="bn-tags-list">${beforeHtml}</div>
+        </div>
+
+        <div class="bn-tags-row">
+          <span class="bn-tags-label">After:</span>
+          <div class="bn-tags-list">${afterHtml}</div>
+        </div>
       </div>
     `;
   }
 
-  const removed = item.removed.length
+  const removed = item.removed?.length
     ? item.removed.map(tag => `<span class="bn-tag bn-tag-removed">${escapeHtml(tag)}</span>`).join(" ")
     : `<span class="bn-meta-same">${t("none")}</span>`;
 
-  const added = item.added.length
+  const added = item.added?.length
     ? item.added.map(tag => `<span class="bn-tag bn-tag-added">${escapeHtml(tag)}</span>`).join(" ")
     : `<span class="bn-meta-same">${t("none")}</span>`;
 
   return `
     <div class="bn-tags-block">
       <h4>Tags</h4>
+
+      <div class="bn-tags-row">
+        <span class="bn-tags-label">Before:</span>
+        <div class="bn-tags-list">${beforeHtml}</div>
+      </div>
+
+      <div class="bn-tags-row">
+        <span class="bn-tags-label">After:</span>
+        <div class="bn-tags-list">${afterHtml}</div>
+      </div>
 
       <div class="bn-tags-row">
         <span class="bn-tags-label">${t("bnDeleted")}:</span>
@@ -265,6 +300,14 @@ function formatBnTagsMetadataBlock(item, t) {
       </div>
     </div>
   `;
+}
+
+function splitBnMetadataTags(tags) {
+  return String(tags)
+    .trim()
+    .split(/ +/)
+    .map(tag => tag.trim())
+    .filter(Boolean);
 }
 
 function formatBnObjectLabel(kind, t) {
