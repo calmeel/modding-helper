@@ -33,6 +33,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const spreadOrderOutput = document.getElementById("spreadOrderOutput");
   const spreadResetOrderButton = document.getElementById("spreadResetOrderButton");
   const spreadNoteCountOutput = document.getElementById("spreadNoteCountOutput");
+  const spreadDensityOutput = document.getElementById("spreadDensityOutput");
+  const spreadDensityMinDiff = document.getElementById("spreadDensityMinDiff");
   const spreadFinishersOutput = document.getElementById("spreadFinishersOutput");
   const spreadScrollSpeedOutput = document.getElementById("spreadScrollSpeedOutput");
   /** BN評価 */
@@ -98,6 +100,8 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadOrderOutput,
     spreadResetOrderButton,
     spreadNoteCountOutput,
+    spreadDensityOutput,
+    spreadDensityMinDiff,
     spreadFinishersOutput,
     spreadScrollSpeedOutput,
     bnNotesOutput,
@@ -448,6 +452,8 @@ document.addEventListener("DOMContentLoaded", () => {
     volumeCompareThresholdOnly,
     volumeCompareMinDurationOnly,
     renderVolumeCompareResult: renderVolumeCompareResultAndUpdateTabs,
+    spreadDensityMinDiff,
+    renderSpreadResult,
   });
 
   async function handleFile(file) {

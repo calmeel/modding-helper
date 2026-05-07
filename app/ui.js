@@ -93,7 +93,9 @@ function setupOptionEvents(options) {
     svVolumeLargeChangeOnly,
     volumeCompareThresholdOnly,
     volumeCompareMinDurationOnly,
-    renderVolumeCompareResult
+    renderVolumeCompareResult,
+    spreadDensityMinDiff,
+    renderSpreadResult
   } = options;
 
   if (showClap) {
@@ -125,11 +127,15 @@ function setupOptionEvents(options) {
   }
 
   if (volumeCompareThresholdOnly) {
-  volumeCompareThresholdOnly.addEventListener("change", renderVolumeCompareResult);
-}
+    volumeCompareThresholdOnly.addEventListener("change", renderVolumeCompareResult);
+  }
 
   if (volumeCompareMinDurationOnly) {
     volumeCompareMinDurationOnly.addEventListener("change", renderVolumeCompareResult);
+  }
+
+  if (spreadDensityMinDiff) {
+    spreadDensityMinDiff.addEventListener("change", renderSpreadResult);
   }
 }
 

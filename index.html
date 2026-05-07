@@ -306,6 +306,10 @@
             Note Count
           </button>
 
+          <button class="spread-subtab-button" data-spread-subtab="density" data-i18n="spreadDensity">
+            Density
+          </button>
+
           <button class="spread-subtab-button" data-spread-subtab="finishers" data-i18n="spreadFinishers">
             Finishers
           </button>
@@ -331,6 +335,21 @@
 
         <div class="spread-subtab-panel" id="spread-subtab-notes">
           <pre id="spreadNoteCountOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+        </div>
+
+        <div class="spread-subtab-panel" id="spread-subtab-density">
+          <div class="options">
+            <label>
+              <span data-i18n="spreadDensityMinDiff">Show inversions from:</span>
+              <select id="spreadDensityMinDiff">
+                <option value="1" selected>+1</option>
+                <option value="2">+2</option>
+                <option value="3">+3</option>
+              </select>
+            </label>
+          </div>
+
+          <pre id="spreadDensityOutput" data-i18n="noFileLoaded">No file loaded.</pre>
         </div>
 
         <div class="spread-subtab-panel" id="spread-subtab-finishers">
@@ -468,7 +487,7 @@
       <p><strong>2026/05/08</strong> Update</p>
       <ul>
         <li>「アーティスト」「タイトル」タブを追加</li>
-        <li>「スクロール変化のスプレッド比較」を実装</li>
+        <li>「スプレッド比較」機能を拡張</li>
       </ul>
 
     </div>
