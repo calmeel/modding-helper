@@ -230,6 +230,36 @@
     </tr>
 
     <tr>
+      <td>アーティスト</td>
+
+      <td class="warn-cell">
+        ・推奨されない marker 表記が存在する<br>
+        ・marker 周辺のスペースが不正である<br>
+        ・推奨 Romanised 記号変換と一致していない
+      </td>
+
+      <td class="error-cell">
+        ・diff 間で Artist が一致していない<br>
+        ・diff 間で ArtistUnicode が一致していない
+      </td>
+    </tr>
+
+    <tr>
+      <td>タイトル</td>
+
+      <td class="warn-cell">
+        ・推奨されない version marker が存在する<br>
+        ・title 内 feat. 表記が不正である<br>
+        ・推奨 Romanised 記号変換と一致していない
+      </td>
+
+      <td class="error-cell">
+        ・diff 間で Title が一致していない<br>
+        ・diff 間で TitleUnicode が一致していない
+      </td>
+    </tr>
+
+    <tr>
       <td>ソース</td>
       <td class="warn-cell">
         ・不明な東方の作品名が表示されている
@@ -253,7 +283,7 @@
     </tr>
 
     <tr>
-      <td>その他1：プレビューポイント</td>
+      <td>その他：プレビューポイント</td>
       <td class="warn-cell">
         ・プレビューポイントが unsnapped である
       </td>
