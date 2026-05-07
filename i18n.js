@@ -91,6 +91,7 @@ const i18n = {
     earlyNoteIssueDetails: "First-note lag risk details",
 
     tabMetadata: "Metadata",
+    metadataFieldView: "Metadata field view",
 
     tabArtist: "Artist",
     tabTitle: "Title",
@@ -126,6 +127,8 @@ const i18n = {
     titleMarkerIssue: "Possible title marker issue",
 
     tabTag: "Tag",
+    tagTokenView: "Tag token view",
+    tagTokenViewEmpty: "No tags found.",
     noTagIssues: "No tag spacing issues found.",
     tagMissing: "Tags line was not found.",
     tagMultipleSpaces: "Multiple half-width spaces",
@@ -319,6 +322,7 @@ const i18n = {
     earlyNoteIssueDetails: "プチフリリスクの詳細",
 
     tabMetadata: "メタデータ",
+    metadataFieldView: "メタデータ表示",
 
     tabArtist: "アーティスト",
     tabTitle: "タイトル",
@@ -354,6 +358,8 @@ const i18n = {
     titleMarkerIssue: "Title markerの問題候補",
 
     tabTag: "タグ",
+    tagTokenView: "タグ一覧表示",
+    tagTokenViewEmpty: "Tag が見つかりませんでした。",
     noTagIssues: "Tagのスペース問題は見つかりませんでした。",
     tagMissing: "Tags行が見つかりませんでした。",
     tagMultipleSpaces: "2つ以上の半角スペース",

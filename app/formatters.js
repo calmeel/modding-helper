@@ -1100,6 +1100,11 @@ function formatMultipleTagResults(results, t) {
 
   const lines = [];
 
+  lines.push(formatTagTokenView(sortedResults, t));
+  lines.push("");
+  lines.push(formatSeparator());
+  lines.push("");
+
   lines.push(formatSectionTitle(t("tagConsistencyCheck")));
   lines.push("");
 
@@ -1188,6 +1193,42 @@ function formatMultipleTagResults(results, t) {
   return lines.join("\n").trimEnd();
 }
 
+/** Tagを一覧表示 */
+function formatTagTokenView(results, t) {
+  const groups = groupTagResultsByNormalizedTags(results);
+
+  const lines = [];
+
+  lines.push(formatSectionTitle(t("tagTokenView")));
+  lines.push("");
+
+  for (const group of groups) {
+    const result = group.representative;
+    const tags = getTagWords(result.tags);
+
+    lines.push(formatGroupedTagHeader(group));
+    lines.push("");
+
+    if (!tags.length) {
+      lines.push(t("tagTokenViewEmpty"));
+      lines.push("");
+      continue;
+    }
+
+    lines.push(
+      `<div class="tag-token-list">` +
+      tags
+        .map(tag => `<span class="tag-token">${escapeHtml(tag)}</span>`)
+        .join(" ") +
+      `</div>`
+    );
+
+    lines.push("");
+  }
+
+  return lines.join("\n").trimEnd();
+}
+
 /** Artistチェック */
 function formatMultipleArtistResults(results, t) {
   if (!results.length) {
@@ -1198,6 +1239,15 @@ function formatMultipleArtistResults(results, t) {
   const compared = compareArtistsAcrossDiffs(sortedResults);
 
   const lines = [];
+
+  lines.push(formatMetadataFieldView(sortedResults, t, [
+    { key: "artist", label: "Artist" },
+    { key: "artistUnicode", label: "ArtistUnicode" }
+  ]));
+  lines.push("");
+  lines.push(formatSeparator());
+  lines.push("");
+
 
   lines.push(formatSectionTitle(t("artistConsistencyCheck")));
   lines.push("");
@@ -1302,6 +1352,14 @@ function formatMultipleTitleResults(results, t) {
   const compared = compareTitlesAcrossDiffs(sortedResults);
 
   const lines = [];
+
+  lines.push(formatMetadataFieldView(sortedResults, t, [
+    { key: "title", label: "Title" },
+    { key: "titleUnicode", label: "TitleUnicode" }
+  ]));
+  lines.push("");
+  lines.push(formatSeparator());
+  lines.push("");
 
   lines.push(formatSectionTitle(t("titleConsistencyCheck")));
   lines.push("");
@@ -1411,6 +1469,47 @@ function formatMultipleTitleResults(results, t) {
         lines.push("");
       }
     }
+  }
+
+  return lines.join("\n").trimEnd();
+}
+
+/** メタデータ表示の共通関数 */
+function formatMetadataFieldView(results, t, fields) {
+  const lines = [];
+
+  lines.push(formatSectionTitle(t("metadataFieldView")));
+  lines.push("");
+
+  for (const field of fields) {
+    const values = [
+      ...new Set(
+        results
+          .map(r => (r[field.key] ?? "").trim())
+          .filter(Boolean)
+      )
+    ];
+
+    lines.push(field.label);
+    lines.push("");
+
+    if (!values.length) {
+      lines.push(`<code>-</code>`);
+      lines.push("");
+      continue;
+    }
+
+    lines.push(
+      `<div class="tag-token-list">` +
+      values
+        .map(v =>
+          `<span class="tag-token">${escapeHtml(v)}</span>`
+        )
+        .join(" ") +
+      `</div>`
+    );
+
+    lines.push("");
   }
 
   return lines.join("\n").trimEnd();
@@ -1567,6 +1666,13 @@ function formatMultipleSourceResults(results, t) {
   const compared = compareSourcesAcrossDiffs(sortedResults);
 
   const lines = [];
+
+  lines.push(formatMetadataFieldView(sortedResults, t, [
+    { key: "source", label: "Source" }
+  ]));
+  lines.push("");
+  lines.push(formatSeparator());
+  lines.push("");
 
   lines.push(formatSectionTitle(t("sourceConsistencyCheck")));
   lines.push("");
