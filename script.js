@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const svVolumeThreshold = document.getElementById("svVolumeThreshold");
   const volumeCompareOutput = document.getElementById("volumeCompareOutput");
   const volumeCompareThresholdOnly = document.getElementById("volumeCompareThresholdOnly");
+  const volumeCompareMinDurationOnly = document.getElementById("volumeCompareMinDurationOnly");
   const redGreenMatchOutput = document.getElementById("redGreenMatchOutput");
   const sampleSetOutput = document.getElementById("sampleSetOutput");
   const svVolumeLargeChangeOnly = document.getElementById("svVolumeLargeChangeOnly");
@@ -80,6 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
     svVolumeLargeChangeOnly,
     volumeCompareOutput,
     volumeCompareThresholdOnly,
+    volumeCompareMinDurationOnly,
     redGreenMatchOutput,
     sampleSetOutput,
     sliderSettingsOutput,
@@ -421,7 +423,8 @@ document.addEventListener("DOMContentLoaded", () => {
     includeExactSameSv,
     svVolumeThreshold,
     svVolumeLargeChangeOnly,
-    volumeCompareThresholdOnly
+    volumeCompareThresholdOnly,
+    volumeCompareMinDurationOnly
   });
 
   setupOptionEvents({
@@ -437,7 +440,8 @@ document.addEventListener("DOMContentLoaded", () => {
     svVolumeLargeChangeOnly,
     renderSvVolumeResult: renderSvVolumeResultAndUpdateTabs,
     volumeCompareThresholdOnly,
-    renderVolumeCompareResult: renderVolumeCompareResultAndUpdateTabs
+    volumeCompareMinDurationOnly,
+    renderVolumeCompareResult: renderVolumeCompareResultAndUpdateTabs,
   });
 
   async function handleFile(file) {

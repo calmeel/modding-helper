@@ -92,6 +92,7 @@ function setupOptionEvents(options) {
     renderSvVolumeResult,
     svVolumeLargeChangeOnly,
     volumeCompareThresholdOnly,
+    volumeCompareMinDurationOnly,
     renderVolumeCompareResult
   } = options;
 
@@ -124,7 +125,11 @@ function setupOptionEvents(options) {
   }
 
   if (volumeCompareThresholdOnly) {
-    volumeCompareThresholdOnly.addEventListener("change", renderVolumeCompareResult);
+  volumeCompareThresholdOnly.addEventListener("change", renderVolumeCompareResult);
+}
+
+  if (volumeCompareMinDurationOnly) {
+    volumeCompareMinDurationOnly.addEventListener("change", renderVolumeCompareResult);
   }
 }
 

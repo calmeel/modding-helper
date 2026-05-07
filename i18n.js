@@ -55,6 +55,7 @@ const i18n = {
 
     tabVolumeCompare: "Volume Compare",
     volumeCompareThresholdOnly: "Show only differences of 5% or more",
+    volumeCompareMinDurationOnly: "Show only sections of 50 ms or longer",
     noVolumeCompareMismatch: "No SV volume mismatches found.",
 
     tabRedGreenMatch: "Red/Green Match",
@@ -286,6 +287,7 @@ const i18n = {
 
     tabVolumeCompare: "ボリューム比較",
     volumeCompareThresholdOnly: "5%以上の差のみ表示",
+    volumeCompareMinDurationOnly: "50 ms 以上続く区間のみ表示",
     noVolumeCompareMismatch: "SV volumeの不一致は見つかりませんでした。",
 
     tabRedGreenMatch: "赤線&緑線",
