@@ -791,3 +791,22 @@ input[type="file"]::file-selector-button:hover {
   border-color: #ff6b6b;
   color: #fff;
 }
+
+/** Tagの一覧表示 */
+.tag-token-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 8px;
+}
+
+.tag-token {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #222;
+  border: 1px solid #444;
+  color: #f0f0f0;
+  font-family: Consolas, monospace;
+  font-size: 0.95em;
+}
