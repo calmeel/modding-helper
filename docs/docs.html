@@ -1173,21 +1173,30 @@ diff名が変更されている場合もあるため、読み込み後に Before
 
 <div class="section section-detect">
 <span class="label label-detect">■ 検出内容</span><br>
-以下の3種類の情報を比較します。
+以下の5種類の情報を比較します。
 <ul>
   <li><code>ノーツ情報</code>：ノーツの追加、削除、種類変更、スライダー / スピナーの追加・削除、スライダー / スピナーのテール移動を表示します。</li>
+
+  <li><code>タイムライン</code>：
+    変更がある小節のみをタイムライン形式で表示します。<br>
+    小節内の最小 snap に応じて自動的にグリッド幅を変更します。<br>
+  </li>
+
   <li><code>Timing情報</code>：BPM / SV の追加・削除・変更、Volume の相違区間、Kiai の相違区間を表示します。</li>
-  <li><code>メタデータ情報</code>：Artist、Romanised Artist、Title、Romanised Title、Source、Tags の変更を表示します。</li>
+
+  <li><code>メタデータ情報</code>： メタデータの変更点を表示します。</li>
+
+  <li><code>OD / HP</code>：OD /HP の変更を表形式で表示します。
+  </li>
 </ul>
-Tags は、削除された tag と追加された tag を分けて表示します。<br><br>
 
 ノーツについては、
 <code><span style="color:#ff6b6b; font-weight:bold;">d</span></code> / 
 <code><span style="color:#6b9aff; font-weight:bold;">k</span></code> / 
 <code><span style="color:#ff6b6b; font-weight:bold;">D</span></code> / 
 <code><span style="color:#6b9aff; font-weight:bold;">K</span></code> / 
-<code><span style="color:#ffd86b; font-weight:bold;">Slider</span></code> / 
-<code><span style="color:#b8b8b8; font-weight:bold;">Spinner</span></code> の差分を表示します。<br><br>
+<code><span style="color:#ffd86b; font-weight:bold;">Slider / S</span></code> / 
+<code><span style="color:#b8b8b8; font-weight:bold;">Spinner / S</span></code> の差分を表示します。<br><br>
 
 なお、<strong>1 msズレのノーツ移動は表示しない</strong>仕様です。
 <br>ただし、1 msズレていても <code>d</code> → <code>k</code> のように内容が変更されている場合は、変更として表示されます。

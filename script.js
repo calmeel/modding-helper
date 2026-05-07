@@ -43,8 +43,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const bnCompareRunButton = document.getElementById("bnCompareRunButton");
   const bnPairSelect = document.getElementById("bnPairSelect");
   const bnNotesOutput = document.getElementById("bnNotesOutput");
+  const bnTimelineOutput = document.getElementById("bnTimelineOutput");
   const bnTimingOutput = document.getElementById("bnTimingOutput");
   const bnMetadataOutput = document.getElementById("bnMetadataOutput");
+  const bnDifficultyOutput = document.getElementById("bnDifficultyOutput");
   const bnApplyRedOffsetButton = document.getElementById("bnApplyRedOffsetButton");
   const bnOffsetStatus = document.getElementById("bnOffsetStatus");
   const bnSvChangeThreshold = document.getElementById("bnSvChangeThreshold");
@@ -97,8 +99,10 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadNoteCountOutput,
     spreadFinishersOutput,
     bnNotesOutput,
+    bnTimelineOutput,
     bnTimingOutput,
     bnMetadataOutput,
+    bnDifficultyOutput,
     bnSvChangeThreshold,
   };
 

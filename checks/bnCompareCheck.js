@@ -42,11 +42,13 @@ function runBnCompare(beforeDiff, afterDiff, options = {}) {
     afterFileName: afterDiff.fileName,
     offsetMs,
     notes: compareBnNotes(beforeDiff.text, afterDiff.text, { offsetMs }),
+    timeline: compareBnTimeline(beforeDiff.text, afterDiff.text, { offsetMs }),
     timing: compareBnTimingPoints(beforeDiff.text, afterDiff.text, {
       offsetMs,
       svChangeThreshold
     }),
-    metadata: compareBnMetadata(beforeDiff.text, afterDiff.text)
+    metadata: compareBnMetadata(beforeDiff.text, afterDiff.text),
+    difficulty: compareBnDifficulty(beforeDiff.text, afterDiff.text)
   };
 }
 
@@ -514,6 +516,19 @@ function compareBnMetadata(beforeText, afterText) {
   return results;
 }
 
+function compareBnDifficulty(beforeText, afterText) {
+  const before = parseSpreadDifficulty(beforeText);
+  const after = parseSpreadDifficulty(afterText);
+
+  return {
+    before,
+    after,
+    changed:
+      before.od !== after.od ||
+      before.hp !== after.hp
+  };
+}
+
 function parseBnMetadata(text) {
   const lines = text.split(/\r?\n/);
   const metadata = {};
@@ -566,4 +581,249 @@ function splitBnTags(tags) {
     .split(/ +/)
     .map(tag => tag.trim())
     .filter(Boolean);
+}
+
+/** タイムライン表示 */
+const BN_TIMELINE_SNAP_CANDIDATES = [4, 6, 8, 12, 16, 24, 32, 48];
+const BN_TIMELINE_EPSILON_MS = 2;
+
+function compareBnTimeline(beforeText, afterText, options = {}) {
+  const offsetMs = options.offsetMs ?? 0;
+
+  const beforeObjects = parseBnHitObjects(beforeText);
+  const afterObjects = parseBnHitObjects(afterText, offsetMs);
+
+  const timingPoints = parseBnTimelineMeasurePoints(beforeText);
+
+  const allTimes = [
+    ...beforeObjects.map(obj => obj.time),
+    ...afterObjects.map(obj => obj.time)
+  ];
+
+  if (!allTimes.length || !timingPoints.length) {
+    return [];
+  }
+
+  const firstTime = Math.min(...allTimes);
+  const lastTime = Math.max(...allTimes);
+
+  const measures = createBnTimelineMeasures(timingPoints, firstTime, lastTime);
+  const results = [];
+
+  for (const measure of measures) {
+    const beforeInMeasure = beforeObjects.filter(obj =>
+      obj.time >= measure.start &&
+      obj.time < measure.end
+    );
+
+    const afterInMeasure = afterObjects.filter(obj =>
+      obj.time >= measure.start &&
+      obj.time < measure.end
+    );
+
+    if (!beforeInMeasure.length && !afterInMeasure.length) continue;
+
+    const gridInfo = chooseBnTimelineGrid(measure, beforeInMeasure, afterInMeasure);
+    if (!gridInfo) {
+      results.push({
+        start: measure.start,
+        end: measure.end,
+        grid: null,
+        before: [],
+        after: [],
+        unsupported: true
+      });
+      continue;
+    }
+
+    const beforeCells = buildBnTimelineCells(measure, beforeInMeasure, gridInfo.grid);
+    const afterCells = buildBnTimelineCells(measure, afterInMeasure, gridInfo.grid);
+
+    const beforePlain = beforeCells.map(cell => cell.kind || "-").join("");
+    const afterPlain = afterCells.map(cell => cell.kind || "-").join("");
+
+    if (beforePlain === afterPlain) continue;
+
+    results.push({
+      start: measure.start,
+      end: measure.end,
+      grid: gridInfo.grid,
+      snap: gridInfo.snap,
+      before: beforeCells,
+      after: afterCells,
+      unsupported: false
+    });
+  }
+
+  return results;
+}
+
+function parseBnTimelineMeasurePoints(text) {
+  const lines = text.split(/\r?\n/);
+
+  let inSection = false;
+  const points = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (trimmed === "[TimingPoints]") {
+      inSection = true;
+      continue;
+    }
+
+    if (inSection) {
+      if (trimmed.startsWith("[")) break;
+      if (!trimmed || trimmed.startsWith("//")) continue;
+
+      const parts = trimmed.split(",").map(p => p.trim());
+      if (parts.length < 7) continue;
+
+      const time = Math.round(parseFloat(parts[0]));
+      const beatLength = parseFloat(parts[1]);
+      const meter = parseInt(parts[2], 10);
+      const uninherited = parseInt(parts[6], 10);
+
+      if (
+        uninherited === 1 &&
+        Number.isFinite(time) &&
+        Number.isFinite(beatLength) &&
+        beatLength > 0
+      ) {
+        points.push({
+          time,
+          beatLength,
+          meter: Number.isFinite(meter) && meter > 0 ? meter : 4
+        });
+      }
+    }
+  }
+
+  points.sort((a, b) => a.time - b.time);
+  return points;
+}
+
+function createBnTimelineMeasures(timingPoints, firstTime, lastTime) {
+  const measures = [];
+
+  for (let i = 0; i < timingPoints.length; i++) {
+    const tp = timingPoints[i];
+    const nextTp = timingPoints[i + 1];
+
+    const measureLength = tp.beatLength * tp.meter;
+
+    const sectionStart = tp.time;
+    const sectionEnd = nextTp ? nextTp.time : lastTime + measureLength;
+
+    let start = sectionStart;
+
+    while (start <= sectionEnd && start <= lastTime) {
+      const end = start + measureLength;
+
+      if (end >= firstTime && start <= lastTime) {
+        measures.push({
+          start: Math.round(start),
+          end: Math.round(end),
+          beatLength: tp.beatLength,
+          meter: tp.meter
+        });
+      }
+
+      start += measureLength;
+    }
+  }
+
+  return measures;
+}
+
+function chooseBnTimelineGrid(measure, beforeObjects, afterObjects) {
+  const objects = [...beforeObjects, ...afterObjects];
+
+  for (const snap of BN_TIMELINE_SNAP_CANDIDATES) {
+    // osu! の snap は「1拍あたりの分割数」として扱う
+    // 4/4なら 1/16 snap = 16 * 4 = 64 cells
+    const grid = snap * measure.meter;
+    const cellLength = measure.beatLength / snap;
+
+    const ok = objects.every(obj => {
+      const position = (obj.time - measure.start) / cellLength;
+      const nearest = Math.round(position);
+
+      if (Math.abs(position - nearest) * cellLength > BN_TIMELINE_EPSILON_MS) {
+        return false;
+      }
+
+      // slider / spinner の終了時刻もグリッドに乗るか確認
+      if (
+        (obj.kind === "slider" || obj.kind === "spinner") &&
+        obj.tailTime !== null
+      ) {
+        const tailPosition = (obj.tailTime - measure.start) / cellLength;
+        const tailNearest = Math.round(tailPosition);
+
+        return Math.abs(tailPosition - tailNearest) * cellLength <= BN_TIMELINE_EPSILON_MS;
+      }
+
+      return true;
+    });
+
+    if (ok) {
+      return {
+        grid,
+        snap
+      };
+    }
+  }
+
+  return null;
+}
+
+function buildBnTimelineCells(measure, objects, grid) {
+  const cells = Array.from({ length: grid }, () => ({
+    kind: null,
+    overflow: false
+  }));
+
+  const cellLength = (measure.end - measure.start) / grid;
+
+  for (const obj of objects) {
+
+    // slider / spinner
+    if (
+      (obj.kind === "slider" || obj.kind === "spinner") &&
+      obj.tailTime !== null
+    ) {
+      const startPos = (obj.time - measure.start) / cellLength;
+      const endPos = (obj.tailTime - measure.start) / cellLength;
+
+      const startIndex = Math.max(0, Math.round(startPos));
+      const endIndex = Math.min(grid - 1, Math.round(endPos));
+
+      for (let i = startIndex; i <= endIndex; i++) {
+        if (cells[i].kind) {
+          cells[i].overflow = true;
+          continue;
+        }
+
+        cells[i].kind = obj.kind;
+      }
+
+      continue;
+    }
+
+    // normal note
+    const position = (obj.time - measure.start) / cellLength;
+    const index = Math.round(position);
+
+    if (index < 0 || index >= grid) continue;
+
+    if (cells[index].kind) {
+      cells[index].overflow = true;
+      continue;
+    }
+
+    cells[index].kind = obj.kind;
+  }
+
+  return cells;
 }
