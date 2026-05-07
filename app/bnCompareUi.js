@@ -318,13 +318,13 @@ function setupBnCompareUi(params) {
     console.log("render SV filter:", state.bnCompare.svChangeThreshold);
 
     renderBnCompareResult(
-      result,
+      result || null,
       dom,
       t,
       {
-        svChangeThreshold: state.bnCompare.svChangeThreshold
-      },
-      state
+        svChangeThreshold: state.bnCompare.svChangeThreshold,
+        resultsByPair: state.bnCompare.resultsByPair
+      }
     );
   }
   
