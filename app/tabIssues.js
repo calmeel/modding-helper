@@ -283,7 +283,12 @@ function getArtistIssueLevel(results) {
   const hasSymbolIssues =
     results.some(result => result.symbolIssues?.length > 0);
 
-  return hasSymbolIssues ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
+  const hasFormattingIssues =
+    results.some(result => result.formattingIssues?.length > 0);
+
+  return hasSymbolIssues || hasFormattingIssues
+    ? TAB_LEVEL_WARN
+    : TAB_LEVEL_NONE;
 }
 
 function getTitleIssueLevel(results) {
@@ -296,7 +301,12 @@ function getTitleIssueLevel(results) {
   const hasSymbolIssues =
     results.some(result => result.symbolIssues?.length > 0);
 
-  return hasSymbolIssues ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
+  const hasMarkerIssues =
+    results.some(result => result.markerIssues?.length > 0);
+
+  return hasSymbolIssues || hasMarkerIssues
+    ? TAB_LEVEL_WARN
+    : TAB_LEVEL_NONE;
 }
 
 function getMetadataIssueLevel(state) {

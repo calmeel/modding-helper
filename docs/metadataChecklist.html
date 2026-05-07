@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Metadata Check List</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #111;
+      color: #eee;
+    }
+
+    h1 {
+      color: #9fdcff;
+      border-bottom: 2px solid #333;
+      padding-bottom: 10px;
+      margin-bottom: 30px;
+    }
+
+    h2 {
+      margin-top: 40px;
+      color: #9fdcff;
+      border-bottom: 1px solid #333;
+      padding-bottom: 6px;
+    }
+
+    p {
+      color: #ccc;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #181818;
+      border: 1px solid #2a2a2a;
+    }
+
+    th {
+      background: #202020;
+      color: #9fdcff;
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #333;
+    }
+
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #2a2a2a;
+      vertical-align: top;
+    }
+
+    tr:hover {
+      background: #1d1d1d;
+    }
+
+    code {
+      background: #363636;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    code.recommended {
+      background: #2a332d;
+      color: #b7e7c3;
+    }
+
+    .section {
+      margin-top: 20px;
+      padding: 14px 16px;
+      background: #181818;
+      border: 1px solid #2a2a2a;
+      border-left: 4px solid #9fdcff;
+      border-radius: 6px;
+    }
+
+    .notes {
+      margin-top: 30px;
+      padding: 14px 16px;
+      background: #181818;
+      border-left: 4px solid #ffd580;
+    }
+
+    .notes-title {
+      color: #ffd580;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Metadata Check List</h1>
+
+<p>
+このページは、Modding Helper の Metadata チェックで使用しているチェック項目一覧です。
+</p>
+
+<h2>アーティスト</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 32%;">問題例</th>
+      <th style="width: 32%;">推奨表記</th>
+      <th style="width: 36%;">説明</th>
+    </tr>
+  </thead>
+
+  <tbody>
+
+    <tr>
+      <td><code>versus</code>, <code>VS</code>, <code>Vs.</code></td>
+      <td><code class="recommended">vs.</code></td>
+      <td>
+        collaboration marker は <code>vs.</code> に統一します。
+      </td>
+    </tr>
+
+    <tr>
+      <td><code>ft.</code>, <code>featuring</code>, <code>Feat.</code></td>
+      <td><code class="recommended">feat.</code></td>
+      <td>
+        featured artist marker は <code>feat.</code> に統一します。
+      </td>
+    </tr>
+
+    <tr>
+      <td><code>c.v.</code>, <code>CV.</code>, <code>~cv~</code></td>
+      <td><code class="recommended">CV:</code></td>
+      <td>
+        voice actor marker は <code>CV:</code> に統一します。
+      </td>
+    </tr>
+
+    <tr>
+      <td><code>v.o.</code>, <code>VO.</code>, <code>~vo~</code></td>
+      <td><code class="recommended">VO:</code></td>
+      <td>
+        voice actor marker は <code>VO:</code> に統一します。
+      </td>
+    </tr>
+
+    <tr>
+      <td><code>ArtistA vs.ArtistB</code></td>
+      <td><code class="recommended">ArtistA vs. ArtistB</code></td>
+      <td>
+        <code>vs.</code> の前後には半角スペースが必要です。
+      </td>
+    </tr>
+
+    <tr>
+      <td><code>ArtistAfeat. ArtistB</code></td>
+      <td><code class="recommended">ArtistA feat. ArtistB</code></td>
+      <td>
+        <code>feat.</code> の前には半角スペースが必要です。
+      </td>
+    </tr>
+
+    <tr>
+      <td><code>ArtistA feat.ArtistB</code></td>
+      <td><code class="recommended">ArtistA feat. ArtistB</code></td>
+      <td>
+        <code>feat.</code> の後ろには半角スペースが必要です。
+      </td>
+    </tr>
+
+    <tr>
+      <td><code>Character(CV: VoiceActor)</code></td>
+      <td><code class="recommended">Character (CV: VoiceActor)</code></td>
+      <td>
+        <code>(</code> の前には半角スペースが必要です。
+      </td>
+    </tr>
+
+    <tr>
+      <td><code>Character (CV:VoiceActor)</code></td>
+      <td><code class="recommended">Character (CV: VoiceActor)</code></td>
+      <td>
+        <code>CV:</code> の後ろには半角スペースが必要です。
+      </td>
+    </tr>
+
+    <tr>
+      <td><code>Character CV: VoiceActor</code></td>
+      <td><code class="recommended">Character (CV: VoiceActor)</code></td>
+      <td>
+        <code>CV:</code> / <code>VO:</code> は括弧付き形式を推奨します。
+      </td>
+    </tr>
+
+    <tr>
+      <td><code>ArtistA,ArtistB</code></td>
+      <td><code class="recommended">ArtistA, ArtistB</code></td>
+      <td>
+        カンマの後ろには半角スペースが必要です。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<div class="notes">
+  <div class="notes-title">注意事項</div>
+  <p>
+    Artist / ArtistUnicode の両方をチェックします。<br>
+    フィールド全体が大文字または小文字の場合は、その casing に合わせた marker 表記を許容します。
+  </p>
+</div>
+
+<h2>タイトル</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 45%;">問題例</th>
+      <th style="width: 25%;">推奨表記</th>
+      <th style="width: 30%;">説明</th>
+    </tr>
+  </thead>
+
+  <tbody>
+
+    <tr>
+      <td>
+        <code>(TV size)</code>,
+        <code>(TV Size.)</code>,
+        <code>(TV ver)</code>,
+        <code>(TV version)</code>
+      </td>
+
+      <td><code class="recommended">(TV Size)</code></td>
+
+      <td>
+        TV / web series / OVA 等で使われた版を表します。<br>
+        大文字小文字も区別します。
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <code>(cut ver)</code>,
+        <code>(Cut Ver)</code>,
+        <code>(cut version)</code>,
+        <code>(cut edit)</code>
+      </td>
+
+      <td><code class="recommended">(Cut Ver.)</code></td>
+
+      <td>
+        非公式カット版を表します。<br>
+        <code>Ver.</code> のピリオド有無も区別します。
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <code>(extended edit)</code>,
+        <code>(Extended Edit.)</code>
+      </td>
+
+      <td><code class="recommended">(Extended Edit)</code></td>
+
+      <td>
+        非公式延長版を表します。<br>
+        余分なピリオドや casing の違いも検出します。
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <code>(extended version)</code>,
+        <code>(Extended ver.)</code>,
+        <code>(Extended Ver)</code>
+      </td>
+
+      <td><code class="recommended">(Extended Ver.)</code></td>
+
+      <td>
+        既存の version marker を正規化します。
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <code>(long)</code>,
+        <code>(Long version)</code>,
+        <code>(Long Ver)</code>
+      </td>
+
+      <td><code class="recommended">(Long Ver.)</code></td>
+
+      <td>
+        長い版を表します。
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <code>(short)</code>,
+        <code>(Short version)</code>,
+        <code>(Short ver.)</code>,
+        <code>(Short Ver)</code>
+      </td>
+
+      <td><code class="recommended">(Short Ver.)</code></td>
+
+      <td>
+        短い版を表します。<br>
+        大文字小文字・ピリオドも区別します。
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <code>(game size)</code>,
+        <code>(Game version)</code>,
+        <code>(Game Ver)</code>,
+        <code>(game OP edit)</code>
+      </td>
+
+      <td><code class="recommended">(Game Ver.)</code></td>
+
+      <td>
+        ゲーム版を表します。
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <code>(movie edit)</code>,
+        <code>(Movie size)</code>,
+        <code>(Movie Ver)</code>,
+        <code>(movie cut)</code>
+      </td>
+
+      <td><code class="recommended">(Movie Ver.)</code></td>
+
+      <td>
+        映画版を表します。
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <code>(sped up)</code>,
+        <code>(speed up)</code>,
+        <code>(Sped Up Ver)</code>
+      </td>
+
+      <td><code class="recommended">(Sped Up Ver.)</code></td>
+
+      <td>
+        テンポを上げた版を表します。
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <code>(nightcore)</code>,
+        <code>(Nightcore version)</code>,
+        <code>(Nightcore Mix.)</code>
+      </td>
+
+      <td><code class="recommended">(Nightcore Mix)</code></td>
+
+      <td>
+        テンポとピッチを上げた版を表します。
+      </td>
+    </tr>
+
+    <tr>
+    <td>
+        <code>(sped up cut)</code>,
+        <code>(speed up cut)</code>,
+        <code>(Sped up &amp; Cut ver.)</code>,
+        <code>(Sped up &amp; Cut ver)</code>,
+        <code>(Sped up &amp; Cut version)</code>,
+        <code>(Sped Up and Cut Ver.)</code>,
+    </td>
+
+    <td><code class="recommended">(Sped Up &amp; Cut Ver.)</code></td>
+
+    <td>
+        sped up + cut の複合 marker です。<br>
+        大文字小文字・<code>Ver.</code> のピリオド有無・<code>version</code> 表記もチェックします。
+    </td>
+    </tr>
+
+    <tr>
+    <td>
+        <code>(nightcore cut)</code>,
+        <code>(Nightcore cut)</code>,
+        <code>(Nightcore &amp; Cut ver.)</code>,
+        <code>(Nightcore &amp; Cut ver)</code>,
+        <code>(Nightcore &amp; Cut version)</code>,
+        <code>(Nightcore and Cut Ver.)</code>,
+    </td>
+
+    <td><code class="recommended">(Nightcore &amp; Cut Ver.)</code></td>
+
+    <td>
+        nightcore + cut の複合 marker です。<br>
+        大文字小文字・<code>Ver.</code> のピリオド有無・<code>version</code> 表記もチェックします。
+    </td>
+    </tr>
+
+    <tr>
+      <td>
+        <code>(ft. Artist)</code>,
+        <code>(featuring Artist)</code>,
+        <code>(Feat. Artist)</code>,
+        <code>(feat.Artist)</code>
+      </td>
+
+      <td><code class="recommended">(feat. Artist)</code></td>
+
+    <td>
+    タイトル内の featured artist 表記です。<br>
+    <code>feat.</code> の前後スペースや、
+    <code>(</code> の前のスペースもチェックします。
+    </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<div class="notes">
+  <div class="notes-title">注意事項</div>
+  <p>
+    Title / TitleUnicode の両方をチェックします。<br>
+    <code>(Short ver.)</code>、<code>(Short Ver)</code> のように、大文字小文字やピリオドが異なる場合も検出します。
+  </p>
+  <p>
+    このチェックでは、
+    <code>TV size</code>、
+    <code>(TV size)</code>、
+    <code>[Short ver.]</code>
+    のように、括弧の有り無し・別の種類の括弧も検出対象になります。
+  </p>
+</div>
+
+<h2>特殊文字</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 35%;">記号</th>
+      <th style="width: 65%;">推奨Romanised表記</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>★ ☆ ⚝ ✪ ✻ ※</code></td><td><code class="recommended">*</code></td></tr>
+    <tr><td><code>♥ ♡</code></td><td><code class="recommended">&lt;3</code></td></tr>
+    <tr><td><code>「 」 『 』</code></td><td><code class="recommended">"</code></td></tr>
+    <tr><td><code>…</code></td><td><code class="recommended">...</code></td></tr>
+    <tr><td><code>。</code></td><td><code class="recommended">.</code></td></tr>
+    <tr><td><code>→</code></td><td><code class="recommended">-&gt;</code> / <code class="recommended">--&gt;</code></td></tr>
+    <tr><td><code>←</code></td><td><code class="recommended">&lt;-</code> / <code class="recommended">&lt;--</code></td></tr>
+    <tr><td><code>《 》</code></td><td><code class="recommended">&lt; &gt;</code> / <code class="recommended">&lt;&lt; &gt;&gt;</code> / <code class="recommended">" "</code></td></tr>
+    <tr><td><code>【 】</code></td><td><code class="recommended">" "</code> / <code class="recommended">()</code> / <code class="recommended">[]</code></td></tr>
+    <tr><td><code>≠</code></td><td><code class="recommended">=/=</code> / <code class="recommended">!=</code></td></tr>
+    <tr><td><code>・</code></td><td><code class="recommended">.</code> / <code class="recommended">,</code></td></tr>
+    <tr><td><code>×</code></td><td><code class="recommended">x</code></td></tr>
+    <tr><td><code>～ 〜</code></td><td><code class="recommended">~</code></td></tr>
+    <tr><td><code>− – — ―</code></td><td><code class="recommended">-</code></td></tr>
+    <tr><td><code>／</code></td><td><code class="recommended">/</code></td></tr>
+    <tr><td><code>＆</code></td><td><code class="recommended">&amp;</code></td></tr>
+    <tr><td><code>＋</code></td><td><code class="recommended">+</code></td></tr>
+    <tr><td><code>＝</code></td><td><code class="recommended">=</code></td></tr>
+    <tr><td><code>！</code></td><td><code class="recommended">!</code></td></tr>
+    <tr><td><code>？</code></td><td><code class="recommended">?</code></td></tr>
+    <tr><td><code>：</code></td><td><code class="recommended">:</code></td></tr>
+    <tr><td><code>；</code></td><td><code class="recommended">;</code></td></tr>
+    <tr><td><code>（ ）</code></td><td><code class="recommended">( )</code></td></tr>
+    <tr><td><code>［ ］</code></td><td><code class="recommended">[ ]</code></td></tr>
+    <tr><td><code>｛ ｝</code></td><td><code class="recommended">{ }</code></td></tr>
+    <tr><td><code>＜ ＞</code></td><td><code class="recommended">&lt; &gt;</code></td></tr>
+    <tr><td><code>“ ”</code></td><td><code class="recommended">"</code></td></tr>
+  </tbody>
+</table>
+
+</body>
+</html>

@@ -110,6 +110,9 @@ const i18n = {
     currentArtist: "Current Artist",
     baseRomanisedArtist: "Base Romanised Artist",
     currentRomanisedArtist: "Current Romanised Artist",
+    artistFormattingCheck: "Artist formatting check",
+    artistNoFormattingIssues: "No artist formatting issues found.",
+    artistFormattingIssue: "Possible artist formatting issue",
 
     titleConsistencyCheck: "Title consistency check",
     titleNoMismatch: "Titles are consistent across all difficulties.",
@@ -118,6 +121,9 @@ const i18n = {
     currentTitle: "Current Title",
     baseRomanisedTitle: "Base Romanised Title",
     currentRomanisedTitle: "Current Romanised Title",
+    titleMarkerCheck: "Title marker check",
+    titleNoMarkerIssues: "No title marker issues found.",
+    titleMarkerIssue: "Possible title marker issue",
 
     tabTag: "Tag",
     noTagIssues: "No tag spacing issues found.",
@@ -332,6 +338,9 @@ const i18n = {
     currentArtist: "現在のArtist",
     baseRomanisedArtist: "基準Romanised Artist",
     currentRomanisedArtist: "現在のRomanised Artist",
+    artistFormattingCheck: "Artist表記チェック",
+    artistNoFormattingIssues: "Artist表記の問題は見つかりませんでした。",
+    artistFormattingIssue: "Artist表記の問題候補",
 
     titleConsistencyCheck: "全diffのTitle一致チェック",
     titleNoMismatch: "全diffでTitleは一致しています。",
@@ -340,6 +349,9 @@ const i18n = {
     currentTitle: "現在のTitle",
     baseRomanisedTitle: "基準Romanised Title",
     currentRomanisedTitle: "現在のRomanised Title",
+    titleMarkerCheck: "Title markerチェック",
+    titleNoMarkerIssues: "Title markerの問題は見つかりませんでした。",
+    titleMarkerIssue: "Title markerの問題候補",
 
     tabTag: "タグ",
     noTagIssues: "Tagのスペース問題は見つかりませんでした。",
