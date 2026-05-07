@@ -34,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const spreadResetOrderButton = document.getElementById("spreadResetOrderButton");
   const spreadNoteCountOutput = document.getElementById("spreadNoteCountOutput");
   const spreadFinishersOutput = document.getElementById("spreadFinishersOutput");
+  const spreadScrollSpeedOutput = document.getElementById("spreadScrollSpeedOutput");
   /** BN評価 */
   const bnBeforeFileInput = document.getElementById("bnBeforeFileInput");
   const bnAfterFileInput = document.getElementById("bnAfterFileInput");
@@ -98,6 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadResetOrderButton,
     spreadNoteCountOutput,
     spreadFinishersOutput,
+    spreadScrollSpeedOutput,
     bnNotesOutput,
     bnTimelineOutput,
     bnTimingOutput,

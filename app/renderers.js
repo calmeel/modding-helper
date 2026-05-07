@@ -222,6 +222,7 @@ function renderSpreadResultFromResults(spreadState, dom, t) {
   if (!results) {
     if (dom.spreadOrderOutput) dom.spreadOrderOutput.innerHTML = t("noFileLoaded");
     if (dom.spreadOdHpOutput) dom.spreadOdHpOutput.innerHTML = t("noFileLoaded");
+    if (dom.spreadScrollSpeedOutput) dom.spreadScrollSpeedOutput.innerHTML = t("noFileLoaded");
     if (dom.spreadNoteCountOutput) dom.spreadNoteCountOutput.innerHTML = t("noFileLoaded");
     if (dom.spreadFinishersOutput) dom.spreadFinishersOutput.innerHTML = t("noFileLoaded");
     return;
@@ -262,6 +263,15 @@ function renderSpreadResultFromResults(spreadState, dom, t) {
     );
   }
 
+  if (dom.spreadScrollSpeedOutput) {
+    dom.spreadScrollSpeedOutput.innerHTML = formatSpreadScrollSpeedResult(
+      results,
+      t,
+      spreadState.diffOrder,
+      spreadState.manualCategories
+    );
+  }
+
   updateSpreadSubtabIssueStates(spreadState);
 }
 
@@ -273,6 +283,7 @@ function updateSpreadSubtabIssueStates(spreadState) {
   setSpreadSubtabIssueLevel("order", "none");
   setSpreadSubtabIssueLevel("odhp", "none");
   setSpreadSubtabIssueLevel("notes", "none");
+  setSpreadSubtabIssueLevel("scroll", "none");
 
   if (!results || !results.length) return;
 
@@ -345,7 +356,25 @@ function updateSpreadSubtabIssueStates(spreadState) {
     }
   }
 
+  let scrollLevel = "none";
+
   setSpreadSubtabIssueLevel("notes", noteLevel);
+
+  for (const result of sortedResults) {
+    const category = getSpreadEffectiveCategory(result, manualCategories);
+    const rapidChanges = result.scrollSpeed?.rapidChanges ?? [];
+
+    const hasWarn = rapidChanges.some(change =>
+      getSpreadRapidScrollLevel(change, category) === "warn"
+    );
+
+    if (hasWarn) {
+      scrollLevel = "warn";
+      break;
+    }
+  }
+
+  setSpreadSubtabIssueLevel("scroll", scrollLevel);
 }
 
 function setSpreadSubtabIssueLevel(tabName, level) {
@@ -1126,4 +1155,175 @@ function renderTitleResultFromResults(results, dom, t) {
   }
 
   dom.titleOutput.innerHTML = formatMultipleTitleResults(results, t);
+}
+
+/** 低難易度のスクロール速度 */
+function formatSpreadScrollSpeedResult(results, t, diffOrder = null, manualCategories = {}) {
+  if (!results.length) {
+    return t("noOsuFiles");
+  }
+
+  const sortedResults = diffOrder
+    ? applySpreadDiffOrder(results, diffOrder)
+    : sortSpreadResults(results);
+
+  const lines = [];
+
+  lines.push(formatSpreadScrollSpeedSummaryTable(sortedResults, t, manualCategories));
+  lines.push("");
+  lines.push("=".repeat(60));
+  lines.push("");
+  lines.push(formatSpreadRapidScrollChanges(sortedResults, t, manualCategories));
+
+  return lines.join("\n").trimEnd();
+}
+
+function formatSpreadScrollSpeedSummaryTable(results, t, manualCategories = {}) {
+  const rows = results.map(result => {
+    const summary = result.scrollSpeed?.summary;
+    const category = getSpreadEffectiveCategory(result, manualCategories);
+
+    return {
+      result,
+      diff: getDifficultyNameText(result.fileName),
+      category,
+      min: summary ? formatSpreadScrollSpeed(summary.minSpeed) : "N/A",
+      max: summary ? formatSpreadScrollSpeed(summary.maxSpeed) : "N/A",
+      delta: summary ? formatSpreadScrollSpeed(summary.deltaSpeed) : "N/A",
+      ratio: summary ? formatSpreadRatio(summary.ratio) : "N/A",
+      sv: summary
+        ? `${formatSpreadSv(summary.minSv)} - ${formatSpreadSv(summary.maxSv)}`
+        : "N/A",
+      sm: result.scrollSpeed?.sliderMultiplier ?? result.sliderMultiplier ?? "N/A"
+    };
+  });
+
+  const headers = {
+    diff: "Diff",
+    category: "Category",
+    min: "Min px/s",
+    max: "Max px/s",
+    delta: "Delta",
+    ratio: "Ratio",
+    sv: "SV range",
+    sm: "SM"
+  };
+
+  const widths = {
+    diff: Math.max(10, visibleWidth(headers.diff), ...rows.map(r => visibleWidth(r.diff))),
+    category: Math.max(8, visibleWidth(headers.category), ...rows.map(r => visibleWidth(r.category))),
+    min: Math.max(8, visibleWidth(headers.min), ...rows.map(r => visibleWidth(r.min))),
+    max: Math.max(8, visibleWidth(headers.max), ...rows.map(r => visibleWidth(r.max))),
+    delta: Math.max(7, visibleWidth(headers.delta), ...rows.map(r => visibleWidth(r.delta))),
+    ratio: Math.max(5, visibleWidth(headers.ratio), ...rows.map(r => visibleWidth(r.ratio))),
+    sv: Math.max(8, visibleWidth(headers.sv), ...rows.map(r => visibleWidth(r.sv))),
+    sm: Math.max(4, visibleWidth(headers.sm), ...rows.map(r => visibleWidth(String(r.sm))))
+  };
+
+  const lines = [];
+
+  lines.push(
+    `${padEndVisual(headers.diff, widths.diff)} | ` +
+    `${padEndVisual(headers.category, widths.category)} | ` +
+    `${padStartVisual(headers.min, widths.min)} | ` +
+    `${padStartVisual(headers.max, widths.max)} | ` +
+    `${padStartVisual(headers.delta, widths.delta)} | ` +
+    `${padStartVisual(headers.ratio, widths.ratio)} | ` +
+    `${padEndVisual(headers.sv, widths.sv)} | ` +
+    `${padStartVisual(headers.sm, widths.sm)}`
+  );
+
+  lines.push(
+    `${"-".repeat(widths.diff)}-+-` +
+    `${"-".repeat(widths.category)}-+-` +
+    `${"-".repeat(widths.min)}-+-` +
+    `${"-".repeat(widths.max)}-+-` +
+    `${"-".repeat(widths.delta)}-+-` +
+    `${"-".repeat(widths.ratio)}-+-` +
+    `${"-".repeat(widths.sv)}-+-` +
+    `${"-".repeat(widths.sm)}`
+  );
+
+  for (const row of rows) {
+    lines.push(
+      `${getDifficultyName(row.result.fileName)}${" ".repeat(widths.diff - visibleWidth(row.diff))} | ` +
+      `${padEndVisual(row.category, widths.category)} | ` +
+      `${padStartVisual(row.min, widths.min)} | ` +
+      `${padStartVisual(row.max, widths.max)} | ` +
+      `${padStartVisual(row.delta, widths.delta)} | ` +
+      `${padStartVisual(row.ratio, widths.ratio)} | ` +
+      `${padEndVisual(row.sv, widths.sv)} | ` +
+      `${padStartVisual(String(row.sm), widths.sm)}`
+    );
+  }
+
+  return lines.join("\n");
+}
+
+function formatSpreadRapidScrollChanges(results, t, manualCategories = {}) {
+  const lines = [];
+
+  lines.push(t("spreadRapidScrollChanges"));
+
+  let hasAny = false;
+
+  for (const result of results) {
+    const category = getSpreadEffectiveCategory(result, manualCategories);
+    const rapidChanges = result.scrollSpeed?.rapidChanges ?? [];
+
+    const warned = rapidChanges.filter(change =>
+      getSpreadRapidScrollLevel(change, category) === "warn"
+    );
+
+    if (!warned.length) continue;
+
+    hasAny = true;
+
+    lines.push("");
+    lines.push(getDifficultyName(result.fileName));
+
+    for (const change of warned) {
+      const speedText =
+        `${formatSpreadScrollSpeed(change.beforeSpeed)} -> ${formatSpreadScrollSpeed(change.afterSpeed)}`;
+
+      const deltaText =
+        `${change.delta >= 0 ? "+" : ""}${formatSpreadScrollSpeed(change.delta)}`;
+
+      const ratioText =
+        formatSpreadRatio(change.ratio);
+
+      lines.push(
+        `<span class="result-warn">` +
+        `${formatTimestampLink(change.fromTime)} -> ${formatTimestampLink(change.toTime)} | ` +
+        `${speedText} px/s | ` +
+        `Δ ${deltaText} | ` +
+        `${ratioText} | ` +
+        `${change.gapMs} ms` +
+        `</span>`
+      );
+    }
+  }
+
+  if (!hasAny) {
+    lines.push("");
+    lines.push(t("spreadNoRapidScrollChanges"));
+  }
+
+  return lines.join("\n");
+}
+
+function formatSpreadScrollSpeed(value) {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return "N/A";
+  }
+
+  return String(Math.round(value));
+}
+
+function formatSpreadSv(value) {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return "N/A";
+  }
+
+  return value.toFixed(2);
 }
