@@ -191,3 +191,44 @@ function parseSource(text) {
 
   return "";
 }
+
+function normalizeSourceForCompare(source) {
+  return String(source ?? "")
+    .trim()
+    .replace(/　/g, " ")
+    .replace(/\s+/g, " ");
+}
+
+function compareSourcesAcrossDiffs(results) {
+  if (!results || results.length < 2) {
+    return {
+      hasMismatch: false,
+      base: results?.[0] ?? null,
+      mismatches: []
+    };
+  }
+
+  const base = results[0];
+  const baseSource = normalizeSourceForCompare(base.source ?? "");
+
+  const mismatches = [];
+
+  for (const result of results.slice(1)) {
+    const source = normalizeSourceForCompare(result.source ?? "");
+
+    if (source === baseSource) continue;
+
+    mismatches.push({
+      fileName: result.fileName,
+      baseFileName: base.fileName,
+      source: result.source ?? "",
+      baseSource: base.source ?? ""
+    });
+  }
+
+  return {
+    hasMismatch: mismatches.length > 0,
+    base,
+    mismatches
+  };
+}

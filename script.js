@@ -23,8 +23,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const svVolumeLargeChangeOnly = document.getElementById("svVolumeLargeChangeOnly");
   const sliderSettingsOutput = document.getElementById("sliderSettingsOutput");
   const earlyNoteOutput = document.getElementById("earlyNoteOutput");
-  const tagOutput = document.getElementById("tagOutput");
+  const artistOutput = document.getElementById("artistOutput");
+  const titleOutput = document.getElementById("titleOutput");
   const sourceOutput = document.getElementById("sourceOutput");
+  const tagOutput = document.getElementById("tagOutput");
   const previewPointOutput = document.getElementById("previewPointOutput");
   const spreadOdHpOutput = document.getElementById("spreadOdHpOutput");
   const spreadOrderOutput = document.getElementById("spreadOrderOutput");
@@ -82,8 +84,10 @@ document.addEventListener("DOMContentLoaded", () => {
     sampleSetOutput,
     sliderSettingsOutput,
     earlyNoteOutput,
-    tagOutput,
+    artistOutput,
+    titleOutput,
     sourceOutput,
+    tagOutput,
     previewPointOutput,
     spreadOdHpOutput,
     spreadOrderOutput,
@@ -113,8 +117,10 @@ document.addEventListener("DOMContentLoaded", () => {
     sampleSet: null,
     sliderSettings: null,
     earlyNote: null,
-    tag: null,
+    artist: null,
+    title: null,
     source: null,
+    tag: null,
     spread: {
       results: null,
       diffOrder: [],
@@ -224,12 +230,20 @@ document.addEventListener("DOMContentLoaded", () => {
       earlyNoteOutput.textContent = t("noFileLoaded");
     }
 
-    if (!state.tag && tagOutput) {
-      tagOutput.textContent = t("noFileLoaded");
+    if (!state.artist && artistOutput) {
+      artistOutput.textContent = t("noFileLoaded");
+    }
+
+    if (!state.title && titleOutput) {
+      titleOutput.textContent = t("noFileLoaded");
     }
 
     if (!state.source && sourceOutput) {
       sourceOutput.textContent = t("noFileLoaded");
+    }
+
+    if (!state.tag && tagOutput) {
+      tagOutput.textContent = t("noFileLoaded");
     }
 
     if (!state.spread && spreadOdHpOutput) {
@@ -247,8 +261,10 @@ document.addEventListener("DOMContentLoaded", () => {
     renderSampleSetResult();
     renderSliderSettingsResult();
     renderEarlyNoteResult();
-    renderTagResult();
+    renderArtistResult();
+    renderTitleResult();
     renderSourceResult();
+    renderTagResult();
     renderPreviewPointResult();
     renderSpreadResult();
     updateTabIssueStates(state);
@@ -323,9 +339,17 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-  function renderTagResult() {
-    renderTagResultFromResults(
-      state.tag,
+  function renderArtistResult() {
+    renderArtistResultFromResults(
+      state.artist,
+      dom,
+      t
+    );
+  }
+
+  function renderTitleResult() {
+    renderTitleResultFromResults(
+      state.title,
       dom,
       t
     );
@@ -334,6 +358,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderSourceResult() {
     renderSourceResultFromResults(
       state.source,
+      dom,
+      t
+    );
+  }
+
+  function renderTagResult() {
+    renderTagResultFromResults(
+      state.tag,
       dom,
       t
     );
@@ -432,8 +464,10 @@ document.addEventListener("DOMContentLoaded", () => {
       state.sampleSet = result.sampleSet;
       state.earlyNote = result.earlyNote;
       state.sliderSettings = result.sliderSettings;
-      state.tag = result.tag;
+      state.artist = result.artist;
+      state.title = result.title;
       state.source = result.source;
+      state.tag = result.tag;
       state.previewPoint = result.previewPoint;
       state.spread.results = result.spread;
       state.spread.diffOrder = createSpreadDiffOrder(result.spread);
@@ -450,8 +484,10 @@ document.addEventListener("DOMContentLoaded", () => {
       renderSampleSetResult();
       renderSliderSettingsResult();
       renderEarlyNoteResult();
-      renderTagResult();
+      renderArtistResult();
+      renderTitleResult();
       renderSourceResult();
+      renderTagResult();
       renderPreviewPointResult();
       renderSpreadResult();
       updateTabIssueStates(state);

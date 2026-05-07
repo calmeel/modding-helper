@@ -52,8 +52,11 @@ function updateTabIssueStates(state) {
   setTabIssueLevel("sliderSettings", getSliderSettingsIssueLevel(state.sliderSettings));
   setTabIssueLevel("earlyNote", getEarlyNoteIssueLevel(state.earlyNote));
   setTabIssueLevel("metadata", getMetadataIssueLevel(state));
-  setSubtabIssueLevel("metadata-tag", getTagIssueLevel(state.tag));
+  setSubtabIssueLevel("metadata-artist",getArtistIssueLevel(state.artist));
+  setSubtabIssueLevel("metadata-title",getTitleIssueLevel(state.title));
   setSubtabIssueLevel("metadata-source", getSourceIssueLevel(state.source));
+  setSubtabIssueLevel("metadata-tag", getTagIssueLevel(state.tag));
+
   setTabIssueLevel("misc", getPreviewPointIssueLevel(state.previewPoint));
   setTabIssueLevel("spread", getSpreadIssueLevel(state.spread));
 }
@@ -270,20 +273,51 @@ function getTagIssueLevel(results) {
   return TAB_LEVEL_NONE;
 }
 
+function getArtistIssueLevel(results) {
+  if (!results) return TAB_LEVEL_NONE;
+
+  if (compareArtistsAcrossDiffs(results).hasMismatch) {
+    return TAB_LEVEL_ERROR;
+  }
+
+  const hasSymbolIssues =
+    results.some(result => result.symbolIssues?.length > 0);
+
+  return hasSymbolIssues ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
+}
+
+function getTitleIssueLevel(results) {
+  if (!results) return TAB_LEVEL_NONE;
+
+  if (compareTitlesAcrossDiffs(results).hasMismatch) {
+    return TAB_LEVEL_ERROR;
+  }
+
+  const hasSymbolIssues =
+    results.some(result => result.symbolIssues?.length > 0);
+
+  return hasSymbolIssues ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
+}
+
 function getMetadataIssueLevel(state) {
-  const tagLevel = getTagIssueLevel(state.tag);
+  const artistLevel = getArtistIssueLevel(state.artist);
+  const titleLevel = getTitleIssueLevel(state.title);
   const sourceLevel = getSourceIssueLevel(state.source);
+  const tagLevel = getTagIssueLevel(state.tag);
 
   if (
-    tagLevel === TAB_LEVEL_ERROR ||
-    sourceLevel === TAB_LEVEL_ERROR
+    artistLevel === TAB_LEVEL_ERROR ||
+    titleLevel === TAB_LEVEL_ERROR ||
+    sourceLevel === TAB_LEVEL_ERROR ||
+    tagLevel === TAB_LEVEL_ERROR
   ) {
     return TAB_LEVEL_ERROR;
   }
 
   if (
-    tagLevel === TAB_LEVEL_WARN ||
-    sourceLevel === TAB_LEVEL_WARN
+    sourceLevel === TAB_LEVEL_WARN ||
+    tagLevel === TAB_LEVEL_WARN
+
   ) {
     return TAB_LEVEL_WARN;
   }
@@ -291,9 +325,15 @@ function getMetadataIssueLevel(state) {
   return TAB_LEVEL_NONE;
 }
 
-
 function getSourceIssueLevel(results) {
   if (!results) return TAB_LEVEL_NONE;
+
+  const hasSourceMismatch =
+    compareSourcesAcrossDiffs(results).hasMismatch;
+
+  if (hasSourceMismatch) {
+    return TAB_LEVEL_ERROR;
+  }
 
   let hasWarn = false;
 

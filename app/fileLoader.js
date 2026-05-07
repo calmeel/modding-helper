@@ -17,8 +17,10 @@ function createEmptyProcessResult() {
     sampleSet: [],
     sliderSettings: [],
     earlyNote: [],
-    tag: [],
+    artist: [],
+    title: [],
     source: [],
+    tag: [],
     previewPoint: [],
     spread: []
   };
@@ -38,8 +40,10 @@ async function analyzeOszFile(file) {
   const sampleSetResults = [];
   const sliderSettingsResults = [];
   const earlyNoteResults = [];
-  const tagResults = [];
+  const artistResults = [];
+  const titleResults = [];
   const sourceResults = [];
+  const tagResults = [];
   const previewPointResults = [];
   const spreadResults = [];
 
@@ -115,8 +119,13 @@ async function analyzeOszFile(file) {
       mode
     });
 
-    tagResults.push({
-      ...runTagCheck(text, entry.name),
+    artistResults.push({
+      ...runArtistCheck(text, entry.name),
+      mode
+    });
+
+    titleResults.push({
+      ...runTitleCheck(text, entry.name),
       mode
     });
 
@@ -124,6 +133,12 @@ async function analyzeOszFile(file) {
       ...runSourceCheck(text, entry.name),
       mode
     });
+
+    tagResults.push({
+      ...runTagCheck(text, entry.name),
+      mode
+    });
+
 
     previewPointResults.push({
       ...runPreviewPointCheck(text, entry.name),
@@ -148,8 +163,10 @@ async function analyzeOszFile(file) {
     sampleSetResults,
     sliderSettingsResults,
     earlyNoteResults,
-    tagResults,
+    artistResults,
+    titleResults,
     sourceResults,
+    tagResults,
     previewPointResults,
     spreadResults
   };
@@ -230,15 +247,27 @@ async function processFile(file) {
           mode
         }
       ],
-      tag: [
+      artist: [
         {
-          ...runTagCheck(text, file.name),
+          ...runArtistCheck(text, file.name),
+          mode
+        }
+      ],
+      title: [
+        {
+          ...runTitleCheck(text, file.name),
           mode
         }
       ],
       source: [
         {
           ...runSourceCheck(text, file.name),
+          mode
+        }
+      ],
+      tag: [
+        {
+          ...runTagCheck(text, file.name),
           mode
         }
       ],
@@ -273,8 +302,10 @@ async function processFile(file) {
       sampleSet: analyzed.sampleSetResults,
       sliderSettings: analyzed.sliderSettingsResults,
       earlyNote: analyzed.earlyNoteResults,
-      tag: analyzed.tagResults,
+      artist: analyzed.artistResults,
+      title: analyzed.titleResults,
       source: analyzed.sourceResults,
+      tag: analyzed.tagResults,
       previewPoint: analyzed.previewPointResults,
       spread: analyzed.spreadResults,
     };

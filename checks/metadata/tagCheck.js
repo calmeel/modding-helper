@@ -331,26 +331,21 @@ function compareTagsAcrossDiffs(results) {
     };
   }
 
-  const validResults = results.filter(result => result.normalizedTags !== undefined);
-
-  if (validResults.length < 2) {
-    return {
-      hasMismatch: false,
-      base: validResults[0] ?? null,
-      mismatches: []
-    };
-  }
-
-  const base = validResults[0];
-  const baseWords = getTagWords(base.tags);
+  const base = results[0];
+  const baseTags = base.tags ?? "";
+  const baseNormalizedTags = normalizeTagsForCompare(baseTags);
+  const baseWords = getTagWords(baseTags);
   const baseSet = new Set(baseWords.map(normalizeTagToken));
 
   const mismatches = [];
 
-  for (const result of validResults.slice(1)) {
-    if (result.normalizedTags === base.normalizedTags) continue;
+  for (const result of results.slice(1)) {
+    const tags = result.tags ?? "";
+    const normalizedTags = normalizeTagsForCompare(tags);
 
-    const words = getTagWords(result.tags);
+    if (normalizedTags === baseNormalizedTags) continue;
+
+    const words = getTagWords(tags);
     const set = new Set(words.map(normalizeTagToken));
 
     const removed = baseWords.filter(tag => !set.has(normalizeTagToken(tag)));
@@ -361,8 +356,8 @@ function compareTagsAcrossDiffs(results) {
       baseFileName: base.fileName,
       removed,
       added,
-      tags: result.tags,
-      baseTags: base.tags
+      tags,
+      baseTags
     });
   }
 

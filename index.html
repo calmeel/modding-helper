@@ -237,25 +237,45 @@
       <section class="tab-panel" id="tab-metadata">
 
         <div class="bn-subtabs">
-          <button class="bn-subtab-button active"
-                  data-bn-subtab="metadata-tag"
-                  data-i18n="tabTag">
-            Tag
+          <button class="bn-subtab-button"
+                  data-bn-subtab="metadata-artist"
+                  data-i18n="tabArtist">
+            Artist
+          </button>
+
+          <button class="bn-subtab-button"
+                  data-bn-subtab="metadata-title"
+                  data-i18n="tabTitle">
+            Title
           </button>
 
           <button class="bn-subtab-button"
                   data-bn-subtab="metadata-source"
                   data-i18n="sourceCheckTitle">
-            Source check
+            Source
+          </button>
+
+          <button class="bn-subtab-button active"
+                  data-bn-subtab="metadata-tag"
+                  data-i18n="tabTag">
+            Tag
           </button>
         </div>
 
-        <div class="bn-subtab-panel active" id="bn-subtab-metadata-tag">
-          <pre id="tagOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+        <div class="bn-subtab-panel" id="bn-subtab-metadata-artist">
+          <pre id="artistOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+        </div>
+
+        <div class="bn-subtab-panel" id="bn-subtab-metadata-title">
+          <pre id="titleOutput" data-i18n="noFileLoaded">No file loaded.</pre>
         </div>
 
         <div class="bn-subtab-panel" id="bn-subtab-metadata-source">
           <pre id="sourceOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+        </div>
+
+        <div class="bn-subtab-panel active" id="bn-subtab-metadata-tag">
+          <pre id="tagOutput" data-i18n="noFileLoaded">No file loaded.</pre>
         </div>
 
       </section>
@@ -425,19 +445,22 @@
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="app/oszZipLoader.js"></script>
   <script src="parsers/osuParser.js"></script>
-  <script src="checks/clapWhistleCheck.js"></script>
-  <script src="checks/offset1msCheck.js"></script>
-  <script src="checks/kiaiCompareCheck.js"></script>
-  <script src="checks/kiaiSnapCheck.js"></script>
-  <script src="checks/doubleSvCheck.js"></script>
-  <script src="checks/svVolumeCheck.js"></script>
-  <script src="checks/volumeCompareCheck.js"></script>
-  <script src="checks/redGreenMatchCheck.js"></script>
-  <script src="checks/sampleSetCheck.js"></script>
+  <script src="checks/notes/clapWhistleCheck.js"></script>
+  <script src="checks/notes/offset1msCheck.js"></script>
+  <script src="checks/sv/kiaiCompareCheck.js"></script>
+  <script src="checks/sv/kiaiSnapCheck.js"></script>
+  <script src="checks/sv/doubleSvCheck.js"></script>
+  <script src="checks/sv/svVolumeCheck.js"></script>
+  <script src="checks/sv/volumeCompareCheck.js"></script>
+  <script src="checks/sv/redGreenMatchCheck.js"></script>
+  <script src="checks/notes/sampleSetCheck.js"></script>
   <script src="checks/sliderSettingsCheck.js"></script>
-  <script src="checks/earlyNoteCheck.js"></script>
-  <script src="checks/tagCheck.js"></script>
-  <script src="checks/sourceCheck.js"></script>
+  <script src="checks/notes/earlyNoteCheck.js"></script>
+  <script src="checks/metadata/artistCheck.js"></script>
+  <script src="checks/metadata/titleCheck.js"></script>
+  <script src="checks/metadata/metadataSymbolCheck.js"></script>
+  <script src="checks/metadata/tagCheck.js"></script>
+  <script src="checks/metadata/sourceCheck.js"></script>
   <script src="checks/previewPointCheck.js"></script>
   <script src="checks/spreadCheck.js"></script>
   <script src="checks/bnCompareCheck.js"></script>
