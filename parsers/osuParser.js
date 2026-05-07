@@ -233,6 +233,32 @@ function parseTimingPointsDetailed(text) {
   return timingPoints;
 }
 
+/** メタデータ用のパーサー */
+function parseMetadataValue(text, key) {
+  const lines = text.split(/\r?\n/);
+
+  let inMetadata = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (trimmed === "[Metadata]") {
+      inMetadata = true;
+      continue;
+    }
+
+    if (inMetadata) {
+      if (trimmed.startsWith("[")) break;
+
+      if (trimmed.startsWith(key + ":")) {
+        return line.slice(line.indexOf(":") + 1).trim();
+      }
+    }
+  }
+
+  return "";
+}
+
 /** mode情報取得 */
 function parseMode(text) {
   const lines = text.split(/\r?\n/);

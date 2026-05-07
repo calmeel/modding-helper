@@ -92,6 +92,33 @@ const i18n = {
 
     tabMetadata: "Metadata",
 
+    tabArtist: "Artist",
+    tabTitle: "Title",
+
+    metadataSymbolRomanisationCheck: "Symbol romanisation check",
+    metadataNoSymbolRomanisationIssues: "No symbol romanisation issues found.",
+    metadataSymbolRomanisationIssue: "Recommended romanisation may be missing",
+    metadataOriginal: "Original",
+    metadataCurrentRomanised: "Current Romanised",
+    metadataSuggestedRomanised: "Suggested Romanisation",
+    metadataSuggestedRomanisedUnavailable: "Suggested example could not be generated automatically because the symbol is inside the text.",
+
+    artistConsistencyCheck: "Artist consistency check",
+    artistNoMismatch: "Artists are consistent across all difficulties.",
+    artistMismatchFound: "Artist mismatches were found across difficulties.",
+    baseArtist: "Base Artist",
+    currentArtist: "Current Artist",
+    baseRomanisedArtist: "Base Romanised Artist",
+    currentRomanisedArtist: "Current Romanised Artist",
+
+    titleConsistencyCheck: "Title consistency check",
+    titleNoMismatch: "Titles are consistent across all difficulties.",
+    titleMismatchFound: "Title mismatches were found across difficulties.",
+    baseTitle: "Base Title",
+    currentTitle: "Current Title",
+    baseRomanisedTitle: "Base Romanised Title",
+    currentRomanisedTitle: "Current Romanised Title",
+
     tabTag: "Tag",
     noTagIssues: "No tag spacing issues found.",
     tagMissing: "Tags line was not found.",
@@ -124,8 +151,12 @@ const i18n = {
     tagSuggestedAdditions: "Suggested additions",
     tagRelatedTrigger: "Related tags",
 
-    tabMisc: "Misc",
     sourceCheckTitle: "Source",
+    sourceConsistencyCheck: "Source consistency check",
+    sourceNoMismatch: "Sources are consistent across all difficulties.",
+    sourceMismatchFound: "Source mismatches were found across difficulties.",
+    sourceBase: "Base Source",
+    sourceCurrent: "Current Source",
     noSourceIssues: "No source issues found.",
     sourceOk: "OK",
     sourceGenericTouhou: "The Source may need a specific Touhou work title.",
@@ -134,6 +165,7 @@ const i18n = {
     sourceExpected: "Expected",
     sourceUnknownTouhou: "This Touhou work was not found in the checklist, so it could not be validated. Please search and verify the correct source manually.",
 
+    tabMisc: "Misc",
     previewPointSnapTitle: "Preview point snap",
     previewPointNotFound: "Preview point was not found.",
     previewPointMismatch: "Preview point differs between difficulties.",
@@ -282,6 +314,33 @@ const i18n = {
 
     tabMetadata: "メタデータ",
 
+    tabArtist: "アーティスト",
+    tabTitle: "タイトル",
+
+    metadataSymbolRomanisationCheck: "記号のRomanised変換チェック",
+    metadataNoSymbolRomanisationIssues: "記号のRomanised変換ミスは見つかりませんでした。",
+    metadataSymbolRomanisationIssue: "推奨Romanised変換が見つかりません",
+    metadataOriginal: "元表記",
+    metadataCurrentRomanised: "現在のRomanised",
+    metadataSuggestedRomanised: "推奨例",
+    metadataSuggestedRomanisedUnavailable: "記号が文字列の途中にあるため、推奨例は自動生成できません。",
+
+    artistConsistencyCheck: "全diffのArtist一致チェック",
+    artistNoMismatch: "全diffでArtistは一致しています。",
+    artistMismatchFound: "diff間でArtistの不一致が見つかりました。",
+    baseArtist: "基準Artist",
+    currentArtist: "現在のArtist",
+    baseRomanisedArtist: "基準Romanised Artist",
+    currentRomanisedArtist: "現在のRomanised Artist",
+
+    titleConsistencyCheck: "全diffのTitle一致チェック",
+    titleNoMismatch: "全diffでTitleは一致しています。",
+    titleMismatchFound: "diff間でTitleの不一致が見つかりました。",
+    baseTitle: "基準Title",
+    currentTitle: "現在のTitle",
+    baseRomanisedTitle: "基準Romanised Title",
+    currentRomanisedTitle: "現在のRomanised Title",
+
     tabTag: "タグ",
     noTagIssues: "Tagのスペース問題は見つかりませんでした。",
     tagMissing: "Tags行が見つかりませんでした。",
@@ -299,8 +358,12 @@ const i18n = {
     tagSuggestedAdditions: "追加候補",
     tagRelatedTrigger: "関連タグ",
 
-    tabMisc: "その他",
     sourceCheckTitle: "ソース",
+    sourceConsistencyCheck: "全diffのSource一致チェック",
+    sourceNoMismatch: "全diffでSourceは一致しています。",
+    sourceMismatchFound: "diff間でSourceの不一致が見つかりました。",
+    sourceBase: "基準Source",
+    sourceCurrent: "現在のSource",
     noSourceIssues: "Sourceの問題は見つかりませんでした。",
     sourceOk: "OK",
     sourceGenericTouhou: "Sourceには東方作品名を記述する必要があるかもしれません。",
@@ -308,7 +371,8 @@ const i18n = {
     sourceNotTouhou: "東方作品ではないため、Sourceチェックの対象外です。",
     sourceExpected: "推奨表記",
     sourceUnknownTouhou: "チェックリストに該当する東方作品がなかったためチェックできませんでした。\n正しい作品を検索してご自身でご確認ください。",
-
+    
+    tabMisc: "その他",
     previewPointSnapTitle: "プレビューポイントのsnap",
     previewPointNotFound: "PreviewTime が見つかりませんでした。",
     previewPointMismatch: "diff間でプレビューポイントが一致していません。",

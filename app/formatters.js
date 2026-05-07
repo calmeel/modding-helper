@@ -1111,18 +1111,18 @@ function formatMultipleTagResults(results, t) {
   if (!compared.hasMismatch) {
     lines.push(t("tagNoMismatch"));
   } else {
-    lines.push(t("tagMismatchFound"));
+    lines.push(`<span class="result-error">${escapeHtml(t("tagMismatchFound"))}</span>`);
     lines.push("");
 
     for (const mismatch of compared.mismatches) {
       lines.push(`${getDifficultyNameText(mismatch.fileName)}`);
 
       if (mismatch.removed.length) {
-        lines.push(`  ${t("tagRemoved")}: ${mismatch.removed.map(tag => `<code>${escapeHtml(tag)}</code>`).join(" ")}`);
+        lines.push(`  <span class="result-error">${escapeHtml(t("tagRemoved"))}:</span> ${mismatch.removed.map(tag => `<code>${escapeHtml(tag)}</code>`).join(" ")}`);
       }
 
       if (mismatch.added.length) {
-        lines.push(`  ${t("tagAdded")}: ${mismatch.added.map(tag => `<code>${escapeHtml(tag)}</code>`).join(" ")}`);
+        lines.push(`  <span class="result-error">${escapeHtml(t("tagAdded"))}:</span> ${mismatch.added.map(tag => `<code>${escapeHtml(tag)}</code>`).join(" ")}`);
       }
 
       lines.push("");
@@ -1188,6 +1188,171 @@ function formatMultipleTagResults(results, t) {
   return lines.join("\n").trimEnd();
 }
 
+/** Artistチェック */
+function formatMultipleArtistResults(results, t) {
+  if (!results.length) {
+    return t("noOsuFiles");
+  }
+
+  const sortedResults = sortResultsForDisplay(results);
+  const compared = compareArtistsAcrossDiffs(sortedResults);
+
+  const lines = [];
+
+  lines.push(formatSectionTitle(t("artistConsistencyCheck")));
+  lines.push("");
+
+  if (compared.base) {
+    lines.push(`(${t("baseDiff")}: ${getDifficultyNameText(compared.base.fileName)})`);
+    lines.push("");
+  }
+
+  if (!compared.hasMismatch) {
+    lines.push(t("artistNoMismatch"));
+  } else {
+    lines.push(`<span class="result-error">${escapeHtml(t("artistMismatchFound"))}</span>`);
+    lines.push("");
+
+    for (const mismatch of compared.mismatches) {
+      lines.push(getDifficultyNameText(mismatch.fileName));
+
+      if (mismatch.artistMismatch) {
+        lines.push(`  ${escapeHtml(t("baseArtist"))}: <code>${escapeHtml(mismatch.baseArtist)}</code>`);
+        lines.push(`  <span class="result-error">${escapeHtml(t("currentArtist"))}:</span> <code>${escapeHtml(mismatch.artist)}</code>`);
+      }
+
+      if (mismatch.unicodeMismatch) {
+        lines.push(`  ${escapeHtml(t("baseRomanisedArtist"))}: <code>${escapeHtml(mismatch.baseArtistUnicode)}</code>`);
+        lines.push(`  <span class="result-error">${escapeHtml(t("currentRomanisedArtist"))}:</span> <code>${escapeHtml(mismatch.artistUnicode)}</code>`);
+      }
+
+      lines.push("");
+    }
+  }
+
+  lines.push("");
+  lines.push(formatSeparator());
+  lines.push("");
+  lines.push(formatSectionTitle(t("metadataSymbolRomanisationCheck")));
+  lines.push("");
+
+  const symbolIssueResults = sortedResults.filter(result =>
+    result.symbolIssues?.length > 0
+  );
+
+  if (!symbolIssueResults.length) {
+    lines.push(t("metadataNoSymbolRomanisationIssues"));
+  } else {
+    for (const result of symbolIssueResults) {
+      lines.push(getDifficultyNameText(result.fileName));
+      lines.push("");
+
+      for (const issue of result.symbolIssues) {
+        lines.push(
+          `<span class="result-warn">${escapeHtml(t("metadataSymbolRomanisationIssue"))}:</span> ` +
+          `<code>${escapeHtml(issue.symbol)}</code> → ` +
+          issue.expectedList.map(v => `<code>${escapeHtml(v)}</code>`).join(" / ")
+        );
+        lines.push(`  ${escapeHtml(t("metadataOriginal"))}: <code>${escapeHtml(issue.original)}</code>`);
+        lines.push(`  ${escapeHtml(t("metadataRomanised"))}: <code>${escapeHtml(issue.romanised)}</code>`);
+        lines.push("");
+      }
+    }
+  }
+
+  return lines.join("\n").trimEnd();
+}
+
+/** Titleチェック */
+function formatMultipleTitleResults(results, t) {
+  if (!results.length) {
+    return t("noOsuFiles");
+  }
+
+  const sortedResults = sortResultsForDisplay(results);
+  const compared = compareTitlesAcrossDiffs(sortedResults);
+
+  const lines = [];
+
+  lines.push(formatSectionTitle(t("titleConsistencyCheck")));
+  lines.push("");
+
+  if (compared.base) {
+    lines.push(`(${t("baseDiff")}: ${getDifficultyNameText(compared.base.fileName)})`);
+    lines.push("");
+  }
+
+  if (!compared.hasMismatch) {
+    lines.push(t("titleNoMismatch"));
+  } else {
+    lines.push(`<span class="result-error">${escapeHtml(t("titleMismatchFound"))}</span>`);
+    lines.push("");
+
+    for (const mismatch of compared.mismatches) {
+      lines.push(getDifficultyNameText(mismatch.fileName));
+
+      if (mismatch.titleMismatch) {
+        lines.push(`  ${escapeHtml(t("baseTitle"))}: <code>${escapeHtml(mismatch.baseTitle)}</code>`);
+        lines.push(`  <span class="result-error">${escapeHtml(t("currentTitle"))}:</span> <code>${escapeHtml(mismatch.title)}</code>`);
+      }
+
+      if (mismatch.unicodeMismatch) {
+        lines.push(`  ${escapeHtml(t("baseRomanisedTitle"))}: <code>${escapeHtml(mismatch.baseTitleUnicode)}</code>`);
+        lines.push(`  <span class="result-error">${escapeHtml(t("currentRomanisedTitle"))}:</span> <code>${escapeHtml(mismatch.titleUnicode)}</code>`);
+      }
+
+      lines.push("");
+    }
+  }
+
+  lines.push("");
+  lines.push(formatSeparator());
+  lines.push("");
+  lines.push(formatSectionTitle(t("metadataSymbolRomanisationCheck")));
+  lines.push("");
+
+  const symbolIssueResults = sortedResults.filter(result =>
+    result.symbolIssues?.length > 0
+  );
+
+  if (!symbolIssueResults.length) {
+    lines.push(t("metadataNoSymbolRomanisationIssues"));
+  } else {
+    for (const result of symbolIssueResults) {
+      lines.push(getDifficultyNameText(result.fileName));
+      lines.push("");
+
+      for (const issue of result.symbolIssues) {
+        lines.push(
+          `<span class="result-warn">${escapeHtml(t("metadataSymbolRomanisationIssue"))}:</span> ` +
+          `<code>${escapeHtml(issue.symbol)}</code> → ` +
+          issue.expectedList.map(v => `<code>${escapeHtml(v)}</code>`).join(" / ")
+        );
+
+        lines.push(`  ${escapeHtml(t("metadataOriginal"))}: <code>${escapeHtml(issue.original)}</code>`);
+        lines.push(`  ${escapeHtml(t("metadataCurrentRomanised"))}: <code>${escapeHtml(issue.romanised)}</code>`);
+
+        if (issue.suggestedRomanised && issue.suggestedRomanised !== issue.romanised) {
+          lines.push(
+            `  ${escapeHtml(t("metadataSuggestedRomanised"))}: <code>${escapeHtml(issue.suggestedRomanised)}</code>`
+          );
+        }
+
+        else {
+          lines.push(
+            `  <span class="result-warn">${escapeHtml(t("metadataSuggestedRomanisedUnavailable"))}</span>`
+          );
+        }
+
+        lines.push("");
+      }
+    }
+  }
+
+  return lines.join("\n").trimEnd();
+}
+
+/** タグ */
 function formatTagSpacingGroupResult(group, t) {
   const lines = [];
 
@@ -1196,7 +1361,7 @@ function formatTagSpacingGroupResult(group, t) {
 
   for (const item of group.items) {
     if (item.type === "missing") {
-      lines.push(t("tagMissing"));
+      lines.push(`<span class="result-error">${escapeHtml(t("tagMissing"))}</span>`);
       continue;
     }
 
@@ -1205,7 +1370,7 @@ function formatTagSpacingGroupResult(group, t) {
         ? t("tagMultipleSpaces")
         : t("tagFullWidthSpace");
 
-    lines.push(`${label}: ${t("detected")}`);
+    lines.push(`<span class="result-error">${escapeHtml(label)}: ${escapeHtml(t("detected"))}</span>`);
     lines.push(`  <code>${escapeHtml(item.context)}</code>`);
     lines.push("");
   }
@@ -1289,7 +1454,7 @@ function formatTagSpellingResult(result, t, group = null) {
 
   for (const item of result.spellingSuggestions) {
     lines.push(
-      `${t("tagPossibleTypo")}: <code>${escapeHtml(item.tag)}</code> → <code>${escapeHtml(item.suggestion)}</code>`
+      `<span class="result-error">${escapeHtml(t("tagPossibleTypo"))}:</span> <code>${escapeHtml(item.tag)}</code> → <code>${escapeHtml(item.suggestion)}</code>`
     );
   }
 
@@ -1315,34 +1480,71 @@ function formatTagRelatedResult(result, t, group = null) {
       .map(tag => `<code>${escapeHtml(tag)}</code>`)
       .join(" ");
 
-    lines.push(`${t("tagRelatedTrigger")}: ${present}`);
+    lines.push(`<span class="result-warn">${escapeHtml(t("tagRelatedTrigger"))}:</span> ${present}`);
 
     if (alreadyIncluded) {
-      lines.push(`${t("tagAlreadyIncluded")}: ${alreadyIncluded}`);
+      lines.push(`<span class="result-warn">${escapeHtml(t("tagAlreadyIncluded"))}:</span> ${alreadyIncluded}`);
     }
 
-    lines.push(`${t("tagSuggestedAdditions")}: ${suggestions}`);
+    lines.push(`<span class="result-warn">${escapeHtml(t("tagSuggestedAdditions"))}:</span> ${suggestions}`);
     lines.push("");
   }
 
   return lines.join("\n").trimEnd();
 }
 
-/** その他：東方チェック */
+/** メタデータ：東方チェック */
 function formatMultipleSourceResults(results, t) {
   if (!results.length) {
     return t("noOsuFiles");
   }
 
-  const groups = groupSourceResults(results);
+  const sortedResults = sortResultsForDisplay(results);
+  const compared = compareSourcesAcrossDiffs(sortedResults);
 
-  if (!groups.length) {
-    return t("noSourceIssues");
+  const lines = [];
+
+  lines.push(formatSectionTitle(t("sourceConsistencyCheck")));
+  lines.push("");
+
+  if (compared.base) {
+    lines.push(`(${t("baseDiff")}: ${getDifficultyNameText(compared.base.fileName)})`);
+    lines.push("");
   }
 
-  return groups
-    .map(group => formatSourceGroupResult(group, t))
-    .join("\n\n==============================\n\n");
+  if (!compared.hasMismatch) {
+    lines.push(t("sourceNoMismatch"));
+  } else {
+    lines.push(`<span class="result-error">${escapeHtml(t("sourceMismatchFound"))}</span>`);
+    lines.push("");
+
+    for (const mismatch of compared.mismatches) {
+      lines.push(`${getDifficultyNameText(mismatch.fileName)}`);
+      lines.push(`  ${escapeHtml(t("sourceBase"))}: <code>${escapeHtml(mismatch.baseSource)}</code>`);
+      lines.push(`  <span class="result-error">${escapeHtml(t("sourceCurrent"))}:</span> <code>${escapeHtml(mismatch.source)}</code>`);
+      lines.push("");
+    }
+  }
+
+  lines.push("");
+  lines.push(formatSeparator());
+  lines.push("");
+  lines.push(formatSectionTitle(t("sourceCheckTitle")));
+  lines.push("");
+
+  const groups = groupSourceResults(sortedResults);
+
+  if (!groups.length) {
+    lines.push(t("noSourceIssues"));
+  } else {
+    lines.push(
+      groups
+        .map(group => formatSourceGroupResult(group, t))
+        .join("\n\n" + formatSeparator() + "\n\n")
+    );
+  }
+
+  return lines.join("\n").trimEnd();
 }
 
 function groupSourceResults(results) {
@@ -1431,7 +1633,7 @@ function formatSourceGroupResult(group, t) {
   }
 
   if (result.type === "unknown") {
-    lines.push(`<span class="result-error">${escapeHtml(t("sourceUnknownTouhou"))}</span>`);
+    lines.push(`<span class="result-warn">${escapeHtml(t("sourceUnknownTouhou"))}</span>`);
     return lines.join("\n");
   }
 

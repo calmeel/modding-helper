@@ -1089,3 +1089,26 @@ function renderPreviewPointResultFromResults(results, dom, t) {
 
   dom.previewPointOutput.innerHTML = formatPreviewPointResult(results, t);
 }
+
+/** アーティスト・タイトル */
+function renderArtistResultFromResults(results, dom, t) {
+  if (!dom.artistOutput) return;
+
+  if (!results) {
+    dom.artistOutput.innerHTML = t("noFileLoaded");
+    return;
+  }
+
+  dom.artistOutput.innerHTML = formatMultipleArtistResults(results, t);
+}
+
+function renderTitleResultFromResults(results, dom, t) {
+  if (!dom.titleOutput) return;
+
+  if (!results) {
+    dom.titleOutput.innerHTML = t("noFileLoaded");
+    return;
+  }
+
+  dom.titleOutput.innerHTML = formatMultipleTitleResults(results, t);
+}
