@@ -1260,6 +1260,35 @@ function formatMultipleArtistResults(results, t) {
     }
   }
 
+  lines.push("");
+  lines.push(formatSeparator());
+  lines.push("");
+  lines.push(formatSectionTitle(t("artistFormattingCheck")));
+  lines.push("");
+
+  const formattingIssueResults = sortedResults.filter(result =>
+    result.formattingIssues?.length > 0
+  );
+
+  if (!formattingIssueResults.length) {
+    lines.push(t("artistNoFormattingIssues"));
+  } else {
+    for (const result of formattingIssueResults) {
+      lines.push(getDifficultyNameText(result.fileName));
+      lines.push("");
+
+      for (const issue of result.formattingIssues) {
+        lines.push(
+          `<span class="result-warn">${escapeHtml(t("artistFormattingIssue"))}:</span> ` +
+          `<code>${escapeHtml(issue.marker)}</code> → <code>${escapeHtml(issue.expected)}</code>`
+        );
+
+        lines.push(`  ${escapeHtml(t("detected"))}: <code>${escapeHtml(issue.context)}</code>`);
+        lines.push("");
+      }
+    }
+  }
+
   return lines.join("\n").trimEnd();
 }
 
@@ -1344,6 +1373,41 @@ function formatMultipleTitleResults(results, t) {
           );
         }
 
+        lines.push("");
+      }
+    }
+  }
+
+  lines.push("");
+  lines.push(formatSeparator());
+  lines.push("");
+  lines.push(formatSectionTitle(t("titleMarkerCheck")));
+  lines.push("");
+
+  const markerIssueResults = sortedResults.filter(result =>
+    result.markerIssues?.length > 0
+  );
+
+  if (!markerIssueResults.length) {
+    lines.push(t("titleNoMarkerIssues"));
+  } else {
+    for (const result of markerIssueResults) {
+      lines.push(getDifficultyNameText(result.fileName));
+      lines.push("");
+
+      for (const issue of result.markerIssues) {
+        lines.push(
+          `<span class="result-warn">${escapeHtml(t("titleMarkerIssue"))}:</span> ` +
+          `<code>${escapeHtml(issue.marker)}</code> → <code>${escapeHtml(issue.expected)}</code>`
+        );
+
+        if (issue.fieldName) {
+          lines.push(`  ${escapeHtml(t("field"))}: <code>${escapeHtml(issue.fieldName)}</code>`);
+        }
+
+        if (issue.fieldName) {
+          lines.push(`  ${escapeHtml(t("field"))}: <code>${escapeHtml(issue.fieldName)}</code>`);
+        }
         lines.push("");
       }
     }
