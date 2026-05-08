@@ -135,55 +135,119 @@ const TITLE_MARKER_RULES = [
 
 function findTitleMarkerIssues(title, fieldName) {
   const text = String(title ?? "");
-  const issues = [];
+  const candidates = [];
 
-  if (!text.trim()) return issues;
+  if (!text.trim()) return candidates;
 
   for (const rule of TITLE_MARKER_RULES) {
     for (const pattern of rule.patterns) {
       pattern.lastIndex = 0;
 
       for (const match of text.matchAll(pattern)) {
-        const found = match[0];
+        const markerRange = extractTitleMarkerRange(text, match.index, match[0].length);
+        const marker = text.slice(markerRange.start, markerRange.end);
 
-        if (isExactStandardTitleMarker(text, match.index, found.length, rule.expected)) {
+        const beforeMarker = text[markerRange.start - 1];
+
+        const needsSpaceBeforeMarker =
+          markerRange.start > 0 &&
+          marker.startsWith("(") &&
+          beforeMarker !== " ";
+
+        if (needsSpaceBeforeMarker) {
+          candidates.push({
+            fieldName,
+            type: "titleMarkerSpacing",
+            marker,
+            expected: " " + marker,
+            context: getTitleMarkerIssueContext(text, markerRange.start),
+            index: markerRange.start,
+            length: markerRange.end - markerRange.start
+          });
+        }
+
+        // 括弧 marker 全体が許容表記なら、その中の部分一致は全て無視
+        if (isAllowedStandardTitleMarker(marker, text)) {
           continue;
         }
 
-        issues.push({
+        candidates.push({
           fieldName,
           type: "titleMarker",
-          marker: found,
+          marker,
           expected: rule.expected,
-          context: getTitleMarkerIssueContext(text, match.index)
+          context: getTitleMarkerIssueContext(text, markerRange.start),
+          index: markerRange.start,
+          length: markerRange.end - markerRange.start
         });
       }
     }
   }
 
-  return dedupeTitleMarkerIssues(issues);
+  return dedupeTitleMarkerIssues(
+    keepMostSpecificTitleMarkerIssues(candidates)
+  );
 }
 
-function isExactStandardTitleMarker(text, index, length, expected) {
-  const foundText = text.slice(index, index + length);
+function extractTitleMarkerRange(text, index, length) {
+  const left = text.lastIndexOf("(", index);
+  const right = text.indexOf(")", index);
 
-  // 完全一致している標準markerは問題なし
-  if (
-    foundText.toLowerCase() ===
-    expected.toLowerCase()
-  ) {
-    return foundText === expected;
+  if (left !== -1 && right !== -1 && left < index && index < right) {
+    return {
+      start: left,
+      end: right + 1
+    };
   }
 
-  // matchが marker の中身だけに当たっている場合も考慮
-  const start = Math.max(0, index - 2);
-  const end = Math.min(text.length, index + length + 2);
+  return {
+    start: index,
+    end: index + length
+  };
+}
 
-  const surrounding = text
-    .slice(start, end)
-    .trim();
+function isAllowedStandardTitleMarker(marker, fullText) {
+  const casing = getTitleFieldCasing(fullText);
 
-  return surrounding === expected;
+  for (const rule of TITLE_MARKER_RULES) {
+    const variants = getAllowedTitleMarkerVariants(rule.expected, casing);
+
+    if (variants.includes(marker)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function getAllowedTitleMarkerVariants(expected, casing) {
+  const variants = [expected];
+
+  if (casing === "lower") {
+    variants.push(expected.toLowerCase());
+  }
+
+  if (casing === "upper") {
+    variants.push(expected.toUpperCase());
+  }
+
+  return variants;
+}
+
+function keepMostSpecificTitleMarkerIssues(issues) {
+  return issues.filter(issue => {
+    return !issues.some(other => {
+      if (issue === other) return false;
+
+      const sameRange =
+        issue.index === other.index &&
+        issue.length === other.length;
+
+      if (!sameRange) return false;
+
+      return other.expected.length > issue.expected.length;
+    });
+  });
 }
 
 function dedupeTitleMarkerIssues(issues) {
@@ -191,7 +255,7 @@ function dedupeTitleMarkerIssues(issues) {
   const deduped = [];
 
   for (const issue of issues) {
-    const key = `${issue.marker}->${issue.expected}::${issue.context}`;
+    const key = `${issue.fieldName}::${issue.marker}->${issue.expected}::${issue.context}`;
     if (seen.has(key)) continue;
 
     seen.add(key);
