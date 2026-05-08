@@ -1278,7 +1278,7 @@ function formatSpreadScrollSpeedSummaryTable(results, t, manualCategories = {}) 
     delta: "Delta",
     ratio: "Ratio",
     sv: "SV range",
-    sm: "SM"
+    sm: "SliderMultiplier"
   };
 
   const widths = {

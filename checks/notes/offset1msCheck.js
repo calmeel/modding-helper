@@ -13,6 +13,7 @@ function runOffset1msCheck(text, fileName, options = {}) {
   const hitObjects = parseHitObjects(text);
 
   const svLines = parseInheritedTimingPoints(text);
+  const sliderMultiplier = parseOffsetSliderMultiplier(text);
 
   const results = [];
 
@@ -21,6 +22,7 @@ function runOffset1msCheck(text, fileName, options = {}) {
       line,
       timingPoints,
       svLines,
+      sliderMultiplier,
     );
 
     for (const item of items) {
@@ -70,6 +72,23 @@ function getOffsetCheckTimesFromHitObject(line, timingPoints, svLines, sliderMul
     }
   ];
 
+  if (isOffsetSliderType(type)) {
+    const sliderTailTime = estimateOffsetSliderTailTime(
+      parts,
+      startTime,
+      timingPoints,
+      svLines,
+      sliderMultiplier
+    );
+
+    if (sliderTailTime !== null) {
+      items.push({
+        time: sliderTailTime,
+        target: "sliderTail"
+      });
+    }
+  }
+
   if (isOffsetSpinnerType(type)) {
     const endTime = parseInt(parts[5], 10);
 
@@ -86,6 +105,94 @@ function getOffsetCheckTimesFromHitObject(line, timingPoints, svLines, sliderMul
 
 function isOffsetSpinnerType(type) {
   return (type & 8) !== 0;
+}
+
+function isOffsetSliderType(type) {
+  return (type & 2) !== 0;
+}
+
+function estimateOffsetSliderTailTime(parts, startTime, timingPoints, svLines, sliderMultiplier) {
+  // osu! slider object:
+  // x,y,time,type,hitSound,curveType|points,slides,length,...
+  if (parts.length < 8) return null;
+
+  const repeat = parseInt(parts[6], 10);
+  const pixelLength = parseFloat(parts[7]);
+
+  if (
+    Number.isNaN(repeat) ||
+    Number.isNaN(pixelLength) ||
+    repeat <= 0 ||
+    pixelLength <= 0
+  ) {
+    return null;
+  }
+
+  const currentTp = findCurrentTimingPoint(timingPoints, startTime);
+  if (!currentTp || !Number.isFinite(currentTp.beatLength) || currentTp.beatLength <= 0) {
+    return null;
+  }
+
+  const sv = getOffsetCurrentSv(svLines, startTime);
+
+  const duration =
+    (pixelLength * repeat * currentTp.beatLength) /
+    (sliderMultiplier * sv * 100);
+
+  if (!Number.isFinite(duration) || duration <= 0) {
+    return null;
+  }
+
+  return Math.round(startTime + duration);
+}
+
+function getOffsetCurrentSv(svLines, time) {
+  let current = null;
+
+  for (const svLine of svLines) {
+    if (svLine.time <= time) {
+      current = svLine;
+    } else {
+      break;
+    }
+  }
+
+  if (!current || !Number.isFinite(current.beatLength) || current.beatLength === 0) {
+    return 1;
+  }
+
+  const sv = -100 / current.beatLength;
+
+  return Number.isFinite(sv) && sv > 0 ? sv : 1;
+}
+
+function parseOffsetSliderMultiplier(text) {
+  const lines = text.split(/\r?\n/);
+  let inDifficulty = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (trimmed === "[Difficulty]") {
+      inDifficulty = true;
+      continue;
+    }
+
+    if (inDifficulty) {
+      if (trimmed.startsWith("[")) break;
+      if (!trimmed || trimmed.startsWith("//")) continue;
+
+      if (trimmed.startsWith("SliderMultiplier:")) {
+        const value = parseFloat(trimmed.slice(trimmed.indexOf(":") + 1));
+
+        if (Number.isFinite(value) && value > 0) {
+          return value;
+        }
+      }
+    }
+  }
+
+  return 1.4;
 }
 
 function findCurrentTimingPoint(timingPoints, time) {
