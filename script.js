@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const sourceOutput = document.getElementById("sourceOutput");
   const tagOutput = document.getElementById("tagOutput");
   const previewPointOutput = document.getElementById("previewPointOutput");
+  const epilepsyWarningOutput = document.getElementById("epilepsyWarningOutput");
   const spreadOdHpOutput = document.getElementById("spreadOdHpOutput");
   const spreadOrderOutput = document.getElementById("spreadOrderOutput");
   const spreadResetOrderButton = document.getElementById("spreadResetOrderButton");
@@ -96,6 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
     sourceOutput,
     tagOutput,
     previewPointOutput,
+    epilepsyWarningOutput,
     spreadOdHpOutput,
     spreadOrderOutput,
     spreadResetOrderButton,
@@ -133,6 +135,8 @@ document.addEventListener("DOMContentLoaded", () => {
     title: null,
     source: null,
     tag: null,
+    previewPoint: null,
+    epilepsyWarning: null,
     spread: {
       results: null,
       diffOrder: [],
@@ -258,6 +262,14 @@ document.addEventListener("DOMContentLoaded", () => {
       tagOutput.textContent = t("noFileLoaded");
     }
 
+    if (!state.previewPoint && previewPointOutput) {
+      previewPointOutput.textContent = t("noFileLoaded");
+    }
+
+    if (!state.epilepsyWarning && epilepsyWarningOutput) {
+      epilepsyWarningOutput.textContent = t("noFileLoaded");
+    }
+
     if (!state.spread && spreadOdHpOutput) {
       spreadOdHpOutput.textContent = t("noFileLoaded");
     }
@@ -278,6 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderSourceResult();
     renderTagResult();
     renderPreviewPointResult();
+    renderEpilepsyWarningResult();
     renderSpreadResult();
     updateTabIssueStates(state);
     bnCompareUi.renderBnSelectedResult();
@@ -391,6 +404,14 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
+  function renderEpilepsyWarningResult() {
+    renderEpilepsyWarningResultFromResults(
+      state.epilepsyWarning,
+      dom,
+      t
+    );
+  }
+
   function renderSpreadResult() {
     renderSpreadResultFromResults(state.spread, dom, t);
   }
@@ -485,6 +506,7 @@ document.addEventListener("DOMContentLoaded", () => {
       state.source = result.source;
       state.tag = result.tag;
       state.previewPoint = result.previewPoint;
+      state.epilepsyWarning = result.epilepsyWarning;
       state.spread.results = result.spread;
       state.spread.diffOrder = createSpreadDiffOrder(result.spread);
       state.spread.manualCategories = {};
@@ -505,6 +527,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderSourceResult();
       renderTagResult();
       renderPreviewPointResult();
+      renderEpilepsyWarningResult();
       renderSpreadResult();
       updateTabIssueStates(state);
     } catch (err) {

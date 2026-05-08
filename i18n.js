@@ -10,8 +10,8 @@ const i18n = {
     tabKiaiCompare: "Kiai Compare",
     tabKiaiSnap: "Kiai Snap",
     tabDoubleSv: "Double SV",
-    showClap: "Show Timestamp for Clap",
-    showWhistle: "Show Timestamp for Whistle",
+    showClap: "Show Clap timestamps",
+    showWhistle: "Show Whistle timestamps",
     tabSettings: "Tab settings",
     tabSvVolume: "SV Volume",
     tabSampleSet: "SampleSet",
@@ -179,6 +179,12 @@ const i18n = {
     previewPointSnapTitle: "Preview point snap",
     previewPointNotFound: "Preview point was not found.",
     previewPointMismatch: "Preview point differs between difficulties.",
+
+    epilepsyWarningTitle: "Flash / Epilepsy Warning",
+    noEpilepsyWarningIssues: "No kiai flash / high-BPM kiai issues found.",
+    epilepsyKiaiFlashIssues: "Kiai flash frequency:",
+    epilepsyHighBpmKiaiIssues: "High-BPM kiai sections:",
+    epilepsyWarningNotice:"Flashing effects above 3 Hz may be a concern from a photosensitive epilepsy perspective.",
 
     tabSpread: "Spread Compare",
     spreadAutoOrder: "Auto order",
@@ -425,6 +431,12 @@ const i18n = {
     previewPointSnapTitle: "プレビューポイントのsnap",
     previewPointNotFound: "PreviewTime が見つかりませんでした。",
     previewPointMismatch: "diff間でプレビューポイントが一致していません。",
+
+    epilepsyWarningTitle: "点滅・てんかん警告",
+    noEpilepsyWarningIssues: "Kiai flash / 高BPM Kiai の確認対象は見つかりませんでした。",
+    epilepsyKiaiFlashIssues: "Kiai flash 頻度:",
+    epilepsyHighBpmKiaiIssues: "高BPM Kiai 区間:",
+    epilepsyWarningNotice: "3 Hz以上の点滅は、photosensitive epilepsy の観点から注意対象とされています。",
 
     tagConsistencyCheck: "全diffのTags一致チェック",
     tagNoMismatch: "全diffでTagsは一致しています。",
