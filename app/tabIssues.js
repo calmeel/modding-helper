@@ -435,5 +435,11 @@ function getSpreadIssueLevel(spreadState) {
     if (level === "warn") hasWarn = true;
   }
 
+  const progression = analyzeSpreadScrollSpeedProgressionByEvent(sortedResults, manualCategories);
+
+  if (progression.issueGroups.length) {
+    hasWarn = true;
+  }
+
   return hasWarn ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
 }
