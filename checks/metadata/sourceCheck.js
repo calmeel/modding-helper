@@ -94,8 +94,29 @@ const TOUHOU_SOURCE_LIST = [
   {
     name: "東方獣王園 〜 Unfinished Dream of All Living Ghost.",
     link: "https://touhou-project.news/titles/th19/"
+  },
+  {
+    name: "弾幕アマノジャク　～ Impossible Spell Card.",
+    link: "https://touhou-project.news/titles/th143/"
+  },
+  {
+    name: "秘封ナイトメアダイアリー　～ Violet Detector.",
+    link: "https://touhou-project.news/titles/th165/"
+  },
+  {
+    name: "バレットフィリア達の闇市場　〜 100th Black Market.",
+    link: "https://touhou-project.news/titles/th185/"
   }
 ];
+
+function normalizeTouhouSourceLoose(source) {
+  return String(source ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[　\s]/g, "")
+    .replace(/[～〜~]/g, "～")
+    .replace(/[.。]/g, "");
+}
 
 function runSourceCheck(text, fileName) {
   const source = parseSource(text);
@@ -110,16 +131,16 @@ function runSourceCheck(text, fileName) {
 
   const normalized = source.trim();
 
-  // 東方っぽい判定
-  const isTouhou = /東方|touhou/i.test(normalized);
-
-  if (!isTouhou) {
-    return {
-      fileName,
-      level: "none",
-      source
-    };
+  function normalizeTouhouSourceLoose(s) {
+    return String(s ?? "")
+      .trim()
+      .toLowerCase()
+      .replace(/[　\s]/g, "")
+      .replace(/[～〜~]/g, "～")
+      .replace(/[.。]/g, "");
   }
+
+  const looseNormalized = normalizeTouhouSourceLoose(normalized);
 
   // 汎用ワードだけ
   if (/^(東方|東方project|東方 project|touhou|touhou project)$/i.test(normalized)) {
@@ -132,7 +153,10 @@ function runSourceCheck(text, fileName) {
   }
 
   // 完全一致
-  const exact = TOUHOU_SOURCE_LIST.find(item => item.name === normalized);
+  const exact = TOUHOU_SOURCE_LIST.find(
+    item => item.name === normalized
+  );
+
   if (exact) {
     return {
       fileName,
@@ -143,9 +167,9 @@ function runSourceCheck(text, fileName) {
     };
   }
 
-  // 部分一致（似てる）
+  // ゆるい一致
   const partial = TOUHOU_SOURCE_LIST.find(item =>
-    item.name.replace(/[　 ]/g, "").includes(normalized.replace(/[　 ]/g, ""))
+    normalizeTouhouSourceLoose(item.name) === looseNormalized
   );
 
   if (partial) {
@@ -159,7 +183,27 @@ function runSourceCheck(text, fileName) {
     };
   }
 
-  // 全然違う
+  // 東方っぽい文字列 or 東方作品候補
+  const looksTouhou =
+    /東方|touhou/i.test(normalized) ||
+    TOUHOU_SOURCE_LIST.some(item => {
+      const itemNormalized = normalizeTouhouSourceLoose(item.name);
+
+      return (
+        itemNormalized.includes(looseNormalized) ||
+        looseNormalized.includes(itemNormalized)
+      );
+    });
+
+  if (!looksTouhou) {
+    return {
+      fileName,
+      level: "none",
+      source
+    };
+  }
+
+  // 不明な東方作品っぽい
   return {
     fileName,
     level: "warn",

@@ -1296,7 +1296,15 @@ The manually adjusted order is also reflected in the OD / HP, note count, and fi
 <span class="label label-warning">■ Notes</span><br>
 When a mapset contains Guest Difficulties or custom difficulty names,
 automatic difficulty-order estimation may not be completely accurate.
-In such cases, the category and difficulty order should be adjusted manually.
+In such cases, the category and difficulty order should be adjusted manually.<br><br>
+
+Spread checks are not intended to automatically determine whether a map is unrankable.<br>
+In particular, larger spread gaps are often considered acceptable when Guest Difficulties are involved.<br><br>
+
+In addition, note count, OD / HP, and Finisher placement represent only part of overall spread quality.<br>
+Actual difficulty differences are also heavily influenced by rhythm, density, BPM, SV, patterns, hand usage, and stream / burst length.<br><br>
+
+Final judgement should always be made after reviewing the actual map content.
 </div>
 </section>
 </section>
@@ -1309,7 +1317,7 @@ In such cases, the category and difficulty order should be adjusted manually.
 This check displays the <code>OverallDifficulty</code> and <code>HPDrainRate</code> values for each difficulty.<br>
 It also displays <code>Delta OD</code> and <code>Delta HP</code>, representing the difference compared to the previous difficulty.<br><br>
 
-Values that violate Ranking Criteria rules are displayed as warnings
+Values that violate <a href="https://osu.ppy.sh/wiki/en/Ranking_criteria/osu%21taiko" target="_blank" rel="noopener noreferrer">osu!taiko Ranking Criteria</a> rules are displayed as warnings
 (same functionality as Mapset Verifier).<br><br>
 
 The following progression patterns are also displayed as warnings:
@@ -1348,15 +1356,18 @@ For this reason, this tool uses separate thresholds depending on the spread type
 <div class="section section-detect">
 <span class="label label-detect">■ Detection Thresholds</span><br>
 
+<span style="color:#ffd86b; font-weight:bold;">Yellow</span> : Warning<br>
+<span style="color:#ff6b6b; font-weight:bold;">Red</span> : Error
+
 <div class="ratio-table-wrap">
 <table class="ratio-threshold-table">
   <thead>
     <tr>
       <th style="width: 24%;">Pair</th>
-      <th style="width: 19%;">Too Small (Error)</th>
-      <th style="width: 19%;">Too Small (Warning)</th>
-      <th style="width: 19%;">Too Large (Warning)</th>
-      <th style="width: 19%;">Too Large (Error)</th>
+      <th style="width: 19%;">Too Small Gap</th>
+      <th style="width: 19%;">Too Small Gap</th>
+      <th style="width: 19%;">Too Large Gap</th>
+      <th style="width: 19%;">Too Large Gap</th>
     </tr>
   </thead>
 
@@ -1502,17 +1513,6 @@ Finisher tables are separated into the following categories:
 
 This tab does not perform warning judgement;
 its purpose is simply to display spread information in an easy-to-compare format.
-</div>
-
-<div class="section section-warning">
-<span class="label label-warning">■ Notes</span><br>
-Spread checks are not intended to automatically determine whether a map is unrankable.<br>
-In particular, larger spread gaps are often considered acceptable when Guest Difficulties are involved.<br><br>
-
-In addition, note count, OD / HP, and Finisher placement represent only part of overall spread quality.<br>
-Actual difficulty differences are also heavily influenced by rhythm, density, BPM, SV, patterns, hand usage, and stream / burst length.<br><br>
-
-Final judgement should always be made after reviewing the actual map content.
 </div>
 </section>
 
