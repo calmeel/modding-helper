@@ -1174,6 +1174,18 @@ function renderPreviewPointResultFromResults(results, dom, t) {
   dom.previewPointOutput.innerHTML = formatPreviewPointResult(results, t);
 }
 
+/** その他タブ：てんかん警告 */
+function renderEpilepsyWarningResultFromResults(results, dom, t) {
+  if (!dom.epilepsyWarningOutput) return;
+
+  if (!results) {
+    dom.epilepsyWarningOutput.innerHTML = t("noFileLoaded");
+    return;
+  }
+
+  dom.epilepsyWarningOutput.innerHTML = formatMultipleEpilepsyWarningResults(results, t);
+}
+
 /** アーティスト・タイトル */
 function renderArtistResultFromResults(results, dom, t) {
   if (!dom.artistOutput) return;

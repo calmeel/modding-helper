@@ -57,7 +57,7 @@ function updateTabIssueStates(state) {
   setSubtabIssueLevel("metadata-source", getSourceIssueLevel(state.source));
   setSubtabIssueLevel("metadata-tag", getTagIssueLevel(state.tag));
 
-  setTabIssueLevel("misc", getPreviewPointIssueLevel(state.previewPoint));
+  setTabIssueLevel("misc", getMiscIssueLevel(state));
   setTabIssueLevel("spread", getSpreadIssueLevel(state.spread));
 }
 
@@ -361,19 +361,19 @@ function getSourceIssueLevel(results) {
 }
 
 function getMiscIssueLevel(state) {
-  const sourceLevel = getSourceIssueLevel(state.source);
   const previewPointLevel = getPreviewPointIssueLevel(state.previewPoint);
+  const epilepsyWarningLevel = getEpilepsyWarningIssueLevel(state.epilepsyWarning);
 
   if (
-    sourceLevel === TAB_LEVEL_ERROR ||
-    previewPointLevel === TAB_LEVEL_ERROR
+    previewPointLevel === TAB_LEVEL_ERROR ||
+    epilepsyWarningLevel === TAB_LEVEL_ERROR
   ) {
     return TAB_LEVEL_ERROR;
   }
 
   if (
-    sourceLevel === TAB_LEVEL_WARN ||
-    previewPointLevel === TAB_LEVEL_WARN
+    previewPointLevel === TAB_LEVEL_WARN ||
+    epilepsyWarningLevel === TAB_LEVEL_WARN
   ) {
     return TAB_LEVEL_WARN;
   }
@@ -392,6 +392,27 @@ function getPreviewPointIssueLevel(results) {
     }
 
     if (result.level === "warn") {
+      hasWarn = true;
+    }
+  }
+
+  return hasWarn ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
+}
+
+function getEpilepsyWarningIssueLevel(results) {
+  if (!results) return TAB_LEVEL_NONE;
+
+  let hasWarn = false;
+
+  for (const result of results) {
+    const flashIssues = result.flashIssues ?? [];
+    const bpmIssues = result.bpmIssues ?? [];
+
+    if (flashIssues.some(issue => issue.level === "warn")) {
+      hasWarn = true;
+    }
+
+    if (bpmIssues.some(issue => issue.level === "warn")) {
       hasWarn = true;
     }
   }

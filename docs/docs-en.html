@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <title>Modding Helper Documentation</title>
   <style>
     body {
       font-family: sans-serif;
-      line-height: 1.6;
+      font-size: 14px;
+      line-height: 1.5;
       max-width: 900px;
       margin: 40px auto;
       padding: 0 20px;
@@ -15,16 +16,17 @@
     }
 
     a {
-      color: #9fdcff;
+      color: #7fd1ff; /* 少し暗め */
       text-decoration: none;
     }
 
     a:hover {
+      color: #bfe9ff; /* ホバーで明るく */
       text-decoration: underline;
     }
 
     a:visited {
-      color: #9fdcff;
+      color: #7ab0cc; /* 少し暗めの水色 */
     }
 
     h1 {
@@ -43,9 +45,18 @@
     }
 
     code {
-      background: #222;
+      background: #3a3a3a;
+      color: #f2f2f2;
+
+      border: 1px solid #444;
+
       padding: 2px 6px;
       border-radius: 4px;
+
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.95em;
+
+      white-space: nowrap;
     }
 
     .section {
@@ -58,18 +69,18 @@
     }
 
     .label-bg {
-      color: #7fd1ff;
+      color: #7fd1ff; /* 水色 */
     }
 
     .label-detect {
-      color: #ffd580;
+      color: #ffd580; /* 緑 */
     }
 
     .label-warning {
-      color: #ff8a8a;
+      color: #ff8a8a; /* 赤 */
     }
 
-
+    /** 見た目強化 */
     h2 {
       margin-top: 40px;
       margin-bottom: 12px;
@@ -163,316 +174,1765 @@
       color: #9fdcff;
       font-weight: bold;
     }
+
+    .section-bg {
+      border-left: 4px solid #7fd1ff; /* 水色 */
+    }
+
+    .section-detect {
+      border-left: 4px solid #ffd580; /* 検出（黄色系） */
+    }
+
+    .section-warning {
+      border-left: 4px solid #ff8a8a; /* 注意（赤系） */
+    }
+
+    .contributors .section {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-left: 4px solid #f3f3f3;
+    }
+
+    .contributors .label {
+      color: #f3f3f3;
+    }
+
+    /** タブ形式での表示 */
+    .docs-layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .doc-tabs {
+      position: sticky;
+      top: 68px;
+      margin-top: 30px;
+
+      max-height: calc(100vh - 36px);
+      overflow-y: auto;
+
+      background: #181818;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+
+      padding: 6px;
+    }
+
+    .doc-tab-button {
+      width: 100%;
+      display: block;
+
+      padding: 6px 8px;
+      margin-bottom: 4px;
+
+      border: 1px solid #333;
+      border-radius: 5px;
+
+      background: #202020;
+      color: #ccc;
+
+      text-align: left;
+      cursor: pointer;
+
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .doc-tab-button:hover {
+      background: #262626;
+      color: #fff;
+    }
+
+    .doc-tab-button.active {
+      background: #263746;
+      border-color: #7fd1ff;
+      color: #9fdcff;
+      font-weight: bold;
+    }
+
+    .doc-tab-panel {
+      display: none;
+    }
+
+    .doc-tab-panel.active {
+      display: block;
+    }
+
+    /* 既存の右側目次は不要になるため非表示 */
+    #toc {
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      .docs-layout {
+        display: block;
+      }
+
+      .doc-tabs {
+        position: static;
+        max-height: none;
+        margin-bottom: 20px;
+      }
+    }
+
+    /** 折りたたみボタン */
+    .doc-tab-group {
+      margin-bottom: 6px;
+      border: 1px solid #2f2f2f;
+      border-radius: 6px;
+      background: #161616;
+      overflow: hidden;
+    }
+
+    .doc-tab-group summary {
+      padding: 7px 8px;
+      cursor: pointer;
+
+      background: #242424;
+      color: #d0d0d0;
+
+      font-size: 12px;
+      font-weight: bold;
+
+      user-select: none;
+    }
+
+    .doc-tab-group summary:hover {
+      background: #2b2b2b;
+      color: #ffffff;
+    }
+
+    .doc-tab-button.active {
+      background: #263746;
+      border-color: #7fd1ff;
+      color: #9fdcff;
+      font-weight: bold;
+    }
+
+    .doc-tab-group .doc-tab-button {
+      margin: 4px 6px;
+      width: calc(100% - 12px);
+    }
+
+    .doc-tab-group[open] > summary {
+      background: #2b3540;
+      color: #9fdcff;
+      border-bottom: 1px solid #3d5668;
+    }
+
+    .doc-tab-group:not([open]) > summary {
+      background: #1f1f1f;
+      color: #aaa;
+    }
+
+    .doc-tab-group:not([open]) > summary:hover {
+      background: #282828;
+      color: #ddd;
+    }
+
+    .doc-tab-group summary::marker {
+      color: #888;
+    }
+
+    .doc-tab-group[open] > summary::marker {
+      color: #9fdcff;
+    }
+
+    /** ratio表 */
+    .ratio-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      margin-top: 12px;
+      margin-bottom: 18px;
+    }
+
+    .ratio-threshold-table {
+      width: 100%;
+      min-width: 620px;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .ratio-threshold-table th,
+    .ratio-threshold-table td {
+      padding: 6px 8px;
+      white-space: nowrap;
+      vertical-align: middle;
+      background: #1a1a1a;
+      border-right: 1px solid #303030;
+    }
+
+    .ratio-threshold-table th {
+      color: #ddd;
+      background: #353535;
+    }
+
+    .ratio-error {
+      color: #ff9090;
+    }
+
+    .ratio-warn {
+      color: #ffd580;
+    }
+
+    .ratio-error code,
+    .ratio-warn code {
+      color: inherit;
+      border-color: currentColor;
+    }
+
+    .ratio-threshold-table td {
+      white-space: normal;
+    }
+
+    .ratio-threshold-table code {
+      white-space: nowrap;
+    }
+
+    .note-subtext {
+      font-size: 13px;
+      color: #aaa;
+      line-height: 1.6;
+    }
   </style>
 </head>
 
 <body>
+
+<h1>Modding Helper Documentation</h1>
 
 <nav id="toc">
   <div class="toc-title">Contents</div>
   <ul id="toc-list"></ul>
 </nav>
 
-<h1>Modding Helper Documentation</h1>
+<div class="docs-layout">
+<nav class="doc-tabs">
 
-<p>
-  Author:
-  <a href="https://osu.ppy.sh/users/12029122" target="_blank" rel="noopener noreferrer">
-    Vanity8
-  </a>
-</p>
+  <details class="doc-tab-group" open>
+    <summary>General</summary>
+    <button class="doc-tab-button" data-doc-tab="project">Project Members</button>
+    <button class="doc-tab-button active" data-doc-tab="intro">About This Tool</button>
+    <button class="doc-tab-button" data-doc-tab="privacy">Notes / Privacy</button>
+  </details>
 
-<p>
-This tool's snap detection is based on beatLength and does not consider meter (time signature).<br>
-Therefore, <code>1/1 snap</code> refers to "each beat position," not the beginning of a measure.
-</p>
+  <details class="doc-tab-group" open>
+    <summary>General Checks</summary>
+    <button class="doc-tab-button" data-doc-tab="clapWhistle">Clap / Whistle</button>
+    <button class="doc-tab-button" data-doc-tab="offset">1ms Offset</button>
+    <button class="doc-tab-button" data-doc-tab="kiaiCompare">Kiai Comparison</button>
+    <button class="doc-tab-button" data-doc-tab="kiaiSnap">Kiai Snap</button>
+    <button class="doc-tab-button" data-doc-tab="doubleSv">Double SV</button>
+    <button class="doc-tab-button" data-doc-tab="svVolume">SV Volume</button>
+    <button class="doc-tab-button" data-doc-tab="volumeCompare">Volume Comparison</button>
+    <button class="doc-tab-button" data-doc-tab="redGreenMatch">Red/Green Match</button>
+    <button class="doc-tab-button" data-doc-tab="sampleSet">SampleSet</button>
+    <button class="doc-tab-button" data-doc-tab="sliderSettings">Slider Multiplier / TickRate</button>
+    <button class="doc-tab-button" data-doc-tab="earlyNote">First Note Lag</button>
+  </details>
 
+  <details class="doc-tab-group">
+    <summary>Metadata</summary>
+    <button class="doc-tab-button" data-doc-tab="artist">Artist</button>
+    <button class="doc-tab-button" data-doc-tab="title">Title</button>
+    <button class="doc-tab-button" data-doc-tab="source">Source</button>
+    <button class="doc-tab-button" data-doc-tab="tag">Tags</button>
+  </details>
+
+  <details class="doc-tab-group">
+    <summary>Miscellaneous</summary>
+    <button class="doc-tab-button" data-doc-tab="previewPoint">Preview Point</button>
+    <button class="doc-tab-button" data-doc-tab="epilepsyWarning">Kiai Flash / Epilepsy Warning</button>
+  </details>
+
+  <details class="doc-tab-group">
+    <summary>Spread Comparison</summary>
+    <button class="doc-tab-button" data-doc-tab="spread1">Diff Order</button>
+    <button class="doc-tab-button" data-doc-tab="spread2">OD / HP</button>
+    <button class="doc-tab-button" data-doc-tab="spread3">Note Count</button>
+    <button class="doc-tab-button" data-doc-tab="spreadDensity">Note Density</button>
+    <button class="doc-tab-button" data-doc-tab="spread4">Finishers</button>
+    <button class="doc-tab-button" data-doc-tab="spread5">Scroll Speed</button>
+  </details>
+
+  <details class="doc-tab-group">
+    <summary>BN Evaluation</summary>
+    <button class="doc-tab-button" data-doc-tab="bnCompare">BN Evaluation</button>
+  </details>
+
+</nav>
+
+  <main class="doc-tab-content">
+
+<section class="doc-tab-panel" data-doc-tab-panel="project">
+  <section class="contributors">
+
+    <h2>Project Members</h2>
+
+    <div class="section section-bg">
+      <span class="label label-bg">■ Programming</span><br>
+      <a href="https://osu.ppy.sh/users/12029122" target="_blank" rel="noopener noreferrer">
+        Vanity8
+      </a>
+    </div>
+
+    <div class="section section-detect">
+      <span class="label label-detect">■ Validation of Detection Logic</span><br>
+      <a href="https://osu.ppy.sh/users/12029122" target="_blank" rel="noopener noreferrer">
+        Vanity8
+      </a>
+    </div>
+
+    <div class="section section-detect">
+      <span class="label label-detect">■ Feature Suggestions</span><br>
+      <a href="https://osu.ppy.sh/users/35619347" target="_blank" rel="noopener noreferrer">
+        yakisode
+      </a>,
+      <a href="https://osu.ppy.sh/users/16320311" target="_blank" rel="noopener noreferrer">
+        Eriha
+      </a>
+    </div>
+
+    <div class="section section-detect">
+      <span class="label label-detect">■ Testers</span><br>
+      <a href="https://osu.ppy.sh/users/14800030" target="_blank" rel="noopener noreferrer">
+        layxa
+      </a>
+    </div>
+
+  </section>
+</section>
+
+<section class="doc-tab-panel active" data-doc-tab-panel="intro">
+  <section class="intro-section">
+    <h2>About This Tool</h2>
+
+    <div class="section section-bg">
+      <span class="label label-bg">■ Overview</span><br>
+      This tool is an osu!taiko modding support tool for mappers creating ranked beatmaps and Beatmap Nominators performing modding.<br>
+      It also includes several features intended for NAT members performing BN evaluations.
+    </div>
+
+    <div class="section section-bg">
+      <span class="label label-bg">■ Background</span><br>
+
+      When creating ranked beatmaps, mappers generally use checking tools such as
+      <a href="https://osu.ppy.sh/wiki/en/Client/Beatmap_editor/AiMod" target="_blank" rel="noopener noreferrer">AiMod</a>,
+      <a href="https://github.com/Naxesss/MapsetVerifier" target="_blank" rel="noopener noreferrer">Mapset Verifier</a>,
+      and
+      <a href="https://github.com/Hiviexd/MVTaikoChecks" target="_blank" rel="noopener noreferrer">Mapset Verifier MVTaikoChecks</a>.
+      However, these tools do not cover every possible issue.<br><br>
+
+      For example, the document <code>Taiko Checklist V1.2 by iRedi</code> contains many checks that cannot currently be detected automatically by existing tools.<br><br>
+
+      This tool mainly focuses on automatically detecting issues that Mapset Verifier cannot check.<br>
+      It is designed to be used together with Mapset Verifier, so checks already covered by Mapset Verifier are generally not duplicated here.<br><br>
+
+      This tool also includes several AiMod-like features.<br>
+      (⚠ It does NOT replace AiMod entirely — final AiMod checking is still required.)<br>
+      You can think of it as an "AiMod for checking all diffs at once."
+    </div>
+
+    <div class="section section-bg">
+      <span class="label label-bg">■ References</span><br>
+      <ul>
+        <li>
+          <a href="https://osu.ppy.sh/wiki/en/Ranking_criteria" target="_blank" rel="noopener noreferrer">
+            Ranking Criteria
+          </a>
+        </li>
+        <li>
+          <a href="https://osu.ppy.sh/wiki/en/Ranking_criteria/osu%21taiko" target="_blank" rel="noopener noreferrer">
+            osu!taiko Ranking Criteria
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="section section-detect">
+      <span class="label label-detect">■ Useful Settings</span><br>
+      <ul>
+        <li>
+          Unused check categories can be hidden from the gear button in the top-right corner.
+        </li>
+        <li>
+          Checkbox states and tab visibility settings are saved in your browser.<br>
+          Your previous settings will therefore persist between visits.
+        </li>
+        <li>
+          Tab colors change depending on the detected result level:
+          <a href="issueLevels.en.html" target="_blank" rel="noopener noreferrer">
+            Warning / Error Level List
+          </a>
+        </li>
+
+        <li>
+          In hybrid mapsets, only taiko difficulties are displayed.
+        </li>
+      </ul>
+    </div>
+
+    <div class="section section-warning">
+      <span class="label label-warning">■ Notes</span><br>
+      <ul>
+        <li>
+          Even when used together with Mapset Verifier, this tool cannot detect every possible Ranking Criteria violation.
+        </li>
+
+        <li>
+          Snap calculations in this tool are based on <code>beatLength</code> and do not consider <code>meter</code>.<br>
+          Therefore, <code>1/1 snap</code> refers to "every beat" rather than specifically measure boundaries.
+        </li>
+
+        <li>
+          If you keep the page open in your browser, updates may not automatically apply.<br>
+          Reload the page periodically, or use <code>Ctrl + F5</code> to force-refresh if updates are not reflected.
+        </li>
+      </ul>
+    </div>
+  </section>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="privacy">
+<h2>Notes / Privacy</h2>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Privacy</span><br>
+
+The checks performed by this tool are based on predefined rule-based logic.<br>
+No generative AI or automatic AI-based judgement is used.<br><br>
+
+Examples:
+<ul>
+  <li>Tag spell checking: performed by comparison with an internal dictionary</li>
+  <li>Touhou Source checking: performed by matching against a predefined title list</li>
+  <li>Snap detection: performed using BPM lines and timing calculations</li>
+</ul>
+
+Unknown words, unusual naming styles, or newly emerging genres may not always be handled correctly.
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Uploaded Files</span><br>
+
+Uploaded <code>.osu</code> / <code>.osz</code> files are processed entirely within your browser.<br><br>
+
+File contents are never sent or exposed to any third party, including the developer.<br>
+No server upload or file storage is performed.<br><br>
+
+All checking logic runs locally on the client side using JavaScript.<br><br>
+
+The source code of this tool is also publicly available on GitHub:
+<a href="https://github.com/calmeel/modding-helper" target="_blank" rel="noopener noreferrer">
+  modding-helper
+</a>
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Disclaimer</span><br>
+
+This tool is intended to assist osu!taiko modding and checking workflows.<br>
+Displayed Warning / Error results are supplementary information only, and do not guarantee rankability or correctness.<br><br>
+
+The developer is not responsible for any problems, disadvantages, or damages caused by the use of this tool.<br>
+Please use the tool and interpret its results at your own discretion and responsibility.<br><br>
+
+While this tool aims to provide accurate checking whenever possible, false positives, missed detections, or incompatibilities caused by future specification changes may still occur.<br>
+Bug reports, suggestions for improving detection logic or terminology, and feature requests are always welcome.
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="clapWhistle">
 <h2>Clap / Whistle</h2>
 
-<div class="section">
+<div class="section section-bg">
 <span class="label label-bg">■ Background</span><br>
-There are two types of Kat sounds (Clap / Whistle).<br>
-Some BN users prefer not to use Whistle, so unifying to Clap may be recommended.
+Kat has two hitsound types: <code>Clap</code> and <code>Whistle</code>.<br>
+Some Beatmap Nominators dislike the sound of whistles, so using only Clap may sometimes be preferred.
 </div>
 
-<div class="section">
-<span class="label label-detect">■ Detection</span><br>
-Analyzes hitsounds of Circle objects (<code>type=1/5</code>) and displays counts of Clap / Whistle / Both.<br>
-When enabled, timestamps for each category are also displayed.
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+This check analyzes hitsounds of Circle objects (<code>type=1/5</code>) and displays the number of <code>Clap</code>, <code>Whistle</code>, and <code>Both</code> hitsounds.<br><br>
+
+Enabling either the "Show Whistle timestamps" or "Show Clap timestamps" checkbox will also display the corresponding timestamps.
 </div>
 
-<div class="section">
+<div class="section section-warning">
 <span class="label label-warning">■ Notes</span><br>
-Using Whistle or Whistle + Clap is not necessarily unrankable.
+Using <code>Whistle</code> or <code>Whistle + Clap</code> is not unrankable.
 </div>
+</section>
 
-
+<section class="doc-tab-panel" data-doc-tab-panel="offset">
 <h2>1ms Offset</h2>
 
-<div class="section">
+<div class="section section-bg">
 <span class="label label-bg">■ Background</span><br>
-When 60000 / BPM does not result in an exact integer, floating-point errors may occur during copy & paste in the osu! editor, causing a 1 ms offset.<br>
-Such offsets can lead to SV not applying correctly or inaccuracies in SR calculation.<br>
-Mapset Verifier and AiMod do not detect ±1 ms offsets (as they are not unrankable).
+When <code>60000 / BPM</code> does not divide evenly, floating-point precision errors caused by copy-pasting in the osu! editor may result in <code>1 ms</code> offsets.<br>
+1 ms offsets are generally best avoided because they may cause SV lines to be skipped or introduce inaccuracies in SR calculation.<br><br>
+
+Mapset Verifier and AiMod do not display ±1 ms offsets because they are not considered unrankable.
 </div>
 
-<div class="section">
-<span class="label label-detect">■ Detection</span><br>
-Detects HitObjects that are offset by ±1–3 ms from their expected snap positions.<br>
-Snap positions are calculated based on beatLength, and decimals are truncated (matching osu! editor behavior).<br>
-The following snap values are checked:
-<code>1/1</code>, <code>1/2</code>, <code>1/3</code>, <code>1/4</code>, <code>1/5</code>, <code>1/6</code>, <code>1/7</code>, <code>1/8</code>, <code>1/9</code>, <code>1/12</code>, <code>1/16</code>.<br>
-Other snap values are not included.
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+Notes, sliders, and spinners that are offset from snap positions by
+<code><span style="color:#ffd86b; font-weight:bold;">±1 ms</span></code>
+are displayed as warnings, while offsets of
+<code><span style="color:#ff6b6b; font-weight:bold;">±2,3 ms</span></code>
+are displayed as errors.<br><br>
+
+<div class="note-subtext">
+Accurate snap estimation at the 1 ms level is performed using <code>beatLength</code> calculations, followed by flooring the final decimal value. This allows the tool to estimate snap positions very similarly to the osu! editor.<br><br>
+
+Only spinner end-time offsets are currently checked. Slider end-time offset detection is not implemented due to technical limitations.<br><br>
+
+The following snap divisions are checked:
+<code>1/1</code>, <code>1/2</code>, <code>1/3</code>, <code>1/4</code>, <code>1/6</code>, <code>1/8</code>, <code>1/12</code>, <code>1/16</code>.<br>
+Other snap divisions are not checked.<br><br>
+
+<code>1/5</code>, <code>1/7</code>, and <code>1/9</code> snaps are only checked when the corresponding checkbox is enabled.
+</div>
 </div>
 
-<div class="section">
+<div class="section section-warning">
 <span class="label label-warning">■ Notes</span><br>
-±1 ms offsets are not unrankable, so not all cases need to be fixed.
+Since ±1 ms offsets are not unrankable, fixing every occurrence is not strictly required.
 </div>
+</section>
 
+<section class="doc-tab-panel" data-doc-tab-panel="kiaiCompare">
+<h2>Kiai Comparison</h2>
 
-<h2>Kiai Compare</h2>
-
-<div class="section">
+<div class="section section-bg">
 <span class="label label-bg">■ Background</span><br>
-When total kiai duration differs between difficulties, it can be difficult to identify where the mismatch occurs.<br>
-Mapset Verifier can compare total duration but cannot show the exact mismatching sections.
+When the total kiai duration differs between difficulties, it is often difficult to identify which sections are different.<br>
+Mapset Verifier can compare total kiai duration, but cannot show the exact sections where differences occur.
 </div>
 
-<div class="section">
-<span class="label label-detect">■ Detection</span><br>
-Displays sections where kiai states do not match.<br>
-Also warns when kiai end points are not explicitly defined.
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+This check displays sections where the kiai state does not match between difficulties.<br><br>
+
+It also warns when the end of a kiai section is not explicitly defined (same behavior as AiMod).
 </div>
 
-<div class="section">
+<div class="section section-warning">
 <span class="label label-warning">■ Notes</span><br>
-Different kiai patterns across difficulties are not unrankable, especially in Guest difficulties.<br>
-However, consistency is recommended when the same mapper created multiple difficulties.
+Using different kiai patterns between difficulties is not unrankable. This is especially common in Guest Difficulties.<br>
+However, when the same mapper created multiple difficulties, keeping kiai patterns consistent is often recommended unless there is a specific reason not to.
 </div>
+</section>
 
-
+<section class="doc-tab-panel" data-doc-tab-panel="kiaiSnap">
 <h2>Kiai Snap</h2>
 
-<div class="section">
+<div class="section section-bg">
 <span class="label label-bg">■ Background</span><br>
-AiMod can detect unsnapped timing points, but cannot detect misalignment at specific snap levels (e.g. 1/4, 1/8).
+AiMod can detect unsnapped kiai timing points, but it cannot detect cases where kiai timing is snapped to unusual divisions such as 1/4 or 1/8 instead of 1/1.
 </div>
 
-<div class="section">
-<span class="label label-detect">■ Detection</span><br>
-Detects kiai ON/OFF points that are not aligned to 1/1 snap.<br>
-Also detects unsnapped kiai lines (e.g. 1/1 snap + 1 ms).
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+This check detects cases where kiai ON/OFF timing is placed on
+<code><span style="color:#ffd86b; font-weight:bold;">anything other than 1/1 snap</span></code>.<br><br>
+
+It also detects
+<code><span style="color:#ff6b6b; font-weight:bold;">unsnapped kiai lines</span></code>
+(such as 1/1 snap + 1 ms), matching AiMod behavior.
 </div>
+</section>
 
-
+<section class="doc-tab-panel" data-doc-tab-panel="doubleSv">
 <h2>Double SV</h2>
 
-<div class="section">
+<div class="section section-bg">
 <span class="label label-bg">■ Background</span><br>
-AiMod can detect overlapping SV lines at the same timestamp, but cannot detect SV lines that are slightly offset (e.g. 1 ms).
+In many cases, duplicate SV lines are either unintentional or leftover from editing mistakes.<br>
+AiMod can detect duplicate SV lines placed at the exact same timestamp, but cannot detect duplicate SV lines offset by 1 ms.
 </div>
 
-<div class="section">
-<span class="label label-detect">■ Detection</span><br>
-Detects SV lines that are too close to each other within a specified interval (1–5 ms).
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+This check detects SV lines that are placed too close together within the specified interval
+(<code>1 ~ 5 ms</code>).
 </div>
+</section>
 
-
+<section class="doc-tab-panel" data-doc-tab-panel="svVolume">
 <h2>SV Volume</h2>
 
-<div class="section">
+<div class="section section-bg">
 <span class="label label-bg">■ Background</span><br>
-If a volume-changing SV line is placed at the same timestamp as a HitObject, the new volume may not be applied if the player hits the note 1 ms early.<br>
-Therefore, it is recommended to place such SV lines at least 5 ms before the HitObject (commonly 5 ms or 1/16 snap earlier).<br>
-This check is not available in AiMod or Mapset Verifier.
+When a volume change is placed at the exact same timestamp as a HitObject, the new volume may not apply if the player hits the object 1 ms early.<br>
+For this reason, SV lines with volume changes are generally recommended to be placed at least 5 ms before the HitObject
+(common offsets are around <code>5 ms</code>, <code>1/16 snap</code>, or <code>1/8 snap</code>).<br>
 </div>
 
-<div class="section">
-<span class="label label-detect">■ Detection</span><br>
-Warns when volume-changing SV lines are placed too close to HitObjects.
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+This check warns when an SV line with a volume change is
+<code><span style="color:#ffd86b; font-weight:bold;">too close to a HitObject</span></code>
+(this detection cannot be performed by AiMod or Mapset Verifier).<br><br>
+
+The detection threshold can be selected from:
+<code>5 ms (exclusive)</code> or
+<code>1/16 snap (exclusive)</code>.<br><br>
+
+Enabling
+<code>Show only differences of 15% or more</code>
+will display only cases where the volume difference is at least 15%.
 </div>
+</section>
 
+<section class="doc-tab-panel" data-doc-tab-panel="volumeCompare">
+<h2>Volume Comparison</h2>
 
-<h2>Volume Compare</h2>
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+This check compares SV volumes between difficulties and detects sections with mismatched volume settings.<br>
+(This detection cannot be performed by AiMod or Mapset Verifier.)<br><br>
 
-<div class="section">
-<span class="label label-detect">■ Detection</span><br>
-Compares SV volume across difficulties and detects sections where they do not match.<br>
-When "Show only differences of 5% or more" is enabled, only differences of 5% or greater are displayed.
+Enabling
+<code>Show only differences of 5% or more</code>
+will display only sections where the volume difference is at least 5%.<br><br>
+
+Enabling
+<code>Show only sections lasting at least 50 ms</code>
+can hide extremely short sections shorter than 50 ms.
 </div>
+</section>
 
+<section class="doc-tab-panel" data-doc-tab-panel="redGreenMatch">
+<h2>Red/Green Match</h2>
 
-<h2>Red & Green Match</h2>
-
-<div class="section">
+<div class="section section-bg">
 <span class="label label-bg">■ Background</span><br>
-Red lines (BPM) and green lines (SV) at the same timestamp should generally share the same settings.<br>
-This check is not available in AiMod or Mapset Verifier.
+Red lines (BPM lines) and green lines (SV lines) placed at the same timestamp are generally expected to share the same settings.<br>
 </div>
 
-<div class="section">
-<span class="label label-detect">■ Detection</span><br>
-Detects mismatches in volume, kiai, and sampleset.
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+This check detects mismatches in:
+<code>volume</code>,
+<code>kiai on/off state</code>,
+and
+<code>sampleset</code>.<br><br>
+
+(This detection cannot be performed by AiMod or Mapset Verifier.)
 </div>
 
-<div class="section">
+<div class="section section-warning">
 <span class="label label-warning">■ Notes</span><br>
-The first red line cannot have kiai enabled.<br>
-Therefore, if the first SV line has kiai enabled, it will be flagged.<br>
-Also, volume differences at the first timing point may be intentional.<br>
-Before that point, the red line volume is used; after that point, the green line volume is applied.
+The first red line cannot be set to kiai ON. Therefore, if the first SV line has kiai enabled, this check will detect it.<br><br>
+
+In some cases, the first red line and green line intentionally use different volume settings. This is because the red line volume applies before that timestamp, while the green line volume applies afterward.
 </div>
+</section>
 
-
+<section class="doc-tab-panel" data-doc-tab-panel="sampleSet">
 <h2>SampleSet</h2>
 
-<div class="section">
+<div class="section section-bg">
 <span class="label label-bg">■ Background</span><br>
-Each BPM line, SV line, and HitObject can have a <code>sampleset</code> assigned.<br>
-This defines the type (tone) of hitsound used:
+BPM lines (red lines), SV lines (green lines), and HitObjects can each be assigned a hitsound type called a <code>sampleset</code>.<br>
+The sampleset determines the sound style of hitsounds, and mainly consists of the following types:
 <ul>
-  <li>1: Normal</li>
-  <li>2: Soft</li>
-  <li>3: Drum</li>
+  <li><code>1: Normal</code></li>
+  <li><code>2: Soft</code></li>
+  <li><code>3: Drum</code></li>
 </ul>
-In osu!taiko, maps are generally expected to use only Normal (1).<br>
-Other values may indicate unintended hitsounds.<br>
-This check is not available in AiMod or Mapset Verifier.
+
+In osu!taiko mode, <code>1: Normal</code> is used in most cases, so the presence of other samplesets may indicate unintended hitsounds.
 </div>
 
-<div class="section">
-<span class="label label-detect">■ Detection</span><br>
-Detects non-Normal samplesets and custom hitsounds.<br><br>
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+This check detects non-Normal samplesets and custom hitsounds.<br>
+(This detection cannot be performed by AiMod or Mapset Verifier.)<br><br>
 
-For TimingPoints:
+For red lines and green lines, the following are detected:
 <ul>
   <li><code>sampleset ≠ 1 (normal)</code> → 2: Soft / 3: Drum</li>
-  <li><code>sampleIndex ≠ 0</code> → custom hitsound</li>
+  <li><code>sampleIndex ≠ 0</code> → custom hitsounds</li>
 </ul>
 
-For HitObjects:
+For notes, sliders, and spinners, the following are detected:
 <ul>
   <li><code>normalSet > 1</code> → 2: Soft / 3: Drum</li>
   <li><code>additionSet > 1</code> → 2: Soft / 3: Drum</li>
-  <li><code>sampleIndex ≠ 0</code> → custom hitsound</li>
-  <li><code>filename is specified</code> → custom audio</li>
+  <li><code>sampleIndex ≠ 0</code> → custom hitsounds</li>
+  <li><code>filename is specified</code> → custom audio file</li>
 </ul>
 
-For slider edges:
+Hitsounds assigned to individual slider edges are also detected:
 <ul>
   <li><code>edgeSets.normalSet > 1</code> → 2: Soft / 3: Drum</li>
   <li><code>edgeSets.additionSet > 1</code> → 2: Soft / 3: Drum</li>
 </ul>
 </div>
+</section>
 
+<section class="doc-tab-panel" data-doc-tab-panel="sliderSettings">
 <h2>Slider Multiplier / TickRate</h2>
 
-<div class="section">
+<div class="section section-bg">
 <span class="label label-bg">■ Background</span><br>
-In osu!taiko, <code>SliderMultiplier</code> should generally be set to <code>1.40</code>.<br>
+In taiko mode, the slider multiplier (<code>SliderMultiplier</code>) is generally set to <code>1.40</code>.<br><br>
+
+The slider tick rate (<code>SliderTickRate</code>) is usually set to <code>1</code>,<br>
+while swing-rhythm songs typically use <code>3</code>.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+This check warns when <code>SliderMultiplier</code> is not set to <code>1.40</code>.<br><br>
+
+The tool calculates the ratio of <code>1/3 snap</code> notes based on the positions of all HitObjects.
+If the ratio is at least <code>30%</code>, the map is treated as a swing-rhythm map
+(notes offset by 1 ms from 1/3 snap are also considered).<br><br>
+
+If the map is classified as swing rhythm, <code>SliderTickRate = 3</code> is shown as the recommended value.
+Otherwise, <code>SliderTickRate = 1</code> is recommended.
+A warning is displayed when the actual value differs from the recommended value.<br><br>
+
+(This detection cannot be performed by AiMod or Mapset Verifier.)
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+For low difficulties in high BPM songs, values lower than <code>SliderMultiplier = 1.4</code> may sometimes be used
+(reference: <code>Taiko Checklist V1.2 by iRedi</code>).<br>
+Using values other than <code>1.40</code> is not strictly forbidden.<br><br>
+
+The threshold of
+"<code>1/3 snap</code> ratio ≥ <code>30%</code>"
+is a convenience value defined specifically for this tool.<br>
+As a result, some swing-rhythm maps may fall below this threshold,
+while some non-swing maps may exceed it.<br><br>
+
+Final judgement should always be made after reviewing the actual song rhythm and mapping style.
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="earlyNote">
+<h2>First Note Lag</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ Background</span><br>
+In osu!, a brief freeze or lag spike may occur when the audio file is first loaded.<br><br>
+
+If the first note is placed immediately after the audio begins, this freeze may occur while the note is already visible on screen or close to the judgement area, making it difficult to hit the note with proper rhythm.<br><br>
+
+For this reason, when the first note is placed very close to the beginning of the audio, it is generally recommended to insert approximately <code>500 ~ 1000 ms</code> of silence at the start of the audio file.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+This check estimates where the first note appears on screen at the moment the audio starts playing.<br>
+Only Circle objects are analyzed; Sliders and Spinners are ignored.<br><br>
+
+The tool estimates osu!taiko scroll speed from BPM and SV values, and calculates how long it takes for a note to travel from the edge of the screen to the judgement area under a 16:9 environment assumption.<br><br>
+
 Reference:
-<a href="https://osu.ppy.sh/wiki/en/Ranking_criteria/osu%21taiko" target="_blank" rel="noopener noreferrer">
-  osu!taiko Ranking Criteria
-</a><br>
-<code>SliderTickRate</code> is normally set to <code>1</code>, while <code>3</code> is generally used for swing-rhythm songs.
-</div>
+<a href="https://osu.ppy.sh/community/forums/topics/1851087?n=1" target="_blank" rel="noopener noreferrer">
+  Note Speed Mechanics
+</a><br><br>
 
-<div class="section">
-<span class="label label-detect">■ Detection</span><br>
-This check warns when <code>SliderMultiplier</code> is not <code>1.40</code>.<br>
-It also calculates the ratio of HitObjects placed on <code>1/3 snap</code>. If the <code>1/3 snap</code> ratio is <code>30%</code> or higher, the map is treated as swing-rhythm for this check.<br>
-When the map is treated as swing-rhythm, <code>SliderTickRate = 3</code> is recommended; otherwise, <code>SliderTickRate = 1</code> is recommended. A warning is shown when the actual value does not match the recommended value.
-</div>
-
-<div class="section">
-<span class="label label-warning">■ Notes</span><br>
-For high-BPM low difficulties, <code>SliderMultiplier</code> values other than <code>1.4</code> may be used as exceptions (see Taiko Checklist V1.2).<br>
-Also, the <code>30%</code> threshold for the <code>1/3 snap</code> ratio is an arbitrary value chosen for this tool.<br>
-Therefore, some swing-rhythm maps may fall below this threshold, and some non-swing maps may exceed it.<br>
-Use this result as a guide, and make the final judgement based on the actual rhythm and mapping context.
-</div>
-
-<h2>Tag</h2>
-
-<div class="section">
-<span class="label label-bg">■ Background</span><br>
-Tags must be separated by exactly one half-width space.<br>
-AiMod and Mapset Verifier cannot detect cases where multiple half-width spaces or full-width spaces are used.
-</div>
-
-<div class="section">
-<span class="label label-detect">■ Detection</span><br>
-Warns when two or more half-width spaces or any full-width spaces are found between tags.
-</div>
-
-<h2>BN Review</h2>
-
-<div class="section">
-<span class="label label-bg">■ Background</span><br>
-This is a feature mainly intended for some BN / NAT use cases.<br>
-During BN evaluation, it compares the <code>.osz</code> before mod application and the <code>.osz</code> after mod application, making it easier to check what was changed.<br>
-Since difficulty names may be changed during the modding process, Before / After difficulties are matched manually after loading both files.
-</div>
-
-<div class="section">
-<span class="label label-detect">■ Detection</span><br>
-This feature compares the following three categories:
+The result displays the following information:
 <ul>
-  <li><strong>Notes</strong>: shows added notes, deleted notes, note type changes, added/deleted sliders and spinners, and slider/spinner tail movement.</li>
-  <li><strong>Timing</strong>: shows added/deleted/changed BPM or SV lines, volume mismatch sections, and kiai mismatch sections.</li>
-  <li><strong>Metadata</strong>: shows changes in Artist, Romanised Artist, Title, Romanised Title, Source, and Tags.</li>
+  <li><code>Visible</code>：Estimated time from entering the screen until reaching the judgement area</li>
+  <li><code>Remain</code>：Estimated remaining percentage until reaching the judgement area at the moment the audio starts<br>(Estimated on-screen position of the note when the audio begins)</li>
 </ul>
-Tags are compared as space-separated entries, and removed / added tags are displayed separately.<br>
-For notes, differences are shown using <code>d</code> / <code>k</code> / <code>D</code> / <code>K</code>, Slider, and Spinner labels.<br>
-Note that <strong>1 ms note movement is intentionally hidden</strong>. However, if the note content changes at the same time, such as <code>d</code> → <code>k</code>, it will still be shown as a change.
 </div>
 
-<div class="section">
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Thresholds</span><br>
+<ul>
+  <li>
+    <code><span style="color:#ffd86b; font-weight:bold;">Warning</span></code>：Remain ≤ 50% <br>
+  </li>
+  <li>
+    <code><span style="color:#ff6b6b; font-weight:bold;">Error</span></code>：Remain ≤ 25% <br>
+  </li>
+</ul>
+</div>
+
+<div class="section section-warning">
 <span class="label label-warning">■ Notes</span><br>
-If the global offset differs between Before and After, you can use “Apply offset from first red line”.<br>
-This calculates the offset difference by comparing the first red line position in Before and After.<br>
-However, it cannot handle cases where the red line position is shifted by a musical amount such as <code>1/1</code> beat due to adding an NC rest or similar edits.<br>
-In that case, align the first red line positions first, then try comparing again.<br>
+This estimation is based on a 16:9 environment assumption.<br>
+Actual visibility may vary depending on aspect ratio, skin, HR usage, osu!stable / osu!lazer differences, and PC environment.<br><br>
+
+The timing and severity of startup freezes are also environment-dependent.<br>
+This check does not guarantee that problems will occur; it should instead be used as a guideline for determining whether early note placement may be risky.
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="artist">
+<h2>Metadata: Artist</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ Background</span><br>
+Artist / ArtistUnicode should generally be consistent across all difficulties within a mapset.<br><br>
+
+In addition, markers such as <code>feat.</code>, <code>vs.</code>, and <code>CV:</code>
+should follow the standard formatting defined in the
+<a href="https://osu.ppy.sh/wiki/en/Ranking_criteria/Metadata" target="_blank" rel="noopener noreferrer">Ranking Criteria</a>.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+This check detects the following:
+<ul>
+  <li>Whether <code>Artist</code> / <code>ArtistUnicode</code> are consistent across all difficulties</li>
+  <li>Whether special symbols are converted into the recommended romanised format</li>
+  <li>Whether marker formatting such as <code>feat.</code>, <code>vs.</code>, <code>CV:</code>, and <code>VO:</code> is correct</li>
+  <li>Whether commas are followed by spaces</li>
+</ul>
+
+For the full list of metadata checks, see:
+<a href="metadataChecklist.en.html" target="_blank" rel="noopener noreferrer">
+  Metadata Checklist
+</a>.
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="title">
+<h2>Metadata: Title</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ Background</span><br>
+Title / TitleUnicode should generally be consistent across all difficulties within a mapset.<br><br>
+
+In addition, version markers such as
+<code>(TV Size)</code>,
+<code>(Short Ver.)</code>,
+and
+<code>(Game Ver.)</code>
+should follow the standard formatting defined in the
+<a href="https://osu.ppy.sh/wiki/en/Ranking_criteria/Metadata" target="_blank" rel="noopener noreferrer">Ranking Criteria</a>.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+This check detects the following:
+<ul>
+  <li>Whether <code>Title</code> / <code>TitleUnicode</code> are consistent across all difficulties</li>
+  <li>Whether special symbols are converted into the recommended romanised format</li>
+  <li>Whether title markers such as <code>(Short Ver.)</code>, <code>(Game Ver.)</code>, and <code>(Movie Ver.)</code> are formatted correctly</li>
+  <li>Whether <code>(feat. Artist)</code> formatting inside titles is correct</li>
+</ul>
+
+For the full list of metadata checks, see:
+<a href="metadataChecklist.en.html" target="_blank" rel="noopener noreferrer">
+  Metadata Checklist
+</a>.
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+Whether <code>(Extended Edit)</code> or <code>(Extended Ver.)</code> should be used depends on whether the track is an official or unofficial extended version.<br><br>
+
+This tool mainly detects cases where a similar marker already exists but does not follow the standard formatting.
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="source">
+<h2>Metadata: Source</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ Background</span><br>
+Touhou-related Source fields are commonly written in a distinctive format using:
+<code>Japanese title + full-width space + full-width tilde + half-width space + English title + period</code>.<br><br>
+
+Example:<br>
+<code>東方風神録　～ Mountain of Faith.</code><br>
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+First, this check verifies whether the Source field is consistent across all difficulties
+(same functionality as Mapset Verifier).<br><br>
+
+The Source field is then compared against a list of known Touhou titles.<br>
+<a href="touhouSources.en.html" target="_blank" rel="noopener noreferrer">
+  Checklist
+</a><br><br>
+
+If the Source matches exactly, it is displayed as OK.<br><br>
+
+If the Source appears to reference a Touhou work but differs slightly from a known title,
+the tool warns about possible spelling mistakes or incorrect full-width / half-width spacing.<br>
+In such cases, the recommended formatting and a reference link are displayed.<br><br>
+
+Generic labels such as <code>東方</code> or <code>Touhou</code> are also displayed as confirmation targets,
+since they may lack a sufficiently specific work title.
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+This check is intended as a helper for verifying Touhou-related Source formatting.<br>
+Sources unrelated to Touhou are treated as outside the scope of this check.<br><br>
+
+In addition, unknown Touhou titles, non-game Touhou-related works, or unusual formatting styles may not always be detected correctly.
+In such cases, do not rely solely on the displayed result — please also verify the official source material and beatmap submission details.
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="tag">
+<h2>Metadata: Tags</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ Background</span><br>
+Tags must be separated by exactly <code>one half-width space</code>.<br><br>
+
+Cases containing
+<code>multiple half-width spaces</code>
+or
+<code>full-width spaces</code>
+cannot be detected by AiMod or Mapset Verifier.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+First, this check verifies whether Tags are consistent across all difficulties
+(same functionality as Mapset Verifier).<br><br>
+
+It then detects the following spacing issues in each difficulty's Tags:
+<ul>
+  <li>Two or more consecutive half-width spaces between tags</li>
+  <li>Full-width spaces between tags</li>
+  <li>Tags that may contain spelling mistakes</li>
+  <li>Suggested related tags / abbreviations</li>
+</ul>
+
+The spell checker mainly targets genre names and mapping-related tags,
+detecting possible one-character substitutions, omissions, or extra characters.<br>
+Examples:
+<code>hardcroe</code> → <code>hardcore</code>,
+<code>vocaliod</code> → <code>vocaloid</code><br><br>
+
+The related tag / abbreviation suggestions display tags that are commonly used together with specific tags.<br>
+Examples:
+<code>jpop</code> → <code>j-pop</code>, <code>pop</code> /
+<code>tiebreaker</code> → <code>tb</code><br><br>
+
+<a href="tagChecklist.en.html" target="_blank" rel="noopener noreferrer">
+  Tag Checklist
+</a><br><br>
+
+This detection cannot be performed by AiMod or Mapset Verifier.
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+Spell-check suggestions and related-tag recommendations are not necessarily errors that must be fixed or added.<br>
+In particular, genre names and abbreviations may vary depending on the map content and song information,
+so final judgement should be made manually by the mapper, modder, or Beatmap Nominator.<br><br>
+
+In addition, the supported tag database is limited, and not all spelling mistakes or related tags can be detected.
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="previewPoint">
+<h2>Miscellaneous: Preview Point</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ Background</span><br>
+When changing the overall offset of a mapset, it is possible to update HitObjects and TimingPoints correctly while forgetting to update <code>PreviewTime</code>.<br>
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+This check displays a warning when <code>PreviewTime</code> is not aligned to a snap position.<br>
+(This detection cannot be performed by AiMod or Mapset Verifier.)<br>
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+A PreviewTime that is not snapped does not necessarily mean the map is unrankable.<br><br>
+
+However, since this may indicate that PreviewTime was accidentally left unchanged after an offset adjustment,
+you should verify whether the displayed position is intentional whenever a warning appears.<br>
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="epilepsyWarning">
+<h2>Miscellaneous: Flashing / Epilepsy Warning</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ Background</span><br>
+
+In osu!, storyboard / video / kiai effects containing repetitive strobing or rapid flashing effects may require an epilepsy warning.<br><br>
+
+In particular, osu!taiko kiai effects include visual elements such as:
+
+<ul>
+  <li>hit object flashes</li>
+  <li>star fountains</li>
+  <li>side-screen flashes</li>
+</ul>
+
+These effects become faster as BPM increases,
+meaning that high-BPM maps or maps containing repeated short kiai flashes may create stronger visual stimulation.<br><br>
+
+This feature is intended as a helper for identifying potentially high-frequency flashing effects.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content 1: Kiai Flash Frequency</span><br>
+
+This check analyzes the frequency of Kiai
+<code>OFF → ON</code>
+transitions and detects rapidly repeating kiai flashes.<br><br>
+
+The following thresholds are used:
+
+<ul>
+  <li><code>2 Hz or higher</code>：Caution</li>
+  <li><code>3 Hz or higher</code>：Warning</li>
+</ul>
+
+For example:
+
+<pre><code>ON 100ms
+OFF 233ms
+ON 100ms
+OFF 233ms
+ON 100ms</code></pre>
+
+Cases where Kiai repeatedly turns ON within a short period of time are treated as potential high-frequency flashing effects.<br><br>
+
+<div class="note-subtext">
+Kiai flash frequency is estimated from the interval between Kiai OFF → ON transitions.<br>
+Since flashing above 3 Hz is commonly considered a concern from a photosensitive epilepsy perspective,
+this tool treats cases with 3 or more Kiai ON events per second as warnings.
+</div>
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content 2: High-BPM Kiai</span><br>
+
+This check analyzes BPM during Kiai sections to estimate the possibility of rapid kiai flashing caused by high BPM values.<br><br>
+
+Because osu!taiko kiai effects increase in flashing frequency according to BPM,
+high-BPM Kiai sections may create stronger visual stimulation.<br><br>
+
+The following thresholds are used:
+
+<ul>
+  <li><code>240 BPM (4 Hz) or higher</code>：Caution</li>
+  <li><code>300 BPM (5 Hz) or higher</code>：Warning</li>
+</ul>
+
+The following information is displayed:
+
+<ul>
+  <li><code>BPM</code>：BPM during the Kiai section</li>
+  <li><code>Hz</code>：Estimated flash frequency (<code>BPM / 60</code>)</li>
+  <li><code>start - end</code>：Affected section</li>
+</ul>
+
+<div class="note-subtext">
+Flashing above 3 Hz is generally considered a concern from a photosensitive epilepsy perspective.<br>
+However, because osu!taiko kiai effects are not fullscreen strobes,
+this tool uses higher BPM thresholds before displaying warnings.
+</div>
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+
+This feature is intended only as a helper for evaluating whether an epilepsy warning may be necessary.<br>
+Displayed results do not automatically mean that a warning is mandatory or that the map is unrankable.<br><br>
+
+The actual intensity of visual stimulation depends heavily on factors such as:
+
+<ul>
+  <li>flash size</li>
+  <li>brightness / contrast</li>
+  <li>flash duration</li>
+  <li>storyboard / video content</li>
+  <li>player environment</li>
+</ul>
+
+and other factors.<br><br>
+
+Storyboard and video flashing effects are not analyzed by this tool.<br>
+Final judgement should always be made after reviewing the actual gameplay footage and storyboard content.
+<br><br>
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="spread1">
+<h2>Spread Comparison: Diff Order</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ Background</span><br>
+This feature is intended to help verify whether multiple difficulties within a mapset are arranged in an appropriate difficulty order and progression.<br>
+Its main purpose is to provide an overview of whether values such as OD / HP and note count change naturally from lower to higher difficulties.<br>
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+Difficulty order is automatically estimated from difficulty names.<br><br>
+
+Difficulties that cannot be classified automatically are displayed as <code>Unknown</code>.<br>
+Since <code>Unknown</code> difficulties always require manual confirmation, they are displayed in red within the Diff Order tab.<br><br>
+
+The difficulty order can be adjusted manually using the following methods:
+<ul>
+  <li>Selecting categories such as Kantan / Futsuu / Muzukashii from the dropdown menu</li>
+  <li>Using the ↑ / ↓ buttons to fine-tune the order within the same category</li>
+</ul>
+
+The manually adjusted order is also reflected in the OD / HP, note count, and finisher comparison displays.
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+When a mapset contains Guest Difficulties or custom difficulty names,
+automatic difficulty-order estimation may not be completely accurate.
+In such cases, the category and difficulty order should be adjusted manually.
+</div>
+</section>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="spread2">
+<h2>Spread Comparison: OD / HP</h2>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+This check displays the <code>OverallDifficulty</code> and <code>HPDrainRate</code> values for each difficulty.<br>
+It also displays <code>Delta OD</code> and <code>Delta HP</code>, representing the difference compared to the previous difficulty.<br><br>
+
+Values that violate Ranking Criteria rules are displayed as warnings
+(same functionality as Mapset Verifier).<br><br>
+
+The following progression patterns are also displayed as warnings:
+<ul>
+  <li><code><span style="color:#ffd86b; font-weight:bold;">Delta OD ≤ 0</span></code>：OD does not increase in a higher difficulty</li>
+  <li><code><span style="color:#ffd86b; font-weight:bold;">Delta HP &gt; 0</span></code>：HP increases in a higher difficulty</li>
+</ul>
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="spread3">
+  <h2>Spread Comparison: Note Count</h2>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+This check displays the note count for each difficulty.
+Sliders and Spinners are not included in the note count.<br><br>
+
+The following values are displayed:
+<ul>
+  <li><code>Notes</code>：Total number of Circle objects</li>
+  <li><code>Δ prev</code>：Difference in note count compared to the previous difficulty</li>
+  <li><code>Ratio</code>：Multiplier relative to the previous difficulty (example: <code>x1.80</code>)</li>
+</ul>
+
+The Ratio for each difficulty pair is evaluated using the following thresholds.<br><br>
+
+<div class="note-subtext">
+Lower difficulties tend to produce larger Ratios,
+while higher difficulties tend to produce smaller Ratios.
+For this reason, this tool uses separate thresholds depending on the spread type rather than applying a single universal threshold.
+</div>
+
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Thresholds</span><br>
+
+<div class="ratio-table-wrap">
+<table class="ratio-threshold-table">
+  <thead>
+    <tr>
+      <th style="width: 24%;">Pair</th>
+      <th style="width: 19%;">Too Small (Error)</th>
+      <th style="width: 19%;">Too Small (Warning)</th>
+      <th style="width: 19%;">Too Large (Warning)</th>
+      <th style="width: 19%;">Too Large (Error)</th>
+    </tr>
+  </thead>
+
+  <tbody>
+
+    <tr>
+      <td>Kantan → Futsuu</td>
+      <td class="ratio-error"><code>&lt; 1.20</code></td>
+      <td class="ratio-warn"><code>1.20 – 1.40</code></td>
+      <td class="ratio-warn"><code>2.20 – 2.60</code></td>
+      <td class="ratio-error"><code>≥ 2.60</code></td>
+    </tr>
+
+    <tr>
+      <td>Futsuu → Muzukashii</td>
+      <td class="ratio-error"><code>&lt; 1.15</code></td>
+      <td class="ratio-warn"><code>1.15 – 1.25</code></td>
+      <td class="ratio-warn"><code>1.90 – 2.20</code></td>
+      <td class="ratio-error"><code>≥ 2.20</code></td>
+    </tr>
+
+    <tr>
+      <td>Muzukashii → Oni</td>
+      <td class="ratio-error"><code>&lt; 1.10</code></td>
+      <td class="ratio-warn"><code>1.10 – 1.15</code></td>
+      <td class="ratio-warn"><code>1.60 – 1.90</code></td>
+      <td class="ratio-error"><code>≥ 1.90</code></td>
+    </tr>
+
+    <tr>
+      <td>Oni → Inner Oni</td>
+      <td class="ratio-error"><code>&lt; 1.05</code></td>
+      <td class="ratio-warn"><code>1.05 – 1.08</code></td>
+      <td class="ratio-warn"><code>1.40 – 1.70</code></td>
+      <td class="ratio-error"><code>≥ 1.70</code></td>
+    </tr>
+
+    <tr>
+      <td>Inner Oni → Above</td>
+      <td class="ratio-error"><code>&lt; 1.03</code></td>
+      <td class="ratio-warn"><code>1.03 – 1.05</code></td>
+      <td class="ratio-warn"><code>1.30 – 1.55</code></td>
+      <td class="ratio-error"><code>≥ 1.55</code></td>
+    </tr>
+
+  </tbody>
+</table>
+</div>
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes About Ratio Thresholds</span><br>
+
+These Ratio thresholds are convenience guidelines defined specifically for this tool
+(the values were statistically derived from ranked maps collected in 2026 using this tool).<br>
+The concept of Ratio itself is based on the following forum post by Chromoxx:<br>
+
+<a href="https://osu.ppy.sh/community/forums/topics/1536775?n=1" target="_blank" rel="noopener noreferrer">
+  BNになれるmod力を身に着けよう！（osu!taiko）
+</a><br><br>
+
+<strong>Even when a Warning or Error is displayed, this does not automatically mean the map is unrankable.</strong><br><br>
+
+In addition, Ratio is only a simplified evaluation based on note count multipliers,
+and does not fully represent actual difficulty spread quality.<br><br>
+
+In particular:
+<ul>
+  <li>Ratios tend to be overestimated in lower difficulties</li>
+  <li>Ratios tend to be underestimated in higher difficulties</li>
+</ul>
+
+Final judgement should therefore consider not only the Ratio value,
+but also the actual note-count differences and overall spread structure.
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="spreadDensity">
+<h2>Spread Comparison: Note Density</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ Background</span><br>
+Even when the total note count increases correctly according to difficulty order,
+there may still be local sections where a lower difficulty has higher note density than a higher difficulty.<br><br>
+
+This feature is intended to help identify such local note-density inversions.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+For each difficulty, the tool calculates the number of Circle notes per measure
+(Sliders and Spinners are excluded),
+then compares adjacent difficulties.<br><br>
+
+If a lower difficulty contains more notes than a higher difficulty within the same measure,
+the measure is displayed as a comparison target.
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+This feature is intended only as a helper for identifying local note-density inversions.<br>
+Displayed results do not automatically mean the map is unrankable or problematic.<br><br>
+
+Temporary density inversions may occur for reasons such as:
+
+<ul>
+  <li>The higher difficulty intentionally creates a rest section while increasing density elsewhere</li>
+  <li>The lower difficulty follows the main melody while the higher difficulty follows different instrumentation</li>
+  <li>The mapset contains Guest Difficulties</li>
+</ul>
+
+For this reason, displayed measures should always be evaluated by reviewing the actual rhythm choice and mapping structure.<br><br>
+
+In addition, to prevent notes near measure boundaries from being incorrectly classified into adjacent measures due to approximately <code>1 ms</code> timing differences,
+notes within <code>±3 ms</code> of a measure boundary are corrected toward the boundary side.
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="spread4">
+<h2>Spread Comparison: Finishers</h2>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+This check compares Finisher placement across all difficulties
+and displays timestamps where Finishers are present
+(1 ms offsets are treated as the same timestamp).<br><br>
+
+The following symbols are used:
+
+<ul>
+  <li><code><span style="color:#ff6b6b; font-weight:bold;">D</span></code>：Don Finisher</li>
+  <li><code><span style="color:#6b9aff; font-weight:bold;">K</span></code>：Kat Finisher</li>
+  <li><code>-</code>：No note / small note / slider / spinner</li>
+</ul>
+
+Finisher tables are separated into the following categories:
+
+<ul>
+  <li><code>Missing Finisher</code>：Some difficulties do not contain a Finisher at that timestamp</li>
+  <li><code>D/K Mismatch</code>：All difficulties contain Finishers, but the D / K type differs</li>
+  <li><code>Fully Matched</code>：All difficulties contain Finishers and the D / K type also matches</li>
+</ul>
+
+This tab does not perform warning judgement;
+its purpose is simply to display spread information in an easy-to-compare format.
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+Spread checks are not intended to automatically determine whether a map is unrankable.<br>
+In particular, larger spread gaps are often considered acceptable when Guest Difficulties are involved.<br><br>
+
+In addition, note count, OD / HP, and Finisher placement represent only part of overall spread quality.<br>
+Actual difficulty differences are also heavily influenced by rhythm, density, BPM, SV, patterns, hand usage, and stream / burst length.<br><br>
+
+Final judgement should always be made after reviewing the actual map content.
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="spread5">
+<h2>Spread Comparison: Scroll Speed</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ Background</span><br>
+
+According to the
+<a href="https://osu.ppy.sh/wiki/en/Ranking_criteria/osu%21taiko" target="_blank" rel="noopener noreferrer">osu!taiko Ranking Criteria</a>,
+lower difficulties such as <code>Kantan</code>, <code>Futsuu</code>, and <code>Muzukashii</code> should avoid sudden Slider Velocity changes or difficult-to-read scroll-speed changes.<br><br>
+
+This feature is intended as a helper for identifying sudden scroll-speed changes that may reduce readability in lower difficulties.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content 1: Scroll Speed</span><br>
+
+Effective scroll speed is calculated using BPM, SV, and SliderMultiplier.<br>
+
+<pre><code>effective scroll speed = 175 × SliderMultiplier × SV × BPM / 60</code></pre>
+
+The following information is displayed:
+
+<ul>
+  <li><code>Min px/s</code>：Slowest effective scroll speed within the difficulty</li>
+  <li><code>Max px/s</code>：Fastest effective scroll speed within the difficulty</li>
+  <li><code>Delta</code>：Difference between the maximum and minimum speed</li>
+  <li><code>Ratio</code>：Maximum speed / minimum speed</li>
+  <li><code>SV range</code>：Range of SV values used within the difficulty</li>
+  <li><code>SM</code>：SliderMultiplier</li>
+</ul>
+
+This check detects sections where scroll speed changes abruptly between adjacent notes.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Thresholds (Sudden Scroll-Speed Changes in Lower Difficulties)</span><br>
+
+Instead of checking only raw SV differences,
+this feature evaluates actual scroll-speed changes using a combination of speed difference, ratio, and time interval.
+
+<div class="ratio-table-wrap">
+<table class="ratio-threshold-table">
+  <thead>
+    <tr>
+      <th>Difficulty</th>
+      <th>Speed Difference</th>
+      <th>Ratio</th>
+      <th>Time Interval</th>
+      <th>Result</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>Below Kantan / Kantan</td>
+      <td class="ratio-warn"><code>≥ 180 px/s</code></td>
+      <td class="ratio-warn"><code>≥ x1.35</code></td>
+      <td class="ratio-warn"><code>≤ 1500 ms</code></td>
+      <td>Warning</td>
+    </tr>
+
+    <tr>
+      <td>Futsuu</td>
+      <td class="ratio-warn"><code>≥ 240 px/s</code></td>
+      <td class="ratio-warn"><code>≥ x1.45</code></td>
+      <td class="ratio-warn"><code>≤ 1200 ms</code></td>
+      <td>Warning</td>
+    </tr>
+
+    <tr>
+      <td>Muzukashii</td>
+      <td class="ratio-warn"><code>≥ 320 px/s</code></td>
+      <td class="ratio-warn"><code>≥ x1.55</code></td>
+      <td class="ratio-warn"><code>≤ 1000 ms</code></td>
+      <td>Warning</td>
+    </tr>
+
+    <tr>
+      <td>Oni / Inner Oni and above</td>
+      <td><code>-</code></td>
+      <td><code>-</code></td>
+      <td><code>-</code></td>
+      <td>Not Checked</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+A Warning is displayed only when all three conditions above are satisfied.<br><br>
+
+<div class="note-subtext">
+  Speed difference and ratio are used to detect different types of abrupt scroll-speed changes.<br>
+  For example, a large speed difference with a small ratio may simply represent a minor adjustment within an already fast scroll-speed range,<br>
+  while a large ratio with a small speed difference may instead represent a small change within a slow scroll-speed range.<br><br>
+
+  For this reason, this check only displays a Warning when both the speed difference and the ratio thresholds are satisfied.<br><br>
+
+  The time interval is used to estimate how abruptly the scroll speed changes.<br>
+  For example, even if the speed difference itself is large, gradual changes occurring over several seconds will not trigger a Warning.<br><br>
+</div>
+
+The idea for this feature is based on a feature request for MVTaikoChecks by Hivie.<br>
+Reference:
+<a href="https://github.com/Hiviexd/MVTaikoChecks/issues/4" target="_blank" rel="noopener noreferrer">
+  Add a drastic SV change warning for lower difficulties
+</a>
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Thresholds (Unnatural Effective Scroll-Speed Progression)</span><br>
+
+If effective scroll speed consistently increases, decreases, or remains equal throughout the difficulty progression, it is treated as acceptable.<br><br>
+
+For example, the following progression patterns are considered acceptable:
+
+<ul>
+  <li><code>520 → 610 → 720 → 800</code>：Scroll speed increases as difficulty increases</li>
+  <li><code>800 → 720 → 610 → 520</code>：Scroll speed decreases as difficulty increases</li>
+  <li><code>640 → 640 → 640 → 640</code>：All difficulties use the same scroll speed</li>
+</ul>
+
+On the other hand, the following progression patterns are displayed for manual confirmation because the progression direction reverses midway:
+
+<ul>
+  <li><code>610 → 750 → 680 → 820</code>：Increases, then temporarily decreases</li>
+  <li><code>800 → 700 → 760 → 650</code>：Decreases, then temporarily increases</li>
+</ul>
+
+<div class="note-subtext">
+  Because note placement and timing are not always perfectly identical between difficulties,
+  scroll-speed changes within <code>±10 ms</code> are treated as the same event.<br>
+  Very small scroll-speed changes are excluded from comparison in order to reduce noise caused by tiny SV adjustments.
+</div>
+
+<br>
+
+The idea for this feature is based on a feature request for MVTaikoChecks by Nostril.<br>
+Reference:
+<a href="https://github.com/Hiviexd/MVTaikoChecks/issues/32" target="_blank" rel="noopener noreferrer">
+  MVTaikoChecks issue #32
+</a>
+
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+
+These thresholds are convenience guidelines defined specifically for this tool.<br>
+Even when a Warning is displayed, this does not automatically mean the map is unrankable.<br><br>
+
+If the scroll-speed changes correspond appropriately to song progression, rhythm interpretation, rest sections, or visual effects,
+the map may still be completely acceptable.<br>
+Final judgement should always be made after reviewing the actual map content and in-game readability.<br><br>
+
+In addition, large SV changes are commonly used in Oni and higher difficulties for visual effects and difficulty expression,
+so this check does not display warnings for Oni and above.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content 2: Scroll Change Consistency</span><br>
+
+This feature compares effective scroll-speed change events occurring around the same timing across different difficulties.<br>
+Its purpose is to help identify cases where a lower difficulty contains stronger local scroll-speed changes than a higher difficulty,
+or cases where the direction of scroll-speed changes differs unnaturally between difficulties.<br><br>
+
+The tool extracts timing points where effective scroll speed changes within each difficulty,
+then groups nearby changes into the same event group.<br>
+Adjacent difficulties are compared within each event group.<br><br>
+
+The following information is displayed:
+
+<ul>
+  <li><code>Δ px/s</code>：Effective scroll speed after the change minus the speed before the change</li>
+  <li><code>Speed Multiplier</code>：Effective scroll speed before and after the change, including the multiplier.<br>Example: <code>420 -&gt; 735 (x1.75)</code></li>
+  <li><code>Note Interval</code>：Time interval between the two notes where the speed change occurs</li>
+</ul>
+
+For example, if a lower difficulty contains a large acceleration such as
+<code>420 -&gt; 735</code>,
+while the corresponding change in a higher difficulty is much smaller,
+the section will be displayed for manual confirmation.<br>
+
+Likewise, if one difficulty accelerates while another difficulty decelerates during the same timing window,
+the section will also be displayed for confirmation.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Thresholds (Detecting Cases Where Lower Difficulties Have Larger Scroll-Speed Change Amounts)</span><br>
+
+This check warns when a lower difficulty contains stronger acceleration or deceleration than a higher difficulty.
+
+<div class="ratio-table-wrap">
+<table class="ratio-threshold-table">
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>Condition</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>Same Event Detection</td>
+      <td><code>±10 ms</code></td>
+      <td>Scroll-speed changes occurring at nearby timestamps are treated as the same event.</td>
+    </tr>
+
+    <tr>
+      <td>Comparison Target</td>
+      <td><code>Adjacent difficulties</code></td>
+      <td>Difficulties are compared against neighboring difficulties after sorting by difficulty order.</td>
+    </tr>
+
+    <tr>
+      <td>Ignore Small Changes</td>
+      <td><code>|Δ| &lt; 80 px/s</code></td>
+      <td>Very small scroll-speed changes are excluded from comparison.</td>
+    </tr>
+
+    <tr>
+      <td>Lower Difficulty Has Excessively Large Changes</td>
+      <td>
+        <code>lower |Δ| ≥ higher |Δ| × 1.5</code><br>
+        <code>and lower |Δ| - higher |Δ| ≥ 150 px/s</code>
+      </td>
+      <td>
+        Displayed when a lower difficulty contains significantly stronger local scroll-speed changes than a higher difficulty.
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="note-subtext">
+
+  Because note placement and timing are not always perfectly identical between difficulties,
+  changes occurring within <code>±10 ms</code> are treated as the same event.<br><br>
+
+  Very small scroll-speed changes are excluded from comparison in order to reduce noise caused by tiny SV adjustments.<br>
+  For this reason, even if the direction of change is reversed, it will not be displayed if the change amount itself is too small.<br><br>
+
+</div>
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Thresholds (Detecting Cases Where Scroll-Speed Change Direction Does Not Match)</span><br>
+
+This check warns when acceleration and deceleration are mixed between difficulties at the same timing point.
+
+<div class="ratio-table-wrap">
+<table class="ratio-threshold-table">
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>Condition</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>Same Event Detection</td>
+      <td><code>±10 ms</code></td>
+      <td>Scroll-speed changes occurring at nearby timestamps are treated as the same event.</td>
+    </tr>
+
+    <tr>
+      <td>Comparison Target</td>
+      <td><code>Adjacent difficulties</code></td>
+      <td>Difficulties are compared against neighboring difficulties after sorting by difficulty order.</td>
+    </tr>
+
+    <tr>
+      <td>Mismatched Change Direction</td>
+      <td>
+        <code>both |Δ| ≥ 120 px/s</code><br>
+        <code>and acceleration / deceleration directions are opposite</code>
+      </td>
+      <td>
+        Displayed when one difficulty accelerates while another difficulty decelerates during the same timing window.
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="note-subtext">
+
+  For "Mismatched Change Direction", only sufficiently large changes are compared in order to exclude tiny changes with negligible gameplay impact.
+
+</div>
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+
+These thresholds are convenience guidelines defined specifically for this tool.<br><br>
+
+The scroll-change consistency check automatically pairs change events occurring around the same timing window.<br>
+Because of this, if SV changes occur at significantly different positions between difficulties,
+the comparison may not always reflect the mapper's intended relationship.<br><br>
+
+In addition, even when a lower difficulty contains stronger local scroll-speed changes than a higher difficulty,
+the behavior may still be justified by visual effects, rhythm interpretation, or rest placement.<br>
+Displayed results should therefore be treated as confirmation targets rather than strict warnings.
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="bnCompare">
+<h2>BN Evaluation</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ Background</span><br>
+
+This feature is intended primarily for certain BN / NAT workflows.<br><br>
+
+During BN evaluation, this feature compares the <code>.osz</code> before modding and the <code>.osz</code> after modding in order to identify what has changed.<br>
+Since difficulty names may also change, Before / After difficulties are manually matched after loading before comparison begins.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+
+The following five categories of information are compared:
+
+<ul>
+  <li>
+    <code>Note Information</code>：
+    Displays note additions, deletions, type changes, slider / spinner additions or removals,
+    and slider / spinner tail movement.
+  </li>
+
+  <li>
+    <code>Timeline</code>：
+    Displays only measures containing changes using a timeline-style display.<br>
+    The grid width automatically adjusts according to the smallest snap division used within each measure.
+  </li>
+
+  <li>
+    <code>Timing Information</code>：
+    Displays BPM / SV additions, removals, and changes,
+    as well as Volume mismatch sections and Kiai mismatch sections.
+  </li>
+
+  <li>
+    <code>Metadata Information</code>：
+    Displays metadata changes.
+  </li>
+
+  <li>
+    <code>OD / HP</code>：
+    Displays OD / HP changes in table form.
+  </li>
+</ul>
+
+For notes, differences involving:
+
+<code><span style="color:#ff6b6b; font-weight:bold;">d</span></code> /
+<code><span style="color:#6b9aff; font-weight:bold;">k</span></code> /
+<code><span style="color:#ff6b6b; font-weight:bold;">D</span></code> /
+<code><span style="color:#6b9aff; font-weight:bold;">K</span></code> /
+<code><span style="color:#ffd86b; font-weight:bold;">Slider / S</span></code> /
+<code><span style="color:#b8b8b8; font-weight:bold;">Spinner / S</span></code>
+
+are displayed.<br><br>
+
+Note movement by only <strong>1 ms is intentionally ignored</strong>.<br>
+However, if the note content itself changes
+(for example <code>d</code> → <code>k</code>),
+the change will still be displayed even if the timing differs by only 1 ms.
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+
+If the overall offset differs between Before and After,
+the <code>Offset Correction Based on Red Lines</code> feature can be used.<br>
+This feature compares the position of the first red line in Before and After,
+then calculates the difference as an offset value.<br><br>
+
+However, this method cannot correctly handle cases where red lines are shifted by entire beats
+(for example due to added NC rests).<br>
+In such cases, align the first red lines manually before comparing again.
+<br>
+</div>
+</section>
+
+  </main>
 </div>
 
 </body>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const tocList = document.getElementById("toc-list");
-  const headings = document.querySelectorAll("h2");
+  const buttons = document.querySelectorAll(".doc-tab-button");
+  const panels = document.querySelectorAll(".doc-tab-panel");
 
-  headings.forEach((h2, index) => {
-    const id = "section-" + index;
-    h2.id = id;
+  function activateDocTab(tabName) {
+    buttons.forEach(button => {
+      button.classList.toggle("active", button.dataset.docTab === tabName);
+    });
 
-    const li = document.createElement("li");
-    const a = document.createElement("a");
+    panels.forEach(panel => {
+      panel.classList.toggle("active", panel.dataset.docTabPanel === tabName);
+    });
 
-    a.href = "#" + id;
-    a.textContent = h2.textContent;
+    window.scrollTo({
+      top: 0,
+      behavior: "instant"
+    });
+  }
 
-    li.appendChild(a);
-    tocList.appendChild(li);
-  });
-});
-
-window.addEventListener("scroll", () => {
-  const links = document.querySelectorAll("#toc a");
-  const sections = document.querySelectorAll("h2");
-
-  let current = "";
-
-  sections.forEach(sec => {
-    const rect = sec.getBoundingClientRect();
-    if (rect.top <= 120) {
-      current = sec.id;
-    }
-  });
-
-  links.forEach(link => {
-    link.classList.toggle("active", link.getAttribute("href") === "#" + current);
+  buttons.forEach(button => {
+    button.addEventListener("click", () => {
+      activateDocTab(button.dataset.docTab);
+    });
   });
 });
 </script>
