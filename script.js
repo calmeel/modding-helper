@@ -38,6 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const spreadDensityMinDiff = document.getElementById("spreadDensityMinDiff");
   const spreadFinishersOutput = document.getElementById("spreadFinishersOutput");
   const spreadScrollSpeedOutput = document.getElementById("spreadScrollSpeedOutput");
+  const timelineOutput = document.getElementById("timelineOutput");
+  const timelineRunButton = document.getElementById("timelineRunButton");
   /** BN評価 */
   const bnBeforeFileInput = document.getElementById("bnBeforeFileInput");
   const bnAfterFileInput = document.getElementById("bnAfterFileInput");
@@ -106,6 +108,8 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadDensityMinDiff,
     spreadFinishersOutput,
     spreadScrollSpeedOutput,
+    timelineOutput,
+    timelineRunButton,
     bnNotesOutput,
     bnTimelineOutput,
     bnTimingOutput,
@@ -142,6 +146,8 @@ document.addEventListener("DOMContentLoaded", () => {
       diffOrder: [],
       manualCategories: {}
     },
+    timelineSources: null,
+    timeline: null,
     bnCompare: {
       beforeFileName: null,
       afterFileName: null,
@@ -194,6 +200,10 @@ document.addEventListener("DOMContentLoaded", () => {
     bnOffsetStatus,
     bnSvChangeThreshold
   });
+
+  if (timelineRunButton) {
+    timelineRunButton.addEventListener("click", renderTimelineResult);
+  }
 
   function applyLanguage() {
     document.documentElement.lang = currentLang === "ja" ? "ja" : "en";
@@ -274,6 +284,10 @@ document.addEventListener("DOMContentLoaded", () => {
       spreadOdHpOutput.textContent = t("noFileLoaded");
     }
 
+    if (!state.timeline && timelineOutput) {
+      timelineOutput.textContent = t("timelineNotRendered");
+    }
+
     renderResult();
     renderShiftResult();
     renderKiaiResult();
@@ -292,6 +306,11 @@ document.addEventListener("DOMContentLoaded", () => {
     renderPreviewPointResult();
     renderEpilepsyWarningResult();
     renderSpreadResult();
+
+    if (state.timeline) {
+      renderTimelineResult();
+    }
+
     updateTabIssueStates(state);
     bnCompareUi.renderBnSelectedResult();
   }
@@ -416,6 +435,17 @@ document.addEventListener("DOMContentLoaded", () => {
     renderSpreadResultFromResults(state.spread, dom, t);
   }
 
+  function renderTimelineResult() {
+    state.timeline = renderTimelineResultFromSources(
+      state.timelineSources,
+      dom,
+      t,
+      {
+        diffOrder: state.spread?.diffOrder ?? []
+      }
+    );
+  }
+
   /** 警告tabのレンダー */
   function renderResultAndUpdateTabs() {
     renderResult();
@@ -491,7 +521,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       state.clapWhistle = result.clapWhistle;
       state.offsetSources = result.offsetSources;
+      state.timelineSources = result.offsetSources;
       state.offset = result.offset;
+      state.timeline = null;
       state.doubleSvSources = result.doubleSvSources;
       state.kiaiCompare = result.kiaiCompare;
       state.kiaiSnap = result.kiaiSnap;
@@ -510,6 +542,10 @@ document.addEventListener("DOMContentLoaded", () => {
       state.spread.results = result.spread;
       state.spread.diffOrder = createSpreadDiffOrder(result.spread);
       state.spread.manualCategories = {};
+
+      if (timelineOutput) {
+        timelineOutput.textContent = t("timelineNotRendered");
+      }
 
       renderResult();
       renderShiftResult();

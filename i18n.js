@@ -221,6 +221,12 @@ const i18n = {
     spreadHasMoreNotesThan: "has more notes than",
     spreadDensityMinDiff: "Show inversions from:",
 
+    tabTimeline: "Timeline",
+    timelineRun: "Run Timeline Viewer",
+    timelineUnsupported: "This measure contains unsupported snap resolution.",
+    timelineNoData: "No timeline data found.",
+    timelineNotRendered: "Press the Timeline button to render the timeline.",
+
     tabBnCompare: "BN Review",
     bnBeforeOsz: "Before .osz",
     bnAfterOsz: "After .osz",
@@ -488,6 +494,12 @@ const i18n = {
     spreadDensityReview: "確認対象:",
     spreadHasMoreNotesThan: "は、次の難易度より1小節内のノーツ数が多いです:",
     spreadDensityMinDiff: "表示する差分:",
+
+    tabTimeline: "タイムライン",
+    timelineRun: "タイムラインを表示",
+    timelineUnsupported: "この小節には表示できないsnapが含まれています。",
+    timelineNoData: "タイムラインデータが見つかりませんでした。",
+    timelineNotRendered: "タイムラインを表示するには、ボタンを押してください。",
 
     tabBnCompare: "BN評価",
     bnBeforeOsz: "変更前 .osz",

@@ -921,3 +921,62 @@ input[type="file"]::file-selector-button:hover {
 .result-note {
   color: #b8b8b8;
 }
+
+/** タイムライン表示 */
+.tab-button.timeline-tab-button {
+  border-color: #4ade80;
+  color: #9ff2b2;
+}
+
+.tab-button.timeline-tab-button.active {
+  background: #1f3a2a;
+  border-color: #4ade80;
+  color: #fff;
+}
+
+.timeline-measure {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid #7a6f5a;
+  border-radius: 8px;
+  background: #111;
+  overflow-x: auto;
+}
+
+.timeline-measure-title {
+  margin-bottom: 8px;
+  color: #7fdcff;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.timeline-measure pre {
+  margin: 0;
+  white-space: pre;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.9;
+}
+
+.timeline-cell {
+  display: inline-block;
+  width: 14px;
+  text-align: center;
+}
+
+.timeline-cell {
+  font-size: 13px;
+  line-height: 16px;
+  height: 16px;
+  padding: 0 2px;
+  font-weight: 600;
+}
+
+.timeline-empty {
+  color: #555;
+}
+
+.timeline-unsupported {
+  color: #ff6b6b;
+}
