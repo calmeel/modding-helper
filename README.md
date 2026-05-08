@@ -16,8 +16,8 @@ Web-based modding helper for osu!taiko.
 
 ## 📘 Documentation
 
-- [English Documentation](https://calmeel.github.io/modding-helper/docs-en.html)
-- [日本語ドキュメント](https://calmeel.github.io/modding-helper/docs.html)
+- [English Documentation](https://calmeel.github.io/modding-helper/docs/docs-en.html)
+- [日本語ドキュメント](https://calmeel.github.io/modding-helper/docs/docs.html)
 
 ## 🌍 Language
 - English / 日本語
