@@ -325,9 +325,10 @@ function getMetadataIssueLevel(state) {
   }
 
   if (
+    artistLevel === TAB_LEVEL_WARN ||
+    titleLevel === TAB_LEVEL_WARN ||
     sourceLevel === TAB_LEVEL_WARN ||
     tagLevel === TAB_LEVEL_WARN
-
   ) {
     return TAB_LEVEL_WARN;
   }
@@ -431,13 +432,57 @@ function getSpreadIssueLevel(spreadState) {
     ? applySpreadDiffOrder(results, diffOrder)
     : sortSpreadResults(results);
 
+  const hasUnknownCategory = sortedResults.some(result =>
+    getSpreadEffectiveCategory(result, manualCategories) === "unknown"
+  );
+
+  if (hasUnknownCategory) {
+    return TAB_LEVEL_ERROR;
+  }
+
   let hasWarn = false;
 
-  for (const result of sortedResults) {
-    const odHpLevel = getSpreadOdHpLevel(result, manualCategories);
+  for (let i = 0; i < sortedResults.length; i++) {
+    const result = sortedResults[i];
+    const prev = sortedResults[i - 1];
 
-    if (odHpLevel === "error") return TAB_LEVEL_ERROR;
-    if (odHpLevel === "warn") hasWarn = true;
+    const odLevel = getSpreadOdLevel(result, manualCategories);
+    const hpLevel = getSpreadHpLevel(result, manualCategories);
+    const ruleLevel = getSpreadOdHpLevel(result, manualCategories);
+
+    if (
+      odLevel === "error" ||
+      hpLevel === "error" ||
+      ruleLevel === "error"
+    ) {
+      return TAB_LEVEL_ERROR;
+    }
+
+    if (
+      odLevel === "warn" ||
+      hpLevel === "warn" ||
+      ruleLevel === "warn"
+    ) {
+      hasWarn = true;
+    }
+
+    if (prev) {
+      if (
+        prev.od !== null && prev.od !== undefined &&
+        result.od !== null && result.od !== undefined &&
+        result.od - prev.od < 0
+      ) {
+        hasWarn = true;
+      }
+
+      if (
+        prev.hp !== null && prev.hp !== undefined &&
+        result.hp !== null && result.hp !== undefined &&
+        result.hp - prev.hp > 0
+      ) {
+        hasWarn = true;
+      }
+    }
   }
 
   for (let i = 1; i < sortedResults.length; i++) {

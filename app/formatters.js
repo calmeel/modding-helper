@@ -1442,36 +1442,69 @@ function formatMultipleTitleResults(results, t) {
   lines.push(formatSectionTitle(t("titleMarkerCheck")));
   lines.push("");
 
-  const markerIssueResults = sortedResults.filter(result =>
-    result.markerIssues?.length > 0
-  );
+  const markerIssueGroups = groupTitleMarkerIssues(sortedResults);
 
-  if (!markerIssueResults.length) {
+  if (!markerIssueGroups.length) {
     lines.push(t("titleNoMarkerIssues"));
   } else {
-    for (const result of markerIssueResults) {
-      lines.push(getDifficultyNameText(result.fileName));
+    for (const group of markerIssueGroups) {
+      const issue = group.issue;
+
+      lines.push(
+        `<span class="result-warn">${escapeHtml(t("titleMarkerIssue"))}:</span> ` +
+        `<code>${escapeHtml(issue.marker)}</code> → <code>${escapeHtml(issue.expected)}</code>`
+      );
+
+      lines.push(
+        `  ${escapeHtml(t("field"))}: ` +
+        group.fieldNames.map(v => `<code>${escapeHtml(v)}</code>`).join(" / ")
+      );
+
+      lines.push(
+        `  Diff: ` +
+        group.fileNames.map(v => getDifficultyName(v)).join(" ")
+      );
+
       lines.push("");
-
-      for (const issue of result.markerIssues) {
-        lines.push(
-          `<span class="result-warn">${escapeHtml(t("titleMarkerIssue"))}:</span> ` +
-          `<code>${escapeHtml(issue.marker)}</code> → <code>${escapeHtml(issue.expected)}</code>`
-        );
-
-        if (issue.fieldName) {
-          lines.push(`  ${escapeHtml(t("field"))}: <code>${escapeHtml(issue.fieldName)}</code>`);
-        }
-
-        if (issue.fieldName) {
-          lines.push(`  ${escapeHtml(t("field"))}: <code>${escapeHtml(issue.fieldName)}</code>`);
-        }
-        lines.push("");
-      }
     }
   }
 
   return lines.join("\n").trimEnd();
+}
+
+function groupTitleMarkerIssues(results) {
+  const map = new Map();
+
+  for (const result of results) {
+    for (const issue of result.markerIssues ?? []) {
+      const key = [
+        issue.type,
+        issue.marker,
+        issue.expected,
+        issue.context
+      ].join("::");
+
+      if (!map.has(key)) {
+        map.set(key, {
+          issue,
+          fileNames: [],
+          fieldNames: []
+        });
+      }
+
+      const group = map.get(key);
+
+      if (!group.fileNames.includes(result.fileName)) {
+        group.fileNames.push(result.fileName);
+      }
+
+      if (issue.fieldName && !group.fieldNames.includes(issue.fieldName)) {
+        group.fieldNames.push(issue.fieldName);
+      }
+    }
+  }
+
+  return [...map.values()];
 }
 
 /** メタデータ表示の共通関数 */

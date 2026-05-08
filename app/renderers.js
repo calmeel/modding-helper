@@ -1144,12 +1144,24 @@ function renderSourceResult(results, dom, t) {
 
     if (result.level === "ok") {
       lines.push(`OK`);
-      lines.push(`<a href="${result.link}" target="_blank">${result.link}</a>`);
+
+      lines.push(
+        `<a
+          href="${result.link}"
+          target="_blank"
+          class="result-link"
+        >
+          ${result.link}
+        </a>`
+      );
+
     } else if (result.type === "generic") {
       lines.push(`作品名を記述する必要があるかもしれません`);
+
     } else if (result.type === "partial") {
       lines.push(`表記が不正です`);
       lines.push(`→ ${result.expected}`);
+
     } else if (result.type === "unknown") {
       lines.push(`自分で検索して正しいSourceを確認してください`);
     }
