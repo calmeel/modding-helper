@@ -245,14 +245,44 @@
 
   一部の作品名では：
   <ul>
-    <li>全角スペース（<code>　</code>）・半角スペース（<code> </code>）</li>
-    <li>全角波線（<code>～</code>）・波ダッシュ（<code>〜</code>）・半角波線（<code>~</code>）</li>
+    <li>半角スペース（<code> </code>）・全角スペース（<code>　</code>）</li>
+    <li>半角チルダ（<code>~</code>）・全角チルダ（<code>～</code>）・波ダッシュ（<code>〜</code>）</li>
     <li>英語タイトルの大文字 / 小文字</li>
     <li>末尾のピリオド</li>
   </ul>
 
   などを厳密に区別しています。<br>
   そのため、見た目が似ていても別表記として判定します。
+
+  <table>
+    <thead>
+      <tr>
+        <th>記号</th>
+        <th>Unicode</th>
+        <th>この一覧での使用例</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>～</code></td>
+        <td><code>U+FF5E</code><br>FULLWIDTH TILDE</td>
+        <td>
+          東方紅魔郷　～ the Embodiment of Scarlet Devil.<br>
+          東方妖々夢　～ Perfect Cherry Blossom.<br>
+          東方紺珠伝　～ Legacy of Lunatic Kingdom.<br>
+          …（その他全ての作品）
+        </td>
+      </tr>
+      <tr>
+        <td><code>〜</code></td>
+        <td><code>U+301C</code><br>WAVE DASH</td>
+        <td>
+          東方虹龍洞　〜 Unconnected Marketeers.<br>
+          東方獣王園 〜 Unfinished Dream of All Living Ghost.
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
 </body>
