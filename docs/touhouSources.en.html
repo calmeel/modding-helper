@@ -251,18 +251,50 @@ The Source check compares the beatmap <code>Source</code> field against this lis
 <div class="notes">
   <div class="notes-title">Notes</div>
 
-  This list is used only for Source formatting assistance.<br>
-  It does not guarantee that every Touhou-related work or derivative title is supported.<br><br>
+  This list is intended to assist with Source notation checks.<br>
+  It does not guarantee complete coverage of all Touhou-related works or derivative works.<br><br>
 
-  Some titles intentionally use:
+  Some work titles strictly distinguish between:
   <ul>
-    <li>Full-width spaces (<code>　</code>)</li>
-    <li>Full-width wave dashes (<code>～</code> / <code>〜</code>)</li>
-    <li>Specific capitalization</li>
+    <li>Half-width spaces (<code> </code>) and full-width spaces (<code>　</code>)</li>
+    <li>Half-width tilde (<code>~</code>), full-width tilde (<code>～</code>), and wave dash (<code>〜</code>)</li>
+    <li>Uppercase / lowercase letters in English titles</li>
     <li>Trailing periods</li>
   </ul>
 
-  Therefore, visually similar Source values may still be treated as mismatches.
+  Because of this, visually similar notations may still be treated as different entries.
+
+  <table>
+    <thead>
+      <tr>
+        <th>Symbol</th>
+        <th>Unicode</th>
+        <th>Examples Used in This List</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr>
+        <td><code>～</code></td>
+        <td><code>U+FF5E</code><br>FULLWIDTH TILDE</td>
+        <td>
+          東方紅魔郷　～ the Embodiment of Scarlet Devil.<br>
+          東方妖々夢　～ Perfect Cherry Blossom.<br>
+          東方紺珠伝　～ Legacy of Lunatic Kingdom.<br>
+          … (all other works)
+        </td>
+      </tr>
+
+      <tr>
+        <td><code>〜</code></td>
+        <td><code>U+301C</code><br>WAVE DASH</td>
+        <td>
+          東方虹龍洞　〜 Unconnected Marketeers.<br>
+          東方獣王園 〜 Unfinished Dream of All Living Ghost.
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
 </body>

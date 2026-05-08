@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Warning / Error Level List</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px;
+
+      background: #111;
+      color: #eee;
+    }
+
+    h1 {
+      color: #9fdcff;
+      border-bottom: 2px solid #333;
+      padding-bottom: 10px;
+      margin-bottom: 30px;
+    }
+
+    p {
+      color: #ccc;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+
+      background: #181818;
+      border: 1px solid #2a2a2a;
+    }
+
+    th {
+      background: #202020;
+      color: #9fdcff;
+
+      text-align: left;
+      padding: 12px;
+
+      border-bottom: 1px solid #333;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #2a2a2a;
+      vertical-align: top;
+    }
+
+    tr:hover {
+      background: #1d1d1d;
+    }
+
+    code {
+      background: #222;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .warn {
+      color: #ffd580;
+      font-weight: bold;
+    }
+
+    .error {
+      color: #ff9090;
+      font-weight: bold;
+    }
+
+    .none {
+      color: #888;
+    }
+
+    .notes {
+      margin-top: 30px;
+      padding: 14px 16px;
+
+      background: #181818;
+      border-left: 4px solid #ffd580;
+    }
+
+    .notes-title {
+      color: #ffd580;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .warn-cell {
+      background: rgba(255, 213, 128, 0.06);
+      color: #ffd580;
+    }
+
+    .error-cell {
+      background: rgba(255, 144, 144, 0.06);
+      color: #ff9090;
+    }
+
+    .warn-cell strong,
+    .error-cell strong {
+      color: inherit;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Warning / Error Detection Summary</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 20%;">Tab</th>
+      <th style="width: 40%;"><span class="warn">Warning</span></th>
+      <th style="width: 40%;"><span class="error">Error</span></th>
+    </tr>
+  </thead>
+
+  <tbody>
+
+    <tr>
+      <td>Clap / Whistle</td>
+      <td class="warn-cell">
+        ・Clap and Whistle are mixed within the same difficulty<br>
+        ・Simultaneous Whistle + Clap usage exists
+      </td>
+      <td class="none">None</td>
+    </tr>
+
+    <tr>
+      <td>1ms Offset</td>
+      <td class="warn-cell">
+        ・±1 ms unsnapped objects exist
+      </td>
+      <td class="error-cell">
+        ・±2–3 ms unsnapped objects exist
+      </td>
+    </tr>
+
+    <tr>
+      <td>Kiai Comparison</td>
+      <td class="warn-cell">
+        ・Kiai states do not match between difficulties<br>
+        ・Kiai end timing is not explicitly defined
+      </td>
+      <td class="none">None</td>
+    </tr>
+
+    <tr>
+      <td>Kiai Snap</td>
+      <td class="warn-cell">
+        ・Kiai ON/OFF exists outside of 1/1 snap
+      </td>
+      <td class="error-cell">
+        ・Unsnapped kiai timing exists
+      </td>
+    </tr>
+
+    <tr>
+      <td>Double SV</td>
+      <td class="warn-cell">
+        ・Double SV lines exist
+      </td>
+      <td class="none">None</td>
+    </tr>
+
+    <tr>
+      <td>SV Volume</td>
+      <td class="warn-cell">
+        ・Volume changes exist close to hit objects (within ± 1/16 snap)
+      </td>
+      <td class="error-cell">
+        ・The volume difference is 15% or greater
+      </td>
+    </tr>
+
+    <tr>
+      <td>Volume Comparison</td>
+      <td class="warn-cell">
+        ・Volume mismatch timing points exist between difficulties
+      </td>
+      <td class="none">None</td>
+    </tr>
+
+    <tr>
+      <td>Red Line &amp; Green Line</td>
+      <td class="none">None</td>
+      <td class="error-cell">
+        ・The following values do not match between simultaneous red lines and green lines:
+        <ul>
+          <li>Volume</li>
+          <li>Kiai ON/OFF</li>
+          <li>Sample Set</li>
+        </ul>
+      </td>
+    </tr>
+
+    <tr>
+      <td>Sample Set</td>
+      <td class="warn-cell">
+        ・Sample sets other than 1 : Normal exist<br>
+        ・Custom sample sets exist
+      </td>
+      <td class="none">None</td>
+    </tr>
+
+    <tr>
+      <td>Slider Velocity / Tick Rate</td>
+      <td class="warn-cell">
+        ・SliderTickRate is not the recommended value (1 or 3)<br>
+        ・SliderMultiplier is not <code>1.4</code>
+      </td>
+      <td class="none">None</td>
+    </tr>
+
+    <tr>
+      <td>First Note Lag</td>
+      <td class="warn-cell">
+        ・The first note is positioned within 50% of the judgement line when the audio starts loading
+      </td>
+      <td class="error-cell">
+        ・The first note is positioned within 25% of the judgement line when the audio starts loading
+      </td>
+    </tr>
+
+    <tr>
+      <td>Artist</td>
+
+      <td class="warn-cell">
+        ・Non-recommended marker notation exists<br>
+        ・Spacing around markers is incorrect<br>
+        ・Does not match recommended Romanised symbol replacements
+      </td>
+
+      <td class="error-cell">
+        ・Artist does not match between difficulties<br>
+        ・ArtistUnicode does not match between difficulties
+      </td>
+    </tr>
+
+    <tr>
+      <td>Title</td>
+
+      <td class="warn-cell">
+        ・Non-recommended version markers exist<br>
+        ・Incorrect feat. notation exists within the title<br>
+        ・Does not match recommended Romanised symbol replacements
+      </td>
+
+      <td class="error-cell">
+        ・Title does not match between difficulties<br>
+        ・TitleUnicode does not match between difficulties
+      </td>
+    </tr>
+
+    <tr>
+      <td>Source</td>
+      <td class="warn-cell">
+        ・Unknown Touhou work names are detected
+      </td>
+      <td class="error-cell">
+        ・Source does not match between difficulties<br>
+        ・Possible spelling mistakes in Touhou work names
+      </td>
+    </tr>
+
+    <tr>
+      <td>Tags</td>
+      <td class="warn-cell">
+        ・Related tag / abbreviation suggestions exist
+      </td>
+      <td class="error-cell">
+        ・Tags do not match between difficulties<br>
+        ・Spacing issues exist<br>
+        ・Possible spelling mistakes exist
+      </td>
+    </tr>
+
+    <tr>
+      <td>Miscellaneous: Preview Point</td>
+      <td class="warn-cell">
+        ・Preview point is unsnapped
+      </td>
+      <td class="none">None</td>
+    </tr>
+
+    <tr>
+      <td>Miscellaneous: Flashing / Epilepsy Warning</td>
+      <td class="warn-cell">
+        ・Kiai <code>OFF → ON</code> transition frequency is <code>3 Hz</code> or higher<br>
+        ・BPM during Kiai is <code>300 BPM</code> or higher
+      </td>
+      <td class="none">None</td>
+    </tr>
+
+    <tr>
+      <td>Spread Comparison: Diff Order</td>
+      <td class="none">None</td>
+      <td class="error-cell">
+        ・Spread order cannot be automatically estimated from the difficulty name and requires manual adjustment
+      </td>
+    </tr>
+
+    <tr>
+      <td>Spread Comparison: OD / HP</td>
+      <td class="warn-cell">
+        ・Does not follow Ranking Criteria conditions<br>
+        ・OD is equal to or lower than the previous difficulty<br>
+        ・HP is higher than the previous difficulty
+      </td>
+      <td class="none">None</td>
+    </tr>
+
+    <tr>
+      <td>
+        Spread Comparison: Note Count<br>
+      </td>
+
+      <td class="warn-cell">
+        ・Matches Ratio warning thresholds for the difficulty pair
+      </td>
+
+      <td class="error-cell">
+        ・Matches Ratio error thresholds for the difficulty pair
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Spread Comparison: Note Density
+      </td>
+
+      <td class="warn-cell">
+        ・The lower difficulty contains more Circle notes than the higher difficulty within the same measure
+      </td>
+
+      <td class="none">
+        None
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Spread Comparison: Scroll Speed
+      </td>
+
+      <td class="warn-cell">
+        ・Sudden scroll-speed changes exist in lower difficulties<br>
+        ・Unnatural scroll-speed progression exists from lower to higher difficulties<br>
+        ・Local scroll-speed changes in lower difficulties are significantly stronger than those in higher difficulties<br>
+        ・Scroll-speed change direction (acceleration / deceleration) is reversed between difficulties
+      </td>
+
+      <td class="none">
+        None
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<div class="notes">
+  <div class="notes-title">Notes</div>
+
+  Even when a Warning or Error is displayed, it does not necessarily mean the map is unrankable.<br>
+  Final judgement should always be made by the BN or mapper.
+</div>
+
+</body>
+</html>
