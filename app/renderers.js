@@ -395,7 +395,7 @@ function updateSpreadSubtabIssueStates(spreadState) {
   const densityAnalysis = analyzeSpreadDensityInversions(
     sortedResults,
     manualCategories,
-    densityMinDiff
+    1 /**  ノーツ密度 サブタブも常に 警告表示は +1 で固定（変えたいときはここを densityMinDiff にする）　*/
   );
 
   if (densityAnalysis.issueGroups.length) {

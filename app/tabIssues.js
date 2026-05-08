@@ -501,6 +501,17 @@ function getSpreadIssueLevel(spreadState) {
     if (level === "warn") hasWarn = true;
   }
 
+  // 追加：メインタブは「表示する差分: +1」固定でノーツ密度を判定
+  const densityAnalysisForMainTab = analyzeSpreadDensityInversions(
+    sortedResults,
+    manualCategories,
+    1
+  );
+
+  if (densityAnalysisForMainTab.issueGroups.length) {
+    hasWarn = true;
+  }
+
   const progression = analyzeSpreadScrollSpeedProgressionByEvent(sortedResults, manualCategories);
 
   if (progression.issueGroups.length) {
