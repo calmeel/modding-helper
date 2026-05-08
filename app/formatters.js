@@ -484,11 +484,20 @@ function formatKiaiSnapResult(result, t) {
     const timePadding =
       " ".repeat(timeWidth - visibleWidth(plainTime));
 
-    lines.push(
+    const line =
       `${timeText}${timePadding} | ` +
       `${padEndVisual(typeText, typeWidth)} | ` +
       `${padEndVisual(snapText, snapWidth)} | ` +
-      `${padEndVisual(diffText, diffWidth)}`
+      `${padEndVisual(diffText, diffWidth)}`;
+
+    const isError =
+      item.snap === "unknown" ||
+      item.diff !== 0;
+
+    lines.push(
+      isError
+        ? `<span class="result-error">${line}</span>`
+        : line
     );
   }
 
@@ -1398,41 +1407,48 @@ function formatMultipleTitleResults(results, t) {
   lines.push(formatSectionTitle(t("metadataSymbolRomanisationCheck")));
   lines.push("");
 
-  const symbolIssueResults = sortedResults.filter(result =>
-    result.symbolIssues?.length > 0
-  );
+  const groupedSymbolIssues =
+    groupMetadataSymbolIssues(sortedResults);
 
-  if (!symbolIssueResults.length) {
+  if (!groupedSymbolIssues.length) {
     lines.push(t("metadataNoSymbolRomanisationIssues"));
   } else {
-    for (const result of symbolIssueResults) {
-      lines.push(getDifficultyNameText(result.fileName));
-      lines.push("");
+    for (const group of groupedSymbolIssues) {
+      const issue = group.issue;
 
-      for (const issue of result.symbolIssues) {
+      lines.push(
+        `<span class="result-warn">${escapeHtml(t("metadataSymbolRomanisationIssue"))}:</span> ` +
+        `<code>${escapeHtml(issue.symbol)}</code> → ` +
+        issue.expectedList.map(v => `<code>${escapeHtml(v)}</code>`).join(" / ")
+      );
+
+      lines.push(
+        `  ${escapeHtml(t("metadataOriginal"))}: ` +
+        `<code>${escapeHtml(issue.original)}</code>`
+      );
+
+      lines.push(
+        `  ${escapeHtml(t("metadataCurrentRomanised"))}: ` +
+        `<code>${escapeHtml(issue.romanised)}</code>`
+      );
+
+      if (issue.suggestedRomanised && issue.suggestedRomanised !== issue.romanised) {
         lines.push(
-          `<span class="result-warn">${escapeHtml(t("metadataSymbolRomanisationIssue"))}:</span> ` +
-          `<code>${escapeHtml(issue.symbol)}</code> → ` +
-          issue.expectedList.map(v => `<code>${escapeHtml(v)}</code>`).join(" / ")
+          `  ${escapeHtml(t("metadataSuggestedRomanised"))}: ` +
+          `<code>${escapeHtml(issue.suggestedRomanised)}</code>`
         );
-
-        lines.push(`  ${escapeHtml(t("metadataOriginal"))}: <code>${escapeHtml(issue.original)}</code>`);
-        lines.push(`  ${escapeHtml(t("metadataCurrentRomanised"))}: <code>${escapeHtml(issue.romanised)}</code>`);
-
-        if (issue.suggestedRomanised && issue.suggestedRomanised !== issue.romanised) {
-          lines.push(
-            `  ${escapeHtml(t("metadataSuggestedRomanised"))}: <code>${escapeHtml(issue.suggestedRomanised)}</code>`
-          );
-        }
-
-        else {
-          lines.push(
-            `  <span class="result-warn">${escapeHtml(t("metadataSuggestedRomanisedUnavailable"))}</span>`
-          );
-        }
-
-        lines.push("");
+      } else {
+        lines.push(
+          `  <span class="result-warn">${escapeHtml(t("metadataSuggestedRomanisedUnavailable"))}</span>`
+        );
       }
+
+      lines.push(
+        `  Diff: ` +
+        group.fileNames.map(name => getDifficultyName(name)).join(" ")
+      );
+
+      lines.push("");
     }
   }
 
@@ -1500,6 +1516,38 @@ function groupTitleMarkerIssues(results) {
 
       if (issue.fieldName && !group.fieldNames.includes(issue.fieldName)) {
         group.fieldNames.push(issue.fieldName);
+      }
+    }
+  }
+
+  return [...map.values()];
+}
+
+/** タイトル用 */
+function groupMetadataSymbolIssues(results) {
+  const map = new Map();
+
+  for (const result of results) {
+    for (const issue of result.symbolIssues ?? []) {
+      const key = [
+        issue.type,
+        issue.symbol,
+        issue.original,
+        issue.romanised,
+        issue.suggestedRomanised
+      ].join("::");
+
+      if (!map.has(key)) {
+        map.set(key, {
+          issue,
+          fileNames: []
+        });
+      }
+
+      const group = map.get(key);
+
+      if (!group.fileNames.includes(result.fileName)) {
+        group.fileNames.push(result.fileName);
       }
     }
   }
@@ -1823,12 +1871,28 @@ function formatSourceGroupResult(group, t) {
   }
 
   if (result.type === "partial") {
-    lines.push(`<span class="result-error">${escapeHtml(t("sourceInvalidTouhou"))}</span>`);
-    lines.push(`${escapeHtml(t("sourceExpected"))}: <code>${escapeHtml(result.expected)}</code>`);
+    lines.push(
+      `<span class="result-error">${escapeHtml(t("sourceInvalidTouhou"))}</span>`
+    );
+
+    lines.push(
+      `${escapeHtml(t("sourceExpected"))}: ` +
+      `<code>${escapeHtml(result.expected)}</code>`
+    );
+
+    lines.push("");
+
+    lines.push(
+      `<span class="result-note">` +
+      `${escapeHtml(t("sourcePartialNote"))}` +
+      `</span>`
+    );
 
     if (result.link) {
       lines.push(
-        `<a href="${escapeHtml(result.link)}" target="_blank">${escapeHtml(result.link)}</a>`
+        `<a href="${escapeHtml(result.link)}" target="_blank">` +
+        `${escapeHtml(result.link)}` +
+        `</a>`
       );
     }
 
