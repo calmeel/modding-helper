@@ -1088,11 +1088,29 @@ function formatEarlyNoteIssueDetail(result, t) {
       : "result-warn";
 
   lines.push(`${t("earlyNoteFirstNote")}: ${formatTimestampLink(result.firstHitTime)}`);
-  lines.push(`${t("earlyNoteBpm")}: ${result.bpm.toFixed(3)}`);
-  lines.push(`${t("earlyNoteSv")}: ${result.sv.toFixed(3)}`);
-  lines.push(`${t("earlyNoteEstimatedVisibleTime")}: ${Math.round(result.visibleTime)} ms`);
+
+  if (result.reason === "firstNoteBeforeFirstRedLine") {
+    lines.push(
+      `<span class="${cls}">最初のノーツが最初の赤線より前にあります。</span>`
+    );
+    lines.push(`BPM: N/A`);
+    lines.push(`SV: N/A`);
+    lines.push(`${t("earlyNoteEstimatedVisibleTime")}: N/A`);
+    lines.push(`${t("earlyNotePosition")}: N/A`);
+    return lines.join("\n");
+  }
+
+  lines.push(`${t("earlyNoteBpm")}: ${result.bpm === null ? "N/A" : result.bpm.toFixed(3)}`);
+  lines.push(`${t("earlyNoteSv")}: ${result.sv === null ? "N/A" : result.sv.toFixed(3)}`);
+  lines.push(`${t("earlyNoteEstimatedVisibleTime")}: ${result.visibleTime === null ? "N/A" : `${Math.round(result.visibleTime)} ms`}`);
+
+  const positionText =
+    result.positionPercent === null
+      ? "N/A"
+      : `${t("earlyNotePositionSuffix")} ${result.positionPercent.toFixed(1)}%`;
+
   lines.push(
-    `<span class="${cls}">${t("earlyNotePosition")}: ${t("earlyNotePositionSuffix")} ${result.positionPercent.toFixed(1)}%</span>`
+    `<span class="${cls}">${t("earlyNotePosition")}: ${positionText}</span>`
   );
 
   return lines.join("\n");

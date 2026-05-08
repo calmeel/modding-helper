@@ -23,7 +23,8 @@ function runEarlyNoteCheck(text, fileName) {
   if (!red || !Number.isFinite(red.beatLength) || red.beatLength <= 0) {
     return {
       fileName,
-      level: "none",
+      level: "error",
+      reason: "firstNoteBeforeFirstRedLine",
       firstHitTime: firstCircleTime,
       bpm: null,
       sv: null,
