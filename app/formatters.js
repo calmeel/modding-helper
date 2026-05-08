@@ -2085,6 +2085,85 @@ function formatEpilepsyWarningResult(result, t) {
   return lines.join("\n").trimEnd();
 }
 
+/** タイムライン表示 */
+function formatTimelineResult(result, t) {
+  if (!result || !result.measures.length) {
+    return t("timelineNoData");
+  }
+
+  return result.measures.map(measure => {
+    const lines = [];
+
+    lines.push(
+      `<div class="timeline-measure">` +
+      `<div class="timeline-measure-title">` +
+      `${formatTimestampLink(measure.start)} - ${formatTimestampLink(measure.end)}` +
+      `</div><pre>`
+    );
+
+    const diffNames = measure.rows.map(row => getDifficultyNameText(row.fileName));
+    const diffWidth = Math.max(
+      10,
+      ...diffNames.map(name => visibleWidth(name))
+    );
+
+    for (const row of measure.rows) {
+      const nameText = getDifficultyNameText(row.fileName);
+      const nameHtml = getDifficultyName(row.fileName);
+      const padding = " ".repeat(diffWidth - visibleWidth(nameText));
+
+      if (!row.supported) {
+        lines.push(
+          `${nameHtml}${padding} | ` +
+          `<span class="timeline-unsupported">${escapeHtml(t("timelineUnsupported"))}</span>`
+        );
+      } else {
+        lines.push(
+          `${nameHtml}${padding} | ${formatTimelineCells(row.cells)}`
+        );
+      }
+    }
+
+    lines.push(`</pre></div>`);
+
+    return lines.join("\n");
+  }).join("\n");
+}
+
+function formatTimelineKind(kind) {
+  if (kind === "d" || kind === "D") {
+    return `<span class="bn-note bn-d">${kind}</span>`;
+  }
+
+  if (kind === "k" || kind === "K") {
+    return `<span class="bn-note bn-k">${kind}</span>`;
+  }
+
+  if (kind === "slider") {
+    return `<span class="bn-note bn-slider">S</span>`;
+  }
+
+  if (kind === "spinner") {
+    return `<span class="bn-note bn-spinner">S</span>`;
+  }
+
+  return `<span class="bn-note">${escapeHtml(kind)}</span>`;
+}
+
+function formatTimelineCells(cells) {
+  if (!Array.isArray(cells)) {
+    return "";
+  }
+
+  return cells.map(cell => {
+    if (!cell.kind) {
+      return `<span class="timeline-cell timeline-empty">-</span>`;
+    }
+
+    return `<span class="timeline-cell">${formatTimelineKind(cell.kind)}</span>`;
+  }).join("");
+}
+
 /** modeのグループ関数 */
 function hasMultipleModes(results) {
   const modes = new Set(results.map(result => result.mode ?? 0));

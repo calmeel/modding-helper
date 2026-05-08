@@ -118,6 +118,11 @@
         </label>
 
         <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="timeline">
+          <span data-i18n="tabTimeline">Timeline</span>
+        </label>
+
+        <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="bnCompare">
           <span data-i18n="tabBnCompare">BN評価</span>
         </label>
@@ -140,6 +145,7 @@
         <button class="tab-button" data-tab="metadata" data-i18n="tabMetadata">メタデータ</button>
         <button class="tab-button" data-tab="misc" data-i18n="tabMisc">その他</button>
         <button class="tab-button" data-tab="spread" data-i18n="tabSpread">Spread</button>
+        <button class="tab-button timeline-tab-button hidden-tab" data-tab="timeline" data-i18n="tabTimeline">Timeline</button>
         <button class="tab-button bn-tab-button hidden-tab" data-tab="bnCompare" data-i18n="tabBnCompare">BN評価</button>
       </div>
 
@@ -377,6 +383,16 @@
         </div>
       </section>
 
+      <section class="tab-panel hidden-tab" id="tab-timeline">
+        <div class="options">
+          <button id="timelineRunButton" class="doc-btn" type="button" data-i18n="timelineRun">
+            Run Timeline Viewer
+          </button>
+        </div>
+
+        <div id="timelineOutput" data-i18n="timelineNotRendered">タイムラインを表示するには、ボタンを押してください。</div>
+      </section>
+
       <section class="tab-panel hidden-tab" id="tab-bnCompare">
         <div class="bn-compare-panel">
           <div class="bn-file-row">
@@ -505,6 +521,7 @@
         <li>「アーティスト」「タイトル」タブを追加</li>
         <li>「スプレッド比較」機能を拡張</li>
         <li>「てんかん警告」機能を追加</li>
+        <li>「タイムライン表示」機能を追加</li>
       </ul>
 
     </div>
@@ -532,6 +549,7 @@
   <script src="checks/previewPointCheck.js"></script>
   <script src="checks/sv/epilepsyWarningCheck.js"></script>
   <script src="checks/spreadCheck.js"></script>
+  <script src="checks/timelineCheck.js"></script>
   <script src="checks/bnCompareCheck.js"></script>
   <script src="i18n.js"></script>
   <script src="app/formatters.js"></script>

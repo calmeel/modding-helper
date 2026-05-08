@@ -2080,3 +2080,21 @@ function formatSpreadDensityGroupTable(group, results) {
 
   return lines.join("\n");
 }
+
+/** タイムライン表示 */
+function renderTimelineResultFromSources(sources, dom, t, options = {}) {
+  if (!dom.timelineOutput) return null;
+
+  if (!sources) {
+    dom.timelineOutput.innerHTML = t("noFileLoaded");
+    return null;
+  }
+
+  const result = runTimelineCheck(sources, {
+    diffOrder: options.diffOrder ?? []
+  });
+
+  dom.timelineOutput.innerHTML = formatTimelineResult(result, t);
+
+  return result;
+}
