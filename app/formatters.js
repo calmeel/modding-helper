@@ -1256,6 +1256,22 @@ function formatTagTokenView(results, t) {
   return lines.join("\n").trimEnd();
 }
 
+/** アーティストとタイトルのスペース問題感知用の共通関数 */
+function formatMetadataSpacingIssue(issue, t) {
+  const message =
+    issue.type === "multipleHalfWidthSpaces"
+      ? t("metadataMultipleHalfWidthSpaces")
+      : issue.type === "fullWidthSpace"
+        ? t("metadataFullWidthSpace")
+        : "Spacing issue";
+
+  return (
+    `<span class="result-error">${escapeHtml(message)}</span>` +
+    ` | ${escapeHtml(t("metadataField"))}: <code>${escapeHtml(issue.fieldName)}</code>` +
+    ` | ${escapeHtml(t("metadataContext"))}: <code>${escapeHtml(issue.context)}</code>`
+  );
+}
+
 /** Artistチェック */
 function formatMultipleArtistResults(results, t) {
   if (!results.length) {
@@ -1340,6 +1356,31 @@ function formatMultipleArtistResults(results, t) {
   lines.push("");
   lines.push(formatSeparator());
   lines.push("");
+  lines.push(formatSectionTitle(t("artistSpacingCheck")));
+  lines.push("");
+
+  const spacingIssueResults = sortedResults.filter(result =>
+    result.spacingIssues?.length > 0
+  );
+
+  if (!spacingIssueResults.length) {
+    lines.push(t("artistNoSpacingIssues"));
+  } else {
+    for (const result of spacingIssueResults) {
+      lines.push(getDifficultyNameText(result.fileName));
+      lines.push("");
+
+      for (const issue of result.spacingIssues) {
+        lines.push(formatMetadataSpacingIssue(issue, t));
+      }
+
+      lines.push("");
+    }
+  }
+
+  lines.push("");
+  lines.push(formatSeparator());
+  lines.push("");
   lines.push(formatSectionTitle(t("artistFormattingCheck")));
   lines.push("");
 
@@ -1355,11 +1396,7 @@ function formatMultipleArtistResults(results, t) {
       lines.push("");
 
       for (const issue of result.formattingIssues) {
-        lines.push(
-          `<span class="result-warn">${escapeHtml(t("artistFormattingIssue"))}:</span> ` +
-          `<code>${escapeHtml(issue.marker)}</code> → <code>${escapeHtml(issue.expected)}</code>`
-        );
-
+        lines.push(formatArtistFormattingIssue(issue, t));
         lines.push(`  ${escapeHtml(t("detected"))}: <code>${escapeHtml(issue.context)}</code>`);
         lines.push("");
       }
@@ -1473,6 +1510,31 @@ function formatMultipleTitleResults(results, t) {
   lines.push("");
   lines.push(formatSeparator());
   lines.push("");
+  lines.push(formatSectionTitle(t("titleSpacingCheck")));
+  lines.push("");
+
+  const spacingIssueResults = sortedResults.filter(result =>
+    result.spacingIssues?.length > 0
+  );
+
+  if (!spacingIssueResults.length) {
+    lines.push(t("titleNoSpacingIssues"));
+  } else {
+    for (const result of spacingIssueResults) {
+      lines.push(getDifficultyNameText(result.fileName));
+      lines.push("");
+
+      for (const issue of result.spacingIssues) {
+        lines.push(formatMetadataSpacingIssue(issue, t));
+      }
+
+      lines.push("");
+    }
+  }
+
+  lines.push("");
+  lines.push(formatSeparator());
+  lines.push("");
   lines.push(formatSectionTitle(t("titleMarkerCheck")));
   lines.push("");
 
@@ -1504,6 +1566,18 @@ function formatMultipleTitleResults(results, t) {
   }
 
   return lines.join("\n").trimEnd();
+}
+
+function formatArtistFormattingIssue(issue, t) {
+  const message = issue.descriptionKey
+    ? t(issue.descriptionKey)
+    : t("artistFormattingIssue");
+
+  return (
+    `<span class="result-warn">${escapeHtml(message)}:</span> ` +
+    `<code>${escapeHtml(issue.marker)}</code> → ` +
+    `<code>${escapeHtml(issue.expected)}</code>`
+  );
 }
 
 function groupTitleMarkerIssues(results) {

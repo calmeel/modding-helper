@@ -303,3 +303,39 @@ function buildSuggestedRomanised(original, romanised, symbol, replacement) {
 
   return romanisedText;
 }
+
+/** ダブル半角スペース・全角スペースの検知 */
+function findMetadataSpacingIssues(value, fieldName) {
+  const text = String(value ?? "");
+  const issues = [];
+
+  if (!text) return issues;
+
+  for (const match of text.matchAll(/ {2,}/g)) {
+    issues.push({
+      fieldName,
+      type: "multipleHalfWidthSpaces",
+      marker: match[0],
+      expected: "single half-width space",
+      context: getMetadataSpacingIssueContext(text, match.index)
+    });
+  }
+
+  for (const match of text.matchAll(/　/g)) {
+    issues.push({
+      fieldName,
+      type: "fullWidthSpace",
+      marker: "　",
+      expected: "half-width space",
+      context: getMetadataSpacingIssueContext(text, match.index)
+    });
+  }
+
+  return issues;
+}
+
+function getMetadataSpacingIssueContext(text, index) {
+  const start = Math.max(0, index - 16);
+  const end = Math.min(text.length, index + 24);
+  return text.slice(start, end);
+}
