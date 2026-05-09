@@ -500,6 +500,9 @@
       <a href="https://osu.ppy.sh/users/14800030" target="_blank" rel="noopener noreferrer">
         layxa
       </a>
+      <a href="https://osu.ppy.sh/users/36055680" target="_blank" rel="noopener noreferrer">
+        waidabu
+      </a>
     </div>
 
   </section>
@@ -1391,42 +1394,42 @@ For this reason, this tool uses separate thresholds depending on the spread type
 
     <tr>
       <td>Kantan → Futsuu</td>
-      <td class="ratio-error"><code>&lt; 1.20</code></td>
-      <td class="ratio-warn"><code>1.20 – 1.40</code></td>
-      <td class="ratio-warn"><code>2.20 – 2.60</code></td>
-      <td class="ratio-error"><code>≥ 2.60</code></td>
+      <td class="ratio-error"><code>&lt; 1.55</code></td>
+      <td class="ratio-warn"><code>1.55 – 1.60</code></td>
+      <td class="ratio-warn"><code>2.15 – 2.30</code></td>
+      <td class="ratio-error"><code>≥ 2.30</code></td>
     </tr>
 
     <tr>
       <td>Futsuu → Muzukashii</td>
-      <td class="ratio-error"><code>&lt; 1.15</code></td>
-      <td class="ratio-warn"><code>1.15 – 1.25</code></td>
-      <td class="ratio-warn"><code>1.90 – 2.20</code></td>
-      <td class="ratio-error"><code>≥ 2.20</code></td>
+      <td class="ratio-error"><code>&lt; 1.20</code></td>
+      <td class="ratio-warn"><code>1.20 – 1.27</code></td>
+      <td class="ratio-warn"><code>1.58 – 1.65</code></td>
+      <td class="ratio-error"><code>≥ 1.65</code></td>
     </tr>
 
     <tr>
       <td>Muzukashii → Oni</td>
-      <td class="ratio-error"><code>&lt; 1.10</code></td>
-      <td class="ratio-warn"><code>1.10 – 1.15</code></td>
-      <td class="ratio-warn"><code>1.60 – 1.90</code></td>
-      <td class="ratio-error"><code>≥ 1.90</code></td>
-    </tr>
-
-    <tr>
-      <td>Oni → Inner Oni</td>
-      <td class="ratio-error"><code>&lt; 1.05</code></td>
-      <td class="ratio-warn"><code>1.05 – 1.08</code></td>
-      <td class="ratio-warn"><code>1.40 – 1.70</code></td>
-      <td class="ratio-error"><code>≥ 1.70</code></td>
-    </tr>
-
-    <tr>
-      <td>Inner Oni → Above</td>
-      <td class="ratio-error"><code>&lt; 1.03</code></td>
-      <td class="ratio-warn"><code>1.03 – 1.05</code></td>
-      <td class="ratio-warn"><code>1.30 – 1.55</code></td>
+      <td class="ratio-error"><code>&lt; 1.13</code></td>
+      <td class="ratio-warn"><code>1.13 – 1.17</code></td>
+      <td class="ratio-warn"><code>1.48 – 1.55</code></td>
       <td class="ratio-error"><code>≥ 1.55</code></td>
+    </tr>
+
+    <tr>
+      <td>Oni → Inner Oni+</td>
+      <td class="ratio-error"><code>&lt; 1.00</code></td>
+      <td class="ratio-warn"><code>1.00 – 1.10</code></td>
+      <td class="ratio-warn"><code>1.45 – 1.55</code></td>
+      <td class="ratio-error"><code>≥ 1.55</code></td>
+    </tr>
+
+    <tr>
+      <td>Inner Oni+ → Above</td>
+      <td class="ratio-error"><code>&lt; 1.00</code></td>
+      <td class="ratio-warn"><code>1.00 – 1.02</code></td>
+      <td class="ratio-warn"><code>1.32 – 1.50</code></td>
+      <td class="ratio-error"><code>≥ 1.50</code></td>
     </tr>
 
   </tbody>
@@ -1435,29 +1438,39 @@ For this reason, this tool uses separate thresholds depending on the spread type
 </div>
 
 <div class="section section-warning">
-<span class="label label-warning">■ Notes About Ratio Thresholds</span><br>
+<span class="label label-warning">■ Notes about Ratio thresholds</span><br>
 
-These Ratio thresholds are convenience guidelines defined specifically for this tool
-(This tool was used to collect data on some of the 2026 ranked mapsets, and the resulting trends were used as a convenient guideline.).<br>
-The concept of Ratio itself is based on the following forum post by Chromoxx:<br>
+These Ratio thresholds are unofficial guideline values,
+estimated based on statistical trends collected using this tool
+from 100 ranked osu!taiko mapsets ranked in 2026.<br><br>
 
-<a href="https://osu.ppy.sh/community/forums/topics/1536775?n=1" target="_blank" rel="noopener noreferrer">
-  BNになれるmod力を身に着けよう！（osu!taiko）
+Statistics page:
+<a href="statistics.en.html" target="_blank" rel="noopener noreferrer">
+  Spread Ratio Statistics
 </a><br><br>
 
-<strong>Even when a Warning or Error is displayed, this does not automatically mean the map is unrankable.</strong><br><br>
+The concept of Ratio is partially inspired by the following forum post by Chromoxx:<br>
+<a href="https://osu.ppy.sh/community/forums/topics/1536775?n=1" target="_blank" rel="noopener noreferrer">
+  Learn modding skills to become a BN! (osu!taiko)
+</a><br><br>
 
-In addition, Ratio is only a simplified evaluation based on note count multipliers,
+<strong>Warning or Error results do NOT necessarily mean that a spread is unrankable.</strong><br><br>
+
+Ratio is only a simplified evaluation based on note-count multiplication,
 and does not fully represent actual difficulty spread quality.<br><br>
 
 In particular:
 <ul>
-  <li>Ratios tend to be overestimated in lower difficulties</li>
-  <li>Ratios tend to be underestimated in higher difficulties</li>
+  <li>Low difficulties tend to produce larger Ratios</li>
+  <li>High difficulties tend to produce smaller Ratios</li>
+  <li>Guest difficulties and unusual spreads may significantly deviate from these trends</li>
 </ul>
 
-Final judgement should therefore consider not only the Ratio value,
-but also the actual note-count differences and overall spread structure.
+These tendencies should be taken into consideration.<br><br>
+
+Final judgement should not rely on Ratio alone,
+but also consider note-count differences, pattern density,
+and overall gameplay difficulty progression.
 </div>
 </section>
 
@@ -1605,24 +1618,24 @@ Detects locations where lower difficulties contain sudden scroll speed changes.
   <tbody>
     <tr>
       <td>Below Kantan / Kantan</td>
-      <td class="ratio-warn"><code>≥ 180 px/s</code></td>
-      <td class="ratio-warn"><code>≥ x1.35</code></td>
+      <td class="ratio-warn"><code>≥ 80 px/s</code></td>
+      <td class="ratio-warn"><code>≥ x1.15</code></td>
       <td class="ratio-warn"><code>≤ 1500 ms</code></td>
       <td>Warning</td>
     </tr>
 
     <tr>
       <td>Futsuu</td>
-      <td class="ratio-warn"><code>≥ 240 px/s</code></td>
-      <td class="ratio-warn"><code>≥ x1.45</code></td>
-      <td class="ratio-warn"><code>≤ 1200 ms</code></td>
+      <td class="ratio-warn"><code>≥ 80 px/s</code></td>
+      <td class="ratio-warn"><code>≥ x1.15</code></td>
+      <td class="ratio-warn"><code>≤ 1250 ms</code></td>
       <td>Warning</td>
     </tr>
 
     <tr>
       <td>Muzukashii</td>
-      <td class="ratio-warn"><code>≥ 320 px/s</code></td>
-      <td class="ratio-warn"><code>≥ x1.55</code></td>
+      <td class="ratio-warn"><code>≥ 160 px/s</code></td>
+      <td class="ratio-warn"><code>≥ x1.25</code></td>
       <td class="ratio-warn"><code>≤ 1000 ms</code></td>
       <td>Warning</td>
     </tr>
@@ -1655,7 +1668,35 @@ The idea for this feature is based on a feature request for MVTaikoChecks by Hiv
 Reference:
 <a href="https://github.com/Hiviexd/MVTaikoChecks/issues/4" target="_blank" rel="noopener noreferrer">
   Add a drastic SV change warning for lower difficulties
-</a>
+</a><br><br>
+
+<div class="note-subtext">
+  In that feature request, Hivie mentions that after discussing the idea with several BNs,
+  the following raw SV-difference thresholds were considered useful for detecting drastic SV changes in lower difficulties:<br>
+
+  <ul>
+    <li><code>Kantan / Futsuu</code>: SV difference <code>&gt; 0.1</code></li>
+    <li><code>Muzukashii</code>: SV difference <code>&gt; 0.2</code></li>
+    <li><code>Oni</code>: SV difference <code>&gt; 0.3</code></li>
+  </ul>
+
+  However, due to later Ranking Criteria changes, <code>Oni</code> and higher difficulties
+  are not checked by this tool for this condition.<br><br>
+
+  For example, at <code>BPM 180</code> with <code>SliderMultiplier 1.4</code>,
+  an SV difference of <code>0.1</code> corresponds to approximately <code>73.5 px/s</code>,
+  and an SV difference of <code>0.2</code> corresponds to approximately <code>147 px/s</code>.<br>
+  Therefore, this tool uses practical nearby values:
+  <code>80 px/s</code> for <code>Kantan / Futsuu</code>,
+  and <code>160 px/s</code> for <code>Muzukashii</code>.<br><br>
+
+  For <code>maxGapMs</code>, the threshold is shortened as the difficulty level increases,
+  because note intervals generally become shorter in higher difficulties.
+  This tool uses a gradual sequence of
+  <code>Kantan = 1500 ms</code>,
+  <code>Futsuu = 1250 ms</code>,
+  and <code>Muzukashii = 1000 ms</code>.
+</div>
 </div>
 
 <div class="section section-warning">
@@ -1778,7 +1819,7 @@ If the eSV change magnitude in a lower difficulty is significantly larger than i
 
       <td>
         <code>lower |Δ| ≥ higher |Δ| × 1.5</code><br>
-        <code>and lower |Δ| - higher |Δ| ≥ 150 px/s</code>
+        <code>and lower |Δ| - higher |Δ| ≥ 120 px/s</code>
       </td>
 
       <td>

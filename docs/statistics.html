@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Spread Ratio Statistics</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #111;
+      color: #eee;
+    }
+
+    h1 {
+      color: #9fdcff;
+      border-bottom: 2px solid #333;
+      padding-bottom: 10px;
+      margin-bottom: 30px;
+    }
+
+    h2 {
+      margin-top: 40px;
+      color: #9fdcff;
+      border-bottom: 1px solid #333;
+      padding-bottom: 6px;
+    }
+
+    h3 {
+      margin-top: 28px;
+      color: #ffd580;
+    }
+
+    p {
+      color: #ccc;
+    }
+
+    a {
+      color: #9fdcff;
+    }
+
+    code {
+      background: #222;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      background: #181818;
+      border: 1px solid #2a2a2a;
+      font-size: 13px;
+    }
+
+    th {
+      background: #202020;
+      color: #9fdcff;
+      text-align: right;
+      padding: 10px;
+      border-bottom: 1px solid #333;
+      white-space: nowrap;
+    }
+
+    th:first-child,
+    td:first-child {
+      text-align: left;
+    }
+
+    td {
+      padding: 9px 10px;
+      border-bottom: 1px solid #2a2a2a;
+      text-align: right;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+
+    tr:hover {
+      background: #1d1d1d;
+    }
+
+    .section {
+      margin-top: 20px;
+      padding: 14px 16px;
+      background: #181818;
+      border: 1px solid #2a2a2a;
+      border-left: 4px solid #9fdcff;
+      border-radius: 6px;
+    }
+
+    .notes {
+      margin-top: 30px;
+      padding: 14px 16px;
+      background: #181818;
+      border-left: 4px solid #ffd580;
+    }
+
+    .notes-title {
+      color: #ffd580;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .summary-card {
+      background: #181818;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      padding: 12px 14px;
+    }
+
+    .summary-label {
+      color: #aaa;
+      font-size: 12px;
+    }
+
+    .summary-value {
+      margin-top: 4px;
+      color: #fff;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 12px;
+    }
+
+    .muted {
+      color: #aaa;
+    }
+
+    .warn {
+      color: #ffd580;
+      font-weight: bold;
+    }
+
+    .ok {
+      color: #9ff2b2;
+      font-weight: bold;
+    }
+
+    .stat-count {
+      color: #9fdcff;
+      font-weight: bold;
+    }
+
+    .stat-min {
+      color: #9ff2b2;
+      font-weight: bold;
+    }
+
+    .stat-max {
+      color: #ffb3b3;
+      font-weight: bold;
+    }
+
+    .stat-mean {
+      color: #ffd580;
+      font-weight: bold;
+    }
+
+    .stat-sd {
+      color: #c9b6ff;
+      font-weight: bold;
+    }
+
+    .stat-median {
+      color: #ffffff;
+      font-weight: bold;
+    }
+
+    .stat-q {
+      color: #aaa;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Spread Ratio Statistics</h1>
+
+<p>
+  このページでは、2026年に ranked された osu!taiko mapset 100件を対象に、
+  difficulty 間の Circle 数 Ratio を集計した結果を示します。
+</p>
+
+<div class="section">
+  <p>
+    集計元データ：
+    <a href="statistics.txt" target="_blank" rel="noopener noreferrer">
+      Statics.txt
+    </a>
+  </p>
+
+  <p>
+    Ratio は <code>現在の difficulty の Circle 数 / 直前の difficulty の Circle 数</code> で計算しています。
+    Slider と Spinner はノーツ数には含めていません。
+  </p>
+</div>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="summary-label">対象 mapset 数</div>
+    <div class="summary-value">100</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-label">Ratio 比較数</div>
+    <div class="summary-value">383</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-label">ゲスト難易度を含む比較</div>
+    <div class="summary-value">142</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-label">ゲスト難易度を含まない比較</div>
+    <div class="summary-value">241</div>
+  </div>
+</div>
+
+<h2>全サンプルでの統計</h2>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>比較</th>
+      <th>件数</th>
+      <th>最小</th>
+      <th>Q1</th>
+      <th>中央値</th>
+      <th>Q3</th>
+      <th>最大</th>
+      <th>平均</th>
+      <th>標準偏差</th>
+      <th>四分位偏差</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>All</td><td class="stat-count">383</td><td class="stat-min">0.92</td><td class="stat-q">1.24</td><td class="stat-median">1.34</td><td class="stat-q">1.53</td><td class="stat-max">2.58</td><td class="stat-mean">1.41</td><td class="stat-sd">0.26</td><td class="stat-q">0.14</td></tr>
+    <tr><td>Below Kantan → Kantan</td><td class="stat-count">1</td><td class="stat-min">1.78</td><td class="stat-q">1.78</td><td class="stat-median">1.78</td><td class="stat-q">1.78</td><td class="stat-max">1.78</td><td class="stat-mean">1.78</td><td class="stat-sd">0.00</td><td class="stat-q">0.00</td></tr>
+    <tr><td>Kantan → Futsuu</td><td class="stat-count">79</td><td class="stat-min">1.51</td><td class="stat-q">1.71</td><td class="stat-median">1.83</td><td class="stat-q">1.92</td><td class="stat-max">2.58</td><td class="stat-mean">1.84</td><td class="stat-sd">0.18</td><td class="stat-q">0.10</td></tr>
+    <tr><td>Futsuu → Muzukashii</td><td class="stat-count">91</td><td class="stat-min">1.16</td><td class="stat-q">1.34</td><td class="stat-median">1.40</td><td class="stat-q">1.45</td><td class="stat-max">1.76</td><td class="stat-mean">1.41</td><td class="stat-sd">0.10</td><td class="stat-q">0.05</td></tr>
+    <tr><td>Muzukashii → Oni</td><td class="stat-count">98</td><td class="stat-min">1.08</td><td class="stat-q">1.24</td><td class="stat-median">1.29</td><td class="stat-q">1.34</td><td class="stat-max">1.61</td><td class="stat-mean">1.30</td><td class="stat-sd">0.09</td><td class="stat-q">0.05</td></tr>
+    <tr><td>Oni → Inner Oni+</td><td class="stat-count">80</td><td class="stat-min">0.92</td><td class="stat-q">1.18</td><td class="stat-median">1.24</td><td class="stat-q">1.30</td><td class="stat-max">1.63</td><td class="stat-mean">1.25</td><td class="stat-sd">0.11</td><td class="stat-q">0.06</td></tr>
+    <tr><td>Inner Oni+ → Inner Oni+</td><td class="stat-count">34</td><td class="stat-min">0.97</td><td class="stat-q">1.10</td><td class="stat-median">1.12</td><td class="stat-q">1.19</td><td class="stat-max">1.56</td><td class="stat-mean">1.15</td><td class="stat-sd">0.11</td><td class="stat-q">0.04</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>ゲスト難易度を含む比較</h2>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>比較</th>
+      <th>件数</th>
+      <th>最小</th>
+      <th>Q1</th>
+      <th>中央値</th>
+      <th>Q3</th>
+      <th>最大</th>
+      <th>平均</th>
+      <th>標準偏差</th>
+      <th>四分位偏差</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>All</td><td class="stat-count">143</td><td class="stat-min">0.92</td><td class="stat-q">1.20</td><td class="stat-median">1.32</td><td class="stat-q">1.48</td><td class="stat-max">2.58</td><td class="stat-mean">1.39</td><td class="stat-sd">0.28</td><td class="stat-q">0.14</td></tr>
+    <tr><td>Below Kantan → Kantan</td><td class="stat-count">1</td><td class="stat-min">1.78</td><td class="stat-q">1.78</td><td class="stat-median">1.78</td><td class="stat-q">1.78</td><td class="stat-max">1.78</td><td class="stat-mean">1.78</td><td class="stat-sd">0.00</td><td class="stat-q">0.00</td></tr>
+    <tr><td>Kantan → Futsuu</td><td class="stat-count">25</td><td class="stat-min">1.51</td><td class="stat-q">1.67</td><td class="stat-median">1.86</td><td class="stat-q">1.98</td><td class="stat-max">2.58</td><td class="stat-mean">1.87</td><td class="stat-sd">0.24</td><td class="stat-q">0.16</td></tr>
+    <tr><td>Futsuu → Muzukashii</td><td class="stat-count">29</td><td class="stat-min">1.16</td><td class="stat-q">1.33</td><td class="stat-median">1.39</td><td class="stat-q">1.47</td><td class="stat-max">1.63</td><td class="stat-mean">1.40</td><td class="stat-sd">0.11</td><td class="stat-q">0.07</td></tr>
+    <tr><td>Muzukashii → Oni</td><td class="stat-count">38</td><td class="stat-min">1.08</td><td class="stat-q">1.23</td><td class="stat-median">1.30</td><td class="stat-q">1.35</td><td class="stat-max">1.61</td><td class="stat-mean">1.30</td><td class="stat-sd">0.10</td><td class="stat-q">0.06</td></tr>
+    <tr><td>Oni → Inner Oni+</td><td class="stat-count">34</td><td class="stat-min">0.92</td><td class="stat-q">1.15</td><td class="stat-median">1.21</td><td class="stat-q">1.26</td><td class="stat-max">1.50</td><td class="stat-mean">1.21</td><td class="stat-sd">0.11</td><td class="stat-q">0.05</td></tr>
+    <tr><td>Inner Oni+ → Inner Oni+</td><td class="stat-count">16</td><td class="stat-min">0.97</td><td class="stat-q">1.05</td><td class="stat-median">1.12</td><td class="stat-q">1.19</td><td class="stat-max">1.56</td><td class="stat-mean">1.15</td><td class="stat-sd">0.14</td><td class="stat-q">0.07</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>ゲスト難易度を含まない比較</h2>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>比較</th>
+      <th>件数</th>
+      <th>最小</th>
+      <th>Q1</th>
+      <th>中央値</th>
+      <th>Q3</th>
+      <th>最大</th>
+      <th>平均</th>
+      <th>標準偏差</th>
+      <th>四分位偏差</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>All</td><td class="stat-count">240</td><td class="stat-min">1.07</td><td class="stat-q">1.25</td><td class="stat-median">1.35</td><td class="stat-q">1.55</td><td class="stat-max">2.21</td><td class="stat-mean">1.43</td><td class="stat-sd">0.25</td><td class="stat-q">0.15</td></tr>
+    <tr><td>Kantan → Futsuu</td><td class="stat-count">54</td><td class="stat-min">1.55</td><td class="stat-q">1.73</td><td class="stat-median">1.83</td><td class="stat-q">1.90</td><td class="stat-max">2.21</td><td class="stat-mean">1.82</td><td class="stat-sd">0.15</td><td class="stat-q">0.08</td></tr>
+    <tr><td>Futsuu → Muzukashii</td><td class="stat-count">62</td><td class="stat-min">1.25</td><td class="stat-q">1.35</td><td class="stat-median">1.40</td><td class="stat-q">1.45</td><td class="stat-max">1.76</td><td class="stat-mean">1.41</td><td class="stat-sd">0.09</td><td class="stat-q">0.05</td></tr>
+    <tr><td>Muzukashii → Oni</td><td class="stat-count">60</td><td class="stat-min">1.17</td><td class="stat-q">1.24</td><td class="stat-median">1.28</td><td class="stat-q">1.33</td><td class="stat-max">1.55</td><td class="stat-mean">1.30</td><td class="stat-sd">0.08</td><td class="stat-q">0.05</td></tr>
+    <tr><td>Oni → Inner Oni+</td><td class="stat-count">46</td><td class="stat-min">1.07</td><td class="stat-q">1.18</td><td class="stat-median">1.25</td><td class="stat-q">1.33</td><td class="stat-max">1.63</td><td class="stat-mean">1.27</td><td class="stat-sd">0.11</td><td class="stat-q">0.07</td></tr>
+    <tr><td>Inner Oni+ → Inner Oni+</td><td class="stat-count">18</td><td class="stat-min">1.08</td><td class="stat-q">1.10</td><td class="stat-median">1.13</td><td class="stat-q">1.19</td><td class="stat-max">1.34</td><td class="stat-mean">1.16</td><td class="stat-sd">0.07</td><td class="stat-q">0.04</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>読み取れる傾向</h2>
+
+<div class="section">
+  <ul>
+    <li>
+      <strong>Kantan → Futsuu</strong> は中央値が <code>x1.83</code> と高く、
+      低難易度では Ratio が大きくなりやすい傾向があります。
+    </li>
+    <li>
+      <strong>Futsuu → Muzukashii</strong> は中央値 <code>x1.40</code>、
+      <strong>Muzukashii → Oni</strong> は中央値 <code>x1.29</code> で、
+      difficulty が上がるほど Ratio の中心値が下がっています。
+    </li>
+    <li>
+      <strong>Oni → Inner Oni+</strong> は中央値 <code>x1.24</code>、
+      <strong>Inner Oni+ → Inner Oni+</strong> は中央値 <code>x1.12</code> で、
+      高難易度側では小さい Ratio でも自然な spread になりやすいです。
+    </li>
+    <li>
+      ゲスト難易度を含む比較では、特に <strong>Kantan → Futsuu</strong> の標準偏差が大きく、
+      mapper ごとの設計差が Ratio に出やすい可能性があります。
+    </li>
+    <li>
+      <strong>Below Kantan → Kantan</strong> は件数が少ないため、
+      この統計だけで基準値を決めるには不十分です。
+    </li>
+  </ul>
+</div>
+
+<h2>閾値設定について</h2>
+
+<div class="section">
+  <p>
+    Modding Helper の Warning / Error 閾値は、この統計結果を参考に設定しています。
+  </p>
+
+  <ul>
+    <li>
+      <strong><span style="color:#ffd86b; font-weight:bold;">Warning</span></strong>：各 difficulty pair において、サンプル内でおおよそ下位 5% / 上位 5% に入る Ratio を目安に設定
+    </li>
+    <li>
+      <strong><span style="color:#ff6b6b; font-weight:bold;">Error</span></strong>：各 difficulty pair において、サンプル内でおおよそ下位 1% / 上位 1% に入る Ratio を目安に設定
+    </li>
+    <li>
+      <strong>Ratio が 1.00 未満</strong>：上位 difficulty の Circle 数が前 difficulty より少ないため、原則として Error 扱い
+    </li>
+  </ul>
+
+  <p>
+    ただし、実際の閾値は統計値をそのまま機械的に採用したものではなく、
+    見やすさや運用上の分かりやすさを考慮して、小数第2位付近に丸めています。
+  </p>
+
+  <p>
+    Warning / Error は「不正」や「unrankable」を示すものではなく、
+    人間が確認すべき可能性のある箇所を示す補助表示として扱ってください。
+  </p>
+</div>
+
+<div class="notes">
+  <div class="notes-title">注意事項</div>
+  この統計は、Ranking Criteria 上の公式基準ではありません。<br>
+  Warning / Error の閾値は、実際の ranked 譜面の傾向を参考にした、
+  Modding Helper 独自の確認用目安です。<br><br>
+  表示された数値は、ノーツ数 Ratio の傾向を確認するための補助情報であり、
+  実際の difficulty spread を完全に表すものではありません。
+</div>
+
+</body>
+</html>

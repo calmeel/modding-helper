@@ -240,34 +240,34 @@ function getSpreadEffectiveCategory(result, manualCategories = {}) {
 /** spreadのノーツratio条件 */
 const SPREAD_NOTE_RATIO_RULES = {
   kantanToFutsuu: {
-    errorLow: 1.20,
-    warnLow: 1.40,
-    warnHigh: 2.20,
-    errorHigh: 2.60
+    errorLow: 1.55,
+    warnLow: 1.60,
+    warnHigh: 2.15,
+    errorHigh: 2.30
   },
   futsuuToMuzukashii: {
-    errorLow: 1.15,
-    warnLow: 1.25,
-    warnHigh: 1.90,
-    errorHigh: 2.20
+    errorLow: 1.20,
+    warnLow: 1.27,
+    warnHigh: 1.58,
+    errorHigh: 1.65
   },
   muzukashiiToOni: {
-    errorLow: 1.10,
-    warnLow: 1.15,
-    warnHigh: 1.60,
-    errorHigh: 1.90
+    errorLow: 1.13,
+    warnLow: 1.17,
+    warnHigh: 1.48,
+    errorHigh: 1.55
   },
   oniToInnerPlus: {
-    errorLow: 1.05,
-    warnLow: 1.08,
-    warnHigh: 1.40,
-    errorHigh: 1.70
+    errorLow: 1.00,
+    warnLow: 1.10,
+    warnHigh: 1.45,
+    errorHigh: 1.55
   },
   innerPlusToInnerPlus: {
-    errorLow: 1.03,
-    warnLow: 1.05,
-    warnHigh: 1.30,
-    errorHigh: 1.55
+    errorLow: 1.00,
+    warnLow: 1.02,
+    warnHigh: 1.32,
+    errorHigh: 1.50
   }
 };
 
@@ -365,23 +365,23 @@ const SPREAD_SCROLL_BASE_PX_PER_BEAT = 175;
 
 const SPREAD_SCROLL_RAPID_RULES = {
   belowKantan: {
-    minDeltaPxPerSecond: 180,
-    minRatio: 1.35,
+    minDeltaPxPerSecond: 80,
+    minRatio: 1.15,
     maxGapMs: 1500
   },
   kantan: {
-    minDeltaPxPerSecond: 180,
-    minRatio: 1.35,
+    minDeltaPxPerSecond: 80,
+    minRatio: 1.15,
     maxGapMs: 1500
   },
   futsuu: {
-    minDeltaPxPerSecond: 240,
-    minRatio: 1.45,
-    maxGapMs: 1200
+    minDeltaPxPerSecond: 80,
+    minRatio: 1.15,
+    maxGapMs: 1250
   },
   muzukashii: {
-    minDeltaPxPerSecond: 320,
-    minRatio: 1.55,
+    minDeltaPxPerSecond: 160,
+    minRatio: 1.25,
     maxGapMs: 1000
   },
   oni: {
@@ -395,8 +395,8 @@ const SPREAD_SCROLL_RAPID_RULES = {
     maxGapMs: 0
   },
   unknown: {
-    minDeltaPxPerSecond: 320,
-    minRatio: 1.55,
+    minDeltaPxPerSecond: 160,
+    minRatio: 1.25,
     maxGapMs: 1000
   }
 };
