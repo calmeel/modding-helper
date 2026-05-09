@@ -1,4 +1,4 @@
-const BN_NOTE_MOVE_TOLERANCE_MS = 1;
+const BN_NOTE_MOVE_TOLERANCE_MS = 2;
 
 async function readBnOszFile(file) {
   if (!file) return [];
@@ -612,13 +612,11 @@ function compareBnTimeline(beforeText, afterText, options = {}) {
 
   for (const measure of measures) {
     const beforeInMeasure = beforeObjects.filter(obj =>
-      obj.time >= measure.start &&
-      obj.time < measure.end
+      isBnTimelineObjectInMeasure(obj, measure)
     );
 
     const afterInMeasure = afterObjects.filter(obj =>
-      obj.time >= measure.start &&
-      obj.time < measure.end
+      isBnTimelineObjectInMeasure(obj, measure)
     );
 
     if (!beforeInMeasure.length && !afterInMeasure.length) continue;
@@ -656,6 +654,15 @@ function compareBnTimeline(beforeText, afterText, options = {}) {
   }
 
   return results;
+}
+
+function isBnTimelineObjectInMeasure(obj, measure) {
+  const end = obj.tailTime ?? obj.time;
+
+  return (
+    obj.time < measure.end - BN_TIMELINE_EPSILON_MS &&
+    end >= measure.start - BN_TIMELINE_EPSILON_MS
+  );
 }
 
 function parseBnTimelineMeasurePoints(text) {
@@ -778,6 +785,19 @@ function chooseBnTimelineGrid(measure, beforeObjects, afterObjects) {
   return null;
 }
 
+function getBnTimelineCellIndex(time, measure, grid) {
+  const cellLength = (measure.end - measure.start) / grid;
+  const position = (time - measure.start) / cellLength;
+  const index = Math.round(position);
+  const diffMs = Math.abs(position - index) * cellLength;
+
+  if (diffMs > BN_TIMELINE_EPSILON_MS) {
+    return null;
+  }
+
+  return Math.max(0, Math.min(grid - 1, index));
+}
+
 function buildBnTimelineCells(measure, objects, grid) {
   const cells = Array.from({ length: grid }, () => ({
     kind: null,
@@ -793,11 +813,12 @@ function buildBnTimelineCells(measure, objects, grid) {
       (obj.kind === "slider" || obj.kind === "spinner") &&
       obj.tailTime !== null
     ) {
-      const startPos = (obj.time - measure.start) / cellLength;
-      const endPos = (obj.tailTime - measure.start) / cellLength;
+      const startIndex = getBnTimelineCellIndex(obj.time, measure, grid);
+      const endIndex = getBnTimelineCellIndex(obj.tailTime, measure, grid);
 
-      const startIndex = Math.max(0, Math.round(startPos));
-      const endIndex = Math.min(grid - 1, Math.round(endPos));
+      if (startIndex === null || endIndex === null) {
+        continue;
+      }
 
       for (let i = startIndex; i <= endIndex; i++) {
         if (cells[i].kind) {
@@ -812,10 +833,9 @@ function buildBnTimelineCells(measure, objects, grid) {
     }
 
     // normal note
-    const position = (obj.time - measure.start) / cellLength;
-    const index = Math.round(position);
+    const index = getBnTimelineCellIndex(obj.time, measure, grid);
 
-    if (index < 0 || index >= grid) continue;
+    if (index === null) continue;
 
     if (cells[index].kind) {
       cells[index].overflow = true;

@@ -384,6 +384,22 @@ function formatBnDifficultyTable(resultsByPair, t) {
 }
 
 /** タイムライン表示 */
+const BN_TIMELINE_WRAP_CELLS = 48;
+
+function chunkBnTimelineCells(cells, size = BN_TIMELINE_WRAP_CELLS) {
+  const chunks = [];
+
+  for (let i = 0; i < cells.length; i += size) {
+    chunks.push({
+      start: i,
+      end: Math.min(i + size, cells.length),
+      cells: cells.slice(i, i + size)
+    });
+  }
+
+  return chunks;
+}
+
 function formatBnTimelineResult(items, t) {
   if (!items || !items.length) {
     return t("bnNoTimelineChanges");
@@ -401,22 +417,49 @@ function formatBnTimelineResult(items, t) {
       `;
     }
 
-    return `
-      <div class="bn-timeline-block">
-        <div class="bn-timeline-header">
-          ${formatTimestampLink(item.start)} - ${formatTimestampLink(item.end)}
-          <span class="bn-timeline-grid">[1/${item.snap}]</span>
-        </div>
+    const beforeChunks = chunkBnTimelineCells(item.before);
+    const afterChunks = chunkBnTimelineCells(item.after);
+    const chunkCount = Math.max(beforeChunks.length, afterChunks.length);
 
+    const rows = [];
+
+    for (let i = 0; i < chunkCount; i++) {
+      const beforeChunk = beforeChunks[i] ?? { start: i * BN_TIMELINE_WRAP_CELLS, end: i * BN_TIMELINE_WRAP_CELLS, cells: [] };
+      const afterChunk = afterChunks[i] ?? { start: i * BN_TIMELINE_WRAP_CELLS, end: i * BN_TIMELINE_WRAP_CELLS, cells: [] };
+
+      if (chunkCount > 1) {
+        rows.push(`
+          <div class="bn-timeline-chunk-label">
+            [cells ${beforeChunk.start + 1}-${beforeChunk.end} / ${item.grid}]
+          </div>
+        `);
+      }
+
+      rows.push(`
         <div class="bn-timeline-row">
           <span class="bn-timeline-label">Before</span>
-          <span class="bn-timeline-cells">${formatBnTimelineCells(item.before, t)}</span>
+          <span class="bn-timeline-cells">${formatBnTimelineCells(beforeChunk.cells, t)}</span>
         </div>
 
         <div class="bn-timeline-row">
           <span class="bn-timeline-label">After</span>
-          <span class="bn-timeline-cells">${formatBnTimelineCells(item.after, t)}</span>
+          <span class="bn-timeline-cells">${formatBnTimelineCells(afterChunk.cells, t)}</span>
         </div>
+      `);
+    }
+
+    return `
+      <div class="bn-timeline-block">
+        <div class="bn-timeline-header">
+          ${formatTimestampLink(item.start)} - ${formatTimestampLink(item.end)}
+          <span class="bn-timeline-grid">[snap: 1/${item.snap}]</span>
+          <span class="bn-timeline-grid">[cells: ${item.grid}]</span>
+          ${item.grid > BN_TIMELINE_WRAP_CELLS
+            ? `<span class="bn-timeline-grid">[wrapped]</span>`
+            : ""}
+        </div>
+
+        ${rows.join("")}
       </div>
     `;
   }).join("");
