@@ -1694,27 +1694,27 @@ Reference:
   the following raw SV-difference thresholds were considered useful for detecting drastic SV changes in lower difficulties:<br>
 
   <ul>
-    <li><code>Kantan / Futsuu</code>: SV difference <code>&gt; 0.1</code></li>
-    <li><code>Muzukashii</code>: SV difference <code>&gt; 0.2</code></li>
-    <li><code>Oni</code>: SV difference <code>&gt; 0.3</code></li>
+    <li>Kantan / Futsuu: SV difference &gt; 0.1</li>
+    <li>Muzukashii: SV difference &gt; 0.2</li>
+    <li>Oni: SV difference &gt; 0.3</li>
   </ul>
 
-  However, due to later Ranking Criteria changes, <code>Oni</code> and higher difficulties
+  However, due to later Ranking Criteria changes, Oni and higher difficulties
   are not checked by this tool for this condition.<br><br>
 
-  For example, at <code>BPM 180</code> with <code>SliderMultiplier 1.4</code>,
-  an SV difference of <code>0.1</code> corresponds to approximately <code>73.5 px/s</code>,
-  and an SV difference of <code>0.2</code> corresponds to approximately <code>147 px/s</code>.<br>
+  For example, at BPM 180 with SliderMultiplier 1.4,
+  an SV difference of 0.1 corresponds to approximately 73.5 px/s,
+  and an SV difference of 0.2 corresponds to approximately 147 px/s.<br>
   Therefore, this tool uses practical nearby values:
-  <code>80 px/s</code> for <code>Kantan / Futsuu</code>,
-  and <code>160 px/s</code> for <code>Muzukashii</code>.<br><br>
+  80 px/s for Kantan / Futsuu,
+  and 160 px/s for Muzukashii.<br><br>
 
-  For <code>maxGapMs</code>, the threshold is shortened as the difficulty level increases,
+  For maxGapMs, the threshold is shortened as the difficulty level increases,
   because note intervals generally become shorter in higher difficulties.
   This tool uses a gradual sequence of
-  <code>Kantan = 1500 ms</code>,
-  <code>Futsuu = 1250 ms</code>,
-  and <code>Muzukashii = 1000 ms</code>.
+  Kantan = 1500 ms,
+  Futsuu = 1250 ms,
+  and Muzukashii = 1000 ms.
 </div>
 </div>
 
