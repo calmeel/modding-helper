@@ -14,7 +14,8 @@ const TAG_SPELLING_DICTIONARY = [
   "schranz", "trap", "nightcore", "house", "ballade", "ballad",
   "hip-hop", "funk", "folk", "funkot", "mákina", "eurodance",
   "eurobeat", "jodeln", "reggae", "waltz", "bootleg",
-  "remix", "lolicore", "utattemita", "nerdcore"
+  "remix", "lolicore", "utattemita", "nerdcore",
+  "hyperflip", "dariacore", "plunderphonics", "mashup", "mashcore", "hyperpop"
 ];
 
 const TAG_RELATED_RULES = [
@@ -57,6 +58,18 @@ const TAG_RELATED_RULES = [
   {
     trigger: ["hitech", "hi-tech"],
     suggestGroup: ["hitech", "hi-tech"]
+  },
+  {
+    trigger: ["hyperpop"],
+    suggestGroup: ["hyperpop", "hyper", "pop"]
+  },
+  {
+    triggerAll: ["hyper", "pop"],
+    suggestGroup: ["hyperpop"]
+  },
+  {
+    trigger: ["hyperflip", "dariacore"],
+    suggestGroup: ["hyperflip", "dariacore", "plunderphonics", "mashup", "mashcore", "remix", "bootleg"]
   },
   {
     trigger: ["gabber", "gabba"],
@@ -132,11 +145,11 @@ const TAG_RELATED_RULES = [
   },
   {
     trigger: ["vgm"],
-    suggestGroup: ["video", "game"]
+    suggestGroup: ["video", "game", "videogame"]
   },
   {
     triggerAll: ["video", "game"],
-    suggestGroup: ["vgm"]
+    suggestGroup: ["videogame", "vgm"]
   },
   {
     trigger: ["歌ってみた", "utattemita"],
