@@ -2160,6 +2160,22 @@ function formatEpilepsyWarningResult(result, t) {
 }
 
 /** タイムライン表示 */
+const TIMELINE_WRAP_CELLS = 36;
+
+function chunkTimelineCells(cells, size = TIMELINE_WRAP_CELLS) {
+  const chunks = [];
+
+  for (let i = 0; i < cells.length; i += size) {
+    chunks.push({
+      start: i,
+      end: Math.min(i + size, cells.length),
+      cells: cells.slice(i, i + size)
+    });
+  }
+
+  return chunks;
+}
+
 function formatTimelineResult(result, t) {
   if (!result || !result.measures.length) {
     return t("timelineNoData");
@@ -2171,7 +2187,13 @@ function formatTimelineResult(result, t) {
     lines.push(
       `<div class="timeline-measure">` +
       `<div class="timeline-measure-title">` +
-      `${formatTimestampLink(measure.start)} - ${formatTimestampLink(measure.end)}` +
+      `${formatTimestampLink(measure.start)} - ${formatTimestampLink(measure.end)} ` +
+      `<span class="bn-timeline-grid">[snap: 1/${measure.snap}]</span> ` +
+      `<span class="bn-timeline-grid">[display grid: 1/${measure.displaySnap}]</span> ` +
+      `<span class="bn-timeline-grid">[cells: ${measure.resolution}]</span>` +
+      (measure.resolution > TIMELINE_WRAP_CELLS
+        ? ` <span class="bn-timeline-grid">[wrapped]</span>`
+        : "") +
       `</div><pre>`
     );
 
@@ -2181,20 +2203,54 @@ function formatTimelineResult(result, t) {
       ...diffNames.map(name => visibleWidth(name))
     );
 
-    for (const row of measure.rows) {
-      const nameText = getDifficultyNameText(row.fileName);
-      const nameHtml = getDifficultyName(row.fileName);
-      const padding = " ".repeat(diffWidth - visibleWidth(nameText));
+    const chunkCount =
+      Math.max(
+        1,
+        ...measure.rows.map(row =>
+          row.supported && Array.isArray(row.cells)
+            ? Math.ceil(row.cells.length / TIMELINE_WRAP_CELLS)
+            : 1
+        )
+      );
 
-      if (!row.supported) {
-        lines.push(
-          `${nameHtml}${padding} | ` +
-          `<span class="timeline-unsupported">${escapeHtml(t("timelineUnsupported"))}</span>`
+    for (let chunkIndex = 0; chunkIndex < chunkCount; chunkIndex++) {
+      if (chunkCount > 1) {
+        const startCell = chunkIndex * TIMELINE_WRAP_CELLS + 1;
+        const endCell = Math.min(
+          (chunkIndex + 1) * TIMELINE_WRAP_CELLS,
+          measure.resolution
         );
-      } else {
+
         lines.push(
-          `${nameHtml}${padding} | ${formatTimelineCells(row.cells)}`
+          `<span class="bn-timeline-grid">[cells ${startCell}-${endCell} / ${measure.resolution}]</span>`
         );
+      }
+
+      for (const row of measure.rows) {
+        const nameText = getDifficultyNameText(row.fileName);
+        const nameHtml = getDifficultyName(row.fileName);
+        const padding = " ".repeat(diffWidth - visibleWidth(nameText));
+
+        if (!row.supported) {
+          lines.push(
+            `${nameHtml}${padding} | ` +
+            `<span class="timeline-unsupported">${escapeHtml(t("timelineUnsupported"))}</span>`
+          );
+          continue;
+        }
+
+        const chunk = row.cells.slice(
+          chunkIndex * TIMELINE_WRAP_CELLS,
+          (chunkIndex + 1) * TIMELINE_WRAP_CELLS
+        );
+
+        lines.push(
+          `${nameHtml}${padding} | ${formatTimelineCells(chunk)}`
+        );
+      }
+
+      if (chunkIndex < chunkCount - 1) {
+        lines.push("");
       }
     }
 
@@ -2225,16 +2281,14 @@ function formatTimelineKind(kind) {
 }
 
 function formatTimelineCells(cells) {
-  if (!Array.isArray(cells)) {
-    return "";
-  }
-
   return cells.map(cell => {
+    const kiaiClass = cell.kiai ? " timeline-kiai" : "";
+
     if (!cell.kind) {
-      return `<span class="timeline-cell timeline-empty">-</span>`;
+      return `<span class="timeline-cell timeline-empty${kiaiClass}">-</span>`;
     }
 
-    return `<span class="timeline-cell">${formatTimelineKind(cell.kind)}</span>`;
+    return `<span class="timeline-cell${kiaiClass}">${formatTimelineKind(cell.kind)}</span>`;
   }).join("");
 }
 
