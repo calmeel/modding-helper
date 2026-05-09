@@ -1,0 +1,903 @@
+2527061 steelplus - Skywired Beatscape.osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |   220 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |   399 |       +179 | x1.81 |      OK
+[Muzukashii] | Muzukashii |   637 |       +238 | x1.60 |      OK
+[Oni]        | Oni        |   840 |       +203 | x1.32 |      OK
+[Sanctuary]  | Inner Oni+ |  1041 |       +201 | x1.24 |      OK
+
+2515834 balloon - Rain & Petora [no video].osz
+Diff             | Category   | Notes | Delta prev | Ratio |  Status
+-----------------+------------+-------+------------+-------+--------
+[layxa's Kantan] | Kantan     |   380 |        N/A |   N/A |     N/A
+[tivo's Futsuu]  | Futsuu     |   723 |       +343 | x1.90 |      OK
+[Muzukashii]     | Muzukashii |  1002 |       +279 | x1.39 |      OK
+[2199's Oni]     | Oni        |  1147 |       +145 | x1.14 | Warning
+[Rainfall]       | Inner Oni+ |  1373 |       +226 | x1.20 |      OK
+
+2467422 KOTOKO - SWEET x SWEET (Game Ver.) [no video].osz
+Diff                     | Category   | Notes | Delta prev | Ratio |  Status
+-------------------------+------------+-------+------------+-------+--------
+[tmk & waidabu's Kantan] | Kantan     |   172 |        N/A |   N/A |     N/A
+[Futsuu]                 | Futsuu     |   282 |       +110 | x1.64 |      OK
+[Muzukashii]             | Muzukashii |   400 |       +118 | x1.42 |      OK
+[Ron's Oni]              | Oni        |   519 |       +119 | x1.30 |      OK
+[Sweet Amour]            | Inner Oni+ |   611 |        +92 | x1.18 |      OK
+
+2446336 zeekayo - pryachetsya v moikh glazakh.osz
+Diff                 | Category   | Notes | Delta prev | Ratio |  Status
+---------------------+------------+-------+------------+-------+--------
+[kantan]             | Kantan     |   109 |        N/A |   N/A |     N/A
+[futsuu]             | Futsuu     |   217 |       +108 | x1.99 |      OK
+[tachi's muzukashii] | Muzukashii |   251 |        +34 | x1.16 | Warning
+[melancholy]         | Oni        |   333 |        +82 | x1.33 |      OK
+
+2462427 Real Miro - Eien Natsuyasumi.osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |   244 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |   443 |       +199 | x1.82 |      OK
+[Muzukashii] | Muzukashii |   578 |       +135 | x1.30 |      OK
+[Oni]        | Oni        |   709 |       +131 | x1.23 |      OK
+[Inner Oni]  | Inner Oni+ |   850 |       +141 | x1.20 |      OK
+
+2509758 Yoshi 2.0 - Do It Anyway [no video].osz
+Diff            | Category   | Notes | Delta prev | Ratio |  Status
+----------------+------------+-------+------------+-------+--------
+[Kantan]        | Kantan     |   274 |        N/A |   N/A |     N/A
+[Futsuu]        | Futsuu     |   457 |       +183 | x1.67 |      OK
+[Muzukashii]    | Muzukashii |   578 |       +121 | x1.26 |      OK
+[Only One Life] | Oni        |   697 |       +119 | x1.21 |      OK
+
+2510113 Juggernaut. - Distorted Heavens.osz
+Diff                                 | Category   | Notes | Delta prev | Ratio |  Status
+-------------------------------------+------------+-------+------------+-------+--------
+[Muzukashii]                         | Muzukashii |   842 |        N/A |   N/A |     N/A
+[2199's Oni]                         | Oni        |  1091 |       +249 | x1.30 |      OK
+[waidabu vs. Noah's Falling Heavens] | Inner Oni+ |  1420 |       +329 | x1.30 |      OK
+
+2444756 PinocchioP - Love Attribute [no video].osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |   284 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |   521 |       +237 | x1.83 |      OK
+[Muzukashii] | Muzukashii |   757 |       +236 | x1.45 |      OK
+[Oni]        | Oni        |   954 |       +197 | x1.26 |      OK
+[Inner Love] | Inner Oni+ |  1233 |       +279 | x1.29 |      OK
+
+2480181 Hanasaka Yui (CV_ M.A.O) feat. Eriha - Harumachi Clover (TV Size).osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |    43 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |    82 |        +39 | x1.91 |      OK
+[Muzukashii] | Muzukashii |   123 |        +41 | x1.50 |      OK
+[Oni]        | Oni        |   154 |        +31 | x1.25 |      OK
+
+2433300 Chroma - __ If Summer Ever Comes_.osz
+Diff       | Category   | Notes | Delta prev | Ratio |  Status
+-----------+------------+-------+------------+-------+--------
+[BASIC]    | Kantan     |   144 |        N/A |   N/A |     N/A
+[NOVICE]   | Futsuu     |   269 |       +125 | x1.87 |      OK
+[ADVANCED] | Muzukashii |   363 |        +94 | x1.35 |      OK
+[EXHAUST]  | Oni        |   483 |       +120 | x1.33 |      OK
+[MAXIMUM]  | Inner Oni+ |   698 |       +215 | x1.45 | Warning
+[EXCEED]   | Inner Oni+ |   777 |        +79 | x1.11 |      OK
+
+10件
+
+2358776 Kobaryo - Dotabata Animation [feat. t+pazolite].osz
+Diff                    | Category     | Notes | Delta prev | Ratio |  Status
+------------------------+--------------+-------+------------+-------+--------
+[Shokyuu]               | Below Kantan |   231 |        N/A |   N/A |     N/A
+[_CaptainZero's Kantan] | Kantan       |   412 |       +181 | x1.78 |      OK
+[Futsuu]                | Futsuu       |   654 |       +242 | x1.59 |      OK
+[Muzukashii]            | Muzukashii   |   871 |       +217 | x1.33 |      OK
+[Eloxrad's Oni]         | Oni          |  1123 |       +252 | x1.29 |      OK
+[Inner Oni]             | Inner Oni+   |  1233 |       +110 | x1.10 |      OK
+[Ticy's Ura Oni]        | Inner Oni+   |  1374 |       +141 | x1.11 |      OK
+[Hell Oni]              | Inner Oni+   |  1456 |        +82 | x1.06 |      OK
+
+2347389 Shiranami Ramune - Sentimental Crisis.osz
+Diff                  | Category   | Notes | Delta prev | Ratio |  Status
+----------------------+------------+-------+------------+-------+--------
+[Zhuosh's Futsuu]     | Futsuu     |   768 |        N/A |   N/A |     N/A
+[Kotori's Muzukashii] | Muzukashii |   983 |       +215 | x1.28 |      OK
+[knzk's Oni]          | Oni        |  1107 |       +124 | x1.13 | Warning
+[3]                   | Inner Oni+ |  1379 |       +272 | x1.25 |      OK
+
+2342507 Junichi Masuda, Go Ichinose - Sprout Tower.osz
+Diff               | Category   | Notes | Delta prev | Ratio |  Status
+-------------------+------------+-------+------------+-------+--------
+[Kantan]           | Kantan     |    55 |        N/A |   N/A |     N/A
+[Kin's Futsuu]     | Futsuu     |   119 |        +64 | x2.16 |      OK
+[Kin's Muzukashii] | Muzukashii |   156 |        +37 | x1.31 |      OK
+[Oni]              | Oni        |   214 |        +58 | x1.37 |      OK
+
+2436025 momone chinoi - hoshinusumi.osz
+Diff                 | Category   | Notes | Delta prev | Ratio |  Status
+---------------------+------------+-------+------------+-------+--------
+[kantan feat. igari] | Kantan     |   240 |        N/A |   N/A |     N/A
+[gsun's futsuu]      | Futsuu     |   387 |       +147 | x1.61 |      OK
+[noah's muzukashii]  | Muzukashii |   553 |       +166 | x1.43 |      OK
+[tivo's oni]         | Oni        |   629 |        +76 | x1.14 | Warning
+[inner oni]          | Inner Oni+ |   685 |        +56 | x1.09 |      OK
+[layxa's starlight]  | Inner Oni+ |   885 |       +200 | x1.29 |      OK
+
+2529348 tezuka x Aoi feat. Momohina Nano - Sunset Toybox.osz
+Diff                    | Category   | Notes | Delta prev | Ratio |  Status
+------------------------+------------+-------+------------+-------+--------
+[Kantan]                | Kantan     |   242 |        N/A |   N/A |     N/A
+[Futsuu]                | Futsuu     |   438 |       +196 | x1.81 |      OK
+[Muzukashii]            | Muzukashii |   627 |       +189 | x1.43 |      OK
+[Oni]                   | Oni        |   789 |       +162 | x1.26 |      OK
+[Inner Oni]             | Inner Oni+ |   926 |       +137 | x1.17 |      OK
+[The two of us forever] | Inner Oni+ |  1041 |       +115 | x1.12 |      OK
+
+2535352 AAAA - Devil Connection [no video].osz
+Diff            | Category   | Notes | Delta prev | Ratio |  Status
+----------------+------------+-------+------------+-------+--------
+[Kantan]        | Kantan     |   123 |        N/A |   N/A |     N/A
+[Futsuu]        | Futsuu     |   201 |        +78 | x1.63 |      OK
+[Muzukashii]    | Muzukashii |   314 |       +113 | x1.56 |      OK
+[Debirun]       | Oni        |   415 |       +101 | x1.32 |      OK
+[Inner Debirun] | Inner Oni+ |   565 |       +150 | x1.36 |      OK
+
+2527434 ish - ish008.osz
+Diff          | Category   | Notes | Delta prev | Ratio |  Status
+--------------+------------+-------+------------+-------+--------
+[kantan]      | Kantan     |   231 |        N/A |   N/A |     N/A
+[futsuu]      | Futsuu     |   468 |       +237 | x2.03 |      OK
+[muzukashii]  | Muzukashii |   649 |       +181 | x1.39 |      OK
+[oni]         | Oni        |   918 |       +269 | x1.41 |      OK
+[inner oni]   | Inner Oni+ |  1167 |       +249 | x1.27 |      OK
+[stream bomb] | Inner Oni+ |  1520 |       +353 | x1.30 | Warning
+
+2218151 Dekovner - Fungus.osz
+Diff                | Category   | Notes | Delta prev | Ratio |  Status
+--------------------+------------+-------+------------+-------+--------
+[CrayZeei's Futsuu] | Futsuu     |   172 |        N/A |   N/A |     N/A
+[Cry's Muzukashii]  | Muzukashii |   253 |        +81 | x1.47 |      OK
+[Oni]               | Oni        |   373 |       +120 | x1.47 |      OK
+[Insects]           | Inner Oni+ |   533 |       +160 | x1.43 | Warning
+
+2501401 sajou no hana - Awaku Kasuka (TV Size) [no video].osz
+Diff               | Category   | Notes | Delta prev | Ratio |  Status
+-------------------+------------+-------+------------+-------+--------
+[Kantan]           | Kantan     |   163 |        N/A |   N/A |     N/A
+[Futsuu]           | Futsuu     |   281 |       +118 | x1.72 |      OK
+[Muzukashii]       | Muzukashii |   393 |       +112 | x1.40 |      OK
+[Oni]              | Oni        |   518 |       +125 | x1.32 |      OK
+[kiyo's Inner Oni] | Inner Oni+ |   658 |       +140 | x1.27 |      OK
+
+2400552 harvo - Monkey Type Beat.osz
+Diff           | Category   | Notes | Delta prev | Ratio |  Status
+---------------+------------+-------+------------+-------+--------
+[sn's kantan.] | Kantan     |   170 |        N/A |   N/A |     N/A
+[sn's futsuu.] | Futsuu     |   309 |       +139 | x1.82 |      OK
+[muzukashii.]  | Muzukashii |   392 |        +83 | x1.27 |      OK
+[monkey.]      | Oni        |   461 |        +69 | x1.18 |      OK
+
+20件
+
+2464036 HOYO-MiX - Monodrama.osz
+Diff                   | Category   | Notes | Delta prev | Ratio |  Status
+-----------------------+------------+-------+------------+-------+--------
+[Ginny's Kantan]       | Kantan     |   121 |        N/A |   N/A |     N/A
+[Ectomic's Futsuu]     | Futsuu     |   234 |       +113 | x1.93 |      OK
+[Eloxrad's Muzukashii] | Muzukashii |   318 |        +84 | x1.36 |      OK
+[Oni]                  | Oni        |   470 |       +152 | x1.48 |      OK
+[Inner Oni]            | Inner Oni+ |   544 |        +74 | x1.16 |      OK
+[Fireworks]            | Inner Oni+ |   601 |        +57 | x1.10 |      OK
+
+2178466 Owl City - Gold.osz
+Diff       | Category   | Notes | Delta prev | Ratio |  Status
+-----------+------------+-------+------------+-------+--------
+[Kantan]   | Kantan     |   360 |        N/A |   N/A |     N/A
+[Futsuu]   | Futsuu     |   599 |       +239 | x1.66 |      OK
+[Memories] | Muzukashii |   816 |       +217 | x1.36 |      OK
+
+2373082 t+pazolite & Laur - Pandemonium.osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Futsuu]     | Futsuu     |   606 |        N/A |   N/A |     N/A
+[Muzukashii] | Muzukashii |   798 |       +192 | x1.32 |      OK
+[Oni]        | Oni        |   987 |       +189 | x1.24 |      OK
+[Inner Oni]  | Inner Oni+ |  1323 |       +336 | x1.34 |      OK
+[Mayhem]     | Inner Oni+ |  1516 |       +193 | x1.15 |      OK
+
+2110334 Cres. - One night in a harem.osz
+Diff                 | Category   | Notes | Delta prev | Ratio |  Status
+---------------------+------------+-------+------------+-------+--------
+[Kantan]             | Kantan     |   141 |        N/A |   N/A |     N/A
+[Futsuu]             | Futsuu     |   307 |       +166 | x2.18 |      OK
+[Muzukashii]         | Muzukashii |   464 |       +157 | x1.51 |      OK
+[Oni]                | Oni        |   625 |       +161 | x1.35 |      OK
+[Inviolable gardens] | Inner Oni+ |   951 |       +326 | x1.52 | Warning
+
+2530699 Neko Hacker - Kuishinbo Hacker feat. Kuishinbo Akachan.osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |   253 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |   487 |       +234 | x1.92 |      OK
+[Muzukashii] | Muzukashii |   671 |       +184 | x1.38 |      OK
+[Oni]        | Oni        |  1000 |       +329 | x1.49 |      OK
+[Manpuku]    | Inner Oni+ |  1239 |       +239 | x1.24 |      OK
+
+2023203 Marina del ray - Megami no Senshi ~Pegasus Forever~ (TV Size) [no video].osz
+Diff              | Category   | Notes | Delta prev | Ratio |  Status
+------------------+------------+-------+------------+-------+--------
+[Kantan]          | Kantan     |   119 |        N/A |   N/A |     N/A
+[Futsuu]          | Futsuu     |   220 |       +101 | x1.85 |      OK
+[Muzukashii]      | Muzukashii |   316 |        +96 | x1.44 |      OK
+[Charlotte's Oni] | Oni        |   426 |       +110 | x1.35 |      OK
+[Gate of Fate]    | Inner Oni+ |   478 |        +52 | x1.12 |      OK
+
+2295724 RineP - Tell your world that I don't care.osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |    71 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |   123 |        +52 | x1.73 |      OK
+[Muzukashii] | Muzukashii |   173 |        +50 | x1.41 |      OK
+[Oni]        | Oni        |   225 |        +52 | x1.30 |      OK
+
+2534165 TIA feat. Le Thien Hieu - Ai Dua Em Ve (Cukak Remix) (Agnes Tachyon Low Cortisol Edit) (Cut Ver.) [no video].osz
+Diff              | Category   | Notes | Delta prev | Ratio |  Status
+------------------+------------+-------+------------+-------+--------
+[subby's Kantan]  | Kantan     |    41 |        N/A |   N/A |     N/A
+[Futsuu]          | Futsuu     |    92 |        +51 | x2.24 | Warning
+[Muzukashii]      | Muzukashii |   115 |        +23 | x1.25 |      OK
+[Emma's Lite Oni] | Oni        |   133 |        +18 | x1.16 |      OK
+[C21H30O5]        | Inner Oni+ |   139 |         +6 | x1.05 |   Error
+
+2531243 Suzuki Konomi feat. Ashnikko - Recollect (TV Size) [no video].osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |   120 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |   218 |        +98 | x1.82 |      OK
+[Muzukashii] | Muzukashii |   304 |        +86 | x1.39 |      OK
+[Oni]        | Oni        |   395 |        +91 | x1.30 |      OK
+[ReStart]    | Inner Oni+ |   495 |       +100 | x1.25 |      OK
+
+1050961 Junk - elegante.osz
+Diff                  | Category   | Notes | Delta prev | Ratio |  Status
+----------------------+------------+-------+------------+-------+--------
+[Kantan]              | Kantan     |   154 |        N/A |   N/A |     N/A
+[Cry's Futsuu]        | Futsuu     |   306 |       +152 | x1.99 |      OK
+[Vulkin's Muzukashii] | Muzukashii |   404 |        +98 | x1.32 |      OK
+[2199's Oni]          | Oni        |   514 |       +110 | x1.27 |      OK
+[Grace]               | Inner Oni+ |   641 |       +127 | x1.25 |      OK
+
+30件
+
+2406239 EVEN CUTE - ETO DAZHE MILO.osz
+Diff                   | Category   | Notes | Delta prev | Ratio |  Status
+-----------------------+------------+-------+------------+-------+--------
+[FUTSUU]               | Futsuu     |   217 |        N/A |   N/A |     N/A
+[HELLFLY'S MUZUKASHII] | Muzukashii |   319 |       +102 | x1.47 |      OK
+[EROWDI'S ONI]         | Oni        |   431 |       +112 | x1.35 |      OK
+[INNER ONI]            | Inner Oni+ |   497 |        +66 | x1.15 |      OK
+
+2260882 Marcioz - My First Time Dying ($hristal, $hristal Eye).osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Muzukashii] | Muzukashii |   587 |        N/A |   N/A |     N/A
+[Oni]        | Oni        |   757 |       +170 | x1.29 |      OK
+[Inner Oni]  | Inner Oni+ |  1234 |       +477 | x1.63 | Warning
+
+2518276 KiiiKiii - 404 (New Era) [no video].osz
+Diff                         | Category   | Notes | Delta prev | Ratio |  Status
+-----------------------------+------------+-------+------------+-------+--------
+[404 (normi's futsuu)]       | Futsuu     |   414 |        N/A |   N/A |     N/A
+[404 (Muzukashii)]           | Muzukashii |   601 |       +187 | x1.45 |      OK
+[404 (Oni)]                  | Oni        |   725 |       +124 | x1.21 |      OK
+[404 (sandarai's Inner Oni)] | Inner Oni+ |   945 |       +220 | x1.30 |      OK
+[404 (Arjun's Inner Oni)]    | Inner Oni+ |   952 |         +7 | x1.01 |   Error
+
+2531674 FUWAMOCO - Mekurumeku Rendezvous (TV Size) [no video].osz
+Diff                 | Category   | Notes | Delta prev | Ratio |  Status
+---------------------+------------+-------+------------+-------+--------
+[Kantan]             | Kantan     |   109 |        N/A |   N/A |     N/A
+[Futsuu]             | Futsuu     |   170 |        +61 | x1.56 |      OK
+[Hivan's Muzukashii] | Muzukashii |   267 |        +97 | x1.57 |      OK
+[Oni]                | Oni        |   374 |       +107 | x1.40 |      OK
+
+2431344 Lady Gaga - Paparazzi (Nightcore & Cut Ver.).osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |   100 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |   167 |        +67 | x1.67 |      OK
+[Muzukashii] | Muzukashii |   225 |        +58 | x1.35 |      OK
+[Oni]        | Oni        |   283 |        +58 | x1.26 |      OK
+[Snap!]      | Inner Oni+ |   328 |        +45 | x1.16 |      OK
+
+2201381 nora2r - B.B.K.K.B.K.K..osz
+Diff                          | Category   | Notes | Delta prev | Ratio |  Status
+------------------------------+------------+-------+------------+-------+--------
+[TMK'S K.A.N.T.A.N.]          | Kantan     |   217 |        N/A |   N/A |     N/A
+[AR'S F.U.T.S.U.U.]           | Futsuu     |   354 |       +137 | x1.63 |      OK
+[ROOK'S M.U.Z.U.K.A.S.H.I.I.] | Muzukashii |   578 |       +224 | x1.63 |      OK
+[WAIDABU'S O.N.I.]            | Oni        |   625 |        +47 | x1.08 |   Error
+[I.N.N.E.R.O.N.I.]            | Inner Oni+ |   840 |       +215 | x1.34 |      OK
+
+1880752 Boom Kitty - Peepee Song.osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |   225 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |   399 |       +174 | x1.77 |      OK
+[Muzukashii] | Muzukashii |   560 |       +161 | x1.40 |      OK
+[Road Trip]  | Oni        |   682 |       +122 | x1.22 |      OK
+
+2306275 HIMEHINA x Tsunomaki Watame - Surges [no video].osz
+Diff                                                    | Category   | Notes | Delta prev | Ratio |  Status
+--------------------------------------------------------+------------+-------+------------+-------+--------
+[tzechi x awdse22 x Rycy's Kantan]                      | Kantan     |   182 |        N/A |   N/A |     N/A
+[Fynbi x Nostril x Rycy's Futsuu]                       | Futsuu     |   313 |       +131 | x1.72 |      OK
+[neonat x SN707 x Rycy's Muzukashii]                    | Muzukashii |   487 |       +174 | x1.56 |      OK
+[C5H10 x doulph x Rycy's Where will the future take us] | Oni        |   641 |       +154 | x1.32 |      OK
+
+2520502 DIVELA feat. Langue de chat - KNOCK OUT!! [no video].osz
+Diff             | Category   | Notes | Delta prev | Ratio |  Status
+-----------------+------------+-------+------------+-------+--------
+[KANTAN!!]       | Kantan     |   225 |        N/A |   N/A |     N/A
+[FUTSUU!!]       | Futsuu     |   480 |       +255 | x2.13 |      OK
+[MUZUKASHII!!]   | Muzukashii |   648 |       +168 | x1.35 |      OK
+[ONI!!]          | Oni        |   831 |       +183 | x1.28 |      OK
+[CiRCLE FESTA!!] | Inner Oni+ |  1022 |       +191 | x1.23 |      OK
+
+2258704 HyuN - Dance With Nightsky.osz
+Diff              | Category   | Notes | Delta prev | Ratio |  Status
+------------------+------------+-------+------------+-------+--------
+[Kantan]          | Kantan     |   180 |        N/A |   N/A |     N/A
+[Futsuu]          | Futsuu     |   336 |       +156 | x1.87 |      OK
+[Muzukashii]      | Muzukashii |   480 |       +144 | x1.43 |      OK
+[Oni]             | Oni        |   622 |       +142 | x1.30 |      OK
+[Jazzy Moonlight] | Inner Oni+ |   870 |       +248 | x1.40 |      OK
+
+40件
+
+2534150 momone chinoi - Powapowapticon Tenshisama.osz
+Diff          | Category   | Notes | Delta prev | Ratio |  Status
+--------------+------------+-------+------------+-------+--------
+[kantan]      | Kantan     |   333 |        N/A |   N/A |     N/A
+[futsuu]      | Futsuu     |   637 |       +304 | x1.91 |      OK
+[muzukashii]  | Muzukashii |   838 |       +201 | x1.32 |      OK
+[layxa's oni] | Oni        |  1082 |       +244 | x1.29 |      OK
+[powa]        | Inner Oni+ |  1325 |       +243 | x1.22 |      OK
+
+2537564 tomspicy - fieryrage accordion (hardcore remix) (TV Size).osz
+Diff                        | Category   | Notes | Delta prev | Ratio |  Status
+----------------------------+------------+-------+------------+-------+--------
+[kantan]                    | Kantan     |   117 |        N/A |   N/A |     N/A
+[futsuu]                    | Futsuu     |   207 |        +90 | x1.77 |      OK
+[muzukashii]                | Muzukashii |   262 |        +55 | x1.27 |      OK
+[Oni]                       | Oni        |   346 |        +84 | x1.32 |      OK
+[don't touch my accordion!] | Inner Oni+ |   422 |        +76 | x1.22 |      OK
+
+2496677 leroy - turmoiled.osz
+Diff                | Category   | Notes | Delta prev | Ratio |  Status
+--------------------+------------+-------+------------+-------+--------
+[kantan]            | Kantan     |   179 |        N/A |   N/A |     N/A
+[futsuu]            | Futsuu     |   326 |       +147 | x1.82 |      OK
+[muzukashii]        | Muzukashii |   453 |       +127 | x1.39 |      OK
+[oni]               | Oni        |   610 |       +157 | x1.35 |      OK
+[vzlen's inner oni] | Inner Oni+ |   563 |        -47 | x0.92 |   Error
+[hell oni]          | Inner Oni+ |   876 |       +313 | x1.56 |   Error
+
+2490016 sath4 - _3 #002.osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |   194 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |   364 |       +170 | x1.88 |      OK
+[Muzukashii] | Muzukashii |   529 |       +165 | x1.45 |      OK
+[Oni]        | Oni        |   717 |       +188 | x1.36 |      OK
+[3]          | Inner Oni+ |   924 |       +207 | x1.29 |      OK
+
+2362624 natori - IN_MY_HEAD.osz
+Diff                                                      | Category   | Notes | Delta prev | Ratio |  Status
+----------------------------------------------------------+------------+-------+------------+-------+--------
+[KANTAN]                                                  | Kantan     |   347 |        N/A |   N/A |     N/A
+[FUTSUU]                                                  | Futsuu     |   682 |       +335 | x1.97 |      OK
+[LEMON'S_MUZUKASHII]                                      | Muzukashii |  1016 |       +334 | x1.49 |      OK
+natori - IN_MY_HEAD (gaston_2199) [[-E S I A-]'s_ONI].osu | Oni        |  1292 |       +276 | x1.27 |      OK
+[INNER_ONI]                                               | Inner Oni+ |  1653 |       +361 | x1.28 |      OK
+
+2520127 Azusa Mera (CV_ Satou Shizuku) - Growing! (Cut Ver.).osz
+Diff             | Category   | Notes | Delta prev | Ratio |  Status
+-----------------+------------+-------+------------+-------+--------
+[Kantan]         | Kantan     |   127 |        N/A |   N/A |     N/A
+[Asa's Futsuu]   | Futsuu     |   248 |       +121 | x1.95 |      OK
+[Muzukashii]     | Muzukashii |   341 |        +93 | x1.38 |      OK
+[Ron's Oni]      | Oni        |   420 |        +79 | x1.23 |      OK
+[Little Vampire] | Inner Oni+ |   480 |        +60 | x1.14 |      OK
+
+2512746 yuzu - kawaki wo ameku 200.osz
+Diff                | Category   | Notes | Delta prev | Ratio |  Status
+--------------------+------------+-------+------------+-------+--------
+[knzk's Kantan]     | Kantan     |   284 |        N/A |   N/A |     N/A
+[reealy_'s Futsuu]  | Futsuu     |   583 |       +299 | x2.05 |      OK
+[Noah's Muzukashii] | Muzukashii |   796 |       +213 | x1.37 |      OK
+[tasuke's Oni]      | Oni        |  1085 |       +289 | x1.36 |      OK
+[Inner Oni]         | Inner Oni+ |  1306 |       +221 | x1.20 |      OK
+
+2178017 Zips feat. Kagamine Len - Outlaw no Shoushin [no video].osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |   358 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |   654 |       +296 | x1.83 |      OK
+[Muzukashii] | Muzukashii |   922 |       +268 | x1.41 |      OK
+[Oni]        | Oni        |  1146 |       +224 | x1.24 |      OK
+[Heartbreak] | Inner Oni+ |  1401 |       +255 | x1.22 |      OK
+
+2502582 Kumada Akane & Masui Yuuka - Naze Nazo! ANSWER (TV Size) [no video].osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |   146 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |   272 |       +126 | x1.86 |      OK
+[Muzukashii] | Muzukashii |   364 |        +92 | x1.34 |      OK
+[Oni]        | Oni        |   449 |        +85 | x1.23 |      OK
+[Mei Tantei] | Inner Oni+ |   536 |        +87 | x1.19 |      OK
+
+2436864 Shakira - Waka Waka (This Time for Africa) (K-Mix) (Nightcore Mix).osz
+Diff                   | Category   | Notes | Delta prev | Ratio |  Status
+-----------------------+------------+-------+------------+-------+--------
+[Kantan]               | Kantan     |   211 |        N/A |   N/A |     N/A
+[hz404's Futsuu]       | Futsuu     |   408 |       +197 | x1.93 |      OK
+[Nostril's Muzukashii] | Muzukashii |   548 |       +140 | x1.34 |      OK
+[HeLLFly's Oni]        | Oni        |   725 |       +177 | x1.32 |      OK
+[Inner Oni]            | Inner Oni+ |   819 |        +94 | x1.13 |      OK
+
+50件
+
+1580170 Kobaryo - Villain Virus [feat. Camellia].osz
+Diff             | Category   | Notes | Delta prev | Ratio |  Status
+-----------------+------------+-------+------------+-------+--------
+[Kantan]         | Kantan     |   356 |        N/A |   N/A |     N/A
+[Futsuu]         | Futsuu     |   617 |       +261 | x1.73 |      OK
+[Muzukashii]     | Muzukashii |   891 |       +274 | x1.44 |      OK
+[Oni]            | Oni        |  1307 |       +416 | x1.47 |      OK
+[Inner Oni]      | Inner Oni+ |  1626 |       +319 | x1.24 |      OK
+[Villainous Oni] | Inner Oni+ |  1958 |       +332 | x1.20 |      OK
+[Hellish Oni]    | Inner Oni+ |  2228 |       +270 | x1.14 |      OK
+[Bad End]        | Inner Oni+ |  2469 |       +241 | x1.11 |      OK
+
+1392442 Nhato - Override.osz
+Diff                 | Category   | Notes | Delta prev | Ratio |  Status
+---------------------+------------+-------+------------+-------+--------
+[Kantan]             | Kantan     |   205 |        N/A |   N/A |     N/A
+[Futsuu]             | Futsuu     |   366 |       +161 | x1.79 |      OK
+[Muzukashii]         | Muzukashii |   511 |       +145 | x1.40 |      OK
+[Ron's Oni]          | Oni        |   673 |       +162 | x1.32 |      OK
+[komasy's Inner Oni] | Inner Oni+ |   797 |       +124 | x1.18 |      OK
+[Overdrive Oni]      | Inner Oni+ |   937 |       +140 | x1.18 |      OK
+
+2535279 Aiobahn +81 - INTERNET ANGEL (TV SIZE).osz
+Diff          | Category   | Notes | Delta prev | Ratio |  Status
+--------------+------------+-------+------------+-------+--------
+[KANTAN]      | Kantan     |   135 |        N/A |   N/A |     N/A
+[FUTSUU]      | Futsuu     |   215 |        +80 | x1.59 |      OK
+[MUZUKASHII]  | Muzukashii |   286 |        +71 | x1.33 |      OK
+[ONI]         | Oni        |   348 |        +62 | x1.22 |      OK
+[TAIKO ANGEL] | Inner Oni+ |   411 |        +63 | x1.18 |      OK
+
+2513544 momone chinoi - mochi.osz
+Diff          | Category   | Notes | Delta prev | Ratio |  Status
+--------------+------------+-------+------------+-------+--------
+[kantan]      | Kantan     |    59 |        N/A |   N/A |     N/A
+[tivo futsuu] | Futsuu     |   124 |        +65 | x2.10 |      OK
+[muzu]        | Muzukashii |   166 |        +42 | x1.34 |      OK
+[oni]         | Oni        |   213 |        +47 | x1.28 |      OK
+[inner]       | Inner Oni+ |   227 |        +14 | x1.07 | Warning
+[hell]        | Inner Oni+ |   249 |        +22 | x1.10 |      OK
+[mochi]       | Inner Oni+ |   282 |        +33 | x1.13 |      OK
+
+2495120 tachibanaka - Essence.osz
+Diff             | Category   | Notes | Delta prev | Ratio |  Status
+-----------------+------------+-------+------------+-------+--------
+[Alice's Futsuu] | Futsuu     |   394 |        N/A |   N/A |     N/A
+[Muzukashii]     | Muzukashii |   521 |       +127 | x1.32 |      OK
+[Oni]            | Oni        |   621 |       +100 | x1.19 |      OK
+[Existence]      | Inner Oni+ |   901 |       +280 | x1.45 | Warning
+
+2487709 Shakira - Whenever, Wherever (Nightcore & Cut Ver.).osz
+Diff                | Category   | Notes | Delta prev | Ratio |  Status
+--------------------+------------+-------+------------+-------+--------
+[Kantan]            | Kantan     |    73 |        N/A |   N/A |     N/A
+[Futsuu]            | Futsuu     |   147 |        +74 | x2.01 |      OK
+[Muzukashii]        | Muzukashii |   184 |        +37 | x1.25 |      OK
+[Oni]               | Oni        |   250 |        +66 | x1.36 |      OK
+[Le-do-lo-le-lo-le] | Inner Oni+ |   295 |        +45 | x1.18 |      OK
+
+2526975 voira - Jade Serenity.osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |   115 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |   219 |       +104 | x1.90 |      OK
+[Muzukashii] | Muzukashii |   298 |        +79 | x1.36 |      OK
+[Oni]        | Oni        |   382 |        +84 | x1.28 |      OK
+[Inner Oni]  | Inner Oni+ |   442 |        +60 | x1.16 |      OK
+[Verdant]    | Inner Oni+ |   514 |        +72 | x1.16 |      OK
+
+2470882 Sakakibara Yui - Scarlet (Game Ver.).osz
+Diff                      | Category   | Notes | Delta prev | Ratio |  Status
+--------------------------+------------+-------+------------+-------+--------
+[Collab Kantan]           | Kantan     |   157 |        N/A |   N/A |     N/A
+[Futsuu]                  | Futsuu     |   292 |       +135 | x1.86 |      OK
+[Muzukashii]              | Muzukashii |   392 |       +100 | x1.34 |      OK
+[Toa's Oni]               | Oni        |   539 |       +147 | x1.38 |      OK
+[Ron's Vampire Dormitory] | Inner Oni+ |   606 |        +67 | x1.12 |      OK
+
+2525939 SHK - Identity Part 4.osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Futsuu]     | Futsuu     |   300 |        N/A |   N/A |     N/A
+[Muzukashii] | Muzukashii |   459 |       +159 | x1.53 |      OK
+[Oni]        | Oni        |   596 |       +137 | x1.30 |      OK
+[Ura Oni]    | Inner Oni+ |   775 |       +179 | x1.30 |      OK
+
+2472343 Lee Jin Ah - Target for Love (Ludicin's Hardcore Bootleg).osz
+Diff                    | Category   | Notes | Delta prev | Ratio |  Status
+------------------------+------------+-------+------------+-------+--------
+[Kantan]                | Kantan     |   286 |        N/A |   N/A |     N/A
+[Futsuu]                | Futsuu     |   506 |       +220 | x1.77 |      OK
+[Muzukashii]            | Muzukashii |   757 |       +251 | x1.50 |      OK
+[Oni]                   | Oni        |   977 |       +220 | x1.29 |      OK
+[linedcolt's Inner Oni] | Inner Oni+ |  1196 |       +219 | x1.22 |      OK
+[Ura Oni]               | Inner Oni+ |  1302 |       +106 | x1.09 |      OK
+[Hell Oni]              | Inner Oni+ |  1569 |       +267 | x1.21 |      OK
+[Wish]                  | Inner Oni+ |  1700 |       +131 | x1.08 |      OK
+
+60件
+
+2382603 DJ Myosuke & Noizenecio - Architecture.osz
+Diff                     | Category   | Notes | Delta prev | Ratio |  Status
+-------------------------+------------+-------+------------+-------+--------
+[Muzukashii]             | Muzukashii |   806 |        N/A |   N/A |     N/A
+[Oni]                    | Oni        |  1161 |       +355 | x1.44 |      OK
+[Fapu's Inner Oni]       | Inner Oni+ |  1459 |       +298 | x1.26 |      OK
+[Hell Oni]               | Inner Oni+ |  1739 |       +280 | x1.19 |      OK
+[Jaltzu's Infernal Oni]  | Inner Oni+ |  2022 |       +283 | x1.16 |      OK
+[Cynp-zy's Accursed Oni] | Inner Oni+ |  2057 |        +35 | x1.02 |   Error
+[Unhinged Oni]           | Inner Oni+ |  2301 |       +244 | x1.12 |      OK
+
+2451109 K.Rekii - Buffet Rush 269 (SPECIAL OFFER 268 SELF-REMIX!!!).osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |   197 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |   361 |       +164 | x1.83 |      OK
+[Muzukashii] | Muzukashii |   560 |       +199 | x1.55 |      OK
+[Oni]        | Oni        |   870 |       +310 | x1.55 |      OK
+[Inner Oni]  | Inner Oni+ |  1228 |       +358 | x1.41 | Warning
+[BLOATED]    | Inner Oni+ |  1648 |       +420 | x1.34 | Warning
+
+2444131 ISEGYE IDOL - SYZYGY (Cut Ver.).osz
+Diff           | Category   | Notes | Delta prev | Ratio |  Status
+---------------+------------+-------+------------+-------+--------
+[N64'S KANTAN] | Kantan     |   133 |        N/A |   N/A |     N/A
+[FUTSUU]       | Futsuu     |   263 |       +130 | x1.98 |      OK
+[MUZUKASHII]   | Muzukashii |   368 |       +105 | x1.40 |      OK
+[ONI]          | Oni        |   447 |        +79 | x1.21 |      OK
+
+2267923 Supire - Helios.osz
+Diff          | Category   | Notes | Delta prev | Ratio |  Status
+--------------+------------+-------+------------+-------+--------
+[Kantan]      | Kantan     |   400 |        N/A |   N/A |     N/A
+[Futsuu]      | Futsuu     |   665 |       +265 | x1.66 |      OK
+[Muzukashii]  | Muzukashii |   902 |       +237 | x1.36 |      OK
+[Oni]         | Oni        |  1365 |       +463 | x1.51 |      OK
+[Inner Oni]   | Inner Oni+ |  1777 |       +412 | x1.30 |      OK
+[Solar Deity] | Inner Oni+ |  2247 |       +470 | x1.26 |      OK
+
+2489971 FUWAMOCO - Lifetime Showtime (Short Ver.).osz
+Diff           | Category   | Notes | Delta prev | Ratio |  Status
+---------------+------------+-------+------------+-------+--------
+[Kantan]       | Kantan     |   156 |        N/A |   N/A |     N/A
+[Futsuu]       | Futsuu     |   245 |        +89 | x1.57 |      OK
+[Muzukashii]   | Muzukashii |   357 |       +112 | x1.46 |      OK
+[Oni]          | Oni        |   478 |       +121 | x1.34 |      OK
+[Fuwafuwa Oni] | Inner Oni+ |   648 |       +170 | x1.36 |      OK
+
+2498757 ULTRA-PRISM with Ika Musume (CV_ Kanemoto Hisako) - Shinryaku no Susume_ (TV Size).osz
+Diff                       | Category   | Notes | Delta prev | Ratio |  Status
+---------------------------+------------+-------+------------+-------+--------
+[Kantan]                   | Kantan     |   165 |        N/A |   N/A |     N/A
+[2199's Futsuu]            | Futsuu     |   313 |       +148 | x1.90 |      OK
+[miyagishima's Muzukashii] | Muzukashii |   417 |       +104 | x1.33 |      OK
+[Oni]                      | Oni        |   533 |       +116 | x1.28 |      OK
+
+2480924 HyuN feat. Yu-A - My life is for you.osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |   198 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |   372 |       +174 | x1.88 |      OK
+[Muzukashii] | Muzukashii |   516 |       +144 | x1.39 |      OK
+[Oni]        | Oni        |   649 |       +133 | x1.26 |      OK
+[Inner Oni]  | Inner Oni+ |   909 |       +260 | x1.40 | Warning
+
+1416804 Camellia feat. Nanahira - POLKAMANIA.osz
+Diff                 | Category   | Notes | Delta prev | Ratio |  Status
+---------------------+------------+-------+------------+-------+--------
+[KANTAN]             | Kantan     |   189 |        N/A |   N/A |     N/A
+[FUTSUU]             | Futsuu     |   334 |       +145 | x1.77 |      OK
+[MUZUKASHII]         | Muzukashii |   506 |       +172 | x1.51 |      OK
+[ONI]                | Oni        |   672 |       +166 | x1.33 |      OK
+[KOMASY'S INNER ONI] | Inner Oni+ |   791 |       +119 | x1.18 |      OK
+[FRENZY ONI]         | Inner Oni+ |   885 |        +94 | x1.12 |      OK
+
+2442147 tachibanaka - HOMICIDE (Cut Ver.).osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[FUTSUU]     | Futsuu     |   253 |        N/A |   N/A |     N/A
+[MUZUKASHII] | Muzukashii |   339 |        +86 | x1.34 |      OK
+[MURDER]     | Oni        |   416 |        +77 | x1.23 |      OK
+
+2507603 PELICAN FANCLUB - Sangenshoku (TV Size) [no video].osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |   175 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |   307 |       +132 | x1.75 |      OK
+[Muzukashii] | Muzukashii |   415 |       +108 | x1.35 |      OK
+[Oni]        | Oni        |   532 |       +117 | x1.28 |      OK
+[Ramen]      | Inner Oni+ |   615 |        +83 | x1.16 |      OK
+
+70件
+
+2473472 Xyris - Eviternity.osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Futsuu]     | Futsuu     |   592 |        N/A |   N/A |     N/A
+[Muzukashii] | Muzukashii |   861 |       +269 | x1.45 |      OK
+[Oni]        | Oni        |  1180 |       +319 | x1.37 |      OK
+[Inner Oni]  | Inner Oni+ |  1418 |       +238 | x1.20 |      OK
+[Eternauta]  | Inner Oni+ |  1555 |       +137 | x1.10 |      OK
+
+1904925 Boom Kitty - Trouble.osz
+Diff              | Category   | Notes | Delta prev | Ratio |  Status
+------------------+------------+-------+------------+-------+--------
+[Kantan]          | Kantan     |   237 |        N/A |   N/A |     N/A
+[Futsuu]          | Futsuu     |   390 |       +153 | x1.65 |      OK
+[Muzukashii]      | Muzukashii |   517 |       +127 | x1.33 |      OK
+[Oni]             | Oni        |   648 |       +131 | x1.25 |      OK
+[Problematic Oni] | Inner Oni+ |   725 |        +77 | x1.12 |      OK
+
+2525946 Shibayan feat. nachi - Que ela vem.osz
+Diff       | Category   | Notes | Delta prev | Ratio |  Status
+-----------+------------+-------+------------+-------+--------
+[facil]    | Kantan     |   137 |        N/A |   N/A |     N/A
+[normal]   | Futsuu     |   231 |        +94 | x1.69 |      OK
+[dificil]  | Muzukashii |   364 |       +133 | x1.58 |      OK
+[saudade]  | Oni        |   512 |       +148 | x1.41 |      OK
+
+2471999 renforshort - hate the way you love me (nightcore & cut ver.).osz
+Diff                  | Category   | Notes | Delta prev | Ratio |  Status
+----------------------+------------+-------+------------+-------+--------
+[kantan]              | Kantan     |   120 |        N/A |   N/A |     N/A
+[lycan's futsuu]      | Futsuu     |   255 |       +135 | x2.13 |      OK
+[erowdi's muzukashii] | Muzukashii |   311 |        +56 | x1.22 | Warning
+[oni]                 | Oni        |   399 |        +88 | x1.28 |      OK
+[inner oni]           | Inner Oni+ |   465 |        +66 | x1.17 |      OK
+[immature]            | Inner Oni+ |   508 |        +43 | x1.09 |      OK
+
+2419205 Nanahoshi Kangengakudan - Sidewinder.osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |   376 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |   689 |       +313 | x1.83 |      OK
+[Muzukashii] | Muzukashii |   945 |       +256 | x1.37 |      OK
+[Oni]        | Oni        |  1217 |       +272 | x1.29 |      OK
+[Serpent]    | Inner Oni+ |  1526 |       +309 | x1.25 |      OK
+
+2334874 Mili - Utopiosphere -Platonism-.osz
+Diff             | Category   | Notes | Delta prev | Ratio |  Status
+-----------------+------------+-------+------------+-------+--------
+[Kantan]         | Kantan     |   152 |        N/A |   N/A |     N/A
+[Black's Futsuu] | Futsuu     |   229 |        +77 | x1.51 |      OK
+[Melodia]        | Muzukashii |   353 |       +124 | x1.54 |      OK
+
+2524899 rejection - Mou Ikkai o Endless (feat. Nakamura Sanso) (osu! edit).osz
+Diff               | Category   | Notes | Delta prev | Ratio |  Status
+-------------------+------------+-------+------------+-------+--------
+[waidabu's Kantan] | Kantan     |   234 |        N/A |   N/A |     N/A
+[Futsuu]           | Futsuu     |   424 |       +190 | x1.81 |      OK
+[Muzukashii]       | Muzukashii |   572 |       +148 | x1.35 |      OK
+[Oni]              | Oni        |   732 |       +160 | x1.28 |      OK
+[Inner Oni]        | Inner Oni+ |   840 |       +108 | x1.15 |      OK
+
+2518541 XxKOYUKIxX - I mean, I was looking for a four-leaf clover....osz
+Diff               | Category   | Notes | Delta prev | Ratio |  Status
+-------------------+------------+-------+------------+-------+--------
+[Muzukashii]       | Muzukashii |   751 |        N/A |   N/A |     N/A
+[Oni]              | Oni        |   950 |       +199 | x1.26 |      OK
+[four_leaf_clover] | Inner Oni+ |  1211 |       +261 | x1.27 |      OK
+
+2418080 MakarafaP - Douse Nobinai Karatte Suki Katte Yatte (ry.osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Muzukashii] | Muzukashii |  1161 |        N/A |   N/A |     N/A
+[Oni]        | Oni        |  1450 |       +289 | x1.25 |      OK
+[Inner Oni]  | Inner Oni+ |  1905 |       +455 | x1.31 |      OK
+[†]         | Inner Oni+ |  2118 |       +213 | x1.11 |      OK
+
+2515272 Metal Cardbot - WILD LIGHT (Cut Ver.).osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |    99 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |   169 |        +70 | x1.71 |      OK
+[Muzukashii] | Muzukashii |   263 |        +94 | x1.56 |      OK
+[Oni]        | Oni        |   340 |        +77 | x1.29 |      OK
+[Inner Oni]  | Inner Oni+ |   423 |        +83 | x1.24 |      OK
+
+80件
+
+2449582 _wakadori - NightTheater.osz
+Diff                      | Category   | Notes | Delta prev | Ratio |  Status
+--------------------------+------------+-------+------------+-------+--------
+[Futsuu]                  | Futsuu     |   334 |        N/A |   N/A |     N/A
+[uone's Muzukashii]       | Muzukashii |   480 |       +146 | x1.44 |      OK
+[Oni]                     | Oni        |   619 |       +139 | x1.29 |      OK
+[miyagishima's Inner Oni] | Inner Oni+ |   783 |       +164 | x1.26 |      OK
+
+2523766 Andromedik - Don't Say (osu! edit).osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |   192 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |   351 |       +159 | x1.83 |      OK
+[Muzukashii] | Muzukashii |   469 |       +118 | x1.34 |      OK
+[Silence]    | Oni        |   580 |       +111 | x1.24 |      OK
+
+2216459 GLORYHAMMER - Fly Away.osz
+Diff                                    | Category   | Notes | Delta prev | Ratio |  Status
+----------------------------------------+------------+-------+------------+-------+--------
+[never's Muzukashii]                    | Muzukashii |  1124 |        N/A |   N/A |     N/A
+[2199's Oni]                            | Oni        |  1347 |       +223 | x1.20 |      OK
+[The Melancholic Dream of Angus McFife] | Inner Oni+ |  1686 |       +339 | x1.25 |      OK
+
+2460168 MIMI - Lapis Lazuli.osz
+Diff                                                                      | Category   | Notes | Delta prev | Ratio |  Status
+--------------------------------------------------------------------------+------------+-------+------------+-------+--------
+[A quiet drizzle stains the world in gentle indigo  Inters' Kantan]       | Kantan     |   369 |        N/A |   N/A |     N/A
+[Twilight sways with unspoken longing and tender ache  Inters' Futsuu]    | Futsuu     |   645 |       +276 | x1.75 |      OK
+[A fleeting warmth drifts through the veil of memory  Inters' Muzukashii] | Muzukashii |   914 |       +269 | x1.42 |      OK
+[Beyond the fading dark, tomorrow begins to breathe  Inters' Oni]         | Oni        |  1131 |       +217 | x1.24 |      OK
+
+2460169 MIMI - UNFADING.osz
+Diff                                                       | Category   | Notes | Delta prev | Ratio |  Status
+-----------------------------------------------------------+------------+-------+------------+-------+--------
+[Blooming in the night sky to know love  Inters' Kantan]   | Kantan     |   356 |        N/A |   N/A |     N/A
+[Counting the weight of words  Inters' Futsuu]             | Futsuu     |   680 |       +324 | x1.91 |      OK
+[It's okay if I'm empty right now  Inters' Muzukashii]     | Muzukashii |   926 |       +246 | x1.36 |      OK
+[For some reason, that seemed like happiness  Inters' Oni] | Oni        |  1218 |       +292 | x1.32 |      OK
+
+2513989 Ayase Rie - Yuima-ru _ World.osz
+Diff                    | Category   | Notes | Delta prev | Ratio |  Status
+------------------------+------------+-------+------------+-------+--------
+[Kantan]                | Kantan     |   233 |        N/A |   N/A |     N/A
+[gecho's Futsuu]        | Futsuu     |   399 |       +166 | x1.71 |      OK
+[plushbun's Muzukashii] | Muzukashii |   577 |       +178 | x1.45 |      OK
+[reealy_'s Oni]         | Oni        |   704 |       +127 | x1.22 |      OK
+[Inner Oni]             | Inner Oni+ |   859 |       +155 | x1.22 |      OK
+
+2506985 Curren - worldwidesuperstar.osz
+Diff                  | Category   | Notes | Delta prev | Ratio |  Status
+----------------------+------------+-------+------------+-------+--------
+[futsuu]              | Futsuu     |   377 |        N/A |   N/A |     N/A
+[Muzukashii]          | Muzukashii |   541 |       +164 | x1.44 |      OK
+[vzlen's oni]         | Oni        |   722 |       +181 | x1.33 |      OK
+[worldwidesilentstar] | Inner Oni+ |  1083 |       +361 | x1.50 | Warning
+
+
+2521019 EGOIST - Sakase ya Sakase.osz
+Diff           | Category   | Notes | Delta prev | Ratio |  Status
+---------------+------------+-------+------------+-------+--------
+[Muzukashii]   | Muzukashii |   593 |        N/A |   N/A |     N/A
+[komasy's Oni] | Oni        |   766 |       +173 | x1.29 |      OK
+[Inner Oni]    | Inner Oni+ |   889 |       +123 | x1.16 |      OK
+
+2409173 Creepy Nuts - Mirage (TV Size).osz
+Diff                   | Category   | Notes | Delta prev | Ratio |  Status
+-----------------------+------------+-------+------------+-------+--------
+[Kantan]               | Kantan     |   104 |        N/A |   N/A |     N/A
+[Tachi's Futsuu]       | Futsuu     |   168 |        +64 | x1.62 |      OK
+[HeLLFly's Muzukashii] | Muzukashii |   263 |        +95 | x1.57 |      OK
+[Oni]                  | Oni        |   343 |        +80 | x1.30 |      OK
+
+2503233 LANDMVRKS - Sulfur.osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Muzukashii] | Muzukashii |   712 |        N/A |   N/A |     N/A
+[Oni]        | Oni        |   860 |       +148 | x1.21 |      OK
+[Faded]      | Inner Oni+ |  1030 |       +170 | x1.20 |      OK
+
+90件
+
+2477164 Yasuaki Fujita - Battling.osz
+Diff                    | Category   | Notes | Delta prev | Ratio |  Status
+------------------------+------------+-------+------------+-------+--------
+[Charlotte's Kantan]    | Kantan     |    59 |        N/A |   N/A |     N/A
+[Futsuu]                | Futsuu     |   108 |        +49 | x1.83 |      OK
+[Skey's Muzukashii]     | Muzukashii |   145 |        +37 | x1.34 |      OK
+[Oni]                   | Oni        |   233 |        +88 | x1.61 | Warning
+[Rustling of The Steel] | Inner Oni+ |   292 |        +59 | x1.25 |      OK
+
+2448254 samebeam - do you understand how i feel.osz
+Diff                    | Category   | Notes | Delta prev | Ratio |  Status
+------------------------+------------+-------+------------+-------+--------
+[Futsuu]                | Futsuu     |   574 |        N/A |   N/A |     N/A
+[tmk's Muzukashii]      | Muzukashii |   852 |       +278 | x1.48 |      OK
+[Noah's Oni]            | Oni        |  1163 |       +311 | x1.37 |      OK
+[Trust your instincts.] | Inner Oni+ |  1450 |       +287 | x1.25 |      OK
+
+2513244 Lenar - MONTAGEM MIAU.osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[KANTAN]     | Kantan     |    96 |        N/A |   N/A |     N/A
+[FUTSUU]     | Futsuu     |   182 |        +86 | x1.90 |      OK
+[MUZUKASHII] | Muzukashii |   289 |       +107 | x1.59 |      OK
+[ONI]        | Oni        |   342 |        +53 | x1.18 |      OK
+[MEOW]       | Inner Oni+ |   454 |       +112 | x1.33 |      OK
+
+2478247 TRINITYAiLE - les plumes (game ver.).osz
+Diff           | Category   | Notes | Delta prev | Ratio |  Status
+---------------+------------+-------+------------+-------+--------
+[kantan]       | Kantan     |   141 |        N/A |   N/A |     N/A
+[futsuu]       | Futsuu     |   276 |       +135 | x1.96 |      OK
+[muzukashii]   | Muzukashii |   374 |        +98 | x1.36 |      OK
+[oni]          | Oni        |   465 |        +91 | x1.24 |      OK
+[luminescence] | Inner Oni+ |   530 |        +65 | x1.14 |      OK
+
+2491970 Jeff Williams feat. Casey Lee Williams - Ignite (Cut Ver.).osz
+Diff               | Category   | Notes | Delta prev | Ratio |  Status
+-------------------+------------+-------+------------+-------+--------
+[Kantan]           | Kantan     |   137 |        N/A |   N/A |     N/A
+[Futsuu]           | Futsuu     |   212 |        +75 | x1.55 |      OK
+[Muzukashii]       | Muzukashii |   374 |       +162 | x1.76 |      OK
+[Oni]              | Oni        |   557 |       +183 | x1.49 |      OK
+[Axer's Inner Oni] | Inner Oni+ |   814 |       +257 | x1.46 | Warning
+[Raph's Ura Oni]   | Inner Oni+ |  1066 |       +252 | x1.31 | Warning
+[HiroK's Hell Oni] | Inner Oni+ |  1038 |        -28 | x0.97 |   Error
+[Eyes of Fire]     | Inner Oni+ |  1237 |       +199 | x1.19 |      OK
+
+2499059 inabakumori - Spot Late [no video].osz
+Diff            | Category   | Notes | Delta prev | Ratio |  Status
+----------------+------------+-------+------------+-------+--------
+[Kantan]        | Kantan     |   201 |        N/A |   N/A |     N/A
+[Raph's Futsuu] | Futsuu     |   518 |       +317 | x2.58 | Warning
+[Muzukashii]    | Muzukashii |   731 |       +213 | x1.41 |      OK
+[2199's Oni]    | Oni        |   859 |       +128 | x1.18 |      OK
+[Inner Oni]     | Inner Oni+ |  1025 |       +166 | x1.19 |      OK
+
+2494805 THE ORAL CIGARETTES - ERASE (TV SIZE) [no video].osz
+Diff                  | Category   | Notes | Delta prev | Ratio |  Status
+----------------------+------------+-------+------------+-------+--------
+[TMK'S KANTAN]        | Kantan     |   191 |        N/A |   N/A |     N/A
+[FUTSUU]              | Futsuu     |   319 |       +128 | x1.67 |      OK
+[KNZK'S MUZUKASHII]   | Muzukashii |   455 |       +136 | x1.43 |      OK
+[NOAH'S ONI]          | Oni        |   566 |       +111 | x1.24 |      OK
+[HINA'S INNER ONI]    | Inner Oni+ |   677 |       +111 | x1.20 |      OK
+[I'M WAITING FOR YOU] | Inner Oni+ |   696 |        +19 | x1.03 |   Error
+
+2504376 Hirano Aya, Katou Emiri, Fukuhara Kaori, Endou Aya - Motteke! Sailor Fuku [Metabo Taisaku Mix] (Cut Ver.).osz
+Diff                   | Category   | Notes | Delta prev | Ratio |  Status
+-----------------------+------------+-------+------------+-------+--------
+[Yuemiao's Muzukashii] | Muzukashii |   650 |        N/A |   N/A |     N/A
+[miyagishima's Oni]    | Oni        |   934 |       +284 | x1.44 |      OK
+[3]                    | Inner Oni+ |  1250 |       +316 | x1.34 |      OK
+
+2461843 Koji Kondo - Flower Garden (Mian Dian Hai Remix).osz
+Diff             | Category   | Notes | Delta prev | Ratio |  Status
+-----------------+------------+-------+------------+-------+--------
+[yuyuz's kantan] | Kantan     |    42 |        N/A |   N/A |     N/A
+[futsuu]         | Futsuu     |    78 |        +36 | x1.86 |      OK
+[muzukashii]     | Muzukashii |   109 |        +31 | x1.40 |      OK
+[oni]            | Oni        |   127 |        +18 | x1.17 |      OK
+
+2006572 Yusuke - Isshou Kenmei.osz
+Diff         | Category   | Notes | Delta prev | Ratio |  Status
+-------------+------------+-------+------------+-------+--------
+[Kantan]     | Kantan     |   263 |        N/A |   N/A |     N/A
+[Futsuu]     | Futsuu     |   581 |       +318 | x2.21 | Warning
+[Muzukashii] | Muzukashii |   831 |       +250 | x1.43 |      OK
+[Jon's Oni]  | Oni        |  1018 |       +187 | x1.23 |      OK
+[Inner Oni]  | Inner Oni+ |  1299 |       +281 | x1.28 |      OK
+
+100件

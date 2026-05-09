@@ -1404,9 +1404,9 @@ function formatSpreadSv(value) {
 /** スクロール変化量 */
 const SPREAD_SCROLL_CONSISTENCY_GROUP_TOLERANCE_MS = 10;
 const SPREAD_SCROLL_CONSISTENCY_MIN_ABS_DELTA = 80;
-const SPREAD_SCROLL_CONSISTENCY_STRONGER_RATIO = 1.5;
-const SPREAD_SCROLL_CONSISTENCY_STRONGER_DELTA = 150;
-const SPREAD_SCROLL_CONSISTENCY_DIRECTION_DELTA = 120;
+const SPREAD_SCROLL_CONSISTENCY_STRONGER_RATIO = 1.5; /** 警告条件 3 */
+const SPREAD_SCROLL_CONSISTENCY_STRONGER_DELTA = 120; /** 警告条件 3 */
+const SPREAD_SCROLL_CONSISTENCY_DIRECTION_DELTA = 120; /** 警告条件 4 */
 
 function formatSpreadScrollChangeConsistency(results, t, manualCategories = {}) {
   const analysis = analyzeSpreadScrollChangeConsistency(results, manualCategories);

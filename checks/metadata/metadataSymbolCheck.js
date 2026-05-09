@@ -201,6 +201,10 @@ function collectOriginalMetadataSymbols(text) {
 function collectRomanisedMetadataSymbols(text, originalSymbols) {
   const symbols = [];
 
+  if (typeof text !== "string") {
+    return symbols;
+  }
+
   const allowedSymbols = getRomanisedSymbolsForOriginalSymbols(originalSymbols);
 
   for (let i = 0; i < text.length; i++) {
@@ -221,6 +225,10 @@ function collectRomanisedMetadataSymbols(text, originalSymbols) {
 }
 
 function getRomanisedSymbolsForOriginalSymbols(originalSymbols) {
+  if (!Array.isArray(originalSymbols)) {
+    return [];
+  }
+
   return [...new Set(
     originalSymbols.flatMap(symbol =>
       METADATA_SYMBOL_ROMANISATION_RULES[symbol.char] ?? []
