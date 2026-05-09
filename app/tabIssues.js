@@ -283,6 +283,13 @@ function getArtistIssueLevel(results) {
   const hasSymbolIssues =
     results.some(result => result.symbolIssues?.length > 0);
 
+  const hasSpacingIssues =
+    results.some(result => result.spacingIssues?.length > 0);
+
+  if (hasSpacingIssues) {
+    return TAB_LEVEL_ERROR;
+  }
+
   const hasFormattingIssues =
     results.some(result => result.formattingIssues?.length > 0);
 
@@ -300,6 +307,13 @@ function getTitleIssueLevel(results) {
 
   const hasSymbolIssues =
     results.some(result => result.symbolIssues?.length > 0);
+
+  const hasSpacingIssues =
+    results.some(result => result.spacingIssues?.length > 0);
+
+  if (hasSpacingIssues) {
+    return TAB_LEVEL_ERROR;
+  }
 
   const hasMarkerIssues =
     results.some(result => result.markerIssues?.length > 0);

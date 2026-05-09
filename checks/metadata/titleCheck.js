@@ -13,6 +13,11 @@ function runTitleCheck(text, fileName) {
       "Title"
     ),
 
+    spacingIssues: [
+      ...findMetadataSpacingIssues(title, "Title"),
+      ...findMetadataSpacingIssues(titleUnicode, "TitleUnicode")
+    ],
+
     markerIssues: [
       ...findTitleMarkerIssues(title, "Title"),
       ...findTitleMarkerIssues(titleUnicode, "TitleUnicode"),
@@ -278,10 +283,11 @@ function findTitleFeatMarkerIssues(title, fieldName) {
       ? "FEAT."
       : "feat.";
 
-  const regex =
+  // 1. 括弧付き feat 表記
+  const parenRegex =
     /\((?:feat\.?|ft\.?|featuring|FEAT\.?|FT\.?|Feat\.?|Ft\.?)\s*[^\)]*\)/g;
 
-  for (const match of text.matchAll(regex)) {
+  for (const match of text.matchAll(parenRegex)) {
     const found = match[0];
     const index = match.index;
 
@@ -321,7 +327,64 @@ function findTitleFeatMarkerIssues(title, fieldName) {
     }
   }
 
+  // 2. 括弧なし feat 表記
+  // OK: 爆弾魔 feat. A
+  // NG: 爆弾魔 feat.A
+  const plainRegex =
+    /\b(?:feat\.?|ft\.?|featuring|FEAT\.?|FT\.?|Feat\.?|Ft\.?)(?=\s*\S)/g;
+
+  for (const match of text.matchAll(plainRegex)) {
+    const marker = match[0];
+    const index = match.index;
+
+    // 既に括弧付き処理で検出される範囲は除外
+    if (isInsideParentheses(text, index)) {
+      continue;
+    }
+
+    const afterMarker =
+      text.slice(index + marker.length);
+
+    const spaceMatch =
+      afterMarker.match(/^\s*/);
+
+    const spaces =
+      spaceMatch ? spaceMatch[0] : "";
+
+    const nextTokenMatch =
+      afterMarker
+        .slice(spaces.length)
+        .match(/^\S+/);
+
+    const nextToken =
+      nextTokenMatch ? nextTokenMatch[0] : "";
+
+    const found =
+      marker + spaces + nextToken;
+
+    const normalizedMarker =
+      expected;
+
+    const expectedFound =
+      `${normalizedMarker} ${nextToken}`;
+
+    issues.push({
+      fieldName,
+      type: "titleFeatSpacing",
+      marker: found,
+      expected: expectedFound,
+      context: getTitleMarkerIssueContext(text, index)
+    });
+  }
+
   return issues;
+}
+
+function isInsideParentheses(text, index) {
+  const left = text.lastIndexOf("(", index);
+  const right = text.indexOf(")", index);
+
+  return left !== -1 && right !== -1 && left < index && index < right;
 }
 
 function getTitleFieldCasing(text) {

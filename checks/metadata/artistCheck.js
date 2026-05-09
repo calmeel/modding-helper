@@ -13,6 +13,11 @@ function runArtistCheck(text, fileName) {
       "Artist"
     ),
 
+    spacingIssues: [
+      ...findMetadataSpacingIssues(artist, "Artist"),
+      ...findMetadataSpacingIssues(artistUnicode, "ArtistUnicode")
+    ],
+
     formattingIssues: [
       ...findArtistFormattingIssues(artist, "Artist"),
       ...findArtistFormattingIssues(artistUnicode, "ArtistUnicode")
@@ -65,6 +70,9 @@ function findCommaSpacingIssues(text, fieldName) {
       type: "commaSpacing",
       marker: ",",
       expected: ", ",
+      descriptionKey: getArtistFormattingDescriptionKey(
+        "commaSpacing"
+      ),
       context: getArtistIssueContext(text, match.index)
     });
   }
@@ -91,7 +99,12 @@ function findVsMarkerIssues(text, casing, fieldName) {
       type: "vsMarker",
       marker: found,
       expected,
-      context: getArtistIssueContext(text, match.index)
+      descriptionKey: getArtistFormattingDescriptionKey(
+        "vsMarker",
+        found,
+        expected
+      ),
+      context: getArtistIssueContext(text, match.index),
     });
   }
 
@@ -117,7 +130,12 @@ function findFeatMarkerIssues(text, casing, fieldName) {
       type: "featMarker",
       marker: found,
       expected,
-      context: getArtistIssueContext(text, match.index)
+      descriptionKey: getArtistFormattingDescriptionKey(
+        "featMarker",
+        found,
+        expected
+      ),
+      context: getArtistIssueContext(text, match.index),
     });
   }
 
@@ -150,6 +168,12 @@ function findCvVoMarkerIssues(text, fieldName) {
       type: "cvVoMarker",
       marker: found,
       expected: format.expected,
+      descriptionKey: getArtistFormattingDescriptionKey(
+        "cvVoMarker",
+        found,
+        format.expected,
+        format
+      ),
       context: getArtistIssueContext(text, index)
     });
   }
@@ -291,4 +315,42 @@ function compareArtistsAcrossDiffs(results) {
     base,
     mismatches
   };
+}
+/** feat.などの後ろの半角スペース */
+function getArtistFormattingDescriptionKey(
+  type,
+  found,
+  expected,
+  format
+) {
+
+  if (type === "featMarker") {
+    if (found === expected) {
+      return "artistFeatNeedsSpaceAfter";
+    }
+
+    return "artistFeatMarkerInvalid";
+  }
+
+  if (type === "vsMarker") {
+    if (found === expected) {
+      return "artistVsNeedsSpaceAround";
+    }
+
+    return "artistVsMarkerInvalid";
+  }
+
+  if (type === "commaSpacing") {
+    return "artistCommaNeedsSpaceAfter";
+  }
+
+  if (type === "cvVoMarker") {
+    if (!format?.ok) {
+      return "artistCvVoFormattingInvalid";
+    }
+
+    return "artistFormattingIssue";
+  }
+
+  return "artistFormattingIssue";
 }
