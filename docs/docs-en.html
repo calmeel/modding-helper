@@ -1656,42 +1656,6 @@ Reference:
 </a>
 </div>
 
-<div class="section section-detect">
-<span class="label label-detect">■ Detection Thresholds (Unnatural Effective Scroll-Speed Progression)</span><br>
-
-If effective scroll speed consistently increases, decreases, or remains equal throughout the difficulty progression, it is treated as acceptable.<br><br>
-
-For example, the following progression patterns are considered acceptable:
-
-<ul>
-  <li><code>520 → 610 → 720 → 800</code>：Scroll speed increases as difficulty increases</li>
-  <li><code>800 → 720 → 610 → 520</code>：Scroll speed decreases as difficulty increases</li>
-  <li><code>640 → 640 → 640 → 640</code>：All difficulties use the same scroll speed</li>
-</ul>
-
-On the other hand, the following progression patterns are displayed for manual confirmation because the progression direction reverses midway:
-
-<ul>
-  <li><code>610 → 750 → 680 → 820</code>：Increases, then temporarily decreases</li>
-  <li><code>800 → 700 → 760 → 650</code>：Decreases, then temporarily increases</li>
-</ul>
-
-<div class="note-subtext">
-  Because note placement and timing are not always perfectly identical between difficulties,
-  scroll-speed changes within <code>±10 ms</code> are treated as the same event.<br>
-  Very small scroll-speed changes are excluded from comparison in order to reduce noise caused by tiny SV adjustments.
-</div>
-
-<br>
-
-The idea for this feature is based on a feature request for MVTaikoChecks by Nostril.<br>
-Reference:
-<a href="https://github.com/Hiviexd/MVTaikoChecks/issues/32" target="_blank" rel="noopener noreferrer">
-  MVTaikoChecks issue #32
-</a>
-
-</div>
-
 <div class="section section-warning">
 <span class="label label-warning">■ Notes</span><br>
 
@@ -1707,37 +1671,76 @@ so this check does not display warnings for Oni and above.
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ Detection Content 2: Scroll Change Consistency</span><br>
+<span class="label label-detect">■ Warning Condition 2</span><br>
 
-This feature compares effective scroll-speed change events occurring around the same timing across different difficulties.<br>
-Its purpose is to help identify cases where a lower difficulty contains stronger local scroll-speed changes than a higher difficulty,
-or cases where the direction of scroll-speed changes differs unnaturally between difficulties.<br><br>
+Detects unnatural effective scroll speed progression.
 
-The tool extracts timing points where effective scroll speed changes within each difficulty,
-then groups nearby changes into the same event group.<br>
-Adjacent difficulties are compared within each event group.<br><br>
+If the effective scroll speed consistently increases, consistently decreases, or remains unchanged across the difficulty order, it is treated as acceptable.<br><br>
 
-The following information is displayed:
+For example, the following progression patterns are considered acceptable:
 
 <ul>
-  <li><code>Δ px/s</code>：Effective scroll speed after the change minus the speed before the change</li>
-  <li><code>Speed Multiplier</code>：Effective scroll speed before and after the change, including the multiplier.<br>Example: <code>420 -&gt; 735 (x1.75)</code></li>
-  <li><code>Note Interval</code>：Time interval between the two notes where the speed change occurs</li>
+  <li><code>520 → 610 → 720 → 800</code>: Scroll speed increases as the difficulty increases</li>
+  <li><code>800 → 720 → 610 → 520</code>: Scroll speed decreases as the difficulty increases</li>
+  <li><code>640 → 640 → 640 → 640</code>: All difficulties use the same speed</li>
 </ul>
 
-For example, if a lower difficulty contains a large acceleration such as
-<code>420 -&gt; 735</code>,
-while the corresponding change in a higher difficulty is much smaller,
-the section will be displayed for manual confirmation.<br>
+On the other hand, the following patterns are displayed as review targets because the progression direction reverses partway through:
 
-Likewise, if one difficulty accelerates while another difficulty decelerates during the same timing window,
-the section will also be displayed for confirmation.
+<ul>
+  <li><code>610 → 750 → 680 → 820</code>: Increases, then decreases once</li>
+  <li><code>800 → 700 → 760 → 650</code>: Decreases, then increases once</li>
+</ul>
+
+<div class="note-subtext">
+Because note placement and timing may not perfectly match between difficulties, scroll speed changes occurring within <code>±10 ms</code> are treated as changes occurring at the same timing.
+</div>
+
+<br>
+
+The idea for this feature is based on a feature request for MVTaikoChecks by Nostril.<br>
+Reference:
+<a href="https://github.com/Hiviexd/MVTaikoChecks/issues/32" target="_blank" rel="noopener noreferrer">
+  MVTaikoChecks issue #32
+</a>
+
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ Detection Thresholds (Detecting Cases Where Lower Difficulties Have Larger Scroll-Speed Change Amounts)</span><br>
+<span class="label label-detect">■ Detection 2: Scroll Change Consistency</span><br>
 
-This check warns when a lower difficulty contains stronger acceleration or deceleration than a higher difficulty.
+For each difficulty, this check calculates effective scroll speed (eSV) changes between adjacent notes and compares them across difficulties.<br><br>
+
+This feature helps identify:
+
+<ul>
+  <li>Cases where a lower difficulty contains stronger local scroll speed changes than a higher difficulty</li>
+  <li>Cases where the scroll speed change direction behaves inconsistently between difficulties at similar timings</li>
+</ul>
+
+The displayed values are:
+
+<ul>
+  <li><code>Δ px/s</code>: Amount of eSV change between adjacent notes (<code>eSV after - eSV before</code>)</li>
+
+  <li><code>Speed Multiplier</code>: eSV values before and after the change, along with the ratio.<br>
+  Example: <code>420 → 735 (x1.75)</code></li>
+
+  <li><code>Note Interval</code>: Time difference between the two notes where the eSV change occurs</li>
+</ul>
+
+For example, if a lower difficulty contains a large acceleration such as <code>420 → 735</code>, while a higher difficulty has only a small change at a similar timing, it will be displayed as a review target.<br><br>
+
+Likewise, if one difficulty accelerates while another decelerates at a similar timing, it will also be displayed as a review target.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Warning Condition 3</span><br>
+
+Detects patterns where a lower difficulty contains stronger local scroll speed changes than a higher difficulty.<br><br>
+
+This check compares effective scroll speed changes (Δ px/s) between adjacent notes across difficulties.<br>
+If the eSV change magnitude in a lower difficulty is significantly larger than in a higher difficulty, it will be displayed as a review target.
 
 <div class="ratio-table-wrap">
 <table class="ratio-threshold-table">
@@ -1748,55 +1751,51 @@ This check warns when a lower difficulty contains stronger acceleration or decel
       <th>Description</th>
     </tr>
   </thead>
-
   <tbody>
+
     <tr>
-      <td>Same Event Detection</td>
+      <td>Same timing detection</td>
       <td><code>±10 ms</code></td>
-      <td>Scroll-speed changes occurring at nearby timestamps are treated as the same event.</td>
+      <td>Scroll speed changes occurring at similar timings are treated as changes occurring at the same timing.</td>
     </tr>
 
     <tr>
-      <td>Comparison Target</td>
+      <td>Comparison target</td>
       <td><code>Adjacent difficulties</code></td>
-      <td>Difficulties are compared against neighboring difficulties after sorting by difficulty order.</td>
+      <td>Difficulties are sorted in diff order, then compared with neighboring difficulties.</td>
     </tr>
 
     <tr>
-      <td>Ignore Small Changes</td>
-      <td><code>|Δ| &lt; 80 px/s</code></td>
-      <td>Very small scroll-speed changes are excluded from comparison.</td>
+      <td>Ignore small changes</td>
+      <td><code>|Δ px/s| &lt; 80</code></td>
+      <td>Very small eSV changes are excluded to avoid noise caused by minor SV adjustments.</td>
     </tr>
 
     <tr>
-      <td>Lower Difficulty Has Excessively Large Changes</td>
+      <td>Lower difficulty change is too strong</td>
+
       <td>
         <code>lower |Δ| ≥ higher |Δ| × 1.5</code><br>
         <code>and lower |Δ| - higher |Δ| ≥ 150 px/s</code>
       </td>
+
       <td>
-        Displayed when a lower difficulty contains significantly stronger local scroll-speed changes than a higher difficulty.
+        Displayed when a lower difficulty contains significantly stronger local scroll speed changes than a higher difficulty.
       </td>
     </tr>
+
   </tbody>
 </table>
-</div>
-
-<div class="note-subtext">
-
-  Because note placement and timing are not always perfectly identical between difficulties,
-  changes occurring within <code>±10 ms</code> are treated as the same event.<br><br>
-
-  Very small scroll-speed changes are excluded from comparison in order to reduce noise caused by tiny SV adjustments.<br>
-  For this reason, even if the direction of change is reversed, it will not be displayed if the change amount itself is too small.<br><br>
-
 </div>
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ Detection Thresholds (Detecting Cases Where Scroll-Speed Change Direction Does Not Match)</span><br>
+<span class="label label-detect">■ Warning Condition 4</span><br>
 
-This check warns when acceleration and deceleration are mixed between difficulties at the same timing point.
+Detects patterns where the scroll speed change direction behaves inconsistently between difficulties at similar timings.<br><br>
+
+This check compares eSV changes (Δ px/s) occurring between adjacent notes across difficulties.<br>
+If one difficulty accelerates while another decelerates at a similar timing, it will be displayed as a review target.
 
 <div class="ratio-table-wrap">
 <table class="ratio-threshold-table">
@@ -1809,35 +1808,39 @@ This check warns when acceleration and deceleration are mixed between difficulti
   </thead>
 
   <tbody>
+
     <tr>
-      <td>Same Event Detection</td>
+      <td>Same timing detection</td>
       <td><code>±10 ms</code></td>
-      <td>Scroll-speed changes occurring at nearby timestamps are treated as the same event.</td>
+      <td>Scroll speed changes occurring at similar timings are treated as changes occurring at the same timing.</td>
     </tr>
 
     <tr>
-      <td>Comparison Target</td>
+      <td>Comparison target</td>
       <td><code>Adjacent difficulties</code></td>
-      <td>Difficulties are compared against neighboring difficulties after sorting by difficulty order.</td>
+      <td>Difficulties are sorted in diff order, then compared with neighboring difficulties.</td>
     </tr>
 
     <tr>
-      <td>Mismatched Change Direction</td>
+      <td>Opposite change direction</td>
+
       <td>
-        <code>both |Δ| ≥ 120 px/s</code><br>
-        <code>and acceleration / deceleration directions are opposite</code>
+        <code>Both |Δ px/s| ≥ 120</code><br>
+        <code>and Δ signs are opposite</code>
       </td>
+
       <td>
-        Displayed when one difficulty accelerates while another difficulty decelerates during the same timing window.
+        Displayed when one difficulty accelerates while another decelerates at a similar timing.
       </td>
     </tr>
+
   </tbody>
 </table>
 </div>
 
 <div class="note-subtext">
 
-  For "Mismatched Change Direction", only sufficiently large changes are compared in order to exclude tiny changes with negligible gameplay impact.
+To avoid noise caused by extremely small perceptual differences, opposite-direction checks are only performed when both eSV change magnitudes are sufficiently large.
 
 </div>
 </div>

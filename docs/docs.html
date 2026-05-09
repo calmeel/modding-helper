@@ -1455,7 +1455,7 @@ Finisher の表は、以下の3種類に分けて表示されます：
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ 検出内容１：スクロール速度</span><br>
+<span class="label label-detect">■ 検出内容 1：スクロール速度</span><br>
 
 単純な SV 値だけでは、BPM や SliderMultiplier の影響を考慮できないため、<br>
 このチェックでは実際の見た目に近いスクロール速度を比較するために、有効スクロール速度（effective scroll speed, <span style="color:#ffd86b; font-weight:bold;">eSV</span> ）を使用します。<br>
@@ -1500,11 +1500,11 @@ Finisher の表は、以下の3種類に分けて表示されます：
       <th>Difficulty</th>
       <th>eSV差</th>
       <th>eSV倍率</th>
-      <th>時間間隔</th>
+      <th>ノーツ間隔</th>
       <th>判定</th>
     </tr>
   </thead>
-  
+
   <tbody>
     <tr>
       <td>Kantan 以下 / Kantan</td>
@@ -1555,8 +1555,20 @@ Finisher の表は、以下の3種類に分けて表示されます：
 参考：<a href="https://github.com/Hiviexd/MVTaikoChecks/issues/4" target="_blank" rel="noopener noreferrer">Add a drastic SV change warning for lower difficulties</a>
 </div>
 
+<div class="section section-warning">
+<span class="label label-warning">■ 注意点</span><br>
+この判定は、本ツール上で便宜的に設定した目安です。<br>
+Warning が表示された場合でも、それ自体が unrankable を意味するわけではありません。<br><br>
+
+スクロール速度変化が曲の展開・音取り・休憩・演出に対応している場合は、問題ない可能性があります。<br>
+最終的には、実際の譜面内容とプレイ時の読みやすさを確認して判断してください。<br><br>
+
+また、Oni 以上では大きなSV変化が演出や難易度表現として使われることが多いため、このチェックでは Warning 対象外としています。
+</div>
+
 <div class="section section-detect">
-<span class="label label-detect">■ 警告条件（有効スクロール速度の不自然な Progression 検出）</span><br>
+<span class="label label-detect">■ 警告条件 2</span><br>
+有効スクロール速度の不自然な Progression を検出します
 
 有効スクロール速度が difficulty 順に一方向へ増加・減少、または同じ値のまま進行している場合は問題なしとします。<br><br>
 
@@ -1576,8 +1588,7 @@ Finisher の表は、以下の3種類に分けて表示されます：
 </ul>
 
 <div class="note-subtext">
-  difficulty ごとにノーツ配置や timing が完全一致しない場合があるため、<code>±10 ms</code> 以内の変化を「同一イベント」として扱います。<br>
-  小さいスクロール速度変化は、微小な SV 調整などによるノイズを避けるため比較対象から除外します。
+difficulty ごとにノーツ配置や timing が完全一致しない場合があるため、<code>±10 ms</code> 以内に発生したスクロール速度変化を、同じタイミングの変化として扱います。
 </div>
 
 <br>
@@ -1589,40 +1600,44 @@ Finisher の表は、以下の3種類に分けて表示されます：
 
 </div>
 
-<div class="section section-warning">
-<span class="label label-warning">■ 注意点</span><br>
-この判定は、本ツール上で便宜的に設定した目安です。<br>
-Warning が表示された場合でも、それ自体が unrankable を意味するわけではありません。<br><br>
-
-スクロール速度変化が曲の展開・音取り・休憩・演出に対応している場合は、問題ない可能性があります。<br>
-最終的には、実際の譜面内容とプレイ時の読みやすさを確認して判断してください。<br><br>
-
-また、Oni 以上では大きなSV変化が演出や難易度表現として使われることが多いため、このチェックでは Warning 対象外としています。
-</div>
-
 <div class="section section-detect">
-<span class="label label-detect">■ 検出内容２：スクロール変化の整合性</span><br>
-同じ時間帯に発生する有効スクロール速度の変化イベントを、difficulty 間で比較します。<br>
-これは、低難易度の方が上位難易度よりも強い局所スクロール変化を持っていないか、または difficulty 間でスクロール変化の方向性が不自然に変わっていないかを確認するための機能です。<br><br>
+<span class="label label-detect">■ 検出内容 2：スクロール変化の整合性</span><br>
 
-比較では、各diffの有効スクロール速度が変化するポイントを抽出し、近い時刻の変化イベントを同一グループとして扱います。<br>
-同じイベントグループ内で、隣接する difficulty 同士を比較します。<br><br>
+各 difficulty において、隣接するノーツ間の有効スクロール速度（eSV）の変化量を計算し、difficulty 間で比較します。<br><br>
+
+この機能は：
+
+<ul>
+  <li>下位 difficulty の方が上位 difficulty より強い局所スクロール変化を持っていないか</li>
+  <li>同じタイミング付近で、difficulty ごとにスクロール変化の方向が不自然に異なっていないか</li>
+</ul>
+
+を確認するための補助機能です。<br><br>
 
 表示内容は以下の通りです。
 
 <ul>
-  <li><code>Δ px/s</code>：変化後の有効スクロール速度 - 変化前の有効スクロール速度</li>
-  <li><code>Speed Multiplier</code>：変化前後の有効スクロール速度と倍率。例：<code>420 -&gt; 735 (x1.75)</code></li>
-  <li><code>Note Interval</code>：速度変化が発生した2つのノーツ間の時間差</li>
+  <li><code>Δ px/s</code>：隣接ノーツ間で発生した eSV の変化量（<code>eSV after - eSV before</code>）</li>
+
+  <li><code>Speed Multiplier</code>：eSV の変化前後の値と倍率。<br>
+  例：<code>420 → 735 (x1.75)</code></li>
+
+  <li><code>Note Interval</code>：eSV 変化が発生した2つのノーツ間の時間差</li>
 </ul>
 
-例えば、下位 difficulty では <code>420 -&gt; 735</code> のような大きな加速がある一方で、上位 difficulty では同じ時間帯の変化が小さい場合、確認対象として表示されます。<br>
-また、同じ時間帯で一方の difficulty は加速、もう一方の difficulty は減速している場合も確認対象になります。
+例えば、下位 difficulty では <code>420 → 735</code> のような大きな加速がある一方で、上位 difficulty では同じタイミング付近の変化が小さい場合、確認対象として表示されます。<br><br>
+
+また、同じタイミング付近で、一方の difficulty は加速、もう一方の difficulty は減速している場合も確認対象になります。
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ 警告条件（下位 DIff の方がスクロール速度"変化量"が大きいパターンの検出）</span><br>
-下位 Diff の方がスクロール速度の加速量が大きい際、減速量が大きい際に警告します。
+<span class="label label-detect">■ 警告条件 3</span><br>
+
+下位 difficulty の方が、上位 difficulty より強い局所スクロール変化を持っているパターンを検出します。<br><br>
+
+このチェックでは、隣接ノーツ間で発生した有効スクロール速度変化（Δ px/s）を difficulty 間で比較します。<br>
+下位 difficulty の eSV 変化量が、上位 difficulty より明らかに大きい場合に確認対象として表示します。
+
 <div class="ratio-table-wrap">
 <table class="ratio-threshold-table">
   <thead>
@@ -1633,43 +1648,51 @@ Warning が表示された場合でも、それ自体が unrankable を意味す
     </tr>
   </thead>
   <tbody>
+
     <tr>
-      <td>イベントの同一判定</td>
+      <td>同一タイミング判定</td>
       <td><code>±10 ms</code></td>
-      <td>近い時刻に発生したスクロール速度変化を同じイベントとして扱います。</td>
+      <td>近いタイミングで発生したスクロール変化を、同じタイミングの変化として扱います。</td>
     </tr>
+
     <tr>
       <td>比較対象</td>
       <td><code>隣接する difficulty</code></td>
       <td>Diff順に並べたうえで、隣同士の difficulty を比較します。</td>
     </tr>
+
     <tr>
       <td>小さい変化の除外</td>
-      <td><code>|Δ| &lt; 80 px/s</code></td>
-      <td>非常に小さいスクロール速度変化は比較対象から除外します。</td>
+      <td><code>|Δ px/s| &lt; 80</code></td>
+      <td>非常に小さい eSV 変化は、微小な SV 調整によるノイズを避けるため比較対象から除外します。</td>
     </tr>
+
     <tr>
-      <td>下位diffの変化が大きすぎる場合</td>
-      <td><code>lower |Δ| ≥ higher |Δ| × 1.5</code><br><code>かつ lower |Δ| - higher |Δ| ≥ 150 px/s</code></td>
-      <td>下位 difficulty の局所スクロール変化が、上位 difficulty より明らかに強い場合に表示します。</td>
+      <td>下位 difficulty の変化が大きすぎる場合</td>
+
+      <td>
+        <code>lower |Δ| ≥ higher |Δ| × 1.5</code><br>
+        <code>かつ lower |Δ| - higher |Δ| ≥ 150 px/s</code>
+      </td>
+
+      <td>
+        下位 difficulty の局所スクロール変化が、上位 difficulty より明らかに強い場合に表示します。
+      </td>
     </tr>
+
   </tbody>
 </table>
-</div>
-
-<div class="note-subtext">
-
-  difficulty ごとにノーツ配置や timing が完全一致しない場合があるため、<code>±10 ms</code> 以内の変化を「同一イベント」として扱います。<br><br>
-
-  小さいスクロール速度変化は、微小な SV 調整などによるノイズを避けるため比較対象から除外します。<br>
-  そのため、変化方向が逆であっても、変化量が小さい場合は表示されません。<br><br>
-
 </div>
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ 警告条件（スクロール速度の変化方向が一致しないパターンの検出）</span><br>
-同タイミングポイントにおいて、スクロール速度の加速と減速が Diff ごとに混在している際に警告します。
+<span class="label label-detect">■ 警告条件 4</span><br>
+
+同じタイミング付近において、difficulty ごとにスクロール速度変化の方向が一致していないパターンを検出します。<br><br>
+
+このチェックでは、隣接ノーツ間で発生した eSV 変化（Δ px/s）を difficulty 間で比較します。<br>
+同じタイミング付近で、一方の difficulty は加速、もう一方の difficulty は減速している場合に確認対象として表示します。
+
 <div class="ratio-table-wrap">
 <table class="ratio-threshold-table">
   <thead>
@@ -1679,29 +1702,41 @@ Warning が表示された場合でも、それ自体が unrankable を意味す
       <th>内容</th>
     </tr>
   </thead>
+
   <tbody>
+
     <tr>
-      <td>イベントの同一判定</td>
+      <td>同一タイミング判定</td>
       <td><code>±10 ms</code></td>
-      <td>近い時刻に発生したスクロール速度変化を同じイベントとして扱います。</td>
+      <td>近いタイミングで発生したスクロール変化を、同じタイミングの変化として扱います。</td>
     </tr>
+
     <tr>
       <td>比較対象</td>
       <td><code>隣接する difficulty</code></td>
       <td>Diff順に並べたうえで、隣同士の difficulty を比較します。</td>
     </tr>
+
     <tr>
       <td>変化方向の不一致</td>
-      <td><code>両方の |Δ| ≥ 120 px/s</code><br><code>かつ 加速 / 減速 の方向が逆</code></td>
-      <td>同じ時間帯で、一方は加速、もう一方は減速している場合に表示します。</td>
+
+      <td>
+        <code>両方の |Δ px/s| ≥ 120</code><br>
+        <code>かつ Δ の符号が逆</code>
+      </td>
+
+      <td>
+        同じタイミング付近で、一方は加速、もう一方は減速している場合に表示します。
+      </td>
     </tr>
+
   </tbody>
 </table>
 </div>
 
 <div class="note-subtext">
 
-  「変化方向の不一致」では、体感差の小さい微小変化を除外するため、両方の変化量が十分大きい場合のみ比較対象としています。
+「変化方向の不一致」では、体感差の小さい微小変化を除外するため、両方の eSV 変化量が十分大きい場合のみ比較対象としています。
 
 </div>
 </div>
