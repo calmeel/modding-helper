@@ -921,17 +921,36 @@ A warning is displayed when the actual value differs from the recommended value.
 
 <div class="section section-warning">
 <span class="label label-warning">■ Notes</span><br>
-For low difficulties in high BPM songs, values lower than <code>SliderMultiplier = 1.4</code> may sometimes be used
-(reference: <code>Taiko Checklist V1.2 by iRedi</code>).<br>
-Using values other than <code>1.40</code> is not strictly forbidden.<br><br>
 
-The threshold of
-"<code>1/3 snap</code> ratio ≥ <code>30%</code>"
-is a convenience value defined specifically for this tool.<br>
-As a result, some swing-rhythm maps may fall below this threshold,
-while some non-swing maps may exceed it.<br><br>
+<code>SliderMultiplier = 1.40</code> is the most commonly used value in ranked osu!taiko beatmaps.<br><br>
 
-Final judgement should always be made after reviewing the actual song rhythm and mapping style.
+However, values other than <code>1.40</code> are not inherently invalid.<br>
+For example:
+<ul>
+  <li>
+    Using a lower SliderMultiplier than 1.40 in lower difficulties of high-BPM maps
+    (reference: <code>Taiko Checklist V1.2 by iRedi</code>)
+  </li>
+
+  <li>
+    Adjusting SliderMultiplier instead of modifying SV values
+    in low-BPM maps to preserve aesthetics or existing SV structures
+  </li>
+
+  <li>
+    Increasing SliderMultiplier in swing rhythm songs
+    to visually make 1/3 and 1/6 snap patterns closer to 1/2 and 1/4 snap spacing,
+    improving readability and visual aesthetics
+  </li>
+</ul>
+
+The threshold of “30% or more 1/3 snap usage”
+is a heuristic value defined by this tool for convenience.<br>
+As a result, some swing rhythm maps may fall below this value,
+while some straight rhythm maps may exceed it.<br><br>
+
+Final judgement should always be made
+by considering the song rhythm and the actual mapping context.
 </div>
 </section>
 
