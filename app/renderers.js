@@ -857,6 +857,10 @@ function formatSpreadNoteCountTable(results, t, diffOrder = null, manualCategori
     const deltaText = formatSpreadDelta(delta);
     const ratioText = formatSpreadRatio(ratio);
     const level = getSpreadNoteRatioLevel(ratio, prev, result, manualCategories);
+    const rule = ratio !== null && ratio !== undefined && Number.isFinite(ratio)
+      ? getSpreadNoteRatioRule(prev, result, manualCategories)
+      : null;
+    const statusText = formatSpreadNoteStatus(level, rule);
 
     return {
       result,
@@ -866,7 +870,9 @@ function formatSpreadNoteCountTable(results, t, diffOrder = null, manualCategori
       ratio,
       deltaText,
       ratioText,
-      level
+      level,
+      rule,
+      statusText
     };
   });
 
@@ -883,7 +889,7 @@ function formatSpreadNoteCountTable(results, t, diffOrder = null, manualCategori
     notes: Math.max(5, visibleWidth(headers.notes), ...rows.map(r => visibleWidth(String(r.notes)))),
     delta: Math.max(6, visibleWidth(headers.delta), ...rows.map(r => visibleWidth(r.deltaText))),
     ratio: Math.max(5, visibleWidth(headers.ratio), ...rows.map(r => visibleWidth(r.ratioText))),
-    status: Math.max(7, visibleWidth(headers.status), ...rows.map(r => visibleWidth(formatSpreadNoteStatus(r.level))))
+    status: Math.max(7, visibleWidth(headers.status), ...rows.map(r => visibleWidth(r.statusText)))
   };
 
   const lines = [];
@@ -908,7 +914,7 @@ function formatSpreadNoteCountTable(results, t, diffOrder = null, manualCategori
     const diffText = getDifficultyName(row.result.fileName) +
       " ".repeat(widths.diff - visibleWidth(row.diff));
 
-    const statusText = formatSpreadNoteStatus(row.level);
+    const statusText = row.statusText;
 
     lines.push(
       `${diffText} | ` +
@@ -922,11 +928,18 @@ function formatSpreadNoteCountTable(results, t, diffOrder = null, manualCategori
   return lines.join("\n");
 }
 
-function formatSpreadNoteStatus(level) {
-  if (level === "error") return "Error";
-  if (level === "warn") return "Warning";
+function formatSpreadNoteStatus(level, rule = null) {
   if (level === "ok") return "OK";
-  return "N/A";
+  if (level === "none") return "N/A";
+
+  const base =
+    level === "error" ? "Error" :
+    level === "warn" ? "Warning" :
+    "N/A";
+
+  if (!rule) return base;
+
+  return `${base} (recommended: x${rule.warnLow.toFixed(2)}–${rule.warnHigh.toFixed(2)})`;
 }
 
 function formatSpreadOdHpDelta(odDelta, hpDelta) {
