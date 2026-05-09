@@ -1207,7 +1207,7 @@ The following thresholds are used:
 
 <ul>
   <li><code>2 Hz or higher</code>：Caution</li>
-  <li><code>3 Hz or higher</code>：Warning</li>
+  <li><code><span style="color:#ffd86b; font-weight:bold;">3 Hz or higher</span></code>：Warning</li>
 </ul>
 
 For example:
@@ -1239,7 +1239,7 @@ The following thresholds are used:
 
 <ul>
   <li><code>240 BPM (4 Hz) or higher</code>：Caution</li>
-  <li><code>300 BPM (5 Hz) or higher</code>：Warning</li>
+  <li><code><span style="color:#ffd86b; font-weight:bold;">300 BPM (5 Hz) or higher</span></code>：Warning</li>
 </ul>
 
 The following information is displayed:
@@ -1536,52 +1536,66 @@ its purpose is simply to display spread information in an easy-to-compare format
 <div class="section section-bg">
 <span class="label label-bg">■ Background</span><br>
 
-According to the
-<a href="https://osu.ppy.sh/wiki/en/Ranking_criteria/osu%21taiko" target="_blank" rel="noopener noreferrer">osu!taiko Ranking Criteria</a>,
-lower difficulties such as <code>Kantan</code>, <code>Futsuu</code>, and <code>Muzukashii</code> should avoid sudden Slider Velocity changes or difficult-to-read scroll-speed changes.<br><br>
+<a href="https://osu.ppy.sh/wiki/en/Ranking_criteria/osu%21taiko" target="_blank" rel="noopener noreferrer">osu!taiko Ranking Criteria</a> states that lower difficulties such as <code>Kantan</code>, <code>Futsuu</code>, and <code>Muzukashii</code> should avoid sudden Slider Velocity changes and difficult-to-read scroll speed changes.<br><br>
 
-This feature is intended as a helper for identifying sudden scroll-speed changes that may reduce readability in lower difficulties.
+This check helps identify sudden scroll speed changes that may reduce readability on lower difficulties.<br><br>
+
+In addition, this tab also analyzes overall scroll speed behavior across the spread and checks for patterns such as:
+
+<ul>
+  <li>Scroll speed progression becoming unnaturally reversed as the difficulty increases</li>
+  <li>Scroll speed changes at the same timing behaving inconsistently between difficulties (e.g. acceleration vs. deceleration)</li>
+</ul>
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ Detection Content 1: Scroll Speed</span><br>
+<span class="label label-detect">■ Detection 1: Scroll Speed</span><br>
 
-Effective scroll speed is calculated using BPM, SV, and SliderMultiplier.<br>
+Since SV alone does not account for BPM or SliderMultiplier, 
+this check uses <code>effective scroll speed, <span style="color:#ffd86b; font-weight:bold;">eSV</span> </code> instead of raw SV values in order to compare the actual visual scrolling speed more accurately.<br>
 
 <pre><code>effective scroll speed = 175 × SliderMultiplier × SV × BPM / 60</code></pre>
 
-The following information is displayed:
+Effective scroll speed represents how many pixels notes move across the screen per second.<br>
+The unit used is <code>px/s</code> (pixels per second).<br><br>
+
+The displayed values are:
 
 <ul>
-  <li><code>Min px/s</code>：Slowest effective scroll speed within the difficulty</li>
-  <li><code>Max px/s</code>：Fastest effective scroll speed within the difficulty</li>
-  <li><code>Delta</code>：Difference between the maximum and minimum speed</li>
-  <li><code>Ratio</code>：Maximum speed / minimum speed</li>
-  <li><code>SV range</code>：Range of SV values used within the difficulty</li>
+  <li><code>Min px/s</code>: The slowest effective scroll speed used in the diff</li>
+  <li><code>Max px/s</code>: The fastest effective scroll speed used in the diff</li>
+  <li><code>Delta</code>: The difference between the maximum and minimum speed</li>
+  <li><code>Ratio</code>: Maximum speed / minimum speed</li>
+  <li><code>SV range</code>: The SV range used in the diff</li>
 </ul>
 
 <p>
-Only scroll speeds applied to actual note sections are considered.
-SV changes in empty sections without notes are ignored to reduce false positives from decorative or unused SV changes.
+Only scroll speeds applied to sections containing actual notes are considered.<br>
+SV changes in empty sections are ignored to avoid false positives caused by decorative SV effects.
 </p>
 
-This check detects sections where scroll speed changes abruptly between adjacent notes.
+This check also detects locations where scroll speed changes drastically between adjacent notes.
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ Detection Thresholds (Sudden Scroll-Speed Changes in Lower Difficulties)</span><br>
+<span class="label label-detect">■ Warning Condition 1</span><br>
 
-Instead of checking only raw SV differences,
-this feature evaluates actual scroll-speed changes using a combination of speed difference, ratio, and time interval.
+Detects locations where lower difficulties contain sudden scroll speed changes.
+
+<ul>
+  <li><code>eSV Difference</code>: <code>eSV after - eSV before</code></li>
+  <li><code>eSV Ratio</code>: <code>eSV after / eSV before</code></li>
+  <li><code>Note Interval</code>: Time difference between the notes before and after the change</li>
+</ul>
 
 <div class="ratio-table-wrap">
 <table class="ratio-threshold-table">
   <thead>
     <tr>
       <th>Difficulty</th>
-      <th>Speed Difference</th>
-      <th>Ratio</th>
-      <th>Time Interval</th>
+      <th>eSV Difference</th>
+      <th>eSV Ratio</th>
+      <th>Note Interval</th>
       <th>Result</th>
     </tr>
   </thead>
@@ -1622,17 +1636,17 @@ this feature evaluates actual scroll-speed changes using a combination of speed 
 </table>
 </div>
 
-A Warning is displayed only when all three conditions above are satisfied.<br><br>
+All three conditions above must be satisfied for the result to be displayed as a <span style="color:#ffd86b; font-weight:bold;">Warning</span>.<br><br>
 
 <div class="note-subtext">
-  Speed difference and ratio are used to detect different types of abrupt scroll-speed changes.<br>
-  For example, a large speed difference with a small ratio may simply represent a minor adjustment within an already fast scroll-speed range,<br>
-  while a large ratio with a small speed difference may instead represent a small change within a slow scroll-speed range.<br><br>
+  eSV Difference and eSV Ratio are used to detect different types of sudden scroll speed changes.<br>
+  For example, a large eSV Difference with a small eSV Ratio may simply represent a minor adjustment in an already high-speed section,<br>
+  while a large eSV Ratio with a small eSV Difference may represent only a small change in a low-speed section.<br><br>
 
-  For this reason, this check only displays a Warning when both the speed difference and the ratio thresholds are satisfied.<br><br>
+  Therefore, this check only treats the result as a Warning when both the eSV Difference and the eSV Ratio conditions are satisfied.<br><br>
 
-  The time interval is used to estimate how abruptly the scroll speed changes.<br>
-  For example, even if the speed difference itself is large, gradual changes occurring over several seconds will not trigger a Warning.<br><br>
+  Note Interval is used to determine how abruptly the scroll speed changes.<br>
+  For example, even with the same speed difference, a gradual change over several seconds will not be treated as a Warning.<br><br>
 </div>
 
 The idea for this feature is based on a feature request for MVTaikoChecks by Hivie.<br>
