@@ -14,7 +14,8 @@ function runTimelineCheck(sources, options = {}) {
     fileName: source.fileName,
     text: source.text,
     objects: parseTimelineObjects(source.text),
-    redLines: parseTimelineRedLines(source.text)
+    redLines: parseTimelineRedLines(source.text),
+    kiaiRanges: parseTimelineKiaiRanges(source.text)
   }));
 
   const diffs = sortTimelineDiffs(rawDiffs, options.diffOrder ?? []);
@@ -45,7 +46,8 @@ function runTimelineCheck(sources, options = {}) {
 
     measure.supported = snap !== null;
     measure.snap = snap ?? TIMELINE_MIN_SNAP;
-    measure.resolution = Math.max(TIMELINE_MIN_SNAP, measure.snap) * measure.meter;
+    measure.displaySnap = Math.max(TIMELINE_MIN_SNAP, measure.snap);
+    measure.resolution = measure.displaySnap * measure.meter;
   }
 
   let unsupportedCount = 0;
@@ -64,6 +66,9 @@ function runTimelineCheck(sources, options = {}) {
     return {
       start: measure.start,
       end: measure.end,
+      snap: measure.snap,
+      displaySnap: measure.displaySnap,
+      resolution: measure.resolution,
       rows
     };
   });
@@ -193,8 +198,8 @@ function buildTimelineMeasureRow(diff, measure) {
     const end = obj.tailTime ?? obj.time;
 
     return (
-      obj.time < measure.end &&
-      end >= measure.start
+      obj.time < measure.end - TIMELINE_SNAP_TOLERANCE_MS &&
+      end >= measure.start - TIMELINE_SNAP_TOLERANCE_MS
     );
   });
 
@@ -280,14 +285,15 @@ function buildTimelineMeasureRow(diff, measure) {
   return {
     fileName: diff.fileName,
     supported: true,
-    cells: chars.map(kind => ({
-      kind: kind === "-" ? null : kind
+    cells: chars.map((kind, index) => ({
+      kind: kind === "-" ? null : kind,
+      kiai: isTimelineCellInKiai(diff.kiaiRanges, measure, index)
     }))
   };
 }
 
 function getTimelineSnapPlacement(time, measure) {
-  const cellLength = measure.beatLength / measure.snap;
+  const cellLength = measure.beatLength / measure.displaySnap;
 
   if (!Number.isFinite(cellLength) || cellLength <= 0) {
     return {
@@ -503,4 +509,69 @@ function isTimelineTimeOnGrid(time, measure, cellLength) {
   const position = (time - measure.start) / cellLength;
   const nearest = Math.round(position);
   return Math.abs(position - nearest) * cellLength <= TIMELINE_SNAP_TOLERANCE_MS;
+}
+
+/** kiaiを背景色表示するための機能 */
+function parseTimelineKiaiRanges(text) {
+  const lines = text.split(/\r?\n/);
+  const points = [];
+
+  let inSection = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (trimmed === "[TimingPoints]") {
+      inSection = true;
+      continue;
+    }
+
+    if (inSection) {
+      if (trimmed.startsWith("[")) break;
+      if (!trimmed || trimmed.startsWith("//")) continue;
+
+      const parts = trimmed.split(",").map(p => p.trim());
+      if (parts.length < 8) continue;
+
+      const time = parseFloat(parts[0]);
+      const effects = parseInt(parts[7], 10);
+
+      if (!Number.isFinite(time) || Number.isNaN(effects)) continue;
+
+      points.push({
+        time,
+        kiai: (effects & 1) !== 0
+      });
+    }
+  }
+
+  points.sort((a, b) => a.time - b.time);
+
+  const ranges = [];
+
+  for (let i = 0; i < points.length; i++) {
+    const cur = points[i];
+    const next = points[i + 1];
+
+    if (!cur.kiai) continue;
+
+    ranges.push({
+      start: cur.time,
+      end: next ? next.time : Infinity
+    });
+  }
+
+  return ranges;
+}
+
+function isTimelineCellInKiai(kiaiRanges, measure, index) {
+  if (!kiaiRanges || !kiaiRanges.length) return false;
+
+  const cellLength = measure.beatLength / measure.displaySnap;
+  const cellStart = measure.start + index * cellLength;
+
+  return kiaiRanges.some(range =>
+    cellStart >= range.start - TIMELINE_SNAP_TOLERANCE_MS &&
+    cellStart < range.end - TIMELINE_SNAP_TOLERANCE_MS
+  );
 }

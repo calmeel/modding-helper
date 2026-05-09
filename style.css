@@ -980,3 +980,12 @@ input[type="file"]::file-selector-button:hover {
 .timeline-unsupported {
   color: #ff6b6b;
 }
+
+.timeline-cell.timeline-kiai {
+  background: rgba(255, 216, 107, 0.18);
+  border-radius: 3px;
+}
+
+.timeline-cell.timeline-kiai .bn-note {
+  background: rgba(255, 216, 107, 0.04);
+}
