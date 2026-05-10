@@ -761,7 +761,7 @@ function formatSampleSetResult(result, t) {
     lines.push(t("timingPoints"));
     for (const item of result.timingIssues) {
       lines.push(
-        `${formatTimestampLink(item.time)} | ${item.lineType} | sampleSet ${item.sampleSet} (${item.sampleSetName})`
+        `${formatTimestampLink(item.time)} | ${item.lineType} | ${formatSampleSetIssueText(item)}`
       );
     }
     lines.push("");
@@ -771,12 +771,43 @@ function formatSampleSetResult(result, t) {
     lines.push(t("hitObjects"));
     for (const item of result.objectIssues) {
       lines.push(
-        `${formatTimestampLink(item.time)} | ${item.objectType} | ${item.field} ${item.sampleSet} (${item.sampleSetName})`
+        `${formatTimestampLink(item.time)} | ${item.objectType} | ${formatSampleSetIssueText(item)}`
       );
     }
   }
 
   return lines.join("\n").trimEnd();
+}
+
+/** sampleindexの際の処理 */
+function formatSampleSetIssueText(item) {
+  if (item.field === "sampleIndex") {
+    return `sampleIndex: ${item.sampleIndex}`;
+  }
+
+  if (item.field === "customFileName") {
+    return `custom file: ${item.customFileName}`;
+  }
+
+  if (item.field === "edgeSounds") {
+    return `edgeSounds[${item.edgeIndex}]: ${item.edgeSound}`;
+  }
+
+  if (
+    item.field === "sampleSet" ||
+    item.field === "normalSet" ||
+    item.field === "additionSet" ||
+    item.field === "edgeSets.normalSet" ||
+    item.field === "edgeSets.additionSet"
+  ) {
+    const edgePrefix = item.edgeIndex !== undefined
+      ? `[${item.edgeIndex}] `
+      : "";
+
+    return `${edgePrefix}${item.field}: ${item.sampleSet} (${item.sampleSetName})`;
+  }
+
+  return item.field;
 }
 
 /** Slider設定 */
