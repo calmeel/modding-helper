@@ -444,6 +444,7 @@
   <details class="doc-tab-group">
     <summary>その他</summary>
     <button class="doc-tab-button" data-doc-tab="previewPoint">プレビューポイント</button>
+    <button class="doc-tab-button" data-doc-tab="bgOffset">BGオフセット</button>
     <button class="doc-tab-button" data-doc-tab="epilepsyWarning">点滅・てんかん警告</button>
   </details>
 
@@ -492,6 +493,9 @@
       </a>,
       <a href="https://osu.ppy.sh/users/16320311" target="_blank" rel="noopener noreferrer">
         Eriha
+      </a>,
+      <a href="https://osu.ppy.sh/users/14947043" target="_blank" rel="noopener noreferrer">
+        hz404
       </a>
     </div>
 
@@ -1119,6 +1123,46 @@ mapset 全体のオフセットを変更した場合、HitObject や TimingPoint
 <span class="label label-warning">■ 注意点</span><br>
 PreviewTime が snap 上にないことは、必ずしも unrankable を意味するわけではありません。<br><br>
 ただし、オフセット変更後の修正漏れを見つける手がかりになるため、warning が出た場合は意図した位置かどうか確認してください。<br>
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="bgOffset">
+<h2>その他：BGオフセット</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ 背景</span><br>
+<code>[Events]</code> セクション内の background event では、背景画像のファイル名と表示位置のオフセットを指定できます。<br><br>
+
+例：
+<pre><code>[Events]<br>
+//Background and Video events<br>
+0,0,"BG.jpg",0,40</code></pre>
+
+background event は、以下の形式で記述されます：<br>
+<code>0,0,filename,xOffset,yOffset</code><br><br>
+
+<code>xOffset</code> / <code>yOffset</code> が <code>0,0</code> の場合、記述は省略されることがあります。
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ 検出内容</span><br>
+mapset 内の各 difficulty について background event を読み取り、同じ背景画像ファイルを使用している difficulty 間で
+<code>xOffset</code> / <code>yOffset</code> が一致しているかを確認します。<br><br>
+
+同じ background file を使用しているにもかかわらず、diff 間で offset が異なる場合は warning として表示します。<br><br>
+
+この検出は AiMod や Mapset Verifier では行えません。
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ 注意点</span><br>
+異なる background file を使用している difficulty 同士は比較対象外です。<br><br>
+
+例えば、<code>Kantan</code> では <code>BG.jpg</code>、<code>Muzukashii</code> では <code>BG2.jpg</code> を使用している場合、
+それぞれ別の背景画像として扱うため、offset が異なっていても warning にはしません。<br><br>
+
+また、同じ background file で offset が異なる場合でも、意図的な演出である可能性があります。<br>
+warning が出た場合は、修正漏れか意図的な差分かを確認してください。
 </div>
 </section>
 
