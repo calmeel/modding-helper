@@ -196,6 +196,13 @@ const i18n = {
     previewPointNotFound: "Preview point was not found.",
     previewPointMismatch: "Preview point differs between difficulties.",
 
+    tabBgOffset: "BG offset",
+    bgOffsetTitle: "BG offset",
+    bgOffsetComparison: "Background offset comparison",
+    bgOffsetNoBackgrounds: "No background events were found.",
+    bgOffsetNoIssues: "No BG offset inconsistencies were found.",
+    bgOffsetDifferentOffsets: "has different offsets between difficulties.",
+
     epilepsyWarningTitle: "Flash / Epilepsy Warning",
     noEpilepsyWarningIssues: "No kiai flash / high-BPM kiai issues found.",
     epilepsyKiaiFlashIssues: "Kiai flash frequency:",
@@ -469,6 +476,13 @@ const i18n = {
     previewPointSnapTitle: "プレビューポイントのsnap",
     previewPointNotFound: "PreviewTime が見つかりませんでした。",
     previewPointMismatch: "diff間でプレビューポイントが一致していません。",
+
+    tabBgOffset: "BGオフセット",
+    bgOffsetTitle: "BGオフセット",
+    bgOffsetComparison: "Background offset 比較",
+    bgOffsetNoBackgrounds: "Background event が見つかりませんでした。",
+    bgOffsetNoIssues: "BGオフセットの不一致は見つかりませんでした。",
+    bgOffsetDifferentOffsets: "は difficulty 間で異なるオフセットを使用しています。",
 
     epilepsyWarningTitle: "点滅・てんかん警告",
     noEpilepsyWarningIssues: "Kiai flash / 高BPM Kiai の確認対象は見つかりませんでした。",

@@ -377,10 +377,12 @@ function getSourceIssueLevel(results) {
 
 function getMiscIssueLevel(state) {
   const previewPointLevel = getPreviewPointIssueLevel(state.previewPoint);
+  const bgOffsetLevel = getBgOffsetIssueLevel(state.bgOffset);
   const epilepsyWarningLevel = getEpilepsyWarningIssueLevel(state.epilepsyWarning);
 
   if (
     previewPointLevel === TAB_LEVEL_ERROR ||
+    bgOffsetLevel === TAB_LEVEL_ERROR ||
     epilepsyWarningLevel === TAB_LEVEL_ERROR
   ) {
     return TAB_LEVEL_ERROR;
@@ -388,6 +390,7 @@ function getMiscIssueLevel(state) {
 
   if (
     previewPointLevel === TAB_LEVEL_WARN ||
+    bgOffsetLevel === TAB_LEVEL_WARN ||
     epilepsyWarningLevel === TAB_LEVEL_WARN
   ) {
     return TAB_LEVEL_WARN;
@@ -412,6 +415,33 @@ function getPreviewPointIssueLevel(results) {
   }
 
   return hasWarn ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
+}
+
+function getBgOffsetIssueLevel(results) {
+  if (!results || !results.length) return TAB_LEVEL_NONE;
+
+  const groups = new Map();
+
+  for (const result of results) {
+    for (const bg of result.backgrounds ?? []) {
+      const key = bg.normalizedFileName;
+      if (!key) continue;
+
+      if (!groups.has(key)) {
+        groups.set(key, new Set());
+      }
+
+      groups.get(key).add(`${bg.xOffset},${bg.yOffset}`);
+    }
+  }
+
+  for (const offsets of groups.values()) {
+    if (offsets.size > 1) {
+      return TAB_LEVEL_WARN;
+    }
+  }
+
+  return TAB_LEVEL_NONE;
 }
 
 function getEpilepsyWarningIssueLevel(results) {

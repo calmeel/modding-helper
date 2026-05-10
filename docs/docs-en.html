@@ -444,6 +444,7 @@
   <details class="doc-tab-group">
     <summary>Miscellaneous</summary>
     <button class="doc-tab-button" data-doc-tab="previewPoint">Preview Point</button>
+    <button class="doc-tab-button" data-doc-tab="bgOffset">BG Offset</button>
     <button class="doc-tab-button" data-doc-tab="epilepsyWarning">Kiai Flash / Epilepsy Warning</button>
   </details>
 
@@ -492,6 +493,9 @@
       </a>,
       <a href="https://osu.ppy.sh/users/16320311" target="_blank" rel="noopener noreferrer">
         Eriha
+      </a>,
+      <a href="https://osu.ppy.sh/users/14947043" target="_blank" rel="noopener noreferrer">
+        hz404
       </a>
     </div>
 
@@ -1195,6 +1199,47 @@ A PreviewTime that is not snapped does not necessarily mean the map is unrankabl
 
 However, since this may indicate that PreviewTime was accidentally left unchanged after an offset adjustment,
 you should verify whether the displayed position is intentional whenever a warning appears.<br>
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="bgOffset">
+<h2>Misc: BG Offset</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ Background</span><br>
+Background events inside the <code>[Events]</code> section can specify the background image file name and its display offset.<br><br>
+
+Example:
+<pre><code>[Events]<br>
+//Background and Video events<br>
+0,0,"BG.jpg",0,40</code></pre>
+
+Background events use the following syntax:<br>
+<code>0,0,filename,xOffset,yOffset</code><br><br>
+
+If <code>xOffset</code> / <code>yOffset</code> is <code>0,0</code>, the values may be omitted.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection</span><br>
+This check reads the background events of each difficulty in the mapset and verifies whether
+<code>xOffset</code> / <code>yOffset</code> are consistent between difficulties that use the same background image file.<br><br>
+
+If the same background file is used but the offsets differ between difficulties,
+a warning will be displayed.<br><br>
+
+This check cannot be performed by AiMod or Mapset Verifier.
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+Difficulties using different background files are excluded from comparison.<br><br>
+
+For example, if <code>Kantan</code> uses <code>BG.jpg</code> while <code>Muzukashii</code> uses <code>BG2.jpg</code>,
+they are treated as separate background images, so differing offsets will not trigger a warning.<br><br>
+
+Additionally, differing offsets for the same background file may sometimes be intentional.<br>
+If a warning appears, check whether it is an unintended inconsistency or a deliberate visual difference.
 </div>
 </section>
 

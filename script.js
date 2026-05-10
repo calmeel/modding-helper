@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const sourceOutput = document.getElementById("sourceOutput");
   const tagOutput = document.getElementById("tagOutput");
   const previewPointOutput = document.getElementById("previewPointOutput");
+  const bgOffsetOutput = document.getElementById("bgOffsetOutput");
   const epilepsyWarningOutput = document.getElementById("epilepsyWarningOutput");
   const spreadOdHpOutput = document.getElementById("spreadOdHpOutput");
   const spreadOrderOutput = document.getElementById("spreadOrderOutput");
@@ -99,6 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
     sourceOutput,
     tagOutput,
     previewPointOutput,
+    bgOffsetOutput,
     epilepsyWarningOutput,
     spreadOdHpOutput,
     spreadOrderOutput,
@@ -140,6 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
     source: null,
     tag: null,
     previewPoint: null,
+    bgOffset: null,
     epilepsyWarning: null,
     spread: {
       results: null,
@@ -276,6 +279,10 @@ document.addEventListener("DOMContentLoaded", () => {
       previewPointOutput.textContent = t("noFileLoaded");
     }
 
+    if (!state.bgOffset && bgOffsetOutput) {
+      bgOffsetOutput.textContent = t("noFileLoaded");
+    }
+
     if (!state.epilepsyWarning && epilepsyWarningOutput) {
       epilepsyWarningOutput.textContent = t("noFileLoaded");
     }
@@ -304,6 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderSourceResult();
     renderTagResult();
     renderPreviewPointResult();
+    renderBgOffsetResult();
     renderEpilepsyWarningResult();
     renderSpreadResult();
 
@@ -418,6 +426,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderPreviewPointResult() {
     renderPreviewPointResultFromResults(
       state.previewPoint,
+      dom,
+      t
+    );
+  }
+
+  function renderBgOffsetResult() {
+    renderBgOffsetResultFromResults(
+      state.bgOffset,
       dom,
       t
     );
@@ -538,6 +554,7 @@ document.addEventListener("DOMContentLoaded", () => {
       state.source = result.source;
       state.tag = result.tag;
       state.previewPoint = result.previewPoint;
+      state.bgOffset = result.bgOffset;
       state.epilepsyWarning = result.epilepsyWarning;
       state.spread.results = result.spread;
       state.spread.diffOrder = createSpreadDiffOrder(result.spread);
@@ -563,6 +580,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderSourceResult();
       renderTagResult();
       renderPreviewPointResult();
+      renderBgOffsetResult();
       renderEpilepsyWarningResult();
       renderSpreadResult();
       updateTabIssueStates(state);

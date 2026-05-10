@@ -22,6 +22,7 @@ function createEmptyProcessResult() {
     source: [],
     tag: [],
     previewPoint: [],
+    bgOffset: [],
     epilepsyWarning: [],
     spread: []
   };
@@ -46,6 +47,7 @@ async function analyzeOszFile(file) {
   const sourceResults = [];
   const tagResults = [];
   const previewPointResults = [];
+  const bgOffsetResults = [];
   const epilepsyWarningResults = [];
   const spreadResults = [];
 
@@ -141,9 +143,13 @@ async function analyzeOszFile(file) {
       mode
     });
 
-
     previewPointResults.push({
       ...runPreviewPointCheck(text, entry.name),
+      mode
+    });
+
+    bgOffsetResults.push({
+      ...runBgOffsetCheck(text, entry.name),
       mode
     });
 
@@ -175,6 +181,7 @@ async function analyzeOszFile(file) {
     sourceResults,
     tagResults,
     previewPointResults,
+    bgOffsetResults,
     epilepsyWarningResults,
     spreadResults
   };
@@ -285,6 +292,12 @@ async function processFile(file) {
           mode
         }
       ],
+      bgOffset: [
+        {
+          ...runBgOffsetCheck(text, file.name),
+          mode
+        }
+      ],
       epilepsyWarning: [
         {
           ...runEpilepsyWarningCheck(text, file.name),
@@ -321,6 +334,7 @@ async function processFile(file) {
       source: analyzed.sourceResults,
       tag: analyzed.tagResults,
       previewPoint: analyzed.previewPointResults,
+      bgOffset: analyzed.bgOffsetResults,
       epilepsyWarning: analyzed.epilepsyWarningResults,
       spread: analyzed.spreadResults,
     };

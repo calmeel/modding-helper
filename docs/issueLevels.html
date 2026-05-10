@@ -173,7 +173,7 @@
     <tr>
       <td>SVボリューム</td>
       <td class="warn-cell">
-        ヒットオブジェクトの近く（± 1/16 snap）に ボリューム変化が存在する
+        ・ヒットオブジェクトの近く（± 1/16 snap）に ボリューム変化が存在する
       </td>
       <td class="error-cell">
         ・そのボリューム変化の差が 15%以上である
@@ -290,6 +290,15 @@
       <td>その他：プレビューポイント</td>
       <td class="warn-cell">
         ・プレビューポイントが unsnapped である
+      </td>
+      <td class="none">なし</td>
+    </tr>
+
+    <tr>
+      <td>その他：BGオフセット</td>
+      <td class="warn-cell">
+        ・同じ background file を使用している difficulty 間で
+        <code>xOffset</code> / <code>yOffset</code> が一致していない
       </td>
       <td class="none">なし</td>
     </tr>
