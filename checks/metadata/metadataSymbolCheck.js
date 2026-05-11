@@ -81,7 +81,10 @@ function findMetadataSymbolRomanisationIssues(original, romanised, fieldName) {
     return issues;
   }
 
-  const romanisedSymbols = collectRomanisedMetadataSymbols(romanisedText);
+  const romanisedSymbols = collectRomanisedMetadataSymbols(
+    romanisedText,
+    originalSymbols
+  );
 
   if (!originalSymbols.length && !romanisedSymbols.length) {
     return issues;
@@ -134,47 +137,6 @@ function findMetadataSymbolRomanisationIssues(original, romanised, fieldName) {
       });
 
       continue;
-    }
-
-    // 3. 位置が大きく違う
-    const originalRatio =
-      originalSymbol.index / Math.max(1, originalText.length - 1);
-
-    const romanisedRatio =
-      romanisedSymbol.index / Math.max(1, romanisedText.length - 1);
-
-    if (Math.abs(originalRatio - romanisedRatio) > 0.25) {
-      issues.push({
-        fieldName,
-        type: "metadataSymbolPositionMismatch",
-
-        // formatters.js 互換用
-        symbol: originalSymbol.char,
-        expectedList,
-
-        original: originalText,
-        romanised: romanisedText,
-        suggestedRomanised
-      });
-    }
-
-    // 4. 記号の前後に半角スペースがある
-    const before = romanisedText[romanisedSymbol.index - 1];
-    const after = romanisedText[romanisedSymbol.index + romanisedSymbol.char.length];
-
-    if (before === " " || after === " ") {
-      issues.push({
-        fieldName,
-        type: "metadataSymbolSpacing",
-
-        // formatters.js 互換用
-        symbol: originalSymbol.char,
-        expectedList,
-
-        original: originalText,
-        romanised: romanisedText,
-        suggestedRomanised: removeSpacesAroundRomanisedSymbols(romanisedText)
-      });
     }
   }
 

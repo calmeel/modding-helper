@@ -97,23 +97,33 @@ function getSpreadSortInfo(fileName) {
   const normalized = diffName
     .toLowerCase()
     .replace(/[\[\]]/g, "")
-    .replace(/[_-]/g, " ");
+    .replace(/[_-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
   let base = 999;
   let modifier = 0;
 
   const has = (...words) => words.some(word => normalized.includes(word));
 
+  const hasWord = (...words) =>
+    words.some(word => new RegExp(`\\b${word}\\b`).test(normalized));
+
   const isGuestOni =
-    /\b.+?'s\s+oni\b/.test(normalized);
+    /\b.+?'s\s+oni\b/.test(normalized) ||
+    /\b.+?s'\s+oni\b/.test(normalized);
 
   const isPlainOni =
-    normalized.trim() === "oni";
+    normalized === "oni";
+
+  const isLiteOni =
+    hasWord("lite", "light", "basic") && hasWord("oni");
 
   const isModifiedOni =
     /\boni\b/.test(normalized) &&
     !isGuestOni &&
-    !isPlainOni;
+    !isPlainOni &&
+    !isLiteOni;
 
   if (has("shokyuu", "syokyuu", "shoshinsha", "beginner")) {
     base = -1;
@@ -123,29 +133,22 @@ function getSpreadSortInfo(fileName) {
     base = 1;
   } else if (has("muzukashii")) {
     base = 2;
-  } else if (has("oni")) {
+  } else if (hasWord("oni")) {
     base = 3;
 
-    // Oni系の並び順
-    // Oni / Guest's Oni      -> 0
-    // Inner Oni              -> 1
-    // Ura Oni                -> 2
-    // その他の「~~~ Oni」    -> 4
-    // Hell / Lunatic Oni     -> 3
-    if (has("hell", "lunatic")) {
+    if (isGuestOni || isPlainOni) {
+      modifier = 0;
+    } else if (isLiteOni) {
+      modifier = -1;
+    } else if (hasWord("hell", "lunatic")) {
       modifier = 3;
-    } else if (has("ura")) {
+    } else if (hasWord("ura")) {
       modifier = 2;
-    } else if (has("inner")) {
+    } else if (hasWord("inner")) {
       modifier = 1;
     } else if (isModifiedOni) {
       modifier = 4;
     }
-  }
-
-  // 下位寄りの修飾子
-  if (has("lite", "light", "basic")) {
-    modifier -= 1;
   }
 
   return {

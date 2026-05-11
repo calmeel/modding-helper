@@ -1360,27 +1360,31 @@ function formatMultipleArtistResults(results, t) {
   lines.push(formatSectionTitle(t("metadataSymbolRomanisationCheck")));
   lines.push("");
 
-  const symbolIssueResults = sortedResults.filter(result =>
-    result.symbolIssues?.length > 0
-  );
+  const groupedSymbolIssues = groupArtistSymbolIssues(sortedResults);
 
-  if (!symbolIssueResults.length) {
+  if (!groupedSymbolIssues.length) {
     lines.push(t("metadataNoSymbolRomanisationIssues"));
   } else {
-    for (const result of symbolIssueResults) {
-      lines.push(getDifficultyNameText(result.fileName));
-      lines.push("");
+    for (const group of groupedSymbolIssues) {
+      const issue = group.issue;
 
-      for (const issue of result.symbolIssues) {
+      lines.push(
+        `<span class="result-warn">${escapeHtml(t("metadataSymbolRomanisationIssue"))}:</span> ` +
+        `<code>${escapeHtml(issue.symbol)}</code> → ` +
+        issue.expectedList.map(v => `<code>${escapeHtml(v)}</code>`).join(" / ")
+      );
+
+      lines.push(`  ${escapeHtml(t("metadataOriginal"))}: <code>${escapeHtml(issue.original)}</code>`);
+      lines.push(`  ${escapeHtml(t("metadataRomanised"))}: <code>${escapeHtml(issue.romanised)}</code>`);
+
+      if (group.fileNames.length < sortedResults.length) {
         lines.push(
-          `<span class="result-warn">${escapeHtml(t("metadataSymbolRomanisationIssue"))}:</span> ` +
-          `<code>${escapeHtml(issue.symbol)}</code> → ` +
-          issue.expectedList.map(v => `<code>${escapeHtml(v)}</code>`).join(" / ")
+          `  Diff: ` +
+          group.fileNames.map(name => getDifficultyName(name)).join(" ")
         );
-        lines.push(`  ${escapeHtml(t("metadataOriginal"))}: <code>${escapeHtml(issue.original)}</code>`);
-        lines.push(`  ${escapeHtml(t("metadataRomanised"))}: <code>${escapeHtml(issue.romanised)}</code>`);
-        lines.push("");
       }
+
+      lines.push("");
     }
   }
 
@@ -1435,6 +1439,35 @@ function formatMultipleArtistResults(results, t) {
   }
 
   return lines.join("\n").trimEnd();
+}
+
+function groupArtistSymbolIssues(results) {
+  const map = new Map();
+
+  for (const result of results) {
+    for (const issue of result.symbolIssues ?? []) {
+      const key = [
+        issue.fieldName,
+        issue.type,
+        issue.symbol,
+        issue.original,
+        issue.romanised,
+        issue.suggestedRomanised,
+        (issue.expectedList ?? []).join("/")
+      ].join("::");
+
+      if (!map.has(key)) {
+        map.set(key, {
+          issue,
+          fileNames: []
+        });
+      }
+
+      map.get(key).fileNames.push(result.fileName);
+    }
+  }
+
+  return [...map.values()];
 }
 
 /** Titleチェック */
@@ -1518,21 +1551,12 @@ function formatMultipleTitleResults(results, t) {
         `<code>${escapeHtml(issue.romanised)}</code>`
       );
 
-      if (issue.suggestedRomanised && issue.suggestedRomanised !== issue.romanised) {
+      if (group.fileNames.length < sortedResults.length) {
         lines.push(
-          `  ${escapeHtml(t("metadataSuggestedRomanised"))}: ` +
-          `<code>${escapeHtml(issue.suggestedRomanised)}</code>`
-        );
-      } else {
-        lines.push(
-          `  <span class="result-warn">${escapeHtml(t("metadataSuggestedRomanisedUnavailable"))}</span>`
+          `  Diff: ` +
+          group.fileNames.map(name => getDifficultyName(name)).join(" ")
         );
       }
-
-      lines.push(
-        `  Diff: ` +
-        group.fileNames.map(name => getDifficultyName(name)).join(" ")
-      );
 
       lines.push("");
     }
