@@ -491,5 +491,28 @@ This page contains the list of metadata checks used by Modding Helper.
   </tbody>
 </table>
 
+<div class="notes">
+  <div class="notes-title">Notes</div>
+
+  <p>
+    The special symbol check is intended as a helper check to verify whether symbols used in the original metadata are still preserved as corresponding symbols in the Romanised metadata.
+  </p>
+
+  <p>
+    For example, it checks whether <code>＆</code> is converted to <code>&amp;</code>, or whether <code>×</code> is converted to <code>x</code>.<br>
+    However, the check does not attempt to validate the romanisation of Japanese text itself.
+  </p>
+
+  <p>
+    To reduce false positives, the current implementation does not verify the relative positions of symbols.<br>
+    As a result, if a corresponding symbol exists somewhere in the Romanised metadata, differences in symbol placement may not be detected.
+  </p>
+
+  <p>
+    Additionally, the check does not validate spaces surrounding symbols.<br>
+    This is because formats such as <code>Musashi Project &amp; Toshiro Masuda</code>, where spaces around symbols are natural, are commonly used.
+  </p>
+</div>
+
 </body>
 </html>
