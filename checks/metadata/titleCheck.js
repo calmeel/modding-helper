@@ -368,13 +368,15 @@ function findTitleFeatMarkerIssues(title, fieldName) {
     const expectedFound =
       `${normalizedMarker} ${nextToken}`;
 
-    issues.push({
-      fieldName,
-      type: "titleFeatSpacing",
-      marker: found,
-      expected: expectedFound,
-      context: getTitleMarkerIssueContext(text, index)
-    });
+    if (found !== expectedFound) {
+      issues.push({
+        fieldName,
+        type: "titleFeatSpacing",
+        marker: found,
+        expected: expectedFound,
+        context: getTitleMarkerIssueContext(text, index)
+      });
+    }
   }
 
   return issues;
