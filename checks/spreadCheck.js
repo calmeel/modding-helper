@@ -363,7 +363,18 @@ function moveSpreadDiffToCategory(diffOrder, results, fileName, category, manual
   return withoutTarget;
 }
 
-/** 低難易度のスクロール速度 */
+/** 低難易度のスクロール速度：速すぎ */
+const SPREAD_SCROLL_TOO_FAST_RULES = {
+  belowKantan: 820,
+  kantan: 820,
+  futsuu: 1020,
+  muzukashii: 1225,
+  oni: 1225,
+  innerPlus: Infinity,
+  unknown: Infinity
+};
+
+/** 低難易度のスクロール速度：変化しすぎ */
 const SPREAD_SCROLL_BASE_PX_PER_BEAT = 175;
 
 const SPREAD_SCROLL_RAPID_RULES = {
@@ -462,6 +473,11 @@ function analyzeSpreadScrollSpeed(text, difficulty = null) {
   const minSpeed = Math.min(...speeds);
   const maxSpeed = Math.max(...speeds);
 
+  const averageSpeed =
+    speeds.reduce((sum, speed) => sum + speed, 0) / speeds.length;
+
+  const percentile90Speed = getPercentileValue(speeds, 0.9);
+
   const svValues = samples.map(sample => sample.sv);
   const minSv = Math.min(...svValues);
   const maxSv = Math.max(...svValues);
@@ -504,6 +520,8 @@ function analyzeSpreadScrollSpeed(text, difficulty = null) {
     summary: {
       minSpeed,
       maxSpeed,
+      averageSpeed,
+      percentile90Speed,
       deltaSpeed: maxSpeed - minSpeed,
       ratio: minSpeed > 0 ? maxSpeed / minSpeed : null,
       minSv,
@@ -661,6 +679,35 @@ function getSpreadRapidScrollLevel(change, category) {
   }
 
   return "ok";
+}
+
+function getPercentileValue(values, percentile) {
+  const sorted = values
+    .filter(value => Number.isFinite(value))
+    .sort((a, b) => a - b);
+
+  if (!sorted.length) return null;
+
+  const index = Math.ceil(sorted.length * percentile) - 1;
+  const clampedIndex = Math.max(0, Math.min(sorted.length - 1, index));
+
+  return sorted[clampedIndex];
+}
+
+function getSpreadTooFastScrollRule(category) {
+  return SPREAD_SCROLL_TOO_FAST_RULES[category] ?? SPREAD_SCROLL_TOO_FAST_RULES.unknown;
+}
+
+function getSpreadTooFastScrollLevel(scrollSpeed, category) {
+  const threshold = getSpreadTooFastScrollRule(category);
+
+  if (!Number.isFinite(threshold)) return "ok";
+
+  const speed = scrollSpeed?.summary?.percentile90Speed;
+
+  if (!Number.isFinite(speed)) return "ok";
+
+  return speed >= threshold ? "warn" : "ok";
 }
 
 /** ノーツ密度 */

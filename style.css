@@ -996,3 +996,20 @@ input[type="file"]::file-selector-button:hover {
 .timeline-cell.timeline-kiai .bn-note {
   background: rgba(255, 216, 107, 0.04);
 }
+
+.modal-content {
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.update-date {
+  margin-top: 24px;
+  margin-bottom: 8px;
+
+  padding-bottom: 4px;
+
+  border-bottom: 1px solid #444;
+
+  color: #9fdcff;
+  font-size: 18px;
+}

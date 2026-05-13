@@ -414,6 +414,20 @@ function updateSpreadSubtabIssueStates(spreadState) {
     scrollLevel = "warn";
   }
 
+  for (const result of sortedResults) {
+    const category = getSpreadEffectiveCategory(result, manualCategories);
+
+    const level = getSpreadTooFastScrollLevel(
+      result.scrollSpeed,
+      category
+    );
+
+    if (level === "warn") {
+      scrollLevel = "warn";
+      break;
+    }
+  }
+
   setSpreadSubtabIssueLevel("scroll", scrollLevel);
 }
 
@@ -1401,12 +1415,20 @@ function formatSpreadScrollSpeedSummaryTable(results, t, manualCategories = {}) 
     const summary = result.scrollSpeed?.summary;
     const category = getSpreadEffectiveCategory(result, manualCategories);
 
+    const tooFastLevel = getSpreadTooFastScrollLevel(result.scrollSpeed, category);
+    const limitValue = getSpreadTooFastScrollRule(category);
+
     return {
       result,
       diff: getDifficultyNameText(result.fileName),
       category,
+      categoryLabel: category,
       min: summary ? formatSpreadScrollSpeed(summary.minSpeed) : "N/A",
       max: summary ? formatSpreadScrollSpeed(summary.maxSpeed) : "N/A",
+      p90: summary ? formatSpreadScrollSpeed(summary.percentile90Speed) : "N/A",
+      limitValue,
+      tooFastLevel,
+      status: tooFastLevel === "warn" ? "Warning" : "OK",
       delta: summary ? formatSpreadScrollSpeed(summary.deltaSpeed) : "N/A",
       ratio: summary ? formatSpreadRatio(summary.ratio) : "N/A",
       sv: summary
@@ -1418,61 +1440,100 @@ function formatSpreadScrollSpeedSummaryTable(results, t, manualCategories = {}) 
 
   const headers = {
     diff: "Diff",
-    category: "Category",
     min: "Min px/s",
     max: "Max px/s",
+    p90: "90% px/s",
     delta: "Delta",
     ratio: "Ratio",
     sv: "SV range",
-    sm: "SliderMultiplier"
+    sm: "SliderMultiplier",
+    status: "Status"
   };
 
   const widths = {
     diff: Math.max(10, visibleWidth(headers.diff), ...rows.map(r => visibleWidth(r.diff))),
-    category: Math.max(8, visibleWidth(headers.category), ...rows.map(r => visibleWidth(r.category))),
     min: Math.max(8, visibleWidth(headers.min), ...rows.map(r => visibleWidth(r.min))),
     max: Math.max(8, visibleWidth(headers.max), ...rows.map(r => visibleWidth(r.max))),
+    p90: Math.max(8, visibleWidth(headers.p90), ...rows.map(r => visibleWidth(r.p90))),
     delta: Math.max(7, visibleWidth(headers.delta), ...rows.map(r => visibleWidth(r.delta))),
     ratio: Math.max(5, visibleWidth(headers.ratio), ...rows.map(r => visibleWidth(r.ratio))),
     sv: Math.max(8, visibleWidth(headers.sv), ...rows.map(r => visibleWidth(r.sv))),
-    sm: Math.max(4, visibleWidth(headers.sm), ...rows.map(r => visibleWidth(String(r.sm))))
+    sm: Math.max(16, visibleWidth(headers.sm), ...rows.map(r => visibleWidth(String(r.sm)))),
+    status: Math.max(7, visibleWidth(headers.status), ...rows.map(r => visibleWidth(r.status)))
   };
 
   const lines = [];
 
   lines.push(
     `${padEndVisual(headers.diff, widths.diff)} | ` +
-    `${padEndVisual(headers.category, widths.category)} | ` +
     `${padStartVisual(headers.min, widths.min)} | ` +
     `${padStartVisual(headers.max, widths.max)} | ` +
+    `${padStartVisual(headers.p90, widths.p90)} | ` +
     `${padStartVisual(headers.delta, widths.delta)} | ` +
     `${padStartVisual(headers.ratio, widths.ratio)} | ` +
     `${padEndVisual(headers.sv, widths.sv)} | ` +
-    `${padStartVisual(headers.sm, widths.sm)}`
+    `${padStartVisual(headers.sm, widths.sm)} | ` +
+    `${padEndVisual(headers.status, widths.status)}`
   );
 
   lines.push(
     `${"-".repeat(widths.diff)}-+-` +
-    `${"-".repeat(widths.category)}-+-` +
     `${"-".repeat(widths.min)}-+-` +
     `${"-".repeat(widths.max)}-+-` +
+    `${"-".repeat(widths.p90)}-+-` +
     `${"-".repeat(widths.delta)}-+-` +
     `${"-".repeat(widths.ratio)}-+-` +
     `${"-".repeat(widths.sv)}-+-` +
-    `${"-".repeat(widths.sm)}`
+    `${"-".repeat(widths.sm)}-+-` +
+    `${"-".repeat(widths.status)}`
   );
 
   for (const row of rows) {
+    const isWarn = row.tooFastLevel === "warn";
+
+    const p90Html =
+      isWarn
+        ? `<span class="result-warn">${row.p90}</span>`
+        : row.p90;
+
+    const statusHtml = isWarn
+      ? `<span class="result-warn">${row.status}</span>`
+      : row.status;
+
     lines.push(
       `${getDifficultyName(row.result.fileName)}${" ".repeat(widths.diff - visibleWidth(row.diff))} | ` +
-      `${padEndVisual(row.category, widths.category)} | ` +
       `${padStartVisual(row.min, widths.min)} | ` +
       `${padStartVisual(row.max, widths.max)} | ` +
+      `${isWarn
+        ? `<span class="result-warn">${padStartVisual(row.p90, widths.p90)}</span>`
+        : padStartVisual(row.p90, widths.p90)
+      } | ` +
       `${padStartVisual(row.delta, widths.delta)} | ` +
       `${padStartVisual(row.ratio, widths.ratio)} | ` +
       `${padEndVisual(row.sv, widths.sv)} | ` +
-      `${padStartVisual(String(row.sm), widths.sm)}`
+      `${padStartVisual(String(row.sm), widths.sm)} | ` +
+      `${isWarn
+        ? `<span class="result-warn">${padEndVisual(row.status, widths.status)}</span>`
+        : padEndVisual(row.status, widths.status)
+      }`
     );
+  }
+
+  const tooFastRows = rows.filter(row => row.tooFastLevel === "warn");
+
+  if (tooFastRows.length) {
+    lines.push("");
+    lines.push("速すぎるスクロール速度の可能性:");
+
+    for (const row of tooFastRows) {
+      lines.push(
+        `<span class="result-warn">` +
+        `${getDifficultyName(row.result.fileName)}: ` +
+        `${row.categoryLabel} のスクロール速度が速すぎる可能性があります。` +
+        `90% px/s を ${formatSpreadScrollSpeed(row.limitValue)} 以下にすることを検討してください。` +
+        `</span>`
+      );
+    }
   }
 
   return lines.join("\n");

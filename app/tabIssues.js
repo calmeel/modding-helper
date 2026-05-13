@@ -562,5 +562,19 @@ function getSpreadIssueLevel(spreadState) {
     hasWarn = true;
   }
 
+  /** 追加：速すぎるスクロール速度 */
+  for (const result of sortedResults) {
+    const category = getSpreadEffectiveCategory(result, manualCategories);
+
+    const level = getSpreadTooFastScrollLevel(
+      result.scrollSpeed,
+      category
+    );
+
+    if (level === "warn") {
+      hasWarn = true;
+    }
+  }
+
   return hasWarn ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
 }
