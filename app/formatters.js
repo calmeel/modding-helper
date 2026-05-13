@@ -1128,6 +1128,11 @@ function formatEarlyNoteIssueDetail(result, t) {
     lines.push(`SV: N/A`);
     lines.push(`${t("earlyNoteEstimatedVisibleTime")}: N/A`);
     lines.push(`${t("earlyNotePosition")}: N/A`);
+    lines.push("");
+    lines.push(
+      `<span class="${cls}">${escapeHtml(t("earlyNoteRecommendation"))}</span>`
+    );
+
     return lines.join("\n");
   }
 
@@ -1142,6 +1147,11 @@ function formatEarlyNoteIssueDetail(result, t) {
 
   lines.push(
     `<span class="${cls}">${t("earlyNotePosition")}: ${positionText}</span>`
+  );
+
+  lines.push("");
+  lines.push(
+    `<span class="${cls}">${escapeHtml(t("earlyNoteRecommendation"))}</span>`
   );
 
   return lines.join("\n");

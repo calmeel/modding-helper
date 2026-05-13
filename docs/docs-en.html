@@ -848,9 +848,19 @@ and
 
 <div class="section section-warning">
 <span class="label label-warning">■ Notes</span><br>
-The first red line cannot be set to kiai ON. Therefore, if the first SV line has kiai enabled, this check will detect it.<br><br>
 
-In some cases, the first red line and green line intentionally use different volume settings. This is because the red line volume applies before that timestamp, while the green line volume applies afterward.
+Due to osu!editor limitations, the very first red timing point cannot have kiai enabled.<br><br>
+
+The osu! Ranking Criteria recommends placing a green timing point at the same timestamp
+and enabling kiai only on the green line when kiai should start from the beginning of the map.<br><br>
+
+Because of this, this check intentionally ignores kiai mismatches between
+the very first red line and the very first green line.<br><br>
+
+Additionally, the first red and green timing points may intentionally use different volume values.
+This is because the red line volume is applied before that timestamp,
+while the green line volume is applied from that timestamp onward.
+
 </div>
 </section>
 
