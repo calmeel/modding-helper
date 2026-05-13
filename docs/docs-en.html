@@ -1975,6 +1975,74 @@ In addition, even when a lower difficulty contains stronger local scroll-speed c
 the behavior may still be justified by visual effects, rhythm interpretation, or rest placement.<br>
 Displayed results should therefore be treated as confirmation targets rather than strict warnings.
 </div>
+
+<div class="section section-detect">
+  <span class="label label-detect">■ Detection 3: Scroll speed may be too fast</span><br>
+
+  If the scroll speed is too fast on lower difficulties, beginner players may have difficulty reading notes properly.<br>
+  This check calculates the effective scroll speed at note positions for each difficulty,
+  and checks whether the top <code>90% px/s</code> exceeds the recommended range for that difficulty.<br><br>
+
+  This check uses <code>90% px/s</code> instead of the absolute maximum value.<br>
+  This helps avoid over-warning for very short high-speed gimmicks,
+  while still detecting cases where fast scrolling continues for a significant portion of the map.<br><br>
+
+  The thresholds are based on the following approximate scroll speeds,
+  assuming <code>SV = 1.0</code> and <code>SliderMultiplier = 1.4</code>.<br><br>
+
+  <table class="ratio-threshold-table">
+    <thead>
+      <tr>
+        <th>Difficulty</th>
+        <th>Reference</th>
+        <th>Approx. px/s</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Kantan / below Kantan</td>
+        <td><code>BPM 200</code>, <code>SV 1.0</code>, <code>SM 1.4</code></td>
+        <td><code>Approx. 820 px/s</code></td>
+        <td class="ratio-warn">Warning</td>
+      </tr>
+      <tr>
+        <td>Futsuu</td>
+        <td><code>BPM 250</code>, <code>SV 1.0</code>, <code>SM 1.4</code></td>
+        <td><code>Approx. 1020 px/s</code></td>
+        <td class="ratio-warn">Warning</td>
+      </tr>
+      <tr>
+        <td>Muzukashii</td>
+        <td><code>BPM 300</code>, <code>SV 1.0</code>, <code>SM 1.4</code></td>
+        <td><code>Approx. 1225 px/s</code></td>
+        <td class="ratio-warn">Warning</td>
+      </tr>
+      <tr>
+        <td>Oni</td>
+        <td><code>BPM 300</code>, <code>SV 1.0</code>, <code>SM 1.4</code></td>
+        <td><code>Approx. 1225 px/s</code></td>
+        <td class="ratio-warn">Warning</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <br>
+
+  For example, if the <code>90% px/s</code> value for a Kantan difficulty exceeds <code>820</code>,
+  the tool will display a Warning indicating that the scroll speed may be too fast for a Kantan difficulty.
+</div>
+
+<div class="section section-warning">
+  <span class="label label-warning">■ Notes</span><br>
+
+  These thresholds are guideline values defined by this tool for convenience.<br><br>
+
+  If a Warning is displayed, consider reducing the <code>90% px/s</code> value below the recommended threshold.<br>
+  In many cases, readability can be improved by adjusting SV or <code>SliderMultiplier</code>,
+  rather than changing the BPM itself.
+</div>
+
 </section>
 
 <section class="doc-tab-panel" data-doc-tab-panel="bnCompare">
