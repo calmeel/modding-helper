@@ -90,6 +90,7 @@ const i18n = {
     earlyNoteSv: "SV",
     earlyNotePositionShort: "Position",
     earlyNoteIssueDetails: "First-note lag risk details",
+    earlyNoteRecommendation: "Consider adding about 1000 ms of silence to the beginning of the audio file.",
 
     tabMetadata: "Metadata",
     metadataFieldView: "Metadata field view",
@@ -386,6 +387,7 @@ const i18n = {
     earlyNoteSv: "SV",
     earlyNotePositionShort: "残り位置",
     earlyNoteIssueDetails: "プチフリリスクの詳細",
+    earlyNoteRecommendation: "音源ファイルの先頭に 1000 ms 程度の無音を追加することを検討してください。",
 
     tabMetadata: "メタデータ",
     metadataFieldView: "メタデータ表示",

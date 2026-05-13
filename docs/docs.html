@@ -808,8 +808,18 @@ diff間の SV ボリュームを比較し、不一致がある区間を検出し
 
 <div class="section section-warning">
 <span class="label label-warning">■ 注意点</span><br>
-最初の赤線は kiai ON にすることができません。そのため、最初の SV line が kiai ON の場合は、このチェックに引っかかります。<br><br>
-最初の赤線と緑線では、意図的に volume を変更している場合があります。そのタイムポイントより前は赤線の volume が適用され、それ以降は緑線の volume が適用されるためです。
+
+最初の赤線は、osu!editor の仕様上 kiai ON にすることができません。<br><br>
+
+osu! Ranking Criteria では、譜面開始地点から kiai を有効にしたい場合、
+同時刻に緑線を配置し、その緑線のみを kiai ON にすることが推奨されています。<br><br>
+
+そのため、このチェックでは「最初の赤線」と「最初の緑線」の kiai 状態が一致しない場合については、
+警告を出さないようになっています。<br><br>
+
+また、最初の赤線と緑線では、意図的に volume を変更している場合があります。
+そのタイムポイントより前は赤線の volume が適用され、それ以降は緑線の volume が適用されるためです。
+
 </div>
 </section>
 

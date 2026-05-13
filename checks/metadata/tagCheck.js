@@ -5,7 +5,7 @@ const TAG_SPELLING_DICTIONARY = [
   // genres / style
   "artcore", "anime", "ambient", "edm", "ethnic", "extratone", "hardcore", "hardtek",
   "melodic", "techno", "hardstyle", "psystyle", "psytrance", "trance",
-  "electropop", "future", "bass", "female", "vocals", "vocalist",
+  "electropop", "future", "bass", "female", "vocalist",
   "vocaloid", "jazz", "electronic", "instrumental", "hitech", "hi-tech",
   "gothic", "speedcore", "splittercore", "otogecore", "frenchcore",
   "200step", "dubstep", "drumstep", "chiptune", "breakcore", "piano",

@@ -10,8 +10,14 @@ function runRedGreenMatchCheck(text, fileName) {
     const sameTimeGreens = greens.filter(green => green.time === red.time);
 
     for (const green of sameTimeGreens) {
+      /** 最初の赤線だけ例外処理：kiaiじゃなくてok */
+      const isFirstRed = red === reds[0];
+      const isFirstGreen = green === greens[0];
+      const ignoreFirstRedGreenKiaiMismatch = isFirstRed && isFirstGreen;
+
       const volumeMismatch = red.volume !== green.volume;
-      const kiaiMismatch = red.kiai !== green.kiai;
+      const kiaiMismatch =
+        red.kiai !== green.kiai && !ignoreFirstRedGreenKiaiMismatch;
       const sampleSetMismatch = red.sampleSet !== green.sampleSet;
 
       if (!volumeMismatch && !kiaiMismatch && !sampleSetMismatch) continue;

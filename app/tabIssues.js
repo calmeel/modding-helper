@@ -154,7 +154,7 @@ function getSvVolumeIssueLevel(sources) {
 
   for (const source of sources) {
     const result = runSvVolumeCheck(source.text, source.fileName, {
-      thresholdMode: "16snap",
+      thresholdMode: "5ms",
       largeChangeOnly: false,
       largeChangeThreshold: 15
     });
