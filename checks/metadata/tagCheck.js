@@ -3,19 +3,19 @@ const TAG_SPELLING_DICTIONARY = [
   "featured", "artist", "mappers'", "guild", "tiebreaker", "qualifiers", "quarterfinals", "semifinals", "grand","finals",
 
   // genres / style
-  "artcore", "anime", "ambient", "edm", "ethnic", "extratone", "hardcore", "hardtek",
+  "artcore", "anime", "ambient", "ethnic", "extratone", "hardcore", "hardtek",
   "melodic", "techno", "hardstyle", "psystyle", "psytrance", "trance",
-  "electropop", "future", "bass", "female", "vocalist",
-  "vocaloid", "jazz", "electronic", "instrumental", "hitech", "hi-tech",
+  "electropop", "future", "female", "vocalist",
+  "vocaloid", "electronic", "instrumental", "hitech", "hi-tech",
   "gothic", "speedcore", "splittercore", "otogecore", "frenchcore",
   "200step", "dubstep", "drumstep", "chiptune", "breakcore", "piano",
   "mechakuchacore", "hypertrance", "terrorcore", "jungle", "metal",
   "gabber", "gabba", "guitar", "glitch", "celtic", "music",
-  "schranz", "trap", "nightcore", "house", "ballade", "ballad",
-  "hip-hop", "funk", "folk", "funkot", "mákina", "eurodance",
+  "schranz", "nightcore", "house", "ballade", "ballad",
+  "hip-hop", "funkot", "mákina", "eurodance",
   "eurobeat", "jodeln", "reggae", "waltz", "bootleg",
   "remix", "lolicore", "utattemita", "nerdcore",
-  "hyperflip", "dariacore", "plunderphonics", "mashup", "mashcore", "hyperpop"
+  "hyperflip", "dariacore", "plunderphonics", "mashup", "mashcore", "hyperpop", "chunithm"
 ];
 
 const TAG_RELATED_RULES = [
@@ -167,14 +167,17 @@ const TAG_RELATED_RULES = [
     trigger: ["ニコニコ動画", "niconico", "nnd"],
     suggestGroup: ["ニコニコ動画", "niconico", "nico", "douga", "nnd"]
   },
-
   {
-    trigger: ["プロセカ", "proseka", "puroseka", "prsk", "pjsk"],
-    suggestGroup: ["プロセカ", "proseka", "puroseka", "project", "sekai", "colorful", "stage!", "prsk", "pjsk"]
+    trigger: ["プロジェクトセカイ", "プロセカ", "proseka", "puroseka", "prsk", "pjsk"],
+    suggestGroup: ["プロジェクトセカイ", "カラフルステージ！", "feat.", "初音ミク", "プロセカ", "proseka", "puroseka", "project", "sekai", "hatsune", "miku:", "colorful", "stage!", "prsk", "pjsk"]
   },
   {
     triggerAll: ["project", "sekai"],
-    suggestGroup: ["プロセカ", "proseka", "puroseka", "colorful", "stage!", "prsk", "pjsk"]
+    suggestGroup: ["プロジェクトセカイ", "カラフルステージ！", "feat.", "初音ミク", "プロセカ", "proseka", "puroseka", "project", "sekai", "hatsune", "miku:", "colorful", "stage!", "prsk", "pjsk"]
+  },
+  {
+    trigger: ["25時、ナイトコードで。", "25-ji,", "nightcord", "25:00", "ニーゴ", "ni-go", "niigo"],
+    suggestGroup: ["25時、ナイトコードで。", "25-ji,", "25ji", "nightcord", "de.", "at", "25:00", "ニーゴ", "ni-go", "niigo"]
   },
   {
     trigger: ["太鼓の達人"],
@@ -185,12 +188,52 @@ const TAG_RELATED_RULES = [
     suggestGroup: ["太鼓の達人", "tnt"]
   },
   {
+    trigger: ["ポップンミュージック", "ポップン", "pop'n"],
+    suggestGroup: ["ポップンミュージック", "ポップン", "pop'n", "popn", "music"]
+  },
+  {
+    triggerAll: ["pop'n", "music"],
+    suggestGroup: ["ポップンミュージック", "ポップン", "pop'n", "popn", "music"]
+  },
+  {
+    trigger: ["sdvx"],
+    suggestGroup: ["sound", "voltex", "sdvx"]
+  },
+  {
+    triggerAll: ["sound", "voltex"],
+    suggestGroup: ["sdvx"]
+  },
+  {
+    trigger: ["オンゲキ", "ongeki", "o.n.g.e.k.i."],
+    suggestGroup: ["オンゲキ", "ongeki", "o.n.g.e.k.i."]
+  },
+  {
+    trigger: ["チュウニズム", "chunithm"],
+    suggestGroup: ["チュウニズム", "chunithm"]
+  },
+  {
+    triggerALL: ["maimai", "でらっくす"],
+    suggestGroup: ["maimai", "でらっくす", "deluxe", "dx"]
+  },
+  {
+    triggerALL: ["maimai", "deluxe"],
+    suggestGroup: ["maimai", "でらっくす", "deluxe", "dx"]
+  },
+  {
+    triggerALL: ["maimai", "dx"],
+    suggestGroup: ["maimai", "でらっくす", "deluxe", "dx"]
+  },
+  {
+    trigger: ["アニメ", "anime", "animation"],
+    suggestGroup: ["アニメ", "anime", "animation"]
+  },
+  {
     trigger: ["opening", "op"],
-    suggestGroup: ["opening", "op"]
+    suggestGroup: ["opening", "theme", "op"]
   },
   {
     trigger: ["ending", "ed"],
-    suggestGroup: ["ending", "ed"]
+    suggestGroup: ["ending", "theme", "ed"]
   },
   {
     trigger: ["qualifiers", "qlf"],
