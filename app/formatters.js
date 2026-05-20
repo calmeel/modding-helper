@@ -2243,9 +2243,18 @@ function formatMultipleContentPermissionResults(results, t) {
 
       lines.push("");
 
+      const lang = localStorage.getItem("moddingHelperLang") || "ja";
+
+      const message =
+        t(item.messageKey) ||
+        (lang === "en" ? item.messageEn : item.messageJa) ||
+        item.messageJa ||
+        item.messageEn ||
+        item.title;
+
       lines.push(
         `<span class="${cls}">` +
-        `${escapeHtml(t(item.messageKey) || item.messageJa || item.messageEn || item.title)}` +
+        `${escapeHtml(message)}` +
         `</span>`
       );
 
@@ -2305,15 +2314,19 @@ function groupContentPermissionRows(rows) {
       .sort()
       .join("|");
 
-    const key = [
-      item.category,
-      item.level,
-      item.title,
-      item.messageJa,
-      item.messageEn,
-      item.link,
-      matchedKey
-    ].join("::");
+      const linkKey = item.links?.length
+        ? item.links.map(link => `${link.label}:${link.url}`).join("|")
+        : item.link || "";
+
+      const key = [
+        item.category,
+        item.level,
+        item.title,
+        item.messageJa,
+        item.messageEn,
+        linkKey,
+        matchedKey
+      ].join("::");
 
     if (!map.has(key)) {
       map.set(key, {
