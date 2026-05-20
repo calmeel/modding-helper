@@ -439,6 +439,7 @@
     <button class="doc-tab-button" data-doc-tab="title">Title</button>
     <button class="doc-tab-button" data-doc-tab="source">Source</button>
     <button class="doc-tab-button" data-doc-tab="tag">Tags</button>
+    <button class="doc-tab-button" data-doc-tab="contentPermission">Content Permission Check</button>
   </details>
 
   <details class="doc-tab-group">
@@ -496,6 +497,9 @@
       </a>,
       <a href="https://osu.ppy.sh/users/14947043" target="_blank" rel="noopener noreferrer">
         hz404
+      </a>,
+      <a href="https://osu.ppy.sh/users/38544129" target="_blank" rel="noopener noreferrer">
+        77hina
       </a>
     </div>
 
@@ -1187,6 +1191,60 @@ so final judgement should be made manually by the mapper, modder, or Beatmap Nom
 
 In addition, the supported tag database is limited, and not all spelling mistakes or related tags can be detected.
 </div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="contentPermission"></section>
+<section class="doc-tab-panel" data-doc-tab-panel="contentPermission">
+<h2>Metadata: Content Permission Check</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ Background</span><br>
+Some artists, labels, and franchises may prohibit or restrict the usage or upload of their music on osu!.<br><br>
+
+This check detects content that may require caution before use or upload,
+based on osu!official <code>Content usage permissions</code>,
+creator guidelines,
+and past DMCA notices.<br><br>
+
+For the full supported list, guideline links, and original DMCA notice texts,
+please refer to
+<a href="contentPermissionList.en.html" target="_blank" rel="noopener noreferrer">Content Permission Check List</a>.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection</span><br>
+This check reads the following metadata fields from each difficulty:<br><br>
+
+<ul>
+  <li><code>Artist</code></li>
+  <li><code>ArtistUnicode</code></li>
+  <li><code>Title</code></li>
+  <li><code>TitleUnicode</code></li>
+  <li><code>Source</code></li>
+  <li><code>Tags</code></li>
+</ul>
+
+If these fields contain keywords associated with disallowed usage,
+conditional permissions,
+upload restrictions,
+or past DMCA notices,
+the tool displays a warning or error.<br><br>
+
+Some brands and labels also include representative song titles as detection examples.
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+This check is intended to help verify content before usage or upload.<br>
+A warning does not necessarily mean the content is completely prohibited.<br><br>
+
+In some cases, exceptions may exist,
+such as Featured Artists or individual permissions from the rights holder.<br>
+If a warning appears, please review the linked guidelines and DMCA notices to verify the current rights status.<br><br>
+
+Additionally, entries containing multiple song titles are representative examples only and are not exhaustive lists.
+</div>
+</section>
 </section>
 
 <section class="doc-tab-panel" data-doc-tab-panel="previewPoint">

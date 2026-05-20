@@ -39,6 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const spreadDensityMinDiff = document.getElementById("spreadDensityMinDiff");
   const spreadFinishersOutput = document.getElementById("spreadFinishersOutput");
   const spreadScrollSpeedOutput = document.getElementById("spreadScrollSpeedOutput");
+  const contentPermissionOutput = document.getElementById("contentPermissionOutput");
   const timelineOutput = document.getElementById("timelineOutput");
   const timelineRunButton = document.getElementById("timelineRunButton");
   /** BN評価 */
@@ -110,6 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadDensityMinDiff,
     spreadFinishersOutput,
     spreadScrollSpeedOutput,
+    contentPermissionOutput,
     timelineOutput,
     timelineRunButton,
     bnNotesOutput,
@@ -149,6 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
       diffOrder: [],
       manualCategories: {}
     },
+    contentPermission: null,
     timelineSources: null,
     timeline: null,
     bnCompare: {
@@ -291,6 +294,10 @@ document.addEventListener("DOMContentLoaded", () => {
       spreadOdHpOutput.textContent = t("noFileLoaded");
     }
 
+    if (!state.contentPermission && contentPermissionOutput) {
+      contentPermissionOutput.textContent = t("noFileLoaded");
+    }
+
     if (!state.timeline && timelineOutput) {
       timelineOutput.textContent = t("timelineNotRendered");
     }
@@ -314,6 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderBgOffsetResult();
     renderEpilepsyWarningResult();
     renderSpreadResult();
+    renderContentPermissionResult();
 
     if (state.timeline) {
       renderTimelineResult();
@@ -451,6 +459,14 @@ document.addEventListener("DOMContentLoaded", () => {
     renderSpreadResultFromResults(state.spread, dom, t);
   }
 
+  function renderContentPermissionResult() {
+    renderContentPermissionResultFromResults(
+      state.contentPermission,
+      dom,
+      t
+    );
+  }
+
   function renderTimelineResult() {
     state.timeline = renderTimelineResultFromSources(
       state.timelineSources,
@@ -559,6 +575,7 @@ document.addEventListener("DOMContentLoaded", () => {
       state.spread.results = result.spread;
       state.spread.diffOrder = createSpreadDiffOrder(result.spread);
       state.spread.manualCategories = {};
+      state.contentPermission = result.contentPermission;
 
       if (timelineOutput) {
         timelineOutput.textContent = t("timelineNotRendered");
@@ -583,6 +600,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderBgOffsetResult();
       renderEpilepsyWarningResult();
       renderSpreadResult();
+      renderContentPermissionResult();
       updateTabIssueStates(state);
     } catch (err) {
       if (err.message === "invalidFile") {
