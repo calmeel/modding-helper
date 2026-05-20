@@ -193,6 +193,19 @@ function renderSourceResultFromResults(results, dom, t) {
   dom.sourceOutput.innerHTML = formatMultipleSourceResults(results, t);
 }
 
+function renderContentPermissionResultFromResults(results, dom, t) {
+  if (!dom.contentPermissionOutput) return;
+
+  if (!results || !results.length) {
+    dom.contentPermissionOutput.textContent =
+      t("noFileLoaded");
+    return;
+  }
+
+  dom.contentPermissionOutput.innerHTML =
+    formatMultipleContentPermissionResults(results, t);
+}
+
 function renderSliderSettingsResultFromResults(results, dom, t) {
   if (!dom.sliderSettingsOutput) return;
 
@@ -2304,4 +2317,41 @@ function renderTimelineResultFromSources(sources, dom, t, options = {}) {
   dom.timelineOutput.innerHTML = formatTimelineResult(result, t);
 
   return result;
+}
+
+/** コンテンツ使用許可 */
+function formatContentPermissionResult(result, t) {
+  const lines = [];
+
+  if (!result.results?.length) {
+    return t("noContentPermissionIssues");
+  }
+
+  for (const item of result.results) {
+    lines.push(
+      `<span class="result-warn">${escapeHtml(item.messageJa)}</span>`
+    );
+
+    lines.push("");
+
+    lines.push(
+      `Matched: ${item.matchedKeywords
+        .map(v => `<code>${escapeHtml(v)}</code>`)
+        .join(" ")}`
+    );
+
+    lines.push("");
+
+    lines.push(
+      `<a href="${escapeHtml(item.link)}" target="_blank">` +
+      `${escapeHtml(item.link)}` +
+      `</a>`
+    );
+
+    lines.push("");
+    lines.push(formatSeparator());
+    lines.push("");
+  }
+
+  return lines.join("\n").trimEnd();
 }

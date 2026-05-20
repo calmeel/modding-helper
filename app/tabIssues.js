@@ -56,9 +56,9 @@ function updateTabIssueStates(state) {
   setSubtabIssueLevel("metadata-title",getTitleIssueLevel(state.title));
   setSubtabIssueLevel("metadata-source", getSourceIssueLevel(state.source));
   setSubtabIssueLevel("metadata-tag", getTagIssueLevel(state.tag));
-
   setTabIssueLevel("misc", getMiscIssueLevel(state));
   setTabIssueLevel("spread", getSpreadIssueLevel(state.spread));
+  setTabIssueLevel("contentPermission", getContentPermissionIssueLevel(state.contentPermission));
 }
 
 function getClapWhistleIssueLevel(results) {
@@ -576,6 +576,27 @@ function getSpreadIssueLevel(spreadState) {
 
     if (level === "warn") {
       hasWarn = true;
+    }
+  }
+
+  return hasWarn ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
+}
+
+/** コンテンツ使用許可 */
+function getContentPermissionIssueLevel(results) {
+  if (!results) return TAB_LEVEL_NONE;
+
+  let hasWarn = false;
+
+  for (const result of results) {
+    for (const item of result.results ?? []) {
+      if (item.level === "error") {
+        return TAB_LEVEL_ERROR;
+      }
+
+      if (item.level === "warn") {
+        hasWarn = true;
+      }
     }
   }
 

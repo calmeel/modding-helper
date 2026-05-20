@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Content Permission Check List</title>
+
+<style>
+  body {
+    font-family: sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+
+    background: #111;
+    color: #eee;
+  }
+
+  h1 {
+    color: #9fdcff;
+    border-bottom: 2px solid #333;
+    padding-bottom: 10px;
+    margin-bottom: 18px;
+  }
+
+  h2 {
+    color: #9fdcff;
+    border-left: 4px solid #9fdcff;
+    padding-left: 10px;
+
+    margin-top: 34px;
+    margin-bottom: 14px;
+  }
+
+  p {
+    color: #ccc;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 14px;
+
+    background: #181818;
+    border: 1px solid #2a2a2a;
+  }
+
+  th {
+    background: #202020;
+    color: #9fdcff;
+
+    text-align: left;
+    padding: 12px;
+
+    border-bottom: 1px solid #333;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #2a2a2a;
+    vertical-align: top;
+  }
+
+  tr:hover {
+    background: #1d1d1d;
+  }
+
+  code {
+    background: #222;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #e7e7e7;
+  }
+
+  a {
+    color: #7fd1ff;
+    text-decoration: none;
+  }
+
+  a:visited {
+    color: #b9a7ff;
+  }
+
+  a:hover {
+    color: #bfe9ff;
+    text-decoration: underline;
+  }
+
+  .target-name {
+    font-weight: bold;
+    color: #f0f0f0;
+    min-width: 170px;
+  }
+
+  .doc-parent-link {
+    margin-top: -8px;
+    margin-bottom: 24px;
+
+    color: #aaa;
+    font-size: 13px;
+  }
+
+  .doc-parent-link a {
+    color: #9fdcff;
+  }
+
+  .notes {
+    margin-top: 26px;
+
+    background: #181818;
+    border-left: 4px solid #ffd580;
+
+    padding: 14px 16px;
+  }
+
+  .notes-title {
+    color: #ffd580;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+
+  .badge {
+    display: inline-block;
+
+    font-size: 12px;
+    font-weight: bold;
+
+    padding: 2px 7px;
+
+    border-radius: 999px;
+
+    background: #302a18;
+    color: #ffd580;
+    border: 1px solid #5a4720;
+
+    margin-left: 6px;
+  }
+
+  .keywords-cell {
+    background: #151922;
+  }
+
+  .keyword-tag {
+    display: inline-block;
+
+    margin: 2px 4px 2px 0;
+    padding: 2px 8px;
+
+    border-radius: 999px;
+
+    background: #252535;
+    border: 1px solid #3a3a58;
+
+    color: #cfd6ff;
+    font-size: 12px;
+    font-family: Consolas, monospace;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 800px) {
+    body {
+      margin: 24px auto;
+      padding: 0 12px;
+    }
+
+    table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<h1>Content Permission Check List</h1>
+
+<div class="doc-parent-link">
+  This page is part of the
+  <a href="docs-en.html">Modding Helper documentation</a>.
+</div>
+
+<p>
+This page lists the currently supported upload restrictions,
+conditional permissions,
+creator guidelines,
+and past DMCA notices used by Modding Helper's
+“Content Permission Check”.
+</p>
+
+<div class="notes">
+  <div class="notes-title">Notes</div>
+
+  This list is intended to help verify whether content may require caution before use or upload.<br>
+  Warnings are based on osu!official permissions,
+  public creator guidelines,
+  and past DMCA notices,
+  but do not guarantee the legal status of any content.<br><br>
+
+  Entries such as HOOKSOFT or KeroQ / Makura that contain multiple song titles
+  use representative examples only and are not exhaustive lists.<br><br>
+
+  When available,
+  official guideline pages and original DMCA notice texts are linked directly.
+</div>
+
+<h2>osu!official Content Usage Permissions</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 18%;">Target</th>
+      <th style="width: 16%;">Fields</th>
+      <th style="width: 26%;">Keywords</th>
+      <th style="width: 25%;">Description</th>
+      <th style="width: 15%;">Links</th>
+    </tr>
+  </thead>
+
+  <tbody>
+
+    <tr>
+      <td class="target-name">Disallowed artists</td>
+
+      <td>
+        <code>Artist / ArtistUnicode / Title / TitleUnicode</code>
+      </td>
+
+      <td class="keywords-cell">
+        <span class="keyword-tag">40mP</span>
+        <span class="keyword-tag">a_hisa</span>
+        <span class="keyword-tag">Draw the Emotional</span>
+        <span class="keyword-tag">Enter Shikari</span>
+        <span class="keyword-tag">EZFG</span>
+        <span class="keyword-tag">Hatsuki Yura</span>
+        <span class="keyword-tag">kamome sano</span>
+        <span class="keyword-tag">kozato</span>
+        <span class="keyword-tag">NOMA</span>
+      </td>
+
+      <td>
+        These artists are disallowed by osu!official.
+      </td>
+
+      <td>
+        <a href="https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"
+           target="_blank"
+           rel="noopener noreferrer">
+          Content usage permissions
+        </a>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="target-name">Disallowed labels</td>
+
+      <td>
+        <code>Source / Tags</code>
+      </td>
+
+      <td class="keywords-cell">
+        <span class="keyword-tag">DJMAX</span>
+        <span class="keyword-tag">NEOWIZ</span>
+      </td>
+
+      <td>
+        These labels are disallowed by osu!official.
+      </td>
+
+      <td>
+        <a href="https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"
+           target="_blank"
+           rel="noopener noreferrer">
+          Content usage permissions
+        </a>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="target-name">Conditional label permissions</td>
+
+      <td>
+        <code>Source / Tags</code>
+      </td>
+
+      <td class="keywords-cell">
+        <span class="keyword-tag">MEGAREX</span>
+      </td>
+
+      <td>
+        These labels are conditionally allowed by osu!official.
+        Please verify the usage conditions.
+      </td>
+
+      <td>
+        <a href="https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"
+           target="_blank"
+           rel="noopener noreferrer">
+          Content usage permissions
+        </a>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="target-name">Conditional artist permissions</td>
+
+      <td>
+        <code>Artist / ArtistUnicode / Title / TitleUnicode</code>
+      </td>
+
+      <td class="keywords-cell">
+        <span class="keyword-tag">ak+q</span>
+        <span class="keyword-tag">Akira Complex</span>
+        <span class="keyword-tag">Frums</span>
+        <span class="keyword-tag">gxxberlol</span>
+        <span class="keyword-tag">HoneyComeBear</span>
+        <span class="keyword-tag">Igorrr</span>
+        <span class="keyword-tag">Jun Kuroda</span>
+        <span class="keyword-tag">Lusumi</span>
+        <span class="keyword-tag">Mlumìn</span>
+        <span class="keyword-tag">SoundWarper</span>
+        <span class="keyword-tag">Morimori Atsushi</span>
+        <span class="keyword-tag">Reku Mochizuki</span>
+        <span class="keyword-tag">Silentroom</span>
+        <span class="keyword-tag">Synthion</span>
+        <span class="keyword-tag">Yuyoyuppe</span>
+        <span class="keyword-tag">DJ'TEKINA//SOMETHING</span>
+        <span class="keyword-tag">Zekk</span>
+      </td>
+
+      <td>
+        These artists are conditionally allowed by osu!official.
+        Please verify the usage conditions.
+      </td>
+
+      <td>
+        <a href="https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"
+           target="_blank"
+           rel="noopener noreferrer">
+          Content usage permissions
+        </a>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<h2>Guidelines / Individual Restrictions</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 18%;">Target</th>
+      <th style="width: 16%;">Fields</th>
+      <th style="width: 26%;">Keywords / Examples</th>
+      <th style="width: 25%;">Description</th>
+      <th style="width: 15%;">Links</th>
+    </tr>
+  </thead>
+
+  <tbody>
+
+    <tr>
+      <td class="target-name">Para Dot.</td>
+
+      <td>
+        <code>Artist / ArtistUnicode / Title / TitleUnicode</code>
+      </td>
+
+      <td class="keywords-cell">
+        <span class="keyword-tag">ぱらどっと</span>
+        <span class="keyword-tag">Para Dot.</span>
+      </td>
+
+      <td>
+        This artist prohibits uploads to osu!.
+        Please review the guidelines before use.
+      </td>
+
+      <td>
+        <a href="https://x.com/zenerat/status/1621121410361065472"
+           target="_blank"
+           rel="noopener noreferrer">
+          Statement
+        </a>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="target-name">SmilyBruh</td>
+
+      <td>
+        <code>Artist / ArtistUnicode / Title / TitleUnicode</code>
+      </td>
+
+      <td class="keywords-cell">
+        <span class="keyword-tag">smilybruh</span>
+      </td>
+
+      <td>
+        This artist requires permission before reuploads or mod usage.
+      </td>
+
+      <td>
+        <a href="https://www.youtube.com/channel/UC9EQzfp2ibv8JnP4ZXjwPyg"
+           target="_blank"
+           rel="noopener noreferrer">
+          YouTube channel
+        </a>
+      </td>
+    </tr>
+
+<tr>
+  <td class="target-name">SLAVE.V-V-R</td>
+
+  <td>
+    <code>Artist / ArtistUnicode / Title / TitleUnicode</code>
+  </td>
+
+  <td class="keywords-cell">
+    <span class="keyword-tag">slave.v-v-r</span>
+  </td>
+
+  <td>
+    This artist has music usage guidelines.
+    Please review them before use.
+  </td>
+
+  <td>
+    <a href="https://slave-vvr.jimdofree.com/%E6%A5%BD%E6%9B%B2%E5%88%A9%E7%94%A8%E6%99%82%E3%81%AE%E3%82%AC%E3%82%A4%E3%83%89%E3%83%A9%E3%82%A4%E3%83%B3-guidelines-for-using-music/"
+       target="_blank"
+       rel="noopener noreferrer">
+      Japanese Guidelines
+    </a>
+    <br>
+
+    <a href="https://slave-vvr.jimdofree.com/%E6%A5%BD%E6%9B%B2%E5%88%A9%E7%94%A8%E6%99%82%E3%81%AE%E3%82%AC%E3%82%A4%E3%83%89%E3%83%A9%E3%82%A4%E3%83%B3-guidelines-for-using-music/english/"
+       target="_blank"
+       rel="noopener noreferrer">
+      English Guidelines
+    </a>
+  </td>
+</tr>
+
+<tr>
+  <td class="target-name">Arcaea</td>
+
+  <td>
+    <code>Source / Tags</code>
+  </td>
+
+  <td class="keywords-cell">
+    <span class="keyword-tag">arcaea</span>
+  </td>
+
+  <td>
+    Uploads may be restricted by the derivative work guidelines.
+    Please verify whether the track is from a Featured Artist.
+  </td>
+
+  <td>
+    <a href="https://arcaea.lowiro.com/ja/derivative_policy"
+       target="_blank"
+       rel="noopener noreferrer">
+      Japanese Guidelines
+    </a>
+    <br>
+
+    <a href="https://arcaea.lowiro.com/en/derivative_policy"
+       target="_blank"
+       rel="noopener noreferrer">
+      English Guidelines
+    </a>
+  </td>
+</tr>
+
+<tr>
+  <td class="target-name">Rayark / Cytus / DEEMO / VOEZ</td>
+
+  <td>
+    <code>Source / Tags</code>
+  </td>
+
+  <td class="keywords-cell">
+    <span class="keyword-tag">rayark</span>
+    <span class="keyword-tag">cytus</span>
+    <span class="keyword-tag">deemo</span>
+    <span class="keyword-tag">voez</span>
+  </td>
+
+  <td>
+    This content has been subject to past DMCA notices,
+    and uploads may also be restricted by the guidelines.
+    Please verify whether the track is from a Featured Artist.
+  </td>
+
+  <td>
+    <a href="https://gist.githubusercontent.com/peppy/55e7ee271342766a80f3596d8e5c83fa/raw/dmca_20220328.txt"
+       target="_blank"
+       rel="noopener noreferrer">
+      DMCA notice
+    </a>
+    <br>
+
+    <a href="https://www.terms.rayark.com/terms-en"
+       target="_blank"
+       rel="noopener noreferrer">
+      Guidelines
+    </a>
+  </td>
+</tr>
+
+<tr>
+  <td class="target-name">HARDCORE TANO*C</td>
+
+  <td>
+    <code>Source / Tags</code>
+  </td>
+
+  <td class="keywords-cell">
+    <span class="keyword-tag">hardcore tano*c</span>
+  </td>
+
+  <td>
+    This label has usage guidelines.
+    Please verify whether the track is from a Featured Artist.
+  </td>
+
+  <td>
+    <a href="https://www.tano-c.net/copyright/"
+       target="_blank"
+       rel="noopener noreferrer">
+      Guidelines
+    </a>
+  </td>
+</tr>
+
+<tr>
+  <td class="target-name">魔法少女ノ魔女裁判</td>
+
+  <td>
+    <code>Source / Tags</code>
+  </td>
+
+  <td class="keywords-cell">
+    <span class="keyword-tag">魔法少女ノ魔女裁判</span>
+  </td>
+
+  <td>
+    This content has usage guidelines.
+    Please review them before use.
+  </td>
+
+  <td>
+    <a href="https://manosaba.com/guidelines"
+       target="_blank"
+       rel="noopener noreferrer">
+      Guidelines
+    </a>
+  </td>
+</tr>
+
+<tr>
+  <td class="target-name">ALcot</td>
+
+  <td>
+    <code>Source / Tags</code>
+  </td>
+
+  <td class="keywords-cell">
+    <span class="keyword-tag">alcot</span>
+  </td>
+
+  <td>
+    This content has been subject to past DMCA notices,
+    and music usage is generally prohibited by the guidelines.
+  </td>
+
+  <td>
+    <a href="https://gist.githubusercontent.com/peppy/88aa53abb51d2718244f/raw"
+       target="_blank"
+       rel="noopener noreferrer">
+      DMCA notice
+    </a>
+    <br>
+
+    <a href="https://www.alcot.biz/information.html"
+       target="_blank"
+       rel="noopener noreferrer">
+      Guidelines
+    </a>
+  </td>
+</tr>
+
+<tr>
+  <td class="target-name">Hazuki / August</td>
+
+  <td>
+    <code>Source / Tags</code>
+  </td>
+
+  <td class="keywords-cell">
+    <span class="keyword-tag">株式会社葉月</span>
+    <span class="keyword-tag">オーガスト</span>
+    <span class="keyword-tag">あいりすミスティリア！</span>
+    <span class="keyword-tag">千の刃濤、桃花染の皇姫</span>
+    <span class="keyword-tag">大図書館の羊飼い</span>
+    <span class="keyword-tag">穢翼のユースティア</span>
+    <span class="keyword-tag">FORTUNE ARTERIAL</span>
+    <span class="keyword-tag">夜明け前より瑠璃色な</span>
+    <span class="keyword-tag">月は東に日は西に</span>
+    <span class="keyword-tag">Princess Holiday</span>
+    <span class="keyword-tag">バイナリィ・ポット</span>
+  </td>
+
+  <td>
+    This content has been subject to past DMCA notices,
+    and music usage is generally prohibited by the guidelines.
+  </td>
+
+  <td>
+    <a href="https://gist.githubusercontent.com/peppy/e0e8a7a9c92abaa21615eb5ca63746e6/raw/917d7f4c6a92390fb2feb86c894df366c1aadf56/DMCA_Hazuki_Asphodelus.txt"
+       target="_blank"
+       rel="noopener noreferrer">
+      DMCA notice 1
+    </a>
+    <br>
+
+    <a href="https://gist.githubusercontent.com/peppy/3005a6911c6c49b48f059b577e430046/raw"
+       target="_blank"
+       rel="noopener noreferrer">
+      DMCA notice 2
+    </a>
+    <br>
+
+    <a href="https://gist.githubusercontent.com/peppy/94239ad1225812e0e40e4d51ec564bd1/raw"
+       target="_blank"
+       rel="noopener noreferrer">
+      DMCA notice 3
+    </a>
+    <br>
+
+    <a href="https://gist.githubusercontent.com/peppy/4f44ac2336f4ee18ffb967055ce490c4/raw"
+       target="_blank"
+       rel="noopener noreferrer">
+      DMCA notice 4
+    </a>
+    <br>
+
+    <a href="https://august-soft.com/about/fanfic_guideline"
+       target="_blank"
+       rel="noopener noreferrer">
+      Guidelines
+    </a>
+  </td>
+</tr>
+
+<tr>
+  <td class="target-name">HOOKSOFT</td>
+
+  <td>
+    <code>Source / Tags / Title</code>
+  </td>
+
+  <td class="keywords-cell">
+    <span class="keyword-tag">HOOKSOFT</span>
+    <span class="keyword-tag">Love Loading!!!</span>
+    <span class="keyword-tag">サニスコープ</span>
+    <span class="keyword-tag">カナリーブロッサム</span>
+    <span class="keyword-tag">One Two Trap!!</span>
+    <span class="keyword-tag">春は詩と共に</span>
+    <span class="keyword-tag">僕らのWatercolor</span>
+    <span class="keyword-tag">ultimate breaKING</span>
+    <span class="keyword-tag">Day before Memory</span>
+    <span class="keyword-tag">ヒミツプラネット</span>
+    <span class="keyword-tag">それが恋になった日</span>
+    <span class="keyword-tag">ミリオンタイムズ</span>
+    <span class="keyword-tag">LOVE Gotcha!</span>
+    <span class="keyword-tag">ブルーカーペット</span>
+    <span class="keyword-tag">きみがいちばんばんばんざ～い!</span>
+    <span class="keyword-tag">オープニングセレモニー</span>
+    <span class="keyword-tag">Cinderella Street</span>
+    <span class="keyword-tag">Girls' Carnival</span>
+    <span class="keyword-tag">Girls’ Carnival</span>
+    <span class="keyword-tag">ハレノヒステップ</span>
+  </td>
+
+  <td>
+    This content has been subject to past DMCA notices,
+    and usage may also be restricted by the guidelines.<br><br>
+
+    The listed song titles are representative examples only
+    and are not exhaustive.
+  </td>
+
+  <td>
+    <a href="https://gist.githubusercontent.com/peppy/e34cbd3f9a30cc41b327d4f2555cd29e/raw/dmca_20230306.txt"
+       target="_blank"
+       rel="noopener noreferrer">
+      DMCA notice
+    </a>
+    <br>
+
+    <a href="https://www.hook-net.jp/htm/about.htm"
+       target="_blank"
+       rel="noopener noreferrer">
+      Guidelines
+    </a>
+  </td>
+</tr>
+
+<tr>
+  <td class="target-name">KeroQ / Makura</td>
+
+  <td>
+    <code>Source / Tags / Title</code>
+  </td>
+
+  <td class="keywords-cell">
+    <span class="keyword-tag">ケロQ</span>
+    <span class="keyword-tag">枕</span>
+    <span class="keyword-tag">櫻ノ詩</span>
+    <span class="keyword-tag">空気力学少女と少年の詩</span>
+    <span class="keyword-tag">刻ト詩</span>
+    <span class="keyword-tag">ナグルファルの船上にて</span>
+    <span class="keyword-tag">登れない坂道</span>
+    <span class="keyword-tag">終末の微笑</span>
+    <span class="keyword-tag">片翼のイカロス</span>
+    <span class="keyword-tag">カザハネ</span>
+    <span class="keyword-tag">スイッチ・オン♪</span>
+    <span class="keyword-tag">機械人形</span>
+  </td>
+
+  <td>
+    This content has been subject to past DMCA notices,
+    and music usage is generally prohibited by the guidelines.<br><br>
+
+    The listed song titles are representative examples only
+    and are not exhaustive.
+  </td>
+
+  <td>
+    <a href="https://gist.githubusercontent.com/peppy/bdf2cf1647765cf692664871d73d451b/raw/dmca_2023-03-03.txt"
+       target="_blank"
+       rel="noopener noreferrer">
+      DMCA notice
+    </a>
+    <br>
+
+    <a href="https://www.keromakura.net/support/support/guideline.html"
+       target="_blank"
+       rel="noopener noreferrer">
+      Guidelines
+    </a>
+  </td>
+</tr>
+  </tbody>
+</table>
+
+<h2>Past DMCA Notices</h2>
+
+<table>
+<thead>
+<tr>
+<th style="width: 18%;">Target</th>
+<th style="width: 16%;">Fields</th>
+<th style="width: 26%;">Keywords</th>
+<th style="width: 25%;">Description</th>
+<th style="width: 15%;">Links</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td class="target-name">Skrillex</td>
+
+  <td>
+    <code>Artist / ArtistUnicode / Title / TitleUnicode</code>
+  </td>
+
+  <td class="keywords-cell">
+    <span class="keyword-tag">skrillex</span>
+  </td>
+
+  <td>
+    This content has been subject to a past DMCA notice.
+  </td>
+
+  <td>
+    <a href="https://gist.githubusercontent.com/peppy/65634825af9a9f237407/raw"
+       target="_blank"
+       rel="noopener noreferrer">
+      DMCA notice
+    </a>
+  </td>
+</tr>
+
+<tr>
+  <td class="target-name">Cosmograph / Lunatic Sounds</td>
+
+  <td>
+    <code>Artist / ArtistUnicode / Title / TitleUnicode</code>
+  </td>
+
+  <td class="keywords-cell">
+    <span class="keyword-tag">cosmograph</span>
+    <span class="keyword-tag">lunatic sounds</span>
+  </td>
+
+  <td>
+    This content has been subject to a past DMCA notice.
+  </td>
+
+  <td>
+    <a href="https://gist.githubusercontent.com/peppy/5d72d1e7f743c7ed0709a1d2983e8429/raw"
+       target="_blank"
+       rel="noopener noreferrer">
+      DMCA notice
+    </a>
+  </td>
+</tr>
+
+<tr>
+  <td class="target-name">KONAMI / BEMANI Series</td>
+
+  <td>
+    <code>Source / Tags</code>
+  </td>
+
+  <td class="keywords-cell">
+    <span class="keyword-tag">konami</span>
+    <span class="keyword-tag">beatmania</span>
+    <span class="keyword-tag">jubeat</span>
+    <span class="keyword-tag">sound voltex</span>
+    <span class="keyword-tag">dance dance revolution</span>
+    <span class="keyword-tag">reflect beat</span>
+  </td>
+
+  <td>
+    This content has been subject to a past DMCA notice.
+  </td>
+
+  <td>
+    <a href="https://gist.githubusercontent.com/peppy/15bd77feb938322e05e6ef18a99b1572/raw"
+       target="_blank"
+       rel="noopener noreferrer">
+      DMCA notice
+    </a>
+  </td>
+</tr>
+
+<tr>
+  <td class="target-name">Ado</td>
+
+  <td>
+    <code>Artist / ArtistUnicode</code>
+  </td>
+
+  <td class="keywords-cell">
+    <span class="keyword-tag">ado</span>
+  </td>
+
+  <td>
+    This content has been subject to a past DMCA notice.
+  </td>
+
+  <td>
+    <a href="https://gist.githubusercontent.com/peppy/418364abd1b74b95150b87b7c831001a/raw/dmca_20221208.txt"
+       target="_blank"
+       rel="noopener noreferrer">
+      DMCA notice
+    </a>
+  </td>
+</tr>
+
+<tr>
+  <td class="target-name">THE iDOLM@STER</td>
+
+  <td>
+    <code>Source / Tags</code>
+  </td>
+
+  <td class="keywords-cell">
+    <span class="keyword-tag">アイドルマスター</span>
+  </td>
+
+  <td>
+    This content has been subject to a past DMCA notice.
+  </td>
+
+  <td>
+    <a href="https://gist.githubusercontent.com/peppy/6b91dea9835cd49ddee13794f6deeb5a/raw/dmca_20221005.txt"
+       target="_blank"
+       rel="noopener noreferrer">
+      DMCA notice
+    </a>
+  </td>
+</tr>
+
+<tr>
+  <td class="target-name">Luis Fonsi</td>
+
+  <td>
+    <code>Artist / ArtistUnicode / Title / TitleUnicode</code>
+  </td>
+
+  <td class="keywords-cell">
+    <span class="keyword-tag">luis fonsi</span>
+  </td>
+
+  <td>
+    This content has been subject to a past DMCA notice.
+  </td>
+
+  <td>
+    <a href="https://gist.githubusercontent.com/peppy/8db598fbc8c2caae1ea62484671f3909/raw"
+       target="_blank"
+       rel="noopener noreferrer">
+      DMCA notice
+    </a>
+  </td>
+</tr>
+
+<tr>
+  <td class="target-name">まずらぼ</td>
+
+  <td>
+    <code>Artist / ArtistUnicode / Tags</code>
+  </td>
+
+  <td class="keywords-cell">
+    <span class="keyword-tag">まずらぼ</span>
+  </td>
+
+  <td>
+    This content has been subject to a past DMCA notice.
+  </td>
+
+  <td>
+    <a href="https://gist.githubusercontent.com/peppy/78f4764e7aa299a700767d51f0d064c3/raw/dmca_20220921.txt"
+       target="_blank"
+       rel="noopener noreferrer">
+      DMCA notice
+    </a>
+  </td>
+</tr>
+
+<tr>
+  <td class="target-name">tyDi</td>
+
+  <td>
+    <code>Artist / ArtistUnicode</code>
+  </td>
+
+  <td class="keywords-cell">
+    <span class="keyword-tag">tydi</span>
+  </td>
+
+  <td>
+    This content has been subject to a past DMCA notice.
+  </td>
+
+  <td>
+    <a href="https://gist.githubusercontent.com/peppy/495e1f664f94d7f204fdd94d1cd8cb55/raw"
+       target="_blank"
+       rel="noopener noreferrer">
+      DMCA notice
+    </a>
+  </td>
+</tr>
+
+<tr>
+  <td class="target-name">Toaru / The Melancholy of Haruhi Suzumiya / Kantai Collection</td>
+
+  <td>
+    <code>Source</code>
+  </td>
+
+  <td class="keywords-cell">
+    <span class="keyword-tag">とある</span>
+    <span class="keyword-tag">涼宮ハルヒの憂鬱</span>
+    <span class="keyword-tag">艦隊これくしょん</span>
+  </td>
+
+  <td>
+    This content has been subject to a past DMCA notice.
+  </td>
+
+  <td>
+    <a href="https://gist.githubusercontent.com/peppy/eef03a270bcb776f7a5503b8217dfcc6/raw"
+       target="_blank"
+       rel="noopener noreferrer">
+      DMCA notice
+    </a>
+  </td>
+</tr>
+
+  </tbody>
+</table>
+
+<div class="notes">
+  <div class="notes-title">Implementation Notes</div>
+
+  <ul>
+    <li>
+      <code>Artist</code>,
+      <code>ArtistUnicode</code>,
+      <code>Title</code>,
+      <code>TitleUnicode</code>,
+      <code>Source</code>,
+      and <code>Tags</code> are checked.
+    </li>
+
+    <li>
+      Case differences are generally normalized.
+    </li>
+
+    <li>
+      Some entries contain both guideline links and original DMCA notices.
+    </li>
+
+    <li>
+      <span class="badge">Representative examples</span>
+      indicates that listed song titles are examples only and not exhaustive lists.
+    </li>
+  </ul>
+</div>
+
+</body>
+</html>

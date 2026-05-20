@@ -24,7 +24,8 @@ function createEmptyProcessResult() {
     previewPoint: [],
     bgOffset: [],
     epilepsyWarning: [],
-    spread: []
+    spread: [],
+    contentPermission: []
   };
 }
 
@@ -50,6 +51,7 @@ async function analyzeOszFile(file) {
   const bgOffsetResults = [];
   const epilepsyWarningResults = [];
   const spreadResults = [];
+  const contentPermissionResults = [];
 
   const osuFiles = Object.values(zip.files)
     .filter(entry => !entry.dir && entry.name.toLowerCase().endsWith(".osu"));
@@ -162,6 +164,11 @@ async function analyzeOszFile(file) {
       ...runSpreadCheck(text, entry.name),
       mode
     });
+
+    contentPermissionResults.push({
+      ...runContentPermissionCheck(text, entry.name),
+      mode
+    });
   }
 
   return {
@@ -183,7 +190,8 @@ async function analyzeOszFile(file) {
     previewPointResults,
     bgOffsetResults,
     epilepsyWarningResults,
-    spreadResults
+    spreadResults,
+    contentPermissionResults
   };
 }
 
@@ -310,6 +318,12 @@ async function processFile(file) {
           mode
         }
       ],
+      contentPermission: [
+        {
+          ...runContentPermissionCheck(text, file.name),
+          mode
+        }
+      ],
     };
   }
 
@@ -337,6 +351,7 @@ async function processFile(file) {
       bgOffset: analyzed.bgOffsetResults,
       epilepsyWarning: analyzed.epilepsyWarningResults,
       spread: analyzed.spreadResults,
+      contentPermission: analyzed.contentPermissionResults,
     };
   }
 
