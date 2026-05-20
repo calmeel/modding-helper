@@ -189,11 +189,11 @@ const TAG_RELATED_RULES = [
   },
   {
     trigger: ["ポップンミュージック", "ポップン", "pop'n"],
-    suggestGroup: ["ポップンミュージック", "ポップン", "pop'n", "popn", "music"]
+    suggestGroup: ["ポップンミュージック", "ポップン", "pop'n", "popn", "poppun", "music"]
   },
   {
     triggerAll: ["pop'n", "music"],
-    suggestGroup: ["ポップンミュージック", "ポップン", "pop'n", "popn", "music"]
+    suggestGroup: ["ポップンミュージック", "ポップン", "pop'n", "popn", "poppun", "music"]
   },
   {
     trigger: ["sdvx"],
@@ -212,15 +212,15 @@ const TAG_RELATED_RULES = [
     suggestGroup: ["チュウニズム", "chunithm"]
   },
   {
-    triggerALL: ["maimai", "でらっくす"],
+    triggerAll: ["maimai", "でらっくす"],
     suggestGroup: ["maimai", "でらっくす", "deluxe", "dx"]
   },
   {
-    triggerALL: ["maimai", "deluxe"],
+    triggerAll: ["maimai", "deluxe"],
     suggestGroup: ["maimai", "でらっくす", "deluxe", "dx"]
   },
   {
-    triggerALL: ["maimai", "dx"],
+    triggerAll: ["maimai", "dx"],
     suggestGroup: ["maimai", "でらっくす", "deluxe", "dx"]
   },
   {
@@ -265,11 +265,64 @@ const TAG_RELATED_RULES = [
   },
 ];
 
+const TAG_SOURCE_RULES = [
+  {
+    source: ["東方"],
+    tags: ["東方project", "東方", "touhou", "project"]
+  },
+  {
+    source: ["osu!"],
+    tags: ["osu!", "original"]
+  },
+  {
+    source: ["太鼓の達人"],
+    tags: ["taiko", "no", "tatsujin", "tnt"]
+  },
+  {
+    source: ["sound voltex"],
+    tags: ["sdvx"]
+  },
+  {
+    source: ["オンゲキ"],
+    tags: ["ongeki", "o.n.g.e.k.i."]
+  },
+  {
+    source: ["maimai でらっくす"],
+    tags: ["deluxe", "dx"]
+  },
+  {
+    source: ["chunithm"],
+    tags: ["チュウニズム"]
+  },
+  {
+    source: ["pop'n music"],
+    tags: ["ポップンミュージック", "ポップン", "popn", "poppun"]
+  },
+  {
+    source: ["プロジェクトセカイ カラフルステージ！"],
+    tags: [
+      "プロセカ",
+      "proseka",
+      "puroseka",
+      "project",
+      "sekai",
+      "hatsune",
+      "miku:",
+      "colorful",
+      "stage!",
+      "prsk",
+      "pjsk"
+    ]
+  }
+];
+
 function runTagCheck(text, fileName) {
   const tagsLine = findMetadataTagsLine(text);
+  const sourceLine = findMetadataLine(text, "Source");
   const results = [];
   const spellingSuggestions = [];
   const relatedSuggestions = [];
+  const sourceSuggestions = [];
 
   if (!tagsLine) {
     return {
@@ -315,7 +368,13 @@ function runTagCheck(text, fileName) {
   }
 
   spellingSuggestions.push(...findTagSpellingSuggestions(tags));
-  relatedSuggestions.push(...findTagRelatedSuggestions(tags));
+  relatedSuggestions.push(...findTagRelatedSuggestions(tags, sourceLine?.value ?? ""));
+  sourceSuggestions.push(
+    ...findSourceTagSuggestions(
+      sourceLine?.value ?? "",
+      tags
+    )
+  );
 
   return {
     fileName,
@@ -323,7 +382,8 @@ function runTagCheck(text, fileName) {
     normalizedTags,
     results,
     spellingSuggestions,
-    relatedSuggestions
+    relatedSuggestions,
+    sourceSuggestions
   };
 }
 
@@ -344,6 +404,34 @@ function findMetadataTagsLine(text) {
       if (trimmed.startsWith("[")) break;
 
       if (trimmed.startsWith("Tags:")) {
+        return {
+          lineNo: i + 1,
+          value: lines[i].slice(lines[i].indexOf(":") + 1)
+        };
+      }
+    }
+  }
+
+  return null;
+}
+
+function findMetadataLine(text, key) {
+  const lines = text.split(/\r?\n/);
+
+  let inMetadata = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+
+    if (trimmed === "[Metadata]") {
+      inMetadata = true;
+      continue;
+    }
+
+    if (inMetadata) {
+      if (trimmed.startsWith("[")) break;
+
+      if (trimmed.startsWith(`${key}:`)) {
         return {
           lineNo: i + 1,
           value: lines[i].slice(lines[i].indexOf(":") + 1)
@@ -460,14 +548,15 @@ function findTagSpellingSuggestions(tags) {
   return dedupeTagSpellingSuggestions(suggestions);
 }
 
-function findTagRelatedSuggestions(tags) {
+function findTagRelatedSuggestions(tags, source = "") {
   const words = getNormalizedTagWords(tags);
   const wordSet = new Set(words);
+
+  const normalizedSource = normalizeSourceForTagCompare(source);
 
   const suggestions = [];
 
   for (const rule of TAG_RELATED_RULES) {
-
     const trigger =
       (rule.trigger ?? []).map(normalizeTagToken);
 
@@ -480,19 +569,21 @@ function findTagRelatedSuggestions(tags) {
     let matched = false;
     let presentTriggers = [];
 
-    // 従来: どれか1つ含まれる
     if (trigger.length) {
-      presentTriggers = trigger.filter(tag => wordSet.has(tag));
+      presentTriggers = trigger.filter(tag =>
+        wordSet.has(tag)
+      );
 
       if (presentTriggers.length) {
         matched = true;
       }
     }
 
-    // 新規: 全部含まれる
     if (!matched && triggerAll.length) {
       const allPresent =
-        triggerAll.every(tag => wordSet.has(tag));
+        triggerAll.every(tag =>
+          wordSet.has(tag)
+        );
 
       if (allPresent) {
         matched = true;
@@ -502,19 +593,46 @@ function findTagRelatedSuggestions(tags) {
 
     if (!matched) continue;
 
+    const presentSuggestions =
+      suggestGroup.filter(tag => wordSet.has(tag));
+
+    const presentSourceSuggestions =
+      suggestGroup.filter(tag =>
+        !wordSet.has(tag) && sourceContainsTag(normalizedSource, tag)
+      );
+
     const missing =
-      suggestGroup.filter(tag => !wordSet.has(tag));
+      suggestGroup.filter(tag =>
+        !wordSet.has(tag) && !sourceContainsTag(normalizedSource, tag)
+      );
 
     if (!missing.length) continue;
 
     suggestions.push({
       present: presentTriggers,
-      presentSuggestions: suggestGroup.filter(tag => wordSet.has(tag)),
+      presentSuggestions,
+      presentSourceSuggestions,
       suggestions: missing
     });
   }
 
   return dedupeTagRelatedSuggestions(suggestions);
+}
+
+function normalizeSourceForTagCompare(source) {
+  return String(source)
+    .toLowerCase()
+    .replace(/[’`]/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function sourceContainsTag(normalizedSource, tag) {
+  const normalizedTag = normalizeTagToken(tag);
+
+  if (!normalizedTag) return false;
+
+  return normalizedSource.includes(normalizedTag);
 }
 
 function dedupeTagSpellingSuggestions(items) {
@@ -539,12 +657,19 @@ function dedupeTagRelatedSuggestions(items) {
     const suggestions = [...new Set(item.suggestions)].sort();
     if (!suggestions.length) continue;
 
-    const key = suggestions.join("|");
+    const presentSourceSuggestions =
+      [...new Set(item.presentSourceSuggestions ?? [])].sort();
+
+    const key = [
+      suggestions.join("|"),
+      presentSourceSuggestions.join("|")
+    ].join("::");
 
     if (!map.has(key)) {
       map.set(key, {
         present: [],
         presentSuggestions: [],
+        presentSourceSuggestions: [],
         suggestions
       });
     }
@@ -553,9 +678,11 @@ function dedupeTagRelatedSuggestions(items) {
 
     existing.present.push(...(item.present ?? []));
     existing.presentSuggestions.push(...(item.presentSuggestions ?? []));
+    existing.presentSourceSuggestions.push(...(item.presentSourceSuggestions ?? []));
 
     existing.present = [...new Set(existing.present)].sort();
     existing.presentSuggestions = [...new Set(existing.presentSuggestions)].sort();
+    existing.presentSourceSuggestions = [...new Set(existing.presentSourceSuggestions)].sort();
   }
 
   return [...map.values()];
@@ -598,4 +725,37 @@ function getTagIssueContextAroundSpace(tags, index) {
   const rightPart = rightMatch ? rightMatch[0] : "";
 
   return `${leftWord}${rightPart}`.trim();
+}
+
+function findSourceTagSuggestions(source, tags) {
+  const normalizedSource = String(source).toLowerCase();
+  const tagWords = getNormalizedTagWords(tags);
+  const tagSet = new Set(tagWords);
+
+  const suggestions = [];
+
+  for (const rule of TAG_SOURCE_RULES) {
+    const matched =
+      rule.source.some(keyword =>
+        normalizedSource.includes(keyword.toLowerCase())
+      );
+
+    if (!matched) continue;
+
+    const normalizedTags =
+      rule.tags.map(normalizeTagToken);
+
+    const missing =
+      normalizedTags.filter(tag => !tagSet.has(tag));
+
+    if (!missing.length) continue;
+
+    suggestions.push({
+      source: rule.source[0],
+      expectedTags: normalizedTags,
+      suggestions: missing
+    });
+  }
+
+  return suggestions;
 }
