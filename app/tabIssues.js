@@ -264,7 +264,10 @@ function getTagIssueLevel(results) {
   }
 
   const hasRelatedSuggestions =
-    results.some(result => result.relatedSuggestions?.length > 0);
+    results.some(result =>
+      (result.relatedSuggestions?.length ?? 0) > 0 ||
+      (result.sourceSuggestions?.length ?? 0) > 0
+    );
 
   if (hasRelatedSuggestions) {
     return TAB_LEVEL_WARN;

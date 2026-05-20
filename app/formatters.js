@@ -1258,6 +1258,24 @@ function formatMultipleTagResults(results, t) {
     );
   }
 
+  lines.push("");
+  lines.push(formatSeparator());
+  lines.push("");
+  lines.push(formatSectionTitle(t("tagSourceRelatedCheck")));
+  lines.push("");
+
+  const sourceGroups = groupTagSourceSuggestions(sortedResults);
+
+  if (!sourceGroups.length) {
+    lines.push(t("noTagSourceSuggestions"));
+  } else {
+    lines.push(
+      sourceGroups
+        .map(group => formatTagSourceSuggestionGroup(group, t))
+        .join("\n\n" + formatSeparator() + "\n\n")
+    );
+  }
+
   return lines.join("\n").trimEnd();
 }
 
@@ -1877,6 +1895,10 @@ function formatTagRelatedResult(result, t, group = null) {
       .map(tag => `<code>${escapeHtml(tag)}</code>`)
       .join(" ");
 
+    const alreadyIncludedInSource = (item.presentSourceSuggestions ?? [])
+      .map(tag => `<code>${escapeHtml(tag)}</code>`)
+      .join(" ");
+
     const suggestions = item.suggestions
       .map(tag => `<code>${escapeHtml(tag)}</code>`)
       .join(" ");
@@ -1886,12 +1908,89 @@ function formatTagRelatedResult(result, t, group = null) {
     if (alreadyIncluded) {
       lines.push(`<span class="result-warn">${escapeHtml(t("tagAlreadyIncluded"))}:</span> ${alreadyIncluded}`);
     }
+    if (alreadyIncludedInSource) {
+      lines.push(
+        `<span class="result-warn">${escapeHtml(t("tagAlreadyIncludedInSource"))}:</span> ${alreadyIncludedInSource}`
+      );
+    }
 
     lines.push(`<span class="result-warn">${escapeHtml(t("tagSuggestedAdditions"))}:</span> ${suggestions}`);
     lines.push("");
   }
 
   return lines.join("\n").trimEnd();
+}
+
+function groupTagSourceSuggestions(results) {
+  const map = new Map();
+
+  for (const result of results) {
+    const tagSet = new Set(getNormalizedTagWords(result.tags ?? ""));
+
+    for (const item of result.sourceSuggestions ?? []) {
+      const suggestions = [...new Set(item.suggestions ?? [])].sort();
+      if (!suggestions.length) continue;
+
+      const alreadyIncluded = [...new Set(item.expectedTags ?? [])]
+        .map(normalizeTagToken)
+        .filter(tag => tagSet.has(tag))
+        .sort();
+
+      const key = [
+        item.source,
+        alreadyIncluded.join("|"),
+        suggestions.join("|")
+      ].join("::");
+
+      if (!map.has(key)) {
+        map.set(key, {
+          source: item.source,
+          alreadyIncluded,
+          suggestions,
+          fileNames: []
+        });
+      }
+
+      map.get(key).fileNames.push(result.fileName);
+    }
+  }
+
+  return [...map.values()];
+}
+
+function formatTagSourceSuggestionGroup(group, t) {
+  const lines = [];
+
+  lines.push(
+    group.fileNames
+      .map(fileName => getDifficultyNameText(fileName))
+      .join(", ")
+  );
+
+  lines.push("");
+
+  lines.push(
+    `<span class="result-warn">${escapeHtml(t("tagSource"))}:</span> ` +
+    `<code>${escapeHtml(group.source)}</code>`
+  );
+
+  if (group.alreadyIncluded?.length) {
+    lines.push(
+      `<span class="result-warn">${escapeHtml(t("tagAlreadyIncluded"))}:</span> ` +
+      group.alreadyIncluded
+        .map(tag => `<code>${escapeHtml(tag)}</code>`)
+        .join(" ")
+    );
+  }
+
+  lines.push(
+    `<span class="result-warn">${escapeHtml(t("tagSuggestedAdditions"))}:</span> ` +
+    group.suggestions
+      .map(tag => `<code>${escapeHtml(tag)}</code>`)
+      .join(" ")
+  );
+
+  return lines.join("\n");
 }
 
 /** メタデータ：東方チェック */
