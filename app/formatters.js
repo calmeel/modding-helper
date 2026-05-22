@@ -2336,7 +2336,7 @@ function formatBgOffsetResult(results, t) {
   const bgResults = results ?? [];
 
   if (!bgResults.length) {
-    return t("noFileLoaded");
+    return t("noOsuFiles");
   }
 
   const rows = [];

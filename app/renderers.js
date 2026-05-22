@@ -196,7 +196,7 @@ function renderSourceResultFromResults(results, dom, t) {
 function renderContentPermissionResultFromResults(results, dom, t) {
   if (!dom.contentPermissionOutput) return;
 
-  if (!results || !results.length) {
+  if (!results) {
     dom.contentPermissionOutput.textContent =
       t("noFileLoaded");
     return;
