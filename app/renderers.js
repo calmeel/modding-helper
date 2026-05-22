@@ -1167,53 +1167,6 @@ function findSpreadFinisherMatchingTime(times, targetTime) {
   return null;
 }
 
-/** その他タブ：東方のソースチェック */
-function renderSourceResult(results, dom, t) {
-  if (!dom.sourceOutput) return;
-
-  if (!results) {
-    dom.sourceOutput.innerHTML = t("noFileLoaded");
-    return;
-  }
-
-  const lines = [];
-
-  for (const result of results) {
-    lines.push(`${getDifficultyName(result.fileName)}`);
-    lines.push("");
-
-    if (result.level === "ok") {
-      lines.push(`OK`);
-
-      lines.push(
-        `<a
-          href="${result.link}"
-          target="_blank"
-          class="result-link"
-        >
-          ${result.link}
-        </a>`
-      );
-
-    } else if (result.type === "generic") {
-      lines.push(`作品名を記述する必要があるかもしれません`);
-
-    } else if (result.type === "partial") {
-      lines.push(`表記が不正です`);
-      lines.push(`→ ${result.expected}`);
-
-    } else if (result.type === "unknown") {
-      lines.push(`自分で検索して正しいSourceを確認してください`);
-    }
-
-    lines.push("");
-    lines.push("==============================");
-    lines.push("");
-  }
-
-  dom.sourceOutput.innerHTML = lines.join("\n");
-}
-
 /** その他タブ：プレビューポイント */
 function renderPreviewPointResultFromResults(results, dom, t) {
   if (!dom.previewPointOutput) return;
@@ -2198,39 +2151,3 @@ function renderTimelineResultFromSources(sources, dom, t, options = {}) {
   return result;
 }
 
-/** コンテンツ使用許可 */
-function formatContentPermissionResult(result, t) {
-  const lines = [];
-
-  if (!result.results?.length) {
-    return t("noContentPermissionIssues");
-  }
-
-  for (const item of result.results) {
-    lines.push(
-      `<span class="result-warn">${escapeHtml(item.messageJa)}</span>`
-    );
-
-    lines.push("");
-
-    lines.push(
-      `Matched: ${item.matchedKeywords
-        .map(v => `<code>${escapeHtml(v)}</code>`)
-        .join(" ")}`
-    );
-
-    lines.push("");
-
-    lines.push(
-      `<a href="${escapeHtml(item.link)}" target="_blank">` +
-      `${escapeHtml(item.link)}` +
-      `</a>`
-    );
-
-    lines.push("");
-    lines.push(formatSeparator());
-    lines.push("");
-  }
-
-  return lines.join("\n").trimEnd();
-}
