@@ -1278,9 +1278,9 @@ you should verify whether the displayed position is intentional whenever a warni
 Background events inside the <code>[Events]</code> section can specify the background image file name and its display offset.<br><br>
 
 Example:
-<pre><code>[Events]<br>
-//Background and Video events<br>
-0,0,"BG.jpg",0,40</code></pre>
+<pre><code>[Events]</code>
+<code>//Background and Video events</code>
+<code>0,0,"BG.jpg",0,40</code></pre>
 
 Background events use the following syntax:<br>
 <code>0,0,filename,xOffset,yOffset</code><br><br>
@@ -1289,7 +1289,7 @@ If <code>xOffset</code> / <code>yOffset</code> is <code>0,0</code>, the values m
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ Detection</span><br>
+<span class="label label-detect">■ Detection 1: BG offset differences</span><br>
 This check reads the background events of each difficulty in the mapset and verifies whether
 <code>xOffset</code> / <code>yOffset</code> are consistent between difficulties that use the same background image file.<br><br>
 
@@ -1297,6 +1297,16 @@ If the same background file is used but the offsets differ between difficulties,
 a warning will be displayed.<br><br>
 
 This check cannot be performed by AiMod or Mapset Verifier.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection 2: Background image format</span><br>
+This check reads the file extension of each background image referenced by background events and identifies
+<code>.jpg</code> / <code>.jpeg</code> / <code>.png</code> files.<br>
+If a <code>.png</code> background image is used, a warning will be displayed because
+<code>.jpg</code> is recommended from a file-size reduction perspective.<br><br>
+
+If multiple background events exist, each image file name and format will be listed.
 </div>
 
 <div class="section section-warning">

@@ -43,6 +43,7 @@ function parseBgOffsetEvents(text) {
       backgrounds.push({
         fileName: bgFileName,
         normalizedFileName: normalizeBgFileName(bgFileName),
+        imageType: getBgImageType(bgFileName),
         xOffset: Number.isFinite(xOffset) ? xOffset : 0,
         yOffset: Number.isFinite(yOffset) ? yOffset : 0,
         lineNo: i + 1
@@ -95,4 +96,15 @@ function normalizeBgFileName(value) {
     .trim()
     .replace(/\\/g, "/")
     .toLowerCase();
+}
+
+function getBgImageType(fileName) {
+  const match = String(fileName ?? "").match(/\.([^.\\/]+)$/);
+  const ext = match ? match[1].toLowerCase() : "";
+
+  if (ext === "jpg" || ext === "jpeg" || ext === "png") {
+    return ext;
+  }
+
+  return "";
 }

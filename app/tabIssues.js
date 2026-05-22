@@ -427,6 +427,10 @@ function getBgOffsetIssueLevel(results) {
 
   for (const result of results) {
     for (const bg of result.backgrounds ?? []) {
+      if (bg.imageType === "png") {
+        return TAB_LEVEL_WARN;
+      }
+
       const key = bg.normalizedFileName;
       if (!key) continue;
 

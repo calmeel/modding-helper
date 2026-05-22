@@ -2348,6 +2348,7 @@ function formatBgOffsetResult(results, t) {
         diff: getDifficultyNameText(result.fileName),
         bgFileName: bg.fileName,
         normalizedFileName: bg.normalizedFileName,
+        imageType: bg.imageType,
         xOffset: bg.xOffset,
         yOffset: bg.yOffset
       });
@@ -2360,6 +2361,7 @@ function formatBgOffsetResult(results, t) {
 
   const groups = groupBgOffsetRows(rows);
   const issueGroups = groups.filter(group => group.offsetKeys.size > 1);
+  const pngGroups = groups.filter(group => group.imageType === "png");
 
   const lines = [];
 
@@ -2371,11 +2373,12 @@ function formatBgOffsetResult(results, t) {
   if (!issueGroups.length) {
     lines.push("");
     lines.push(t("bgOffsetNoIssues"));
-    return lines.join("\n");
   }
 
-  lines.push("");
-  lines.push(`<span class="result-warn">${t("warning")}:</span>`);
+  if (issueGroups.length || pngGroups.length) {
+    lines.push("");
+    lines.push(`<span class="result-warn">${t("warning")}:</span>`);
+  }
 
   for (const group of issueGroups) {
     const displayName = group.rows[0]?.bgFileName ?? group.normalizedFileName;
@@ -2383,6 +2386,16 @@ function formatBgOffsetResult(results, t) {
     lines.push(
       `<span class="result-warn">` +
       `${escapeHtml(displayName)} ${t("bgOffsetDifferentOffsets")}` +
+      `</span>`
+    );
+  }
+
+  for (const group of pngGroups) {
+    const displayName = group.rows[0]?.bgFileName ?? group.normalizedFileName;
+
+    lines.push(
+      `<span class="result-warn">` +
+      `${escapeHtml(displayName)} | ${escapeHtml(t("bgOffsetPngWarning"))}` +
       `</span>`
     );
   }
@@ -2397,6 +2410,7 @@ function groupBgOffsetRows(rows) {
     if (!map.has(row.normalizedFileName)) {
       map.set(row.normalizedFileName, {
         normalizedFileName: row.normalizedFileName,
+        imageType: row.imageType,
         rows: [],
         offsetKeys: new Set()
       });
@@ -2413,6 +2427,7 @@ function groupBgOffsetRows(rows) {
 function formatBgOffsetTable(rows) {
   const headers = {
     file: "File",
+    type: "Type",
     diff: "Diff",
     xOffset: "xOffset",
     yOffset: "yOffset"
@@ -2420,6 +2435,7 @@ function formatBgOffsetTable(rows) {
 
   const widths = {
     file: Math.max(4, visibleWidth(headers.file), ...rows.map(r => visibleWidth(r.bgFileName))),
+    type: Math.max(4, visibleWidth(headers.type), ...rows.map(r => visibleWidth(formatBgImageType(r.imageType)))),
     diff: Math.max(4, visibleWidth(headers.diff), ...rows.map(r => visibleWidth(r.diff))),
     xOffset: Math.max(7, visibleWidth(headers.xOffset), ...rows.map(r => visibleWidth(String(r.xOffset)))),
     yOffset: Math.max(7, visibleWidth(headers.yOffset), ...rows.map(r => visibleWidth(String(r.yOffset))))
@@ -2429,6 +2445,7 @@ function formatBgOffsetTable(rows) {
 
   lines.push(
     `${padEndVisual(headers.file, widths.file)} | ` +
+    `${padEndVisual(headers.type, widths.type)} | ` +
     `${padEndVisual(headers.diff, widths.diff)} | ` +
     `${padStartVisual(headers.xOffset, widths.xOffset)} | ` +
     `${padStartVisual(headers.yOffset, widths.yOffset)}`
@@ -2436,14 +2453,18 @@ function formatBgOffsetTable(rows) {
 
   lines.push(
     `${"-".repeat(widths.file)}-+-` +
+    `${"-".repeat(widths.type)}-+-` +
     `${"-".repeat(widths.diff)}-+-` +
     `${"-".repeat(widths.xOffset)}-+-` +
     `${"-".repeat(widths.yOffset)}`
   );
 
   for (const row of rows) {
+    const typeText = formatBgImageType(row.imageType);
+
     lines.push(
       `${escapeHtml(row.bgFileName)}${" ".repeat(widths.file - visibleWidth(row.bgFileName))} | ` +
+      `${escapeHtml(typeText)}${" ".repeat(widths.type - visibleWidth(typeText))} | ` +
       `${getDifficultyName(row.mapFileName)}${" ".repeat(widths.diff - visibleWidth(row.diff))} | ` +
       `${padStartVisual(String(row.xOffset), widths.xOffset)} | ` +
       `${padStartVisual(String(row.yOffset), widths.yOffset)}`
@@ -2451,6 +2472,10 @@ function formatBgOffsetTable(rows) {
   }
 
   return lines.join("\n");
+}
+
+function formatBgImageType(imageType) {
+  return imageType ? imageType.toUpperCase() : "Other";
 }
 
 /** その他：プレビューポイント */
