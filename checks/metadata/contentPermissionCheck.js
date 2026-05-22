@@ -282,7 +282,9 @@ const CONTENT_PERMISSION_RULES = [
 
   keywords: [
     "cosmograph",
-    "lunatic sounds"
+    "lunatic sounds",
+    "ArcadeStuff",
+    "HousePlan"
   ],
 
   title: "Past DMCA notice",
