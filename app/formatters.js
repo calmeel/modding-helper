@@ -2331,6 +2331,128 @@ function groupContentPermissionRows(rows) {
   return [...map.values()];
 }
 
+/** BG Offset */
+function formatBgOffsetResult(results, t) {
+  const bgResults = results ?? [];
+
+  if (!bgResults.length) {
+    return t("noFileLoaded");
+  }
+
+  const rows = [];
+
+  for (const result of sortResultsForDisplay(bgResults)) {
+    for (const bg of result.backgrounds ?? []) {
+      rows.push({
+        mapFileName: result.fileName,
+        diff: getDifficultyNameText(result.fileName),
+        bgFileName: bg.fileName,
+        normalizedFileName: bg.normalizedFileName,
+        xOffset: bg.xOffset,
+        yOffset: bg.yOffset
+      });
+    }
+  }
+
+  if (!rows.length) {
+    return t("bgOffsetNoBackgrounds");
+  }
+
+  const groups = groupBgOffsetRows(rows);
+  const issueGroups = groups.filter(group => group.offsetKeys.size > 1);
+
+  const lines = [];
+
+  lines.push(t("bgOffsetComparison"));
+  lines.push("");
+
+  lines.push(formatBgOffsetTable(rows));
+
+  if (!issueGroups.length) {
+    lines.push("");
+    lines.push(t("bgOffsetNoIssues"));
+    return lines.join("\n");
+  }
+
+  lines.push("");
+  lines.push(`<span class="result-warn">${t("warning")}:</span>`);
+
+  for (const group of issueGroups) {
+    const displayName = group.rows[0]?.bgFileName ?? group.normalizedFileName;
+
+    lines.push(
+      `<span class="result-warn">` +
+      `${escapeHtml(displayName)} ${t("bgOffsetDifferentOffsets")}` +
+      `</span>`
+    );
+  }
+
+  return lines.join("\n");
+}
+
+function groupBgOffsetRows(rows) {
+  const map = new Map();
+
+  for (const row of rows) {
+    if (!map.has(row.normalizedFileName)) {
+      map.set(row.normalizedFileName, {
+        normalizedFileName: row.normalizedFileName,
+        rows: [],
+        offsetKeys: new Set()
+      });
+    }
+
+    const group = map.get(row.normalizedFileName);
+    group.rows.push(row);
+    group.offsetKeys.add(`${row.xOffset},${row.yOffset}`);
+  }
+
+  return [...map.values()];
+}
+
+function formatBgOffsetTable(rows) {
+  const headers = {
+    file: "File",
+    diff: "Diff",
+    xOffset: "xOffset",
+    yOffset: "yOffset"
+  };
+
+  const widths = {
+    file: Math.max(4, visibleWidth(headers.file), ...rows.map(r => visibleWidth(r.bgFileName))),
+    diff: Math.max(4, visibleWidth(headers.diff), ...rows.map(r => visibleWidth(r.diff))),
+    xOffset: Math.max(7, visibleWidth(headers.xOffset), ...rows.map(r => visibleWidth(String(r.xOffset)))),
+    yOffset: Math.max(7, visibleWidth(headers.yOffset), ...rows.map(r => visibleWidth(String(r.yOffset))))
+  };
+
+  const lines = [];
+
+  lines.push(
+    `${padEndVisual(headers.file, widths.file)} | ` +
+    `${padEndVisual(headers.diff, widths.diff)} | ` +
+    `${padStartVisual(headers.xOffset, widths.xOffset)} | ` +
+    `${padStartVisual(headers.yOffset, widths.yOffset)}`
+  );
+
+  lines.push(
+    `${"-".repeat(widths.file)}-+-` +
+    `${"-".repeat(widths.diff)}-+-` +
+    `${"-".repeat(widths.xOffset)}-+-` +
+    `${"-".repeat(widths.yOffset)}`
+  );
+
+  for (const row of rows) {
+    lines.push(
+      `${escapeHtml(row.bgFileName)}${" ".repeat(widths.file - visibleWidth(row.bgFileName))} | ` +
+      `${getDifficultyName(row.mapFileName)}${" ".repeat(widths.diff - visibleWidth(row.diff))} | ` +
+      `${padStartVisual(String(row.xOffset), widths.xOffset)} | ` +
+      `${padStartVisual(String(row.yOffset), widths.yOffset)}`
+    );
+  }
+
+  return lines.join("\n");
+}
+
 /** その他：プレビューポイント */
 function formatPreviewPointResult(results, t) {
   if (!results || !results.length) {
