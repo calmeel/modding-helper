@@ -405,6 +405,16 @@ function getMiscIssueLevel(state) {
 function getPreviewPointIssueLevel(results) {
   if (!results) return TAB_LEVEL_NONE;
 
+  const previewTimes = new Set(
+    results
+      .filter(result => result.previewTime !== null)
+      .map(result => result.previewTime)
+  );
+
+  if (previewTimes.size > 1) {
+    return TAB_LEVEL_ERROR;
+  }
+
   let hasWarn = false;
 
   for (const result of results) {

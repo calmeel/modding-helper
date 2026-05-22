@@ -1172,13 +1172,25 @@ warning が出た場合は、リンク先のガイドラインや DMCA 原文を
 
 <div class="section section-bg">
 <span class="label label-bg">■ 背景</span><br>
-mapset 全体のオフセットを変更した場合、HitObject や TimingPoint は修正していても、<code>PreviewTime</code> の変更を忘れることがあります。<br>
+mapset 全体のオフセットを変更した場合、HitObject や TimingPoint は修正していても、<code>PreviewTime</code> の変更を忘れることがあります。<br><br>
+
+また、diff ごとに異なる <code>PreviewTime</code> が設定されていたり、
+一部 difficulty のみ <code>PreviewTime</code> が未設定になっている場合があります。
 </div>
 
 <div class="section section-detect">
 <span class="label label-detect">■ 検出内容</span><br>
+
 <code>PreviewTime</code> が snap からずれている場合、warning として表示します<br>
-（この検出は AiMod や Mapset Verifier では行えません）。<br>
+（この検出は AiMod や Mapset Verifier では行えません）。<br><br>
+
+また、以下の内容も検出します：
+
+<ul>
+  <li>diff 間で <code>PreviewTime</code> が一致していない → error</li>
+  <li><code>PreviewTime</code> が設定されていない → warning</li>
+</ul>
+
 </div>
 
 <div class="section section-warning">

@@ -73,6 +73,7 @@ function findMetadataSymbolRomanisationIssues(original, romanised, fieldName) {
 
   const originalText = String(original ?? "");
   const romanisedText = String(romanised ?? "");
+  const normalizedRomanised = normalizeMetadataRomanisedForSymbolCompare(romanisedText);
 
   const originalSymbols = collectOriginalMetadataSymbols(originalText);
 
@@ -81,33 +82,35 @@ function findMetadataSymbolRomanisationIssues(original, romanised, fieldName) {
   }
 
   const suggestedRomanised = buildSuggestedRomanisedSequence(originalText);
-  const suggestedRomanisedCandidates = buildSuggestedRomanisedCandidates(originalText);
-  const normalizedRomanised = normalizeMetadataRomanisedForSymbolCompare(romanisedText);
+  const originalSymbolCounts = countOriginalMetadataSymbols(originalSymbols);
 
-  const hasMatchingCandidate = suggestedRomanisedCandidates.some(candidate =>
-    normalizeMetadataRomanisedForSymbolCompare(candidate) === normalizedRomanised
-  );
+  for (const [symbol, originalCount] of originalSymbolCounts) {
+    const expectedList = METADATA_SYMBOL_ROMANISATION_RULES[symbol] ?? [];
+    const replacementCount = countRomanisedSymbolGroupOccurrences(
+      normalizedRomanised,
+      expectedList
+    );
 
-  if (hasMatchingCandidate) {
-    return issues;
+    if (replacementCount === originalCount) {
+      continue;
+    }
+
+    issues.push({
+      fieldName,
+      type: replacementCount < originalCount
+        ? "metadataSymbolMissingReplacement"
+        : "metadataSymbolMultipleReplacement",
+
+      symbol,
+      expectedList,
+      originalCount,
+      replacementCount,
+
+      original: originalText,
+      romanised: romanisedText,
+      suggestedRomanised
+    });
   }
-
-  const firstOriginalSymbol = originalSymbols[0];
-
-  issues.push({
-    fieldName,
-    type: "metadataSymbolMismatch",
-
-    // formatters.js display
-    symbol: firstOriginalSymbol?.char ?? "",
-    expectedList: firstOriginalSymbol
-      ? METADATA_SYMBOL_ROMANISATION_RULES[firstOriginalSymbol.char] ?? []
-      : [],
-
-    original: originalText,
-    romanised: romanisedText,
-    suggestedRomanised
-  });
 
   return dedupeMetadataSymbolIssues(issues);
 }
@@ -129,6 +132,16 @@ function collectOriginalMetadataSymbols(text) {
   return symbols;
 }
 
+function countOriginalMetadataSymbols(symbols) {
+  const counts = new Map();
+
+  for (const symbol of symbols) {
+    counts.set(symbol.char, (counts.get(symbol.char) ?? 0) + 1);
+  }
+
+  return counts;
+}
+
 function getAllRomanisedMetadataSymbols() {
   return [...new Set(
     Object.values(METADATA_SYMBOL_ROMANISATION_RULES).flat()
@@ -147,28 +160,35 @@ function buildSuggestedRomanisedSequence(originalText) {
   return result;
 }
 
-function buildSuggestedRomanisedCandidates(originalText) {
-  const text = String(originalText ?? "");
-  const candidates = [""];
-
-  for (const char of text) {
-    const replacements = METADATA_SYMBOL_ROMANISATION_RULES[char] ?? [char];
-    const nextCandidates = [];
-
-    for (const candidate of candidates) {
-      for (const replacement of replacements) {
-        nextCandidates.push(candidate + replacement);
-      }
-    }
-
-    candidates.splice(0, candidates.length, ...nextCandidates);
-  }
-
-  return candidates;
-}
-
 function normalizeMetadataRomanisedForSymbolCompare(text) {
   return removeSpacesAroundRomanisedSymbols(String(text ?? ""));
+}
+
+function countRomanisedSymbolGroupOccurrences(text, symbols) {
+  const sortedSymbols = [...new Set(symbols)]
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length);
+
+  if (!sortedSymbols.length) return 0;
+
+  let count = 0;
+  let index = 0;
+
+  while (index < text.length) {
+    const matched = sortedSymbols.find(symbol =>
+      text.slice(index, index + symbol.length) === symbol
+    );
+
+    if (matched) {
+      count++;
+      index += matched.length;
+      continue;
+    }
+
+    index++;
+  }
+
+  return count;
 }
 
 function removeSpacesAroundRomanisedSymbols(text) {
