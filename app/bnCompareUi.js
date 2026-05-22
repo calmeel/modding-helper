@@ -315,8 +315,6 @@ function setupBnCompareUi(params) {
       item.pairId === state.bnCompare.selectedPairId
     );
 
-    console.log("render SV filter:", state.bnCompare.svChangeThreshold);
-
     renderBnCompareResult(
       result || null,
       dom,

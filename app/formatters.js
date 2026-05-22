@@ -12,16 +12,6 @@ function formatDuration(ms) {
   return msToTimestamp(ms);
 }
 
-function getDifficultyName(fileName) {
-  if (!fileName) return "[Unknown]";
-
-  const match = fileName.match(/\[([^\[\]]+)\]\.osu$/i);
-
-  const name = match ? match[1] : fileName;
-
-  return `<span class="diff-name">[${name}]</span>`;
-}
-
 function getDifficultyNameText(fileName) {
   if (!fileName) return "[Unknown]";
 
@@ -786,7 +776,7 @@ function formatSampleSetIssueText(item) {
   }
 
   if (item.field === "customFileName") {
-    return `custom file: ${item.customFileName}`;
+    return `custom file: ${escapeHtml(item.customFileName)}`;
   }
 
   if (item.field === "edgeSounds") {
@@ -2705,7 +2695,7 @@ function sortResultsForDisplay(results) {
 }
 
 function getTaikoDifficultySortKey(fileName) {
-  const name = normalizeDifficultyName(getDifficultyName(fileName));
+  const name = normalizeDifficultyName(getDifficultyNameText(fileName));
 
   // Guest diff: "___'s Oni" → "Oni" を拾う
   if (/\bkantan\b/.test(name)) return 10;

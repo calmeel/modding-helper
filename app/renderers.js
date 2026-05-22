@@ -1247,7 +1247,7 @@ function formatBgOffsetResult(results, t) {
 
   const rows = [];
 
-  for (const result of bgResults) {
+  for (const result of sortResultsForDisplay(bgResults)) {
     for (const bg of result.backgrounds ?? []) {
       rows.push({
         mapFileName: result.fileName,
@@ -1349,7 +1349,7 @@ function formatBgOffsetTable(rows) {
 
   for (const row of rows) {
     lines.push(
-      `${padEndVisual(row.bgFileName, widths.file)} | ` +
+      `${escapeHtml(row.bgFileName)}${" ".repeat(widths.file - visibleWidth(row.bgFileName))} | ` +
       `${getDifficultyName(row.mapFileName)}${" ".repeat(widths.diff - visibleWidth(row.diff))} | ` +
       `${padStartVisual(String(row.xOffset), widths.xOffset)} | ` +
       `${padStartVisual(String(row.yOffset), widths.yOffset)}`
