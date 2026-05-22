@@ -209,6 +209,7 @@ const i18n = {
     bgOffsetNoBackgrounds: "No background events were found.",
     bgOffsetNoIssues: "No BG offset inconsistencies were found.",
     bgOffsetDifferentOffsets: "has different offsets between difficulties.",
+    bgOffsetPngWarning: "PNG background is used. JPG is recommended from a file-size reduction perspective.",
 
     epilepsyWarningTitle: "Flash / Epilepsy Warning",
     noEpilepsyWarningIssues: "No kiai flash / high-BPM kiai issues found.",
@@ -511,6 +512,7 @@ const i18n = {
     bgOffsetNoBackgrounds: "Background event が見つかりませんでした。",
     bgOffsetNoIssues: "BGオフセットの不一致は見つかりませんでした。",
     bgOffsetDifferentOffsets: "は difficulty 間で異なるオフセットを使用しています。",
+    bgOffsetPngWarning: "PNG形式の背景画像が使用されています。容量削減の観点からJPG形式が推奨されています。",
 
     epilepsyWarningTitle: "点滅・てんかん警告",
     noEpilepsyWarningIssues: "Kiai flash / 高BPM Kiai の確認対象は見つかりませんでした。",
