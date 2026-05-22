@@ -79,15 +79,27 @@ function detectSvVolumeChanges(svLines) {
 function findNearestHitObjectTime(hitTimes, time) {
   if (!hitTimes.length) return null;
 
-  let best = null;
+  let low = 0;
+  let high = hitTimes.length;
 
-  for (const hitTime of hitTimes) {
-    const diff = Math.abs(hitTime - time);
+  while (low < high) {
+    const mid = Math.floor((low + high) / 2);
 
-    if (best === null || diff < Math.abs(best - time)) {
-      best = hitTime;
+    if (hitTimes[mid] < time) {
+      low = mid + 1;
+    } else {
+      high = mid;
     }
   }
 
-  return best;
+  const after = hitTimes[low] ?? null;
+  const before = low > 0 ? hitTimes[low - 1] : null;
+
+  if (before === null) return after;
+  if (after === null) return before;
+
+  const beforeDiff = Math.abs(before - time);
+  const afterDiff = Math.abs(after - time);
+
+  return afterDiff < beforeDiff ? after : before;
 }
