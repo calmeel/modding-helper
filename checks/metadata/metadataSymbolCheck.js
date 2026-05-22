@@ -76,69 +76,38 @@ function findMetadataSymbolRomanisationIssues(original, romanised, fieldName) {
 
   const originalSymbols = collectOriginalMetadataSymbols(originalText);
 
-  // TitleUnicode側に変換対象記号がない場合は、Romanised側の記号もチェックしない
   if (!originalSymbols.length) {
     return issues;
   }
 
-  const romanisedSymbols = collectRomanisedMetadataSymbols(
-    romanisedText,
-    originalSymbols
+  const suggestedRomanised = buildSuggestedRomanisedSequence(originalText);
+  const suggestedRomanisedCandidates = buildSuggestedRomanisedCandidates(originalText);
+  const normalizedRomanised = normalizeMetadataRomanisedForSymbolCompare(romanisedText);
+
+  const hasMatchingCandidate = suggestedRomanisedCandidates.some(candidate =>
+    normalizeMetadataRomanisedForSymbolCompare(candidate) === normalizedRomanised
   );
 
-  if (!originalSymbols.length && !romanisedSymbols.length) {
+  if (hasMatchingCandidate) {
     return issues;
   }
 
-  const suggestedRomanised = buildSuggestedRomanisedSequence(originalText);
+  const firstOriginalSymbol = originalSymbols[0];
 
-  // 1. 記号の数が違う
-  if (originalSymbols.length !== romanisedSymbols.length) {
-    const firstOriginalSymbol = originalSymbols[0];
+  issues.push({
+    fieldName,
+    type: "metadataSymbolMismatch",
 
-    issues.push({
-      fieldName,
-      type: "metadataSymbolCountMismatch",
+    // formatters.js display
+    symbol: firstOriginalSymbol?.char ?? "",
+    expectedList: firstOriginalSymbol
+      ? METADATA_SYMBOL_ROMANISATION_RULES[firstOriginalSymbol.char] ?? []
+      : [],
 
-      // formatters.js 互換用
-      symbol: firstOriginalSymbol?.char ?? "",
-      expectedList: firstOriginalSymbol
-        ? METADATA_SYMBOL_ROMANISATION_RULES[firstOriginalSymbol.char] ?? []
-        : [],
-
-      original: originalText,
-      romanised: romanisedText,
-      suggestedRomanised
-    });
-
-    return dedupeMetadataSymbolIssues(issues);
-  }
-
-  for (let i = 0; i < originalSymbols.length; i++) {
-    const originalSymbol = originalSymbols[i];
-    const romanisedSymbol = romanisedSymbols[i];
-
-    const expectedList =
-      METADATA_SYMBOL_ROMANISATION_RULES[originalSymbol.char] ?? [];
-
-    // 2. 記号の種類・順番が違う
-    if (!expectedList.includes(romanisedSymbol.char)) {
-      issues.push({
-        fieldName,
-        type: "metadataSymbolMismatch",
-
-        // formatters.js 互換用
-        symbol: originalSymbol.char,
-        expectedList,
-
-        original: originalText,
-        romanised: romanisedText,
-        suggestedRomanised
-      });
-
-      continue;
-    }
-  }
+    original: originalText,
+    romanised: romanisedText,
+    suggestedRomanised
+  });
 
   return dedupeMetadataSymbolIssues(issues);
 }
@@ -160,44 +129,6 @@ function collectOriginalMetadataSymbols(text) {
   return symbols;
 }
 
-function collectRomanisedMetadataSymbols(text, originalSymbols) {
-  const symbols = [];
-
-  if (typeof text !== "string") {
-    return symbols;
-  }
-
-  const allowedSymbols = getRomanisedSymbolsForOriginalSymbols(originalSymbols);
-
-  for (let i = 0; i < text.length; i++) {
-    for (const symbol of allowedSymbols) {
-      if (text.slice(i, i + symbol.length) === symbol) {
-        symbols.push({
-          char: symbol,
-          index: i
-        });
-
-        i += symbol.length - 1;
-        break;
-      }
-    }
-  }
-
-  return symbols;
-}
-
-function getRomanisedSymbolsForOriginalSymbols(originalSymbols) {
-  if (!Array.isArray(originalSymbols)) {
-    return [];
-  }
-
-  return [...new Set(
-    originalSymbols.flatMap(symbol =>
-      METADATA_SYMBOL_ROMANISATION_RULES[symbol.char] ?? []
-    )
-  )].sort((a, b) => b.length - a.length);
-}
-
 function getAllRomanisedMetadataSymbols() {
   return [...new Set(
     Object.values(METADATA_SYMBOL_ROMANISATION_RULES).flat()
@@ -214,6 +145,30 @@ function buildSuggestedRomanisedSequence(originalText) {
   }
 
   return result;
+}
+
+function buildSuggestedRomanisedCandidates(originalText) {
+  const text = String(originalText ?? "");
+  const candidates = [""];
+
+  for (const char of text) {
+    const replacements = METADATA_SYMBOL_ROMANISATION_RULES[char] ?? [char];
+    const nextCandidates = [];
+
+    for (const candidate of candidates) {
+      for (const replacement of replacements) {
+        nextCandidates.push(candidate + replacement);
+      }
+    }
+
+    candidates.splice(0, candidates.length, ...nextCandidates);
+  }
+
+  return candidates;
+}
+
+function normalizeMetadataRomanisedForSymbolCompare(text) {
+  return removeSpacesAroundRomanisedSymbols(String(text ?? ""));
 }
 
 function removeSpacesAroundRomanisedSymbols(text) {
