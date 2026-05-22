@@ -1248,17 +1248,33 @@ Additionally, entries containing multiple song titles are representative example
 </section>
 
 <section class="doc-tab-panel" data-doc-tab-panel="previewPoint">
-<h2>Miscellaneous: Preview Point</h2>
+<h2>Misc: Preview Point</h2>
 
 <div class="section section-bg">
 <span class="label label-bg">■ Background</span><br>
-When changing the overall offset of a mapset, it is possible to update HitObjects and TimingPoints correctly while forgetting to update <code>PreviewTime</code>.<br>
+
+When changing the overall offset of a mapset,
+HitObjects and TimingPoints may be adjusted correctly while forgetting to update <code>PreviewTime</code>.<br><br>
+
+Additionally,
+different difficulties may accidentally use different <code>PreviewTime</code> values,
+or some difficulties may have no <code>PreviewTime</code> configured at all.
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ Detection Content</span><br>
-This check displays a warning when <code>PreviewTime</code> is not aligned to a snap position.<br>
-(This detection cannot be performed by AiMod or Mapset Verifier.)<br>
+<span class="label label-detect">■ Detection</span><br>
+
+If <code>PreviewTime</code> is unsnapped,
+the tool displays a warning<br>
+(this check is not performed by AiMod or Mapset Verifier).<br><br>
+
+The following checks are also performed:
+
+<ul>
+  <li><code>PreviewTime</code> differs between difficulties → error</li>
+  <li><code>PreviewTime</code> is not configured → warning</li>
+</ul>
+
 </div>
 
 <div class="section section-warning">

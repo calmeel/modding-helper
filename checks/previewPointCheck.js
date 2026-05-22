@@ -7,7 +7,7 @@ function runPreviewPointCheck(text, fileName) {
   if (previewTime === null) {
     return {
       fileName,
-      level: "none",
+      level: "warn",
       previewTime: null,
       snap: null,
       diff: null

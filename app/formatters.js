@@ -1386,11 +1386,7 @@ function formatMultipleArtistResults(results, t) {
     for (const group of groupedSymbolIssues) {
       const issue = group.issue;
 
-      lines.push(
-        `<span class="result-warn">${escapeHtml(t("metadataSymbolRomanisationIssue"))}:</span> ` +
-        `<code>${escapeHtml(issue.symbol)}</code> → ` +
-        issue.expectedList.map(v => `<code>${escapeHtml(v)}</code>`).join(" / ")
-      );
+      lines.push(formatMetadataSymbolIssueMessage(issue, t));
 
       lines.push(`  ${escapeHtml(t("metadataOriginal"))}: <code>${escapeHtml(issue.original)}</code>`);
       lines.push(`  ${escapeHtml(t("metadataRomanised"))}: <code>${escapeHtml(issue.romanised)}</code>`);
@@ -1489,6 +1485,22 @@ function groupArtistSymbolIssues(results) {
 }
 
 /** Titleチェック */
+function formatMetadataSymbolIssueMessage(issue, t) {
+  const messageKey =
+    issue.type === "metadataSymbolMultipleReplacement"
+      ? "metadataSymbolRomanisationMultiple"
+      : issue.type === "metadataSymbolMissingReplacement"
+        ? "metadataSymbolRomanisationMissing"
+        : "metadataSymbolRomanisationIssue";
+  const expectedText = issue.expectedList
+    .map(v => `<code>${escapeHtml(v)}</code>`)
+    .join(" / ");
+
+  return (
+    `<span class="result-warn">${escapeHtml(t(messageKey))}:</span> ` +
+    `<code>${escapeHtml(issue.symbol)}</code> → ${expectedText}`
+  );
+}
 function formatMultipleTitleResults(results, t) {
   if (!results.length) {
     return t("noOsuFiles");
@@ -1553,11 +1565,7 @@ function formatMultipleTitleResults(results, t) {
     for (const group of groupedSymbolIssues) {
       const issue = group.issue;
 
-      lines.push(
-        `<span class="result-warn">${escapeHtml(t("metadataSymbolRomanisationIssue"))}:</span> ` +
-        `<code>${escapeHtml(issue.symbol)}</code> → ` +
-        issue.expectedList.map(v => `<code>${escapeHtml(v)}</code>`).join(" / ")
-      );
+      lines.push(formatMetadataSymbolIssueMessage(issue, t));
 
       lines.push(
         `  ${escapeHtml(t("metadataOriginal"))}: ` +
@@ -2484,23 +2492,43 @@ function formatPreviewPointResult(results, t) {
     return t("noOsuFiles");
   }
 
+  const missingResults = results.filter(result => result.previewTime === null);
   const validResults = results.filter(result => result.previewTime !== null);
 
+  const lines = [];
+
+  if (missingResults.length) {
+    lines.push(`<span class="result-warn">${escapeHtml(t("previewPointMissingWarning"))}</span>`);
+    lines.push(
+      missingResults
+        .map(result => getDifficultyName(result.fileName))
+        .join(" ")
+    );
+  }
+
   if (!validResults.length) {
-    return t("previewPointNotFound");
+    return lines.join("\n");
   }
 
   const groups = groupPreviewPointResults(validResults);
 
-  const lines = [];
-
   if (groups.length === 1) {
-    const item = groups[0].items[0];
+    const item =
+      groups[0].items.find(result => result.level === "warn") ??
+      groups[0].items[0];
+
+    if (lines.length) {
+      lines.push("");
+    }
     lines.push(formatPreviewPointSingleResult(item, t));
     return lines.join("\n");
   }
 
-  lines.push(t("previewPointMismatch"));
+  if (lines.length) {
+    lines.push("");
+  }
+
+  lines.push(`<span class="result-error">${escapeHtml(t("previewPointMismatch"))}</span>`);
   lines.push("");
 
   for (const group of groups) {
@@ -2523,11 +2551,7 @@ function groupPreviewPointResults(results) {
   const map = new Map();
 
   for (const result of results) {
-    const key = [
-      result.previewTime,
-      result.snap,
-      result.diff
-    ].join("|");
+    const key = String(result.previewTime);
 
     if (!map.has(key)) {
       map.set(key, []);
@@ -2554,12 +2578,17 @@ function formatPreviewPointSingleResult(item, t) {
     item.level === "warn"
       ? t("warning")
       : t("sourceOk");
+  const message =
+    item.level === "warn"
+      ? ` | ${escapeHtml(t("previewPointSnapWarning"))}`
+      : "";
 
   return `<span class="${levelClass}">` +
     `${formatTimestampLink(item.previewTime)} | ` +
     `${item.snap} snap | ` +
     `${diffText} | ` +
     `${status}` +
+    `${message}` +
     `</span>`;
 }
 
