@@ -1,8 +1,8 @@
 const EPILEPSY_KIAI_FLASH_CAUTION_HZ = 2;
 const EPILEPSY_KIAI_FLASH_WARNING_HZ = 3;
 
-const EPILEPSY_KIAI_BPM_CAUTION = 240;
-const EPILEPSY_KIAI_BPM_WARNING = 300;
+const EPILEPSY_KIAI_BPM_CAUTION = 300;
+const EPILEPSY_KIAI_BPM_WARNING = 360;
 
 function runEpilepsyWarningCheck(text, fileName) {
   const timingPoints = parseAllTimingPoints(text);
