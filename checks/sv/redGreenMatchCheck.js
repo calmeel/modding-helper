@@ -3,11 +3,12 @@ function runRedGreenMatchCheck(text, fileName) {
 
   const reds = timingPoints.filter(tp => tp.uninherited === 1);
   const greens = timingPoints.filter(tp => tp.uninherited === 0);
+  const greensByTime = groupGreenTimingPointsByTime(greens);
 
   const results = [];
 
   for (const red of reds) {
-    const sameTimeGreens = greens.filter(green => green.time === red.time);
+    const sameTimeGreens = greensByTime.get(red.time) ?? [];
 
     for (const green of sameTimeGreens) {
       /** 最初の赤線だけ例外処理：kiaiじゃなくてok */
@@ -48,4 +49,18 @@ function runRedGreenMatchCheck(text, fileName) {
     fileName,
     results
   };
+}
+
+function groupGreenTimingPointsByTime(greens) {
+  const groups = new Map();
+
+  for (const green of greens) {
+    if (!groups.has(green.time)) {
+      groups.set(green.time, []);
+    }
+
+    groups.get(green.time).push(green);
+  }
+
+  return groups;
 }
