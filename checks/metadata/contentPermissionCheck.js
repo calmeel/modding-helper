@@ -337,6 +337,7 @@ const CONTENT_PERMISSION_RULES = [
   level: "warn",
 
   fields: ["artist", "artistUnicode"],
+  matchMode: "word",
 
   keywords: [
     "ado"
@@ -810,7 +811,11 @@ function runContentPermissionCheck(text, fileName) {
                     : "";
 
       const matchedKeywords = rule.keywords.filter(keyword =>
-        targetText.includes(normalizeContentPermissionText(keyword))
+        matchesContentPermissionKeyword(
+          targetText,
+          keyword,
+          rule.matchMode
+        )
       );
 
       if (matchedKeywords.length) {
@@ -840,4 +845,43 @@ function runContentPermissionCheck(text, fileName) {
     fileName,
     results
   };
+}
+
+function matchesContentPermissionKeyword(targetText, keyword, matchMode = "contains") {
+  const normalizedKeyword = normalizeContentPermissionText(keyword);
+
+  if (!normalizedKeyword) {
+    return false;
+  }
+
+  if (matchMode === "word") {
+    return matchesContentPermissionWord(targetText, normalizedKeyword);
+  }
+
+  return targetText.includes(normalizedKeyword);
+}
+
+function matchesContentPermissionWord(targetText, keyword) {
+  let index = 0;
+
+  while (index < targetText.length) {
+    const foundIndex = targetText.indexOf(keyword, index);
+    if (foundIndex === -1) return false;
+
+    const before = foundIndex > 0 ? targetText[foundIndex - 1] : "";
+    const afterIndex = foundIndex + keyword.length;
+    const after = afterIndex < targetText.length ? targetText[afterIndex] : "";
+
+    if (!isContentPermissionWordChar(before) && !isContentPermissionWordChar(after)) {
+      return true;
+    }
+
+    index = foundIndex + keyword.length;
+  }
+
+  return false;
+}
+
+function isContentPermissionWordChar(char) {
+  return /[a-z0-9]/.test(char);
 }
