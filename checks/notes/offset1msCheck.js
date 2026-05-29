@@ -23,6 +23,7 @@ function runOffset1msCheck(text, fileName, options = {}) {
       timingPoints,
       svLines,
       sliderMultiplier,
+      beatSnaps
     );
 
     for (const item of items) {
@@ -37,7 +38,7 @@ function runOffset1msCheck(text, fileName, options = {}) {
       );
 
       if (!best) continue;
-      if (best.diff === 0) continue;
+      if (Math.abs(best.rawDiff) < 1) continue;
 
       if (Math.abs(best.diff) >= 1 && Math.abs(best.diff) <= 3) {
         results.push({
@@ -56,7 +57,7 @@ function runOffset1msCheck(text, fileName, options = {}) {
   };
 }
 
-function getOffsetCheckTimesFromHitObject(line, timingPoints, svLines, sliderMultiplier) {
+function getOffsetCheckTimesFromHitObject(line, timingPoints, svLines, sliderMultiplier, beatSnaps) {
   const parts = line.split(",");
   if (parts.length < 4) return [];
 
@@ -78,7 +79,8 @@ function getOffsetCheckTimesFromHitObject(line, timingPoints, svLines, sliderMul
       startTime,
       timingPoints,
       svLines,
-      sliderMultiplier
+      sliderMultiplier,
+      beatSnaps
     );
 
     if (sliderTailTime !== null) {
@@ -111,7 +113,7 @@ function isOffsetSliderType(type) {
   return (type & 2) !== 0;
 }
 
-function estimateOffsetSliderTailTime(parts, startTime, timingPoints, svLines, sliderMultiplier) {
+function estimateOffsetSliderTailTime(parts, startTime, timingPoints, svLines, sliderMultiplier, beatSnaps) {
   // osu! slider object:
   // x,y,time,type,hitSound,curveType|points,slides,length,...
   if (parts.length < 8) return null;
@@ -133,7 +135,12 @@ function estimateOffsetSliderTailTime(parts, startTime, timingPoints, svLines, s
     return null;
   }
 
-  const sv = getOffsetCurrentSv(svLines, startTime);
+  const sv = getOffsetCurrentSv(svLines, startTime, currentTp.time);
+  const anchoredStartTime = getOffsetSliderStartAnchorTime(
+    startTime,
+    currentTp,
+    beatSnaps
+  );
 
   const duration =
     (pixelLength * repeat * currentTp.beatLength) /
@@ -143,13 +150,32 @@ function estimateOffsetSliderTailTime(parts, startTime, timingPoints, svLines, s
     return null;
   }
 
-  return Math.round(startTime + duration);
+  return Math.trunc(anchoredStartTime + duration);
 }
 
-function getOffsetCurrentSv(svLines, time) {
+function getOffsetSliderStartAnchorTime(startTime, timingPoint, beatSnaps) {
+  const snap = findNearestSnapDiff(
+    startTime,
+    timingPoint.time,
+    timingPoint.beatLength,
+    beatSnaps
+  );
+
+  if (!snap || Math.abs(snap.rawDiff) >= 1) {
+    return startTime;
+  }
+
+  return startTime + snap.rawDiff;
+}
+
+function getOffsetCurrentSv(svLines, time, redTime = -Infinity) {
   let current = null;
 
   for (const svLine of svLines) {
+    if (svLine.time < redTime) {
+      continue;
+    }
+
     if (svLine.time <= time) {
       current = svLine;
     } else {
@@ -215,10 +241,12 @@ function findNearestSnapDiff(time, redTime, beatLength, beatSnaps) {
 
     const snapped = Math.trunc(nearestSnap);
     const diff = snapped - time;
+    const rawDiff = nearestSnap - time;
 
     if (!best || Math.abs(diff) < Math.abs(best.diff)) {
       best = {
         diff,
+        rawDiff,
         snap: beatSnap
       };
     }
