@@ -263,7 +263,11 @@ function calculateBnSliderEndTime(parts, time, redTimingPoints, inheritedTimingP
   const red = findCurrentBnTimingPoint(redTimingPoints, time);
   if (!red || !Number.isFinite(red.beatLength) || red.beatLength <= 0) return null;
 
-  const inherited = findCurrentBnTimingPoint(inheritedTimingPoints, time);
+  const inherited = findCurrentBnInheritedTimingPoint(
+    inheritedTimingPoints,
+    time,
+    red.time
+  );
   const svMultiplier = inherited ? -100 / inherited.beatLength : 1;
 
   if (!Number.isFinite(svMultiplier) || svMultiplier <= 0) return null;
@@ -278,6 +282,16 @@ function findCurrentBnTimingPoint(timingPoints, time) {
     if (timingPoints[i].time <= time) {
       return timingPoints[i];
     }
+  }
+
+  return null;
+}
+
+function findCurrentBnInheritedTimingPoint(timingPoints, time, redTime) {
+  for (let i = timingPoints.length - 1; i >= 0; i--) {
+    if (timingPoints[i].time > time) continue;
+    if (timingPoints[i].time < redTime) return null;
+    return timingPoints[i];
   }
 
   return null;

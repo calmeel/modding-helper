@@ -457,7 +457,11 @@ function calculateTimelineSliderEndTime(parts, time, redTimingPoints, inheritedT
   const red = findTimelineCurrentTimingPoint(redTimingPoints, time);
   if (!red || !Number.isFinite(red.beatLength) || red.beatLength <= 0) return null;
 
-  const inherited = findTimelineCurrentTimingPoint(inheritedTimingPoints, time);
+  const inherited = findTimelineCurrentInheritedTimingPoint(
+    inheritedTimingPoints,
+    time,
+    red.time
+  );
   const svMultiplier = inherited ? -100 / inherited.beatLength : 1;
 
   if (!Number.isFinite(svMultiplier) || svMultiplier <= 0) return null;
@@ -474,6 +478,16 @@ function findTimelineCurrentTimingPoint(timingPoints, time) {
     if (timingPoints[i].time <= time) {
       return timingPoints[i];
     }
+  }
+
+  return null;
+}
+
+function findTimelineCurrentInheritedTimingPoint(timingPoints, time, redTime) {
+  for (let i = timingPoints.length - 1; i >= 0; i--) {
+    if (timingPoints[i].time > time) continue;
+    if (timingPoints[i].time < redTime) return null;
+    return timingPoints[i];
   }
 
   return null;
