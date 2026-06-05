@@ -12,10 +12,24 @@ function formatDuration(ms) {
   return msToTimestamp(ms);
 }
 
-function getDifficultyNameText(fileName) {
+function getDifficultyNameText(fileNameOrResult) {
+  if (fileNameOrResult && typeof fileNameOrResult === "object") {
+    if (fileNameOrResult.difficultyName) {
+      return `[${fileNameOrResult.difficultyName}]`;
+    }
+
+    return getDifficultyNameText(fileNameOrResult.fileName);
+  }
+
+  const fileName = fileNameOrResult;
   if (!fileName) return "[Unknown]";
 
-  const match = fileName.match(/\[([^\[\]]+)\]\.osu$/i);
+  const registeredDifficultyName = getRegisteredDifficultyName(fileName);
+  if (registeredDifficultyName) {
+    return `[${registeredDifficultyName}]`;
+  }
+
+  const match = fileName.match(/\[(.*)\]\.osu$/i);
 
   if (match) {
     return `[${match[1]}]`;
@@ -24,8 +38,17 @@ function getDifficultyNameText(fileName) {
   return fileName;
 }
 
-function getDifficultyName(fileName) {
-  return `<span class="diff-name">${escapeHtml(getDifficultyNameText(fileName))}</span>`;
+function getDifficultyName(fileNameOrResult) {
+  return `<span class="diff-name">${escapeHtml(getDifficultyNameText(fileNameOrResult))}</span>`;
+}
+
+function getRegisteredDifficultyName(fileName) {
+  if (typeof window === "undefined") return null;
+
+  const registry = window.moddingHelperDifficultyNames;
+  if (!registry || typeof registry.get !== "function") return null;
+
+  return registry.get(fileName) || null;
 }
 
 /** 表示整形関数 */

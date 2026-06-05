@@ -29,6 +29,26 @@ function createEmptyProcessResult() {
   };
 }
 
+function resetDifficultyNameRegistry() {
+  if (typeof window === "undefined") return;
+  window.moddingHelperDifficultyNames = new Map();
+}
+
+function registerDifficultyName(fileName, text) {
+  const difficultyName = parseMetadataValue(text, "Version");
+
+  if (
+    fileName &&
+    difficultyName &&
+    typeof window !== "undefined" &&
+    window.moddingHelperDifficultyNames
+  ) {
+    window.moddingHelperDifficultyNames.set(fileName, difficultyName);
+  }
+
+  return difficultyName;
+}
+
 async function analyzeOszFile(file) {
   const zip = await loadOszZip(file);
 
@@ -58,6 +78,7 @@ async function analyzeOszFile(file) {
 
   for (const entry of osuFiles) {
     const text = await entry.async("text");
+    registerDifficultyName(entry.name, text);
     const mode = parseMode(text);
 
     // Taiko以外のdiffは完全に無視する
@@ -196,10 +217,13 @@ async function analyzeOszFile(file) {
 async function processFile(file) {
   if (!file) return null;
 
+  resetDifficultyNameRegistry();
+
   const lowerName = file.name.toLowerCase();
 
   if (lowerName.endsWith(".osu")) {
     const text = await file.text();
+    registerDifficultyName(file.name, text);
     const mode = parseMode(text);
 
     // Taiko以外の.osuは読み込まない
