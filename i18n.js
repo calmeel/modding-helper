@@ -3,6 +3,9 @@
 const i18n = {
   en: {
     subtitle: "osu!taiko modding support tool",
+    manualLink: "📘 Manual",
+    updateHistory: "📝 Update history",
+    updateHistoryTitle: "Update History",
     selectFile: "Select file",
     selectOsu: "Select .osu / .osz",
     tabClapWhistle: "Clap & Whistle",
@@ -325,6 +328,9 @@ const i18n = {
 
   ja: {
     subtitle: "osu!taiko modding 支援ツール",
+    manualLink: "📘 説明書",
+    updateHistory: "📝 更新履歴",
+    updateHistoryTitle: "更新履歴",
     selectFile: "ファイルを選択",
     selectOsu: ".osu / .osz を選択",
     tabClapWhistle: "Clap / Whistle",

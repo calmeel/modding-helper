@@ -421,6 +421,8 @@
     .doc-header-links {
       display: flex;
       gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .doc-header-links a {
@@ -446,6 +448,13 @@
       background: #2a2a2a;
       border-color: #5a5a5a;
     }
+
+    .doc-header-links a.active-language {
+      background: #343442;
+      border-color: #777;
+      color: #fff;
+      pointer-events: none;
+    }
   </style>
 </head>
 
@@ -465,6 +474,14 @@
        target="_blank"
        rel="noopener noreferrer">
       Tool
+    </a>
+
+    <a class="active-language" href="docs.html" aria-current="page">
+      日本語
+    </a>
+
+    <a href="docs-en.html">
+      English
     </a>
   </div>
 </div>

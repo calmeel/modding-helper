@@ -22,17 +22,18 @@
       Modding Helper
       <span class="author">by Vanity8</span>
     </h1>
-    <div class="language-switch">
-      <button id="langEn" class="lang-button active">English</button>
-      <button id="langJa" class="lang-button">日本語</button>
-    </div>
     <p data-i18n="subtitle">osu!taiko modding support tool</p>
 
     <div class="top-links">
-      <a href="docs/docs.html" target="_blank">📘 説明書 (JP)</a>
-      <a href="docs/docs-en.html" target="_blank">📘 Manual (EN)</a>
-      <button id="updateBtn" class="doc-btn">📝 Update history</button>
-      <button id="toggleTabSettings" class="doc-btn">⚙</button>
+      <div class="top-links-row">
+        <a id="manualLink" href="docs/docs.html" target="_blank" data-i18n="manualLink">📘 説明書 (JP)</a>
+        <button id="updateBtn" class="doc-btn" data-i18n="updateHistory">📝 Update history</button>
+        <button id="toggleTabSettings" class="doc-btn">⚙</button>
+      </div>
+      <div class="language-switch">
+        <button id="langEn" class="lang-button active">English</button>
+        <button id="langJa" class="lang-button">日本語</button>
+      </div>
     </div>
 
     <section class="drop-area">
@@ -493,85 +494,8 @@
   <div id="updateModal" class="modal hidden">
     <div class="modal-content">
       <span id="closeUpdate" class="close">&times;</span>
-
-      <h2>Update History</h2>
-
-      <h3 class="update-date">2026/05/03 Pre-Release</h3>
-
-      <h3 class="update-date">2026/05/03 Update</h3>
-      <ul>
-        <li>説明書を追加</li>
-        <li>ハイブリットセットに対応</li>
-        <li>Difficultyソート機能を追加</li>
-      </ul>
-
-      <h3 class="update-date">2026/05/04 Update</h3>
-      <ul>
-        <li>レアスナップ（1/5, 1/7, and 1/9）オプションを追加</li>
-        <li>「ボリュームチェック」「Tagチェック」を追加</li>
-      </ul>
-
-      <h3 class="update-date">2026/05/05 Update</h3>
-      <ul>
-        <li>NAT向けの「BN evaluation」機能を追加</li>
-        <li>「スライダー感度・目盛り」機能を追加</li>
-        <li>「Tagのスペルチェック」機能を追加</li>
-        <li>「プチフリのリスク検知」機能を追加</li>
-      </ul>
-
-      <h3 class="update-date">2026/05/06 Update</h3>
-      <ul>
-        <li>「スプレッド比較」機能を追加</li>
-        <li>「その他」タブを追加</li>
-        <li>説明書を大幅アップデート</li>
-      </ul>
-
-      <h3 class="update-date">2026/05/08 Update</h3>
-      <ul>
-        <li>「アーティスト」「タイトル」タブを追加</li>
-        <li>「スプレッド比較」機能を拡張</li>
-        <li>「てんかん警告」機能を追加</li>
-        <li>「タイムライン表示」機能を追加</li>
-      </ul>
-
-      <h3 class="update-date">2026/05/10 Release</h3>
-      <ul>
-        <li>「Diffごとに異なるBG座標」の検出を実装</li>
-        <li>全ての機能を実装しました！</li>
-      </ul>
-
-      <h3 class="update-date">2026/05/11 Update</h3>
-      <ul>
-        <li>不具合の修正</li>
-      </ul>
-
-      <h3 class="update-date">2026/05/13 Update</h3>
-      <ul>
-        <li>「速すぎるスクロール速度の検出」機能を追加</li>
-      </ul>
-
-      <h3 class="update-date">2026/05/20 Update</h3>
-      <ul>
-        <li>検出出来るTagをいくつか追加</li>
-        <li>「コンテンツ使用許可」タブを追加</li>
-      </ul>
-
-      <h3 class="update-date">2026/05/22 Update</h3>
-      <ul>
-        <li>プログラムの最適化・バグ修正</li>
-        <li>「BGがpng形式である時に警告」機能を追加</li>
-      </ul>
-
-      <h3 class="update-date">2026/05/29 Update</h3>
-      <ul>
-        <li>スライダー終点計算に関するバグ修正</li>
-      </ul>
-
-      <h3 class="update-date">2026/06/5 Update</h3>
-      <ul>
-        <li>難易度名に[]が含まれる際の表示を修正</li>
-      </ul>
-
+      <h2 data-i18n="updateHistoryTitle">Update History</h2>
+      <div id="updateHistoryContent"></div>
     </div>
   </div>
 
@@ -602,6 +526,7 @@
   <script src="checks/bnCompareCheck.js"></script>
   <script src="checks/metadata/contentPermissionCheck.js"></script>
   <script src="i18n.js"></script>
+  <script src="app/updateHistory.js"></script>
   <script src="app/formatters.js"></script>
   <script src="app/fileLoader.js"></script>
   <script src="app/ui.js"></script>
