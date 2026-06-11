@@ -164,8 +164,14 @@ const updateHistoryEntries = [
     date: "2026/06/12",
     type: "update",
     items: {
-      en: ["Minor UI adjustments."],
-      ja: ["UIの微修正"]
+      en: [
+        "Minor UI adjustments.",
+        "Added source code check and tag check items."
+      ],
+      ja: [
+        "UIの微修正",
+        "ソースチェック・タグチェックの項目追加"
+      ]
     }
   }
 ];

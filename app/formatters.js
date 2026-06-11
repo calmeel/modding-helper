@@ -2147,6 +2147,17 @@ function formatSourceGroupResult(group, t) {
     return lines.join("\n");
   }
 
+  if (result.type === "recommended") {
+    lines.push(
+      `<span class="result-warn">${escapeHtml(t("sourceRecommendedFormatting"))}</span>`
+    );
+    lines.push(
+      `${escapeHtml(t("sourceExpected"))}: ` +
+      `<code>${escapeHtml(result.expected)}</code>`
+    );
+    return lines.join("\n");
+  }
+
   if (result.type === "partial") {
     lines.push(
       `<span class="result-error">${escapeHtml(t("sourceInvalidTouhou"))}</span>`

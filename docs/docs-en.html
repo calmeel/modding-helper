@@ -1192,11 +1192,14 @@ Example:<br>
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ Detection Content</span><br>
-First, this check verifies whether the Source field is consistent across all difficulties
-(same functionality as Mapset Verifier).<br><br>
+<span class="label label-detect">■ Common Check</span><br>
+This check first verifies whether the Source field is consistent across all difficulties
+(same functionality as Mapset Verifier).
+</div>
 
-The Source field is then compared against a list of known Touhou titles.<br>
+<div class="section section-detect">
+<span class="label label-detect">■ Detection 1: Touhou</span><br>
+The Source field is compared against a list of known Touhou titles.<br>
 <a href="touhouSources.en.html" target="_blank" rel="noopener noreferrer">
   Checklist
 </a><br><br>
@@ -1211,10 +1214,16 @@ Generic labels such as <code>東方</code> or <code>Touhou</code> are also displ
 since they may lack a sufficiently specific work title.
 </div>
 
+<div class="section section-detect">
+<span class="label label-detect">■ Detection 2: Other Checks</span><br>
+If the Source is <code>ブルーアーカイブ</code> or <code>Blue Archive</code>,
+the recommended formatting <code>ブルーアーカイブ -Blue Archive-</code> is displayed.
+</div>
+
 <div class="section section-warning">
 <span class="label label-warning">■ Notes</span><br>
-This check is intended as a helper for verifying Touhou-related Source formatting.<br>
-Sources unrelated to Touhou are treated as outside the scope of this check.<br><br>
+This check is intended as a helper for verifying Source formatting for specific works.<br>
+Sources that do not match the detection targets above are treated as outside the scope of this check.<br><br>
 
 In addition, unknown Touhou titles, non-game Touhou-related works, or unusual formatting styles may not always be detected correctly.
 In such cases, do not rely solely on the displayed result — please also verify the official source material and beatmap submission details.

@@ -263,6 +263,14 @@ const TAG_RELATED_RULES = [
     trigger: ["tiebreaker", "tb"],
     suggestGroup: ["tiebreaker", "tb"]
   },
+  {
+    trigger: ["ブルーアーカイブ", "ブルアカ", "buruaka"],
+    suggestGroup: ["ブルアカ", "buruaka", "yostar"]
+  },
+  {
+    triggerAll: ["-Blue", "Archive-"],
+    suggestGroup: ["ブルーアーカイブ", "ブルアカ", "buruaka", "yostar"]
+  },
 ];
 
 const TAG_SOURCE_RULES = [
@@ -313,7 +321,11 @@ const TAG_SOURCE_RULES = [
       "prsk",
       "pjsk"
     ]
-  }
+  },
+  {
+    source: ["ブルーアーカイブ -Blue Archive-"],
+    tags: ["ブルアカ", "buruaka", "yostar"]
+  },
 ];
 
 function runTagCheck(text, fileName) {
