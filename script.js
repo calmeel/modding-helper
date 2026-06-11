@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
   const langEn = document.getElementById("langEn");
   const langJa = document.getElementById("langJa");
+  const manualLink = document.getElementById("manualLink");
+  const updateHistoryContent = document.getElementById("updateHistoryContent");
   const fileInput = document.getElementById("fileInput");
   const output = document.getElementById("output");
   const showClap = document.getElementById("showClap");
@@ -225,6 +227,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (langEn) langEn.classList.toggle("active", currentLang === "en");
     if (langJa) langJa.classList.toggle("active", currentLang === "ja");
+    if (manualLink) {
+      manualLink.href = currentLang === "ja" ? "docs/docs.html" : "docs/docs-en.html";
+    }
+    if (updateHistoryContent) {
+      renderUpdateHistory(updateHistoryContent, currentLang);
+    }
 
     if (!state.clapWhistle && output) {
       output.textContent = t("noFileLoaded");

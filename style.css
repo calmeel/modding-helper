@@ -120,7 +120,6 @@ body {
 .language-switch {
   display: flex;
   gap: 8px;
-  margin-top: 12px;
 }
 
 .lang-button {
@@ -227,12 +226,6 @@ pre {
   display: none !important;
 }
 
-.top-links {
-  margin-bottom: 12px;
-  display: flex;
-  gap: 12px;
-}
-
 .top-links a {
   text-decoration: none;
   color: #9fdcff;
@@ -249,8 +242,9 @@ pre {
   right: 0;
 
   display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   gap: 8px;
-  flex-wrap: wrap; /* ←追加（重要） */
 }
 
 .doc-btn {
@@ -307,13 +301,6 @@ pre {
   position: relative;
 }
 
-/* 左側（タイトル + 言語 + 説明）をまとめる */
-.app > h1,
-.app > .language-switch,
-.app > p[data-i18n="subtitle"] {
-  margin-right: 220px; /* 右側のスペース確保 */
-}
-
 /* 右上に固定 */
 .top-links {
   position: absolute;
@@ -325,6 +312,35 @@ pre {
 }
 
 /* ボタン風に */
+.top-links-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.top-links .language-switch {
+  justify-content: flex-end;
+}
+
+.app > h1,
+.app > p[data-i18n="subtitle"] {
+  margin-right: 400px;
+}
+
+@media (max-width: 760px) {
+  .top-links {
+    position: static;
+    align-items: flex-end;
+    margin-bottom: 16px;
+  }
+
+  .app > h1,
+  .app > p[data-i18n="subtitle"] {
+    margin-right: 0;
+  }
+}
+
 .top-links a,
 .doc-btn {
   padding: 6px 10px;
