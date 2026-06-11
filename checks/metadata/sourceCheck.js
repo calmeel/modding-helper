@@ -109,6 +109,8 @@ const TOUHOU_SOURCE_LIST = [
   }
 ];
 
+const BLUE_ARCHIVE_SOURCE = "ブルーアーカイブ -Blue Archive-";
+
 function normalizeTouhouSourceLoose(source) {
   return String(source ?? "")
     .trim()
@@ -131,13 +133,26 @@ function runSourceCheck(text, fileName) {
 
   const normalized = source.trim();
 
-  function normalizeTouhouSourceLoose(s) {
-    return String(s ?? "")
-      .trim()
-      .toLowerCase()
-      .replace(/[　\s]/g, "")
-      .replace(/[～〜~]/g, "～")
-      .replace(/[.。]/g, "");
+  if (normalized === BLUE_ARCHIVE_SOURCE) {
+    return {
+      fileName,
+      level: "ok",
+      source,
+      type: "exact"
+    };
+  }
+
+  if (
+    normalized === "ブルーアーカイブ" ||
+    normalized.toLowerCase() === "blue archive"
+  ) {
+    return {
+      fileName,
+      level: "warn",
+      source,
+      type: "recommended",
+      expected: BLUE_ARCHIVE_SOURCE
+    };
   }
 
   const looseNormalized = normalizeTouhouSourceLoose(normalized);
