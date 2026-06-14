@@ -180,11 +180,13 @@ const updateHistoryEntries = [
     items: {
       en: [
         "Supports detecting first-note-lag when the first note is before the first red line.",
-        "Corrected false positives related to metadata."
+        "Corrected false positives related to metadata.",
+        "Added graphs for kiai comparison, volume comparison, and scroll comparison."
       ],
       ja: [
         "最初のノーツが最初の赤線より前にある際のプチフリ検出に対応",
-        "メタデータに関する誤検出を修正"
+        "メタデータに関する誤検出を修正",
+        "kiai比較、ボリューム比較、スクロール比較に関するグラフを追加",
       ]
     }
   },
