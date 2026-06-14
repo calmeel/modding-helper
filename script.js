@@ -64,6 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const spreadScrollChartEmpty = document.getElementById("spreadScrollChartEmpty");
   const spreadScrollDiffToggles = document.getElementById("spreadScrollDiffToggles");
   const spreadScrollResetZoom = document.getElementById("spreadScrollResetZoom");
+  const spreadScrollShowLimits = document.getElementById("spreadScrollShowLimits");
+  const spreadScrollShowRapidChanges = document.getElementById("spreadScrollShowRapidChanges");
   const contentPermissionOutput = document.getElementById("contentPermissionOutput");
   const timelineOutput = document.getElementById("timelineOutput");
   const timelineRunButton = document.getElementById("timelineRunButton");
@@ -159,6 +161,8 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadScrollChartEmpty,
     spreadScrollDiffToggles,
     spreadScrollResetZoom,
+    spreadScrollShowLimits,
+    spreadScrollShowRapidChanges,
     contentPermissionOutput,
     timelineOutput,
     timelineRunButton,

@@ -3,6 +3,7 @@ const spreadScrollChartState = {
   dom: null,
   t: null,
   diffOrder: null,
+  manualCategories: {},
   signature: "",
   hiddenFiles: new Set(),
   viewStart: 0,
@@ -14,12 +15,19 @@ const spreadScrollChartState = {
   resizeObserver: null
 };
 
-function renderSpreadScrollChart(results, dom, t, diffOrder = null) {
+function renderSpreadScrollChart(
+  results,
+  dom,
+  t,
+  diffOrder = null,
+  manualCategories = {}
+) {
   const state = spreadScrollChartState;
   state.results = results;
   state.dom = dom;
   state.t = t;
   state.diffOrder = diffOrder;
+  state.manualCategories = manualCategories;
 
   initializeSpreadScrollChart();
 
@@ -73,12 +81,32 @@ function initializeSpreadScrollChart() {
 
   const canvas = state.dom.spreadScrollChart;
   const resetButton = state.dom.spreadScrollResetZoom;
+  const warningToggles = [
+    state.dom.spreadScrollShowLimits,
+    state.dom.spreadScrollShowRapidChanges
+  ];
 
   canvas.addEventListener("pointerdown", handleSpreadScrollPointerDown);
   canvas.addEventListener("pointermove", handleSpreadScrollPointerMove);
   canvas.addEventListener("pointerup", handleSpreadScrollPointerUp);
   canvas.addEventListener("pointercancel", handleSpreadScrollPointerCancel);
   canvas.addEventListener("pointerleave", handleSpreadScrollPointerLeave);
+
+  for (const toggle of warningToggles) {
+    if (!toggle) continue;
+
+    toggle.addEventListener("change", () => {
+      if (toggle.checked) {
+        for (const otherToggle of warningToggles) {
+          if (otherToggle && otherToggle !== toggle) {
+            otherToggle.checked = false;
+          }
+        }
+      }
+
+      drawSpreadScrollChart();
+    });
+  }
 
   if (resetButton) {
     resetButton.addEventListener("click", () => {
@@ -169,6 +197,19 @@ function drawSpreadScrollChart() {
   const visibleResults = results.filter(
     result => !state.hiddenFiles.has(result.fileName)
   );
+  const visibleAssignments = visibleResults.map(result => {
+    const index = results.findIndex(item => item.fileName === result.fileName);
+    const category = getSpreadEffectiveCategory(
+      result,
+      state.manualCategories
+    );
+
+    return {
+      result,
+      category,
+      color: getVolumeCompareSrColor(index + 1)
+    };
+  });
   const endTime = getSpreadScrollEndTime(results);
 
   if (
@@ -204,11 +245,29 @@ function drawSpreadScrollChart() {
 
   const viewStart = Math.max(0, state.viewStart);
   const viewEnd = Math.max(viewStart + 1, state.viewEnd || endTime);
-  const maxSpeed = getSpreadScrollChartMaxSpeed(visibleResults);
+  const maxSpeed = getSpreadScrollChartMaxSpeed(
+    visibleResults,
+    state.dom?.spreadScrollShowLimits?.checked
+      ? visibleAssignments
+          .map(assignment => getSpreadTooFastScrollRule(assignment.category))
+          .filter(Number.isFinite)
+      : []
+  );
   const xForTime = time =>
     plot.left + ((time - viewStart) / (viewEnd - viewStart)) * plot.width;
   const yForSpeed = speed =>
     plot.bottom - (speed / maxSpeed) * plot.height;
+
+  if (state.dom?.spreadScrollShowRapidChanges?.checked) {
+    drawSpreadScrollRapidChangeBackgrounds(
+      ctx,
+      visibleAssignments,
+      plot,
+      viewStart,
+      viewEnd,
+      xForTime
+    );
+  }
 
   drawSpreadScrollGrid(
     ctx,
@@ -225,14 +284,20 @@ function drawSpreadScrollChart() {
   ctx.rect(plot.left, plot.top, plot.width, plot.height);
   ctx.clip();
 
-  visibleResults.forEach((result, index) => {
-    const originalIndex = results.findIndex(
-      item => item.fileName === result.fileName
+  if (state.dom?.spreadScrollShowLimits?.checked) {
+    drawSpreadScrollLimitLines(
+      ctx,
+      visibleAssignments,
+      plot,
+      yForSpeed
     );
+  }
+
+  visibleAssignments.forEach(assignment => {
     drawSpreadScrollSeries(
       ctx,
-      result.scrollSpeed.samples,
-      getVolumeCompareSrColor(originalIndex + 1),
+      assignment.result.scrollSpeed.samples,
+      assignment.color,
       viewStart,
       viewEnd,
       xForTime,
@@ -265,7 +330,72 @@ function drawSpreadScrollChart() {
   ctx.restore();
 
   canvas._spreadScrollPlot = plot;
-  canvas._spreadScrollVisibleResults = visibleResults;
+  canvas._spreadScrollVisibleAssignments = visibleAssignments;
+}
+
+function drawSpreadScrollRapidChangeBackgrounds(
+  ctx,
+  assignments,
+  plot,
+  viewStart,
+  viewEnd,
+  xForTime
+) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(plot.left, plot.top, plot.width, plot.height);
+  ctx.clip();
+
+  for (const assignment of assignments) {
+    ctx.fillStyle = spreadScrollColorWithAlpha(assignment.color, 0.14);
+
+    for (const change of assignment.result.scrollSpeed?.rapidChanges ?? []) {
+      if (getSpreadRapidScrollLevel(change, assignment.category) !== "warn") {
+        continue;
+      }
+      if (change.toTime <= viewStart || change.fromTime >= viewEnd) continue;
+
+      const startX = xForTime(Math.max(change.fromTime, viewStart));
+      const endX = xForTime(Math.min(change.toTime, viewEnd));
+      ctx.fillRect(
+        startX,
+        plot.top,
+        Math.max(1, endX - startX),
+        plot.height
+      );
+    }
+  }
+
+  ctx.restore();
+}
+
+function drawSpreadScrollLimitLines(ctx, assignments, plot, yForSpeed) {
+  assignments.forEach((assignment, index) => {
+    const limit = getSpreadTooFastScrollRule(assignment.category);
+    if (!Number.isFinite(limit)) return;
+
+    const y = yForSpeed(limit);
+    ctx.strokeStyle = assignment.color;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([9, 7]);
+    ctx.lineDashOffset = index * -3;
+    ctx.beginPath();
+    ctx.moveTo(plot.left, y);
+    ctx.lineTo(plot.right, y);
+    ctx.stroke();
+  });
+
+  ctx.setLineDash([]);
+  ctx.lineDashOffset = 0;
+}
+
+function spreadScrollColorWithAlpha(color, alpha) {
+  const match = String(color).match(
+    /rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/
+  );
+
+  if (!match) return `rgba(255, 107, 107, ${alpha})`;
+  return `rgba(${match[1]}, ${match[2]}, ${match[3]}, ${alpha})`;
 }
 
 function drawSpreadScrollGrid(
@@ -393,14 +523,15 @@ function getSpreadScrollEndTime(results) {
   );
 }
 
-function getSpreadScrollChartMaxSpeed(results) {
+function getSpreadScrollChartMaxSpeed(results, extraValues = []) {
   const max = Math.max(
     0,
     ...(results ?? []).flatMap(result =>
       (result.scrollSpeed?.samples ?? [])
         .map(sample => sample.pxPerSecond)
         .filter(Number.isFinite)
-    )
+    ),
+    ...extraValues.filter(Number.isFinite)
   );
 
   return getSpreadScrollNiceMaximum(max);
@@ -510,13 +641,14 @@ function showSpreadScrollTooltip(point, time) {
   const state = spreadScrollChartState;
   const tooltip = state.dom?.spreadScrollChartTooltip;
   const wrap = state.dom?.spreadScrollChartWrap;
-  const results =
-    state.dom?.spreadScrollChart?._spreadScrollVisibleResults ?? [];
+  const assignments =
+    state.dom?.spreadScrollChart?._spreadScrollVisibleAssignments ?? [];
   if (!tooltip || !wrap) return;
 
   const lines = [msToTimestamp(Math.round(time))];
 
-  for (const result of results) {
+  for (const assignment of assignments) {
+    const result = assignment.result;
     const sample = getSpreadScrollSampleAtTime(
       result.scrollSpeed?.samples,
       time
@@ -538,6 +670,41 @@ function showSpreadScrollTooltip(point, time) {
       `${state.t("spreadScrollGraphSliderMultiplier")}: ` +
       `${formatSpreadScrollTooltipNumber(sample.sliderMultiplier, 2)}`
     );
+  }
+
+  if (state.dom?.spreadScrollShowLimits?.checked) {
+    const limits = assignments
+      .map(assignment => ({
+        name: getDifficultyNameText(assignment.result.fileName),
+        value: getSpreadTooFastScrollRule(assignment.category)
+      }))
+      .filter(item => Number.isFinite(item.value));
+
+    if (limits.length) {
+      lines.push("");
+      lines.push(state.t("spreadScrollGraphLimit"));
+      for (const limit of limits) {
+        lines.push(`${limit.name}: ${Math.round(limit.value)} px/s`);
+      }
+    }
+  }
+
+  if (state.dom?.spreadScrollShowRapidChanges?.checked) {
+    const rapidChanges = assignments.filter(assignment =>
+      (assignment.result.scrollSpeed?.rapidChanges ?? []).some(change =>
+        getSpreadRapidScrollLevel(change, assignment.category) === "warn" &&
+        change.fromTime <= time &&
+        time < change.toTime
+      )
+    );
+
+    if (rapidChanges.length) {
+      lines.push("");
+      lines.push(state.t("spreadScrollGraphRapidChange"));
+      for (const assignment of rapidChanges) {
+        lines.push(getDifficultyNameText(assignment.result.fileName));
+      }
+    }
   }
 
   tooltip.textContent = lines.join("\n");
