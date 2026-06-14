@@ -152,12 +152,9 @@ function renderVolumeCompareResultFromSources(sources, dom, t) {
 
   if (!sources) {
     dom.volumeCompareOutput.innerHTML = t("noFileLoaded");
+    renderVolumeCompareChart(null, dom, t);
     return null;
   }
-
-  const thresholdOnly = dom.volumeCompareThresholdOnly
-    ? dom.volumeCompareThresholdOnly.checked
-    : false;
 
   const result = runVolumeCompareCheck(sources, {
     thresholdOnly: dom.volumeCompareThresholdOnly?.checked ?? true,
@@ -167,6 +164,7 @@ function renderVolumeCompareResultFromSources(sources, dom, t) {
   });
 
   dom.volumeCompareOutput.innerHTML = formatVolumeCompareResult(result, t);
+  renderVolumeCompareChart(result, dom, t);
 
   return result;
 }

@@ -21,6 +21,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const volumeCompareOutput = document.getElementById("volumeCompareOutput");
   const volumeCompareThresholdOnly = document.getElementById("volumeCompareThresholdOnly");
   const volumeCompareMinDurationOnly = document.getElementById("volumeCompareMinDurationOnly");
+  const volumeCompareChartSection = document.getElementById("volumeCompareChartSection");
+  const volumeCompareChartWrap = document.getElementById("volumeCompareChartWrap");
+  const volumeCompareChart = document.getElementById("volumeCompareChart");
+  const volumeCompareChartTooltip = document.getElementById("volumeCompareChartTooltip");
+  const volumeCompareChartEmpty = document.getElementById("volumeCompareChartEmpty");
+  const volumeCompareDiffToggles = document.getElementById("volumeCompareDiffToggles");
+  const volumeCompareResetZoom = document.getElementById("volumeCompareResetZoom");
+  const volumeCompareShowDifferences = document.getElementById("volumeCompareShowDifferences");
+  const volumeCompareShowKiai = document.getElementById("volumeCompareShowKiai");
+  const volumeCompareShowBreaks = document.getElementById("volumeCompareShowBreaks");
   const redGreenMatchOutput = document.getElementById("redGreenMatchOutput");
   const sampleSetOutput = document.getElementById("sampleSetOutput");
   const svVolumeLargeChangeOnly = document.getElementById("svVolumeLargeChangeOnly");
@@ -94,6 +104,16 @@ document.addEventListener("DOMContentLoaded", () => {
     volumeCompareOutput,
     volumeCompareThresholdOnly,
     volumeCompareMinDurationOnly,
+    volumeCompareChartSection,
+    volumeCompareChartWrap,
+    volumeCompareChart,
+    volumeCompareChartTooltip,
+    volumeCompareChartEmpty,
+    volumeCompareDiffToggles,
+    volumeCompareResetZoom,
+    volumeCompareShowDifferences,
+    volumeCompareShowKiai,
+    volumeCompareShowBreaks,
     redGreenMatchOutput,
     sampleSetOutput,
     sliderSettingsOutput,

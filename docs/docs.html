@@ -871,10 +871,29 @@ HitObject と同時刻に volume変更を置いた場合、プレイヤーが 1 
 
 <div class="section section-detect">
 <span class="label label-detect">■ 検出内容</span><br>
-diff間の SV ボリュームを比較し、不一致がある区間を検出します。<br>
+diff間の赤線・緑線のボリュームを比較し、不一致がある区間を検出します。<br>
 （この検出は AiMod や Mapset Verifier では行えません）<br><br>
 <code>5% 以上の差のみ表示</code> を有効にすると、volume 差が 5% 以上の区間のみを表示します。<br><br>
-<code>50 ms 以上続く区間のみ表示</code> を有効にすると、50 ms 以上以下の極端に短い区間を非表示にできます。
+<code>50 ms 以上続く区間のみ表示</code> を有効にすると、50 ms 未満の極端に短い区間を非表示にできます。<br><br>
+
+各 diff の volume 推移を階段状の線で示すグラフを表示します。<br>
+volume 差が条件を満たす区間は背景の帯で強調され、上記2つのチェックボックスの状態にも連動します。<br><br>
+
+背景オプションでは、volume 差異（赤）・Kiai time（黄）・Break（青）を切り替えられます。<br>
+同時に選択できる背景は 1 種類だけです。別の項目を選択すると、それまでの選択は自動的に解除され、選択した背景色がグラフ全体の高さに表示されます。<br><br>
+
+Kiai time と Break は、表示中の diff のどれか 1 つでも該当する場合に背景を表示します。<br><br>
+
+グラフ上部のチェックボックスからdiffごとに線の表示・非表示を切り替えられます。
+非表示にした diff は、volume 差分・Kiai time・Break の背景を計算する際の対象からも除外されます。<br><br>
+
+線の色には、Diff の自動整列順を基にした仮想SRカラーを使用します。
+Kantan を SR 1、Futsuu を SR 2、Muzukashii を SR 3、Oni を SR 4、Inner Oni を SR 5として扱い、
+それ以上の難易度は順番に SR を 1 ずつ加算します。
+これは実際の Star Rating を計算したものではありません。<br><br>
+
+グラフをドラッグすると時間範囲を拡大でき、<code>ズームをリセット</code>から全体表示へ戻せます。
+グラフ上をクリックすると、そのタイムスタンプを osu!editor で開きます。
 </div>
 </section>
 
