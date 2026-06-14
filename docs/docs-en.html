@@ -1858,10 +1858,16 @@ These colors do not represent calculated Star Ratings.<br>
 Drag across the graph to zoom into a time range, or click it to open that timestamp in osu!editor.
 Hovering over the graph shows the <code>px/s</code>, BPM, SV, and SliderMultiplier at that time.<br><br>
 
+The scroll speed change graph below plots each note-to-note change as
+<code>px/s after - px/s before</code>.<br>
+Accelerations appear above the zero line and decelerations below it. Thin connecting lines are visual guides for following the progression.
+Hovering near a point shows the before/after speeds, change amount, ratio, and note interval.<br>
+Difficulty visibility, zoom range, and hover position are shared between both graphs.<br><br>
+
 The warning display options provide the following views:
 <ul>
   <li><code>Show recommended scroll speed limits as dashed lines</code>: Displays the configured limit for each visible difficulty using a dashed line in that difficulty's color.</li>
-  <li><code>Show rapid scroll speed changes</code>: Highlights sections that meet the existing warning conditions using a translucent background in the corresponding difficulty color.</li>
+  <li><code>Show rapid scroll speed changes</code>: Highlights matching sections with a translucent difficulty-colored background in the upper graph and larger outlined points in the change graph.</li>
 </ul>
 Only one warning display can be enabled at a time. Enabling another option automatically clears the previous selection.<br><br>
 

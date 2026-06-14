@@ -169,6 +169,26 @@ body {
   touch-action: none;
 }
 
+.spread-scroll-delta-header {
+  margin-top: 22px;
+}
+
+.spread-scroll-delta-header h4 {
+  margin: 0 0 5px;
+  font-size: 15px;
+}
+
+.spread-scroll-delta-header p {
+  margin: 0 0 10px;
+  color: #aeb8c8;
+  font-size: 12px;
+}
+
+.spread-scroll-delta-chart-wrap,
+.spread-scroll-delta-chart-wrap canvas {
+  height: 300px;
+}
+
 .spread-scroll-warning-toggles {
   display: flex;
   flex-wrap: wrap;

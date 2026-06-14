@@ -11,6 +11,7 @@ const spreadScrollChartState = {
   hoverTime: null,
   dragStartX: null,
   dragCurrentX: null,
+  dragCanvas: null,
   initialized: false,
   resizeObserver: null
 };
@@ -40,6 +41,10 @@ function renderSpreadScrollChart(
 
   if (!canRender) {
     if (dom.spreadScrollChartWrap) dom.spreadScrollChartWrap.hidden = true;
+    if (dom.spreadScrollDeltaChartWrap) {
+      dom.spreadScrollDeltaChartWrap.hidden = true;
+    }
+    if (dom.spreadScrollDeltaHeader) dom.spreadScrollDeltaHeader.hidden = true;
     if (dom.spreadScrollDiffToggles) {
       dom.spreadScrollDiffToggles.replaceChildren();
     }
@@ -70,9 +75,13 @@ function renderSpreadScrollChart(
 
   if (dom.spreadScrollChartEmpty) dom.spreadScrollChartEmpty.hidden = true;
   if (dom.spreadScrollChartWrap) dom.spreadScrollChartWrap.hidden = false;
+  if (dom.spreadScrollDeltaChartWrap) {
+    dom.spreadScrollDeltaChartWrap.hidden = false;
+  }
+  if (dom.spreadScrollDeltaHeader) dom.spreadScrollDeltaHeader.hidden = false;
 
   renderSpreadScrollDiffToggles(chartResults);
-  drawSpreadScrollChart();
+  drawSpreadScrollCharts();
 }
 
 function initializeSpreadScrollChart() {
@@ -80,17 +89,15 @@ function initializeSpreadScrollChart() {
   if (state.initialized || !state.dom?.spreadScrollChart) return;
 
   const canvas = state.dom.spreadScrollChart;
+  const deltaCanvas = state.dom.spreadScrollDeltaChart;
   const resetButton = state.dom.spreadScrollResetZoom;
   const warningToggles = [
     state.dom.spreadScrollShowLimits,
     state.dom.spreadScrollShowRapidChanges
   ];
 
-  canvas.addEventListener("pointerdown", handleSpreadScrollPointerDown);
-  canvas.addEventListener("pointermove", handleSpreadScrollPointerMove);
-  canvas.addEventListener("pointerup", handleSpreadScrollPointerUp);
-  canvas.addEventListener("pointercancel", handleSpreadScrollPointerCancel);
-  canvas.addEventListener("pointerleave", handleSpreadScrollPointerLeave);
+  initializeSpreadScrollCanvas(canvas);
+  initializeSpreadScrollCanvas(deltaCanvas);
 
   for (const toggle of warningToggles) {
     if (!toggle) continue;
@@ -104,7 +111,7 @@ function initializeSpreadScrollChart() {
         }
       }
 
-      drawSpreadScrollChart();
+      drawSpreadScrollCharts();
     });
   }
 
@@ -116,23 +123,46 @@ function initializeSpreadScrollChart() {
       state.viewStart = 0;
       state.viewEnd = endTime;
       state.hoverTime = null;
-      hideSpreadScrollTooltip();
-      drawSpreadScrollChart();
+      state.dragStartX = null;
+      state.dragCurrentX = null;
+      state.dragCanvas = null;
+      hideSpreadScrollTooltips();
+      drawSpreadScrollCharts();
     });
   }
 
-  if (typeof ResizeObserver !== "undefined" && state.dom.spreadScrollChartWrap) {
+  if (typeof ResizeObserver !== "undefined" && state.dom.spreadScrollChartSection) {
     state.resizeObserver = new ResizeObserver(() => {
       if (!state.dom.spreadScrollChartWrap.hidden) {
-        drawSpreadScrollChart();
+        drawSpreadScrollCharts();
       }
     });
-    state.resizeObserver.observe(state.dom.spreadScrollChartWrap);
+    state.resizeObserver.observe(state.dom.spreadScrollChartSection);
   } else {
-    window.addEventListener("resize", drawSpreadScrollChart);
+    window.addEventListener("resize", drawSpreadScrollCharts);
   }
 
   state.initialized = true;
+}
+
+function initializeSpreadScrollCanvas(canvas) {
+  if (!canvas) return;
+
+  canvas.addEventListener("pointerdown", event =>
+    handleSpreadScrollPointerDown(event, canvas)
+  );
+  canvas.addEventListener("pointermove", event =>
+    handleSpreadScrollPointerMove(event, canvas)
+  );
+  canvas.addEventListener("pointerup", event =>
+    handleSpreadScrollPointerUp(event, canvas)
+  );
+  canvas.addEventListener("pointercancel", () =>
+    handleSpreadScrollPointerCancel()
+  );
+  canvas.addEventListener("pointerleave", () =>
+    handleSpreadScrollPointerLeave()
+  );
 }
 
 function getSpreadScrollOrderedResults(results, diffOrder) {
@@ -173,7 +203,7 @@ function renderSpreadScrollDiffToggles(results) {
         state.hiddenFiles.add(result.fileName);
       }
 
-      drawSpreadScrollChart();
+      drawSpreadScrollCharts();
     });
 
     const swatch = document.createElement("span");
@@ -188,6 +218,11 @@ function renderSpreadScrollDiffToggles(results) {
   });
 
   container.replaceChildren(fragment);
+}
+
+function drawSpreadScrollCharts() {
+  drawSpreadScrollChart();
+  drawSpreadScrollDeltaChart();
 }
 
 function drawSpreadScrollChart() {
@@ -331,6 +366,240 @@ function drawSpreadScrollChart() {
 
   canvas._spreadScrollPlot = plot;
   canvas._spreadScrollVisibleAssignments = visibleAssignments;
+}
+
+function drawSpreadScrollDeltaChart() {
+  const state = spreadScrollChartState;
+  const canvas = state.dom?.spreadScrollDeltaChart;
+  const results = getSpreadScrollChartResults();
+  const visibleResults = results.filter(
+    result => !state.hiddenFiles.has(result.fileName)
+  );
+  const visibleAssignments = visibleResults.map(result => {
+    const index = results.findIndex(item => item.fileName === result.fileName);
+    return {
+      result,
+      category: getSpreadEffectiveCategory(result, state.manualCategories),
+      color: getVolumeCompareSrColor(index + 1)
+    };
+  });
+  const endTime = getSpreadScrollEndTime(results);
+
+  if (
+    !canvas ||
+    !results.length ||
+    endTime <= 0 ||
+    state.dom?.spreadScrollDeltaChartWrap?.hidden
+  ) {
+    return;
+  }
+
+  const cssWidth = Math.max(320, canvas.parentElement?.clientWidth ?? 0);
+  const cssHeight = 300;
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.style.width = `${cssWidth}px`;
+  canvas.style.height = `${cssHeight}px`;
+  canvas.width = Math.round(cssWidth * dpr);
+  canvas.height = Math.round(cssHeight * dpr);
+
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, cssWidth, cssHeight);
+
+  const plot = {
+    left: 68,
+    top: 18,
+    right: cssWidth - 18,
+    bottom: cssHeight - 42
+  };
+  plot.width = Math.max(1, plot.right - plot.left);
+  plot.height = Math.max(1, plot.bottom - plot.top);
+
+  const viewStart = Math.max(0, state.viewStart);
+  const viewEnd = Math.max(viewStart + 1, state.viewEnd || endTime);
+  const maxAbsDelta = getSpreadScrollDeltaMaximum(visibleAssignments);
+  const xForTime = time =>
+    plot.left + ((time - viewStart) / (viewEnd - viewStart)) * plot.width;
+  const yForDelta = delta =>
+    plot.top + plot.height / 2 -
+    (delta / maxAbsDelta) * (plot.height / 2);
+
+  drawSpreadScrollDeltaGrid(
+    ctx,
+    plot,
+    viewStart,
+    viewEnd,
+    maxAbsDelta,
+    xForTime,
+    yForDelta
+  );
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(plot.left, plot.top, plot.width, plot.height);
+  ctx.clip();
+
+  for (const assignment of visibleAssignments) {
+    drawSpreadScrollDeltaSeries(
+      ctx,
+      assignment,
+      viewStart,
+      viewEnd,
+      xForTime,
+      yForDelta,
+      state.dom?.spreadScrollShowRapidChanges?.checked
+    );
+  }
+
+  if (state.hoverTime !== null) {
+    const x = xForTime(state.hoverTime);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, plot.top);
+    ctx.lineTo(x, plot.bottom);
+    ctx.stroke();
+  }
+
+  if (state.dragStartX !== null && state.dragCurrentX !== null) {
+    const startX = clampSpreadScrollX(state.dragStartX, plot);
+    const endX = clampSpreadScrollX(state.dragCurrentX, plot);
+    ctx.fillStyle = "rgba(159, 220, 255, 0.16)";
+    ctx.fillRect(
+      Math.min(startX, endX),
+      plot.top,
+      Math.abs(endX - startX),
+      plot.height
+    );
+  }
+
+  ctx.restore();
+
+  canvas._spreadScrollPlot = plot;
+  canvas._spreadScrollVisibleAssignments = visibleAssignments;
+}
+
+function getSpreadScrollDeltaMaximum(assignments) {
+  const max = Math.max(
+    0,
+    ...assignments.flatMap(assignment =>
+      (assignment.result.scrollSpeed?.rapidChanges ?? [])
+        .map(change => Math.abs(change.delta))
+        .filter(Number.isFinite)
+    )
+  );
+
+  return getSpreadScrollNiceMaximum(max);
+}
+
+function drawSpreadScrollDeltaGrid(
+  ctx,
+  plot,
+  viewStart,
+  viewEnd,
+  maxAbsDelta,
+  xForTime,
+  yForDelta
+) {
+  ctx.font = "12px Arial, sans-serif";
+  ctx.lineWidth = 1;
+
+  for (const ratio of [-1, -0.5, 0, 0.5, 1]) {
+    const delta = maxAbsDelta * ratio;
+    const y = yForDelta(delta);
+    ctx.strokeStyle = ratio === 0
+      ? "rgba(255, 255, 255, 0.45)"
+      : "rgba(255, 255, 255, 0.09)";
+    ctx.lineWidth = ratio === 0 ? 1.5 : 1;
+    ctx.beginPath();
+    ctx.moveTo(plot.left, y);
+    ctx.lineTo(plot.right, y);
+    ctx.stroke();
+
+    ctx.fillStyle = "#aeb8c8";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    const rounded = Math.round(delta);
+    ctx.fillText(
+      rounded > 0 ? `+${rounded}` : String(rounded),
+      plot.left - 8,
+      y
+    );
+  }
+
+  ctx.fillStyle = "#aeb8c8";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  ctx.fillText("Δ px/s", 8, plot.top);
+
+  const xTickCount = Math.max(3, Math.min(8, Math.floor(plot.width / 110)));
+  for (let i = 0; i <= xTickCount; i++) {
+    const ratio = i / xTickCount;
+    const time = viewStart + (viewEnd - viewStart) * ratio;
+    const x = xForTime(time);
+
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, plot.top);
+    ctx.lineTo(x, plot.bottom);
+    ctx.stroke();
+
+    ctx.fillStyle = "#aeb8c8";
+    ctx.textAlign = i === 0 ? "left" : i === xTickCount ? "right" : "center";
+    ctx.textBaseline = "top";
+    ctx.fillText(formatSpreadScrollAxisTime(time), x, plot.bottom + 10);
+  }
+}
+
+function drawSpreadScrollDeltaSeries(
+  ctx,
+  assignment,
+  viewStart,
+  viewEnd,
+  xForTime,
+  yForDelta,
+  emphasizeWarnings
+) {
+  const changes = (assignment.result.scrollSpeed?.rapidChanges ?? [])
+    .filter(change =>
+      Number.isFinite(change.delta) &&
+      Math.abs(change.delta) > 0.01 &&
+      change.toTime >= viewStart &&
+      change.toTime <= viewEnd
+    )
+    .sort((a, b) => a.toTime - b.toTime);
+
+  if (!changes.length) return;
+
+  ctx.strokeStyle = spreadScrollColorWithAlpha(assignment.color, 0.38);
+  ctx.lineWidth = 1.25;
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  changes.forEach((change, index) => {
+    const x = xForTime(change.toTime);
+    const y = yForDelta(change.delta);
+    if (index === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  for (const change of changes) {
+    const isWarning =
+      emphasizeWarnings &&
+      getSpreadRapidScrollLevel(change, assignment.category) === "warn";
+    const x = xForTime(change.toTime);
+    const y = yForDelta(change.delta);
+
+    ctx.fillStyle = assignment.color;
+    ctx.strokeStyle = isWarning ? "#ffffff" : "rgba(15, 18, 26, 0.9)";
+    ctx.lineWidth = isWarning ? 2.5 : 1.5;
+    ctx.beginPath();
+    ctx.arc(x, y, isWarning ? 5.5 : 3.75, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
 }
 
 function drawSpreadScrollRapidChangeBackgrounds(
@@ -549,9 +818,8 @@ function getSpreadScrollNiceMaximum(value) {
   return Math.ceil(padded / step) * step;
 }
 
-function handleSpreadScrollPointerDown(event) {
+function handleSpreadScrollPointerDown(event, canvas) {
   const state = spreadScrollChartState;
-  const canvas = state.dom?.spreadScrollChart;
   const plot = canvas?._spreadScrollPlot;
   if (!canvas || !plot) return;
 
@@ -561,41 +829,52 @@ function handleSpreadScrollPointerDown(event) {
   canvas.setPointerCapture(event.pointerId);
   state.dragStartX = point.x;
   state.dragCurrentX = point.x;
-  hideSpreadScrollTooltip();
-  drawSpreadScrollChart();
+  state.dragCanvas = canvas;
+  hideSpreadScrollTooltips();
+  drawSpreadScrollCharts();
 }
 
-function handleSpreadScrollPointerMove(event) {
+function handleSpreadScrollPointerMove(event, canvas) {
   const state = spreadScrollChartState;
-  const canvas = state.dom?.spreadScrollChart;
   const plot = canvas?._spreadScrollPlot;
   if (!canvas || !plot) return;
 
   const point = getSpreadScrollPointerPosition(event, canvas);
 
-  if (state.dragStartX !== null) {
+  if (state.dragStartX !== null && state.dragCanvas === canvas) {
     state.dragCurrentX = point.x;
-    drawSpreadScrollChart();
+    drawSpreadScrollCharts();
     return;
   }
 
   if (!isSpreadScrollPointInPlot(point, plot)) {
     state.hoverTime = null;
-    hideSpreadScrollTooltip();
-    drawSpreadScrollChart();
+    hideSpreadScrollTooltips();
+    drawSpreadScrollCharts();
     return;
   }
 
   state.hoverTime = spreadScrollXToTime(point.x, plot);
-  showSpreadScrollTooltip(point, state.hoverTime);
-  drawSpreadScrollChart();
+  hideSpreadScrollTooltips();
+  if (canvas === state.dom?.spreadScrollDeltaChart) {
+    showSpreadScrollDeltaTooltip(point, state.hoverTime);
+  } else {
+    showSpreadScrollTooltip(point, state.hoverTime);
+  }
+  drawSpreadScrollCharts();
 }
 
-function handleSpreadScrollPointerUp(event) {
+function handleSpreadScrollPointerUp(event, canvas) {
   const state = spreadScrollChartState;
-  const canvas = state.dom?.spreadScrollChart;
   const plot = canvas?._spreadScrollPlot;
-  if (!canvas || !plot || state.dragStartX === null) return;
+  if (
+    !canvas ||
+    !plot ||
+    state.dragStartX === null ||
+    state.dragCanvas !== canvas
+  ) {
+    return;
+  }
 
   const point = getSpreadScrollPointerPosition(event, canvas);
   const distance = Math.abs(point.x - state.dragStartX);
@@ -615,17 +894,19 @@ function handleSpreadScrollPointerUp(event) {
 
   state.dragStartX = null;
   state.dragCurrentX = null;
+  state.dragCanvas = null;
   state.hoverTime = null;
-  hideSpreadScrollTooltip();
-  drawSpreadScrollChart();
+  hideSpreadScrollTooltips();
+  drawSpreadScrollCharts();
 }
 
 function handleSpreadScrollPointerCancel() {
   const state = spreadScrollChartState;
   state.dragStartX = null;
   state.dragCurrentX = null;
-  hideSpreadScrollTooltip();
-  drawSpreadScrollChart();
+  state.dragCanvas = null;
+  hideSpreadScrollTooltips();
+  drawSpreadScrollCharts();
 }
 
 function handleSpreadScrollPointerLeave() {
@@ -633,8 +914,8 @@ function handleSpreadScrollPointerLeave() {
   if (state.dragStartX !== null) return;
 
   state.hoverTime = null;
-  hideSpreadScrollTooltip();
-  drawSpreadScrollChart();
+  hideSpreadScrollTooltips();
+  drawSpreadScrollCharts();
 }
 
 function showSpreadScrollTooltip(point, time) {
@@ -728,9 +1009,97 @@ function showSpreadScrollTooltip(point, time) {
   tooltip.style.top = `${Math.max(edgePadding, top)}px`;
 }
 
-function hideSpreadScrollTooltip() {
-  const tooltip = spreadScrollChartState.dom?.spreadScrollChartTooltip;
-  if (tooltip) tooltip.hidden = true;
+function showSpreadScrollDeltaTooltip(point, time) {
+  const state = spreadScrollChartState;
+  const tooltip = state.dom?.spreadScrollDeltaChartTooltip;
+  const wrap = state.dom?.spreadScrollDeltaChartWrap;
+  const canvas = state.dom?.spreadScrollDeltaChart;
+  const assignments = canvas?._spreadScrollVisibleAssignments ?? [];
+  const plot = canvas?._spreadScrollPlot;
+  if (!tooltip || !wrap || !plot) return;
+
+  const toleranceMs =
+    ((state.viewEnd - state.viewStart) / Math.max(1, plot.width)) * 9;
+  const matches = assignments
+    .map(assignment => {
+      const change = (assignment.result.scrollSpeed?.rapidChanges ?? [])
+        .filter(item =>
+          Number.isFinite(item.delta) &&
+          Math.abs(item.delta) > 0.01
+        )
+        .reduce((nearest, item) => {
+          const distance = Math.abs(item.toTime - time);
+          if (distance > toleranceMs) return nearest;
+          if (!nearest || distance < nearest.distance) {
+            return { item, distance };
+          }
+          return nearest;
+        }, null);
+
+      return change ? { assignment, change: change.item } : null;
+    })
+    .filter(Boolean);
+
+  const lines = [msToTimestamp(Math.round(time))];
+
+  for (const { assignment, change } of matches) {
+    const diffName = getDifficultyNameText(assignment.result.fileName);
+    const delta = Math.round(change.delta);
+    const deltaText = delta > 0 ? `+${delta}` : String(delta);
+
+    lines.push("");
+    lines.push(diffName);
+    lines.push(
+      `${state.t("spreadScrollDeltaBeforeAfter")}: ` +
+      `${Math.round(change.beforeSpeed)} → ${Math.round(change.afterSpeed)} px/s`
+    );
+    lines.push(
+      `${state.t("spreadScrollDeltaValue")}: ${deltaText} px/s`
+    );
+    if (Number.isFinite(change.ratio)) {
+      lines.push(
+        `${state.t("spreadScrollDeltaRatio")}: ` +
+        `${formatSpreadScrollTooltipNumber(change.ratio, 2)}x`
+      );
+    }
+    if (Number.isFinite(change.gapMs)) {
+      lines.push(
+        `${state.t("spreadScrollDeltaInterval")}: ${Math.round(change.gapMs)} ms`
+      );
+    }
+  }
+
+  tooltip.textContent = lines.join("\n");
+  tooltip.hidden = false;
+
+  const gap = 14;
+  const edgePadding = 8;
+  const tooltipWidth = tooltip.offsetWidth;
+  const tooltipHeight = tooltip.offsetHeight;
+  let left = point.x + gap;
+  let top = point.y + gap;
+
+  if (left + tooltipWidth > wrap.clientWidth - edgePadding) {
+    left = point.x - tooltipWidth - gap;
+  }
+  if (top + tooltipHeight > wrap.clientHeight - edgePadding) {
+    top = point.y - tooltipHeight - gap;
+  }
+
+  tooltip.style.left = `${Math.max(edgePadding, left)}px`;
+  tooltip.style.top = `${Math.max(edgePadding, top)}px`;
+}
+
+function hideSpreadScrollTooltips() {
+  const state = spreadScrollChartState;
+  const tooltips = [
+    state.dom?.spreadScrollChartTooltip,
+    state.dom?.spreadScrollDeltaChartTooltip
+  ];
+
+  for (const tooltip of tooltips) {
+    if (tooltip) tooltip.hidden = true;
+  }
 }
 
 function formatSpreadScrollTooltipNumber(value, maximumFractionDigits) {
