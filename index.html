@@ -183,6 +183,22 @@
       </section>
 
       <section class="tab-panel" id="tab-kiaiCompare">
+        <section class="kiai-compare-chart-section" id="kiaiCompareChartSection">
+          <div class="volume-compare-chart-header">
+            <div>
+              <h3 data-i18n="kiaiCompareGraphTitle">Kiai timeline</h3>
+              <p data-i18n="kiaiCompareGraphHelp">Drag to zoom. Click the graph to open that timestamp in osu!.</p>
+            </div>
+            <button class="doc-btn" id="kiaiCompareResetZoom" type="button" data-i18n="volumeCompareResetZoom">Reset zoom</button>
+          </div>
+
+          <div class="kiai-compare-chart-wrap" id="kiaiCompareChartWrap">
+            <canvas id="kiaiCompareChart"></canvas>
+            <div class="volume-compare-chart-tooltip" id="kiaiCompareChartTooltip" hidden></div>
+          </div>
+          <div class="volume-compare-chart-empty" id="kiaiCompareChartEmpty" data-i18n="noFileLoaded">No file loaded.</div>
+        </section>
+
         <pre id="kiaiOutput" data-i18n="noFileLoaded">No file loaded.</pre>
       </section>
 
@@ -568,6 +584,7 @@
   <script src="i18n.js"></script>
   <script src="app/updateHistory.js"></script>
   <script src="app/formatters.js"></script>
+  <script src="app/kiaiCompareChart.js"></script>
   <script src="app/volumeCompareChart.js"></script>
   <script src="app/fileLoader.js"></script>
   <script src="app/ui.js"></script>

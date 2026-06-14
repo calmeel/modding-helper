@@ -58,10 +58,12 @@ function renderKiaiCompareResult(results, dom, t) {
 
   if (!results) {
     dom.kiaiOutput.innerHTML = t("noFileLoaded");
+    renderKiaiCompareChart(null, dom, t);
     return;
   }
 
   dom.kiaiOutput.innerHTML = formatKiaiCompareResult(results, t);
+  renderKiaiCompareChart(results, dom, t);
 }
 
 function renderKiaiSnapResultFromResults(results, dom, t) {

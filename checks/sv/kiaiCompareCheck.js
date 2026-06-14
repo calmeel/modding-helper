@@ -34,10 +34,16 @@ function buildKiaiIntervals(timingPoints, endTime) {
     if (end <= start) continue;
 
     if (current.kiai) {
-      intervals.push({
-        start,
-        end
-      });
+      const previous = intervals[intervals.length - 1];
+
+      if (previous && previous.end === start) {
+        previous.end = end;
+      } else {
+        intervals.push({
+          start,
+          end
+        });
+      }
     }
   }
 

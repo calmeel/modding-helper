@@ -15,6 +15,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const doubleSvGap = document.getElementById("doubleSvGap");
   const includeExactSameSv = document.getElementById("includeExactSameSv");
   const kiaiOutput = document.getElementById("kiaiOutput");
+  const kiaiCompareChartSection = document.getElementById("kiaiCompareChartSection");
+  const kiaiCompareChartWrap = document.getElementById("kiaiCompareChartWrap");
+  const kiaiCompareChart = document.getElementById("kiaiCompareChart");
+  const kiaiCompareChartTooltip = document.getElementById("kiaiCompareChartTooltip");
+  const kiaiCompareChartEmpty = document.getElementById("kiaiCompareChartEmpty");
+  const kiaiCompareResetZoom = document.getElementById("kiaiCompareResetZoom");
   const kiaiSnapOutput = document.getElementById("kiaiSnapOutput");
   const svVolumeOutput = document.getElementById("svVolumeOutput");
   const svVolumeThreshold = document.getElementById("svVolumeThreshold");
@@ -97,6 +103,12 @@ document.addEventListener("DOMContentLoaded", () => {
     doubleSvGap,
     includeExactSameSv,
     kiaiOutput,
+    kiaiCompareChartSection,
+    kiaiCompareChartWrap,
+    kiaiCompareChart,
+    kiaiCompareChartTooltip,
+    kiaiCompareChartEmpty,
+    kiaiCompareResetZoom,
     kiaiSnapOutput,
     svVolumeOutput,
     svVolumeThreshold,
