@@ -449,7 +449,7 @@
           <section class="spread-scroll-chart-section" id="spreadScrollChartSection">
             <div class="volume-compare-chart-header">
               <div>
-                <h3 data-i18n="spreadScrollGraphTitle">Scroll speed graph</h3>
+                <h3 data-i18n="spreadScrollGraphTitle">Scroll speed graph (px/s)</h3>
                 <p>
                   <span data-i18n="spreadScrollGraphHelp">This graph shows the effective scroll speed at each note.</span><br>
                   <span data-i18n="spreadScrollGraphControls">Drag to zoom. Click the graph to open that timestamp in osu!.</span>
@@ -477,6 +477,18 @@
               <canvas id="spreadScrollChart"></canvas>
               <div class="volume-compare-chart-tooltip" id="spreadScrollChartTooltip" hidden></div>
             </div>
+
+            <div class="spread-scroll-delta-header" id="spreadScrollDeltaHeader">
+              <h4 data-i18n="spreadScrollDeltaGraphTitle">Scroll speed change graph (Δ px/s)</h4>
+              <p data-i18n="spreadScrollDeltaGraphHelp">
+                Points show the change in scroll speed at each note. Thin lines are visual guides.
+              </p>
+            </div>
+            <div class="spread-scroll-chart-wrap spread-scroll-delta-chart-wrap" id="spreadScrollDeltaChartWrap">
+              <canvas id="spreadScrollDeltaChart"></canvas>
+              <div class="volume-compare-chart-tooltip" id="spreadScrollDeltaChartTooltip" hidden></div>
+            </div>
+
             <div class="volume-compare-diff-toggles volume-compare-diff-toggles-bottom" id="spreadScrollDiffToggles"></div>
             <div class="volume-compare-chart-empty" id="spreadScrollChartEmpty" data-i18n="noFileLoaded">
               No file loaded.
