@@ -1783,6 +1783,13 @@ Finisher の表は、以下の3種類に分けて表示されます：
 グラフをドラッグすると時間範囲を拡大でき、クリックするとそのタイムポイントをosu!editorで開けます。
 カーソルを合わせると、その時点の <code>px/s</code>・BPM・SV・SliderMultiplierを確認できます。<br><br>
 
+警告表示オプションでは、以下の表示を切り替えられます。
+<ul>
+  <li><code>速すぎるスクロール速度の目安値を破線で表示</code>：表示中の各diffに設定された目安値を、Diffカラーの破線で表示します。</li>
+  <li><code>急激な速度変化を表示</code>：既存の警告条件を満たす区間を、該当するDiffカラーの半透明背景で表示します。</li>
+</ul>
+2つの警告表示は同時に有効にできません。別の項目を有効にすると、それまでの選択は自動的に解除されます。<br><br>
+
 <figure class="doc-graph-example">
   <img src="images/spread-scroll-speed-graph-example.png" alt="Kantan、Futsuu、Muzukashii、Oni、Inner Oniのスクロール速度グラフ例">
   <figcaption>スクロール速度グラフの表示例。各diffの有効スクロール速度をpx/sの階段線で表示します。</figcaption>

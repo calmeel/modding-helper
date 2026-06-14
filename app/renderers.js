@@ -295,7 +295,8 @@ function renderSpreadResultFromResults(spreadState, dom, t) {
       results,
       dom,
       t,
-      spreadState.diffOrder
+      spreadState.diffOrder,
+      spreadState.manualCategories
     );
 
     dom.spreadScrollSpeedOutput.innerHTML = formatSpreadScrollSpeedResult(
