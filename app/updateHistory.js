@@ -178,8 +178,14 @@ const updateHistoryEntries = [
     date: "2026/06/15",
     type: "update",
     items: {
-      en: ["Supports detecting first-note-lag when the first note is before the first red line."],
-      ja: ["最初のノーツが最初の赤線より前にある際のプチフリ検出に対応"]
+      en: [
+        "Supports detecting first-note-lag when the first note is before the first red line.",
+        "Corrected false positives related to metadata."
+      ],
+      ja: [
+        "最初のノーツが最初の赤線より前にある際のプチフリ検出に対応",
+        "メタデータに関する誤検出を修正"
+      ]
     }
   },
 ];
