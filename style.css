@@ -198,6 +198,12 @@ body {
   margin-bottom: 10px;
 }
 
+.volume-compare-diff-toggles-bottom {
+  margin: 10px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid #393944;
+}
+
 .volume-compare-background-toggles {
   display: flex;
   flex-wrap: wrap;
