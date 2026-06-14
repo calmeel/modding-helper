@@ -62,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const spreadScrollChart = document.getElementById("spreadScrollChart");
   const spreadScrollChartTooltip = document.getElementById("spreadScrollChartTooltip");
   const spreadScrollDeltaHeader = document.getElementById("spreadScrollDeltaHeader");
+  const spreadScrollDeltaToggles = document.getElementById("spreadScrollDeltaToggles");
   const spreadScrollDeltaChartWrap = document.getElementById("spreadScrollDeltaChartWrap");
   const spreadScrollDeltaChart = document.getElementById("spreadScrollDeltaChart");
   const spreadScrollDeltaChartTooltip = document.getElementById("spreadScrollDeltaChartTooltip");
@@ -70,6 +71,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const spreadScrollResetZoom = document.getElementById("spreadScrollResetZoom");
   const spreadScrollShowLimits = document.getElementById("spreadScrollShowLimits");
   const spreadScrollShowRapidChanges = document.getElementById("spreadScrollShowRapidChanges");
+  const spreadScrollShowProgression = document.getElementById("spreadScrollShowProgression");
+  const spreadScrollShowConsistency = document.getElementById("spreadScrollShowConsistency");
   const contentPermissionOutput = document.getElementById("contentPermissionOutput");
   const timelineOutput = document.getElementById("timelineOutput");
   const timelineRunButton = document.getElementById("timelineRunButton");
@@ -163,6 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadScrollChart,
     spreadScrollChartTooltip,
     spreadScrollDeltaHeader,
+    spreadScrollDeltaToggles,
     spreadScrollDeltaChartWrap,
     spreadScrollDeltaChart,
     spreadScrollDeltaChartTooltip,
@@ -171,6 +175,8 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadScrollResetZoom,
     spreadScrollShowLimits,
     spreadScrollShowRapidChanges,
+    spreadScrollShowProgression,
+    spreadScrollShowConsistency,
     contentPermissionOutput,
     timelineOutput,
     timelineRunButton,

@@ -175,13 +175,40 @@ body {
 
 .spread-scroll-delta-header h4 {
   margin: 0 0 5px;
-  font-size: 15px;
+  font-size: 17px;
 }
 
 .spread-scroll-delta-header p {
   margin: 0 0 10px;
   color: #aeb8c8;
   font-size: 12px;
+}
+
+.spread-scroll-delta-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 10px;
+}
+
+.spread-scroll-delta-toggles label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.spread-scroll-delta-toggles input {
+  margin: 0;
+}
+
+.spread-scroll-progression-swatch {
+  background: rgba(255, 107, 107, 0.55);
+}
+
+.spread-scroll-consistency-swatch {
+  background: rgba(255, 179, 71, 0.55);
 }
 
 .spread-scroll-delta-chart-wrap,

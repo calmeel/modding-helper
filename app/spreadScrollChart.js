@@ -45,6 +45,9 @@ function renderSpreadScrollChart(
       dom.spreadScrollDeltaChartWrap.hidden = true;
     }
     if (dom.spreadScrollDeltaHeader) dom.spreadScrollDeltaHeader.hidden = true;
+    if (dom.spreadScrollDeltaToggles) {
+      dom.spreadScrollDeltaToggles.hidden = true;
+    }
     if (dom.spreadScrollDiffToggles) {
       dom.spreadScrollDiffToggles.replaceChildren();
     }
@@ -79,6 +82,9 @@ function renderSpreadScrollChart(
     dom.spreadScrollDeltaChartWrap.hidden = false;
   }
   if (dom.spreadScrollDeltaHeader) dom.spreadScrollDeltaHeader.hidden = false;
+  if (dom.spreadScrollDeltaToggles) {
+    dom.spreadScrollDeltaToggles.hidden = false;
+  }
 
   renderSpreadScrollDiffToggles(chartResults);
   drawSpreadScrollCharts();
@@ -94,6 +100,10 @@ function initializeSpreadScrollChart() {
   const warningToggles = [
     state.dom.spreadScrollShowLimits,
     state.dom.spreadScrollShowRapidChanges
+  ];
+  const deltaIssueToggles = [
+    state.dom.spreadScrollShowProgression,
+    state.dom.spreadScrollShowConsistency
   ];
 
   initializeSpreadScrollCanvas(canvas);
@@ -111,6 +121,23 @@ function initializeSpreadScrollChart() {
         }
       }
 
+      drawSpreadScrollCharts();
+    });
+  }
+
+  for (const toggle of deltaIssueToggles) {
+    if (!toggle) continue;
+
+    toggle.addEventListener("change", () => {
+      if (toggle.checked) {
+        for (const otherToggle of deltaIssueToggles) {
+          if (otherToggle && otherToggle !== toggle) {
+            otherToggle.checked = false;
+          }
+        }
+      }
+
+      hideSpreadScrollTooltips();
       drawSpreadScrollCharts();
     });
   }
@@ -424,7 +451,16 @@ function drawSpreadScrollDeltaChart() {
   const yForDelta = delta =>
     plot.top + plot.height / 2 -
     (delta / maxAbsDelta) * (plot.height / 2);
+  const issueDisplay = getSpreadScrollDeltaIssueDisplay(results);
 
+  drawSpreadScrollDeltaIssueBands(
+    ctx,
+    issueDisplay,
+    plot,
+    viewStart,
+    viewEnd,
+    xForTime
+  );
   drawSpreadScrollDeltaGrid(
     ctx,
     plot,
@@ -448,7 +484,8 @@ function drawSpreadScrollDeltaChart() {
       viewEnd,
       xForTime,
       yForDelta,
-      state.dom?.spreadScrollShowRapidChanges?.checked
+      state.dom?.spreadScrollShowRapidChanges?.checked,
+      issueDisplay.highlightedEvents
     );
   }
 
@@ -478,6 +515,82 @@ function drawSpreadScrollDeltaChart() {
 
   canvas._spreadScrollPlot = plot;
   canvas._spreadScrollVisibleAssignments = visibleAssignments;
+}
+
+function getSpreadScrollDeltaIssueDisplay(results) {
+  const state = spreadScrollChartState;
+  let mode = null;
+  let analysis = null;
+
+  if (state.dom?.spreadScrollShowProgression?.checked) {
+    mode = "progression";
+    analysis = analyzeSpreadScrollSpeedProgressionByEvent(
+      results,
+      state.manualCategories
+    );
+  } else if (state.dom?.spreadScrollShowConsistency?.checked) {
+    mode = "consistency";
+    analysis = analyzeSpreadScrollChangeConsistency(
+      results,
+      state.manualCategories
+    );
+  }
+
+  const groups = analysis?.issueGroups ?? [];
+  const highlightedEvents = new Set();
+
+  for (const group of groups) {
+    if (mode === "progression") {
+      for (const item of group.items) {
+        highlightedEvents.add(item.event);
+      }
+      continue;
+    }
+
+    for (const issue of group.issues) {
+      highlightedEvents.add(issue.lower.event);
+      highlightedEvents.add(issue.higher.event);
+    }
+  }
+
+  return {
+    mode,
+    groups,
+    highlightedEvents
+  };
+}
+
+function drawSpreadScrollDeltaIssueBands(
+  ctx,
+  issueDisplay,
+  plot,
+  viewStart,
+  viewEnd,
+  xForTime
+) {
+  if (!issueDisplay.mode || !issueDisplay.groups.length) return;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(plot.left, plot.top, plot.width, plot.height);
+  ctx.clip();
+
+  for (const group of issueDisplay.groups) {
+    if (group.time < viewStart || group.time > viewEnd) continue;
+
+    const hasDirectionMismatch = group.issues.some(
+      issue => issue.type === "directionMismatch"
+    );
+    const color = issueDisplay.mode === "progression" || hasDirectionMismatch
+      ? "rgba(255, 107, 107, 0.22)"
+      : "rgba(255, 179, 71, 0.22)";
+    const x = xForTime(group.time);
+
+    ctx.fillStyle = color;
+    ctx.fillRect(x - 5, plot.top, 10, plot.height);
+  }
+
+  ctx.restore();
 }
 
 function getSpreadScrollDeltaMaximum(assignments) {
@@ -560,7 +673,8 @@ function drawSpreadScrollDeltaSeries(
   viewEnd,
   xForTime,
   yForDelta,
-  emphasizeWarnings
+  emphasizeWarnings,
+  highlightedEvents
 ) {
   const changes = (assignment.result.scrollSpeed?.rapidChanges ?? [])
     .filter(change =>
@@ -589,14 +703,17 @@ function drawSpreadScrollDeltaSeries(
     const isWarning =
       emphasizeWarnings &&
       getSpreadRapidScrollLevel(change, assignment.category) === "warn";
+    const isIssue = highlightedEvents.has(change);
     const x = xForTime(change.toTime);
     const y = yForDelta(change.delta);
 
     ctx.fillStyle = assignment.color;
-    ctx.strokeStyle = isWarning ? "#ffffff" : "rgba(15, 18, 26, 0.9)";
-    ctx.lineWidth = isWarning ? 2.5 : 1.5;
+    ctx.strokeStyle = isIssue || isWarning
+      ? "#ffffff"
+      : "rgba(15, 18, 26, 0.9)";
+    ctx.lineWidth = isIssue ? 3 : isWarning ? 2.5 : 1.5;
     ctx.beginPath();
-    ctx.arc(x, y, isWarning ? 5.5 : 3.75, 0, Math.PI * 2);
+    ctx.arc(x, y, isIssue ? 6 : isWarning ? 5.5 : 3.75, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
   }
@@ -1069,6 +1186,13 @@ function showSpreadScrollDeltaTooltip(point, time) {
     }
   }
 
+  appendSpreadScrollDeltaIssueTooltip(
+    lines,
+    time,
+    toleranceMs,
+    getSpreadScrollChartResults()
+  );
+
   tooltip.textContent = lines.join("\n");
   tooltip.hidden = false;
 
@@ -1088,6 +1212,87 @@ function showSpreadScrollDeltaTooltip(point, time) {
 
   tooltip.style.left = `${Math.max(edgePadding, left)}px`;
   tooltip.style.top = `${Math.max(edgePadding, top)}px`;
+}
+
+function appendSpreadScrollDeltaIssueTooltip(
+  lines,
+  time,
+  toleranceMs,
+  results
+) {
+  const state = spreadScrollChartState;
+  const issueDisplay = getSpreadScrollDeltaIssueDisplay(results);
+  if (!issueDisplay.mode) return;
+
+  const group = issueDisplay.groups.reduce((nearest, item) => {
+    const distance = Math.abs(item.time - time);
+    if (distance > toleranceMs) return nearest;
+    if (!nearest || distance < nearest.distance) {
+      return { item, distance };
+    }
+    return nearest;
+  }, null)?.item;
+
+  if (!group) return;
+
+  lines.push("");
+
+  if (issueDisplay.mode === "progression") {
+    lines.push(state.t("spreadScrollProgressionIssue"));
+
+    const byFileName = new Map(
+      group.items.map(item => [item.fileName, item.event])
+    );
+    const progression = results
+      .map(result => {
+        const event = byFileName.get(result.fileName);
+        if (!event) return null;
+        return `${getDifficultyNameText(result.fileName)} ${Math.round(event.afterSpeed)}`;
+      })
+      .filter(Boolean);
+
+    if (progression.length) {
+      lines.push(`${progression.join(" → ")} px/s`);
+    }
+
+    for (const issue of group.issues) {
+      lines.push(
+        `${getDifficultyNameText(issue.prev.fileName)} → ` +
+        `${getDifficultyNameText(issue.cur.fileName)}: ` +
+        `${formatSpreadScrollDirection(issue.prevDirection)} → ` +
+        `${formatSpreadScrollDirection(issue.curDirection)}`
+      );
+    }
+    return;
+  }
+
+  lines.push(state.t("spreadScrollConsistencyIssue"));
+  for (const issue of group.issues) {
+    const lowerName = getDifficultyNameText(issue.lower.fileName);
+    const higherName = getDifficultyNameText(issue.higher.fileName);
+    const lowerDelta = formatSpreadScrollSignedDelta(issue.lower.event.delta);
+    const higherDelta = formatSpreadScrollSignedDelta(issue.higher.event.delta);
+    const reason = issue.type === "directionMismatch"
+      ? state.t("spreadScrollOppositeDirection")
+      : state.t("spreadScrollStrongerLowerDiff");
+
+    lines.push(
+      `${lowerName} ${lowerDelta} / ${higherName} ${higherDelta} px/s`
+    );
+    lines.push(reason);
+  }
+}
+
+function formatSpreadScrollDirection(direction) {
+  const t = spreadScrollChartState.t;
+  if (direction === "up") return t("spreadScrollDirectionUp");
+  if (direction === "down") return t("spreadScrollDirectionDown");
+  return t("spreadScrollDirectionFlat");
+}
+
+function formatSpreadScrollSignedDelta(value) {
+  const rounded = Math.round(value);
+  return rounded > 0 ? `+${rounded}` : String(rounded);
 }
 
 function hideSpreadScrollTooltips() {
