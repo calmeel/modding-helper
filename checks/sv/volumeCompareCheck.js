@@ -4,7 +4,7 @@ function runVolumeCompareCheck(sources, options = {}) {
   const minDurationOnly = options.minDurationOnly ?? true;
   const minDurationMs = options.minDurationMs ?? 50;
 
-  if (!sources || sources.length < 2) {
+  if (!sources || sources.length === 0) {
     return {
       results: [],
       intervals: [],
@@ -98,7 +98,7 @@ function runVolumeCompareCheck(sources, options = {}) {
       minDurationOnly,
       minDurationMs
     },
-    needTwoDiffs: false
+    needTwoDiffs: parsed.length < 2
   };
 }
 

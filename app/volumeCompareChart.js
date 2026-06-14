@@ -36,8 +36,7 @@ function renderVolumeCompareChart(result, dom, t) {
 
   const canRender =
     result &&
-    !result.needTwoDiffs &&
-    result.series?.length >= 2 &&
+    result.series?.length >= 1 &&
     result.endTime > 0;
 
   if (!canRender) {
@@ -231,7 +230,7 @@ function drawVolumeCompareChart() {
   if (
     !canvas ||
     !result ||
-    result.needTwoDiffs ||
+    !result.series?.length ||
     state.dom?.volumeCompareChartWrap?.hidden
   ) {
     return;
