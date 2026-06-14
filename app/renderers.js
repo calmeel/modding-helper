@@ -239,6 +239,7 @@ function renderSpreadResultFromResults(spreadState, dom, t) {
     if (dom.spreadNoteCountOutput) dom.spreadNoteCountOutput.innerHTML = t("noFileLoaded");
     if (dom.spreadDensityOutput) dom.spreadDensityOutput.innerHTML = t("noFileLoaded");
     if (dom.spreadFinishersOutput) dom.spreadFinishersOutput.innerHTML = t("noFileLoaded");
+    renderSpreadScrollChart(null, dom, t);
     return;
   }
 
@@ -290,6 +291,13 @@ function renderSpreadResultFromResults(spreadState, dom, t) {
   }
 
   if (dom.spreadScrollSpeedOutput) {
+    renderSpreadScrollChart(
+      results,
+      dom,
+      t,
+      spreadState.diffOrder
+    );
+
     dom.spreadScrollSpeedOutput.innerHTML = formatSpreadScrollSpeedResult(
       results,
       t,
