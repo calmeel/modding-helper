@@ -120,26 +120,57 @@ function findFeatMarkerIssues(text, casing, fieldName) {
 
   for (const match of text.matchAll(regex)) {
     const found = match[0];
+    const spacing = analyzeFeatMarkerSpacing(text, match.index, found.length);
 
-    if (found === expected && hasValidMarkerSpacing(text, match.index, found.length)) {
+    if (found === expected && spacing.ok) {
       continue;
     }
+
+    const missingSpaceBeforeParen =
+      found === expected && spacing.reason === "missingSpaceBeforeParen";
 
     issues.push({
       fieldName,
       type: "featMarker",
-      marker: found,
-      expected,
-      descriptionKey: getArtistFormattingDescriptionKey(
-        "featMarker",
-        found,
-        expected
-      ),
+      marker: missingSpaceBeforeParen ? `(${found}` : found,
+      expected: missingSpaceBeforeParen ? ` (${expected}` : expected,
+      descriptionKey: missingSpaceBeforeParen
+        ? "artistFeatNeedsSpaceBeforeParen"
+        : getArtistFormattingDescriptionKey(
+            "featMarker",
+            found,
+            expected
+          ),
       context: getArtistIssueContext(text, match.index),
     });
   }
 
   return issues;
+}
+
+function analyzeFeatMarkerSpacing(text, index, length) {
+  const before = text[index - 1] ?? "";
+  const after = text[index + length] ?? "";
+
+  if (after && after !== " ") {
+    return { ok: false, reason: "missingSpaceAfter" };
+  }
+
+  if (before === "(") {
+    const beforeParen = text[index - 2] ?? "";
+
+    if (beforeParen && beforeParen !== " ") {
+      return { ok: false, reason: "missingSpaceBeforeParen" };
+    }
+
+    return { ok: true, reason: null };
+  }
+
+  if (before && before !== " ") {
+    return { ok: false, reason: "missingSpaceBefore" };
+  }
+
+  return { ok: true, reason: null };
 }
 
 function findCvVoMarkerIssues(text, fieldName) {
