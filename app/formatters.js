@@ -1135,7 +1135,7 @@ function formatEarlyNoteIssueDetail(result, t) {
 
   if (result.reason === "firstNoteBeforeFirstRedLine") {
     lines.push(
-      `<span class="${cls}">最初のノーツが最初の赤線より前にあります。</span>`
+      `<span class="${cls}">${escapeHtml(t("earlyNoteBeforeFirstRedLine"))}</span>`
     );
     lines.push(`BPM: N/A`);
     lines.push(`SV: N/A`);

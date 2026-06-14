@@ -94,6 +94,7 @@ const i18n = {
     earlyNoteSv: "SV",
     earlyNotePositionShort: "Position",
     earlyNoteIssueDetails: "First-note lag risk details",
+    earlyNoteBeforeFirstRedLine: "The first note is placed before the first red timing point.",
     earlyNoteRecommendation: "Consider adding about 1000 ms of silence to the beginning of the audio file.",
 
     tabMetadata: "Metadata",
@@ -421,6 +422,7 @@ const i18n = {
     earlyNoteSv: "SV",
     earlyNotePositionShort: "残り位置",
     earlyNoteIssueDetails: "プチフリリスクの詳細",
+    earlyNoteBeforeFirstRedLine: "最初のノーツが最初の赤線より前にあります。",
     earlyNoteRecommendation: "音源ファイルの先頭に 1000 ms 程度の無音を追加することを検討してください。",
 
     tabMetadata: "メタデータ",
