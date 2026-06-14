@@ -1463,12 +1463,6 @@ function formatSpreadSv(value) {
 }
 
 /** スクロール変化量 */
-const SPREAD_SCROLL_CONSISTENCY_GROUP_TOLERANCE_MS = 10;
-const SPREAD_SCROLL_CONSISTENCY_MIN_ABS_DELTA = 80;
-const SPREAD_SCROLL_CONSISTENCY_STRONGER_RATIO = 1.5; /** 警告条件 3 */
-const SPREAD_SCROLL_CONSISTENCY_STRONGER_DELTA = 120; /** 警告条件 3 */
-const SPREAD_SCROLL_CONSISTENCY_DIRECTION_DELTA = 120; /** 警告条件 4 */
-
 function formatSpreadScrollChangeConsistency(results, t, manualCategories = {}) {
   const analysis = analyzeSpreadScrollChangeConsistency(results, manualCategories);
 
@@ -1515,10 +1509,6 @@ function formatSpreadScrollChangeConsistency(results, t, manualCategories = {}) 
 }
 
 /** スクロール速度 Progression */
-const SPREAD_SCROLL_PROGRESSION_GROUP_TOLERANCE_MS = 10;
-const SPREAD_SCROLL_PROGRESSION_MIN_ABS_DELTA = 80;
-const SPREAD_SCROLL_PROGRESSION_SPEED_TOLERANCE = 5;
-
 function formatSpreadScrollSpeedProgressionByEvent(results, t, manualCategories = {}) {
   const analysis = analyzeSpreadScrollSpeedProgressionByEvent(results, manualCategories);
 
@@ -1553,115 +1543,6 @@ function formatSpreadScrollSpeedProgressionByEvent(results, t, manualCategories 
   }
 
   return lines.join("\n");
-}
-
-function analyzeSpreadScrollSpeedProgressionByEvent(results, manualCategories = {}) {
-  const comparableResults = results.filter(result => {
-    const category = getSpreadEffectiveCategory(result, manualCategories);
-    return category !== "unknown";
-  });
-
-  const events = [];
-
-  for (const result of comparableResults) {
-    for (const change of result.scrollSpeed?.rapidChanges ?? []) {
-      if (change.absDelta < SPREAD_SCROLL_PROGRESSION_MIN_ABS_DELTA) continue;
-
-      events.push({
-        fileName: result.fileName,
-        time: change.toTime,
-        event: change
-      });
-    }
-  }
-
-  events.sort((a, b) => a.time - b.time);
-
-  const groups = [];
-
-  for (const event of events) {
-    const last = groups[groups.length - 1];
-
-    if (
-      last &&
-      Math.abs(event.time - last.time) <= SPREAD_SCROLL_PROGRESSION_GROUP_TOLERANCE_MS
-    ) {
-      last.items.push(event);
-      last.time = Math.round(
-        last.items.reduce((sum, item) => sum + item.time, 0) / last.items.length
-      );
-    } else {
-      groups.push({
-        time: event.time,
-        items: [event]
-      });
-    }
-  }
-
-  const issueGroups = [];
-
-  for (const group of groups) {
-    const byFileName = new Map(
-      group.items.map(item => [item.fileName, item.event])
-    );
-
-    const rows = comparableResults
-      .map(result => ({
-        fileName: result.fileName,
-        event: byFileName.get(result.fileName) ?? null
-      }))
-      .filter(row => row.event);
-
-    if (rows.length < 3) continue;
-
-    const issues = [];
-    let expectedDirection = "flat";
-
-    for (let i = 1; i < rows.length; i++) {
-      const prev = rows[i - 1];
-      const cur = rows[i];
-
-      const delta = cur.event.afterSpeed - prev.event.afterSpeed;
-      const direction = getSpreadScrollProgressionDirection(delta);
-
-      if (direction === "flat") continue;
-
-      if (expectedDirection === "flat") {
-        expectedDirection = direction;
-        continue;
-      }
-
-      if (direction !== expectedDirection) {
-        issues.push({
-          type: "scrollSpeedProgressionMismatch",
-          prev,
-          cur,
-          prevDirection: expectedDirection,
-          curDirection: direction
-        });
-      }
-    }
-
-    if (issues.length) {
-      issueGroups.push({
-        ...group,
-        issues
-      });
-    }
-  }
-
-  return {
-    groups,
-    issueGroups
-  };
-}
-
-function getSpreadScrollProgressionDirection(delta) {
-  if (Math.abs(delta) <= SPREAD_SCROLL_PROGRESSION_SPEED_TOLERANCE) {
-    return "flat";
-  }
-
-  return delta > 0 ? "up" : "down";
 }
 
 function formatSpreadScrollSpeedProgressionEventTable(group, results) {
@@ -1754,126 +1635,6 @@ function formatSpreadScrollSpeedProgressionEventTable(group, results) {
   }
 
   return lines.join("\n");
-}
-
-function analyzeSpreadScrollChangeConsistency(results, manualCategories = {}) {
-  const comparableResults = results.filter(result => {
-    const category = getSpreadEffectiveCategory(result, manualCategories);
-    return category !== "unknown";
-  });
-
-  const events = [];
-
-  for (const result of comparableResults) {
-    for (const change of result.scrollSpeed?.rapidChanges ?? []) {
-      if (change.absDelta < SPREAD_SCROLL_CONSISTENCY_MIN_ABS_DELTA) continue;
-
-      events.push({
-        fileName: result.fileName,
-        time: change.toTime,
-        event: change
-      });
-    }
-  }
-
-  events.sort((a, b) => a.time - b.time);
-
-  const groups = [];
-
-  for (const event of events) {
-    const last = groups[groups.length - 1];
-
-    if (
-      last &&
-      Math.abs(event.time - last.time) <= SPREAD_SCROLL_CONSISTENCY_GROUP_TOLERANCE_MS
-    ) {
-      last.items.push(event);
-      last.time = Math.round(
-        last.items.reduce((sum, item) => sum + item.time, 0) / last.items.length
-      );
-    } else {
-      groups.push({
-        time: event.time,
-        items: [event]
-      });
-    }
-  }
-
-  const issueGroups = [];
-
-  for (const group of groups) {
-    const issues = [];
-
-    const byFileName = new Map(
-      group.items.map(item => [item.fileName, item.event])
-    );
-
-    for (let i = 1; i < comparableResults.length; i++) {
-      const lower = comparableResults[i - 1];
-      const higher = comparableResults[i];
-
-      const lowerEvent = byFileName.get(lower.fileName);
-      const higherEvent = byFileName.get(higher.fileName);
-
-      if (!lowerEvent || !higherEvent) continue;
-
-      const lowerAbs = lowerEvent.absDelta;
-      const higherAbs = higherEvent.absDelta;
-
-      if (
-        higherAbs > 0 &&
-        lowerAbs >= higherAbs * SPREAD_SCROLL_CONSISTENCY_STRONGER_RATIO &&
-        lowerAbs - higherAbs >= SPREAD_SCROLL_CONSISTENCY_STRONGER_DELTA
-      ) {
-        issues.push({
-          type: "strongerLowerDiff",
-          lower: {
-            fileName: lower.fileName,
-            event: lowerEvent
-          },
-          higher: {
-            fileName: higher.fileName,
-            event: higherEvent
-          }
-        });
-      }
-
-      const lowerDirection = Math.sign(lowerEvent.delta);
-      const higherDirection = Math.sign(higherEvent.delta);
-
-      if (
-        lowerDirection !== 0 &&
-        higherDirection !== 0 &&
-        lowerDirection !== higherDirection &&
-        lowerAbs >= SPREAD_SCROLL_CONSISTENCY_DIRECTION_DELTA &&
-        higherAbs >= SPREAD_SCROLL_CONSISTENCY_DIRECTION_DELTA
-      ) {
-        issues.push({
-          type: "directionMismatch",
-          lower: {
-            fileName: lower.fileName,
-            event: lowerEvent
-          },
-          higher: {
-            fileName: higher.fileName,
-            event: higherEvent
-          }
-        });
-      }
-    }
-
-    if (issues.length) {
-      issueGroups.push({
-        ...group,
-        issues
-      });
-    }
-  }
-
-  return {
-    groups,
-    issueGroups
-  };
 }
 
 function formatSpreadScrollChangeConsistencyTable(group, results) {
