@@ -446,6 +446,27 @@
         </div>
 
         <div class="spread-subtab-panel" id="spread-subtab-scroll">
+          <section class="spread-scroll-chart-section" id="spreadScrollChartSection">
+            <div class="volume-compare-chart-header">
+              <div>
+                <h3 data-i18n="spreadScrollGraphTitle">Scroll speed graph</h3>
+                <p data-i18n="spreadScrollGraphHelp">Drag to zoom. Click the graph to open that timestamp in osu!.</p>
+              </div>
+              <button class="doc-btn" id="spreadScrollResetZoom" type="button" data-i18n="volumeCompareResetZoom">
+                Reset zoom
+              </button>
+            </div>
+
+            <div class="volume-compare-diff-toggles" id="spreadScrollDiffToggles"></div>
+            <div class="spread-scroll-chart-wrap" id="spreadScrollChartWrap">
+              <canvas id="spreadScrollChart"></canvas>
+              <div class="volume-compare-chart-tooltip" id="spreadScrollChartTooltip" hidden></div>
+            </div>
+            <div class="volume-compare-chart-empty" id="spreadScrollChartEmpty" data-i18n="noFileLoaded">
+              No file loaded.
+            </div>
+          </section>
+
           <pre id="spreadScrollSpeedOutput" data-i18n="noFileLoaded">No file loaded.</pre>
         </div>
       </section>
@@ -586,6 +607,7 @@
   <script src="app/formatters.js"></script>
   <script src="app/kiaiCompareChart.js"></script>
   <script src="app/volumeCompareChart.js"></script>
+  <script src="app/spreadScrollChart.js"></script>
   <script src="app/fileLoader.js"></script>
   <script src="app/ui.js"></script>
   <script src="app/renderers.js"></script>

@@ -57,6 +57,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const spreadDensityMinDiff = document.getElementById("spreadDensityMinDiff");
   const spreadFinishersOutput = document.getElementById("spreadFinishersOutput");
   const spreadScrollSpeedOutput = document.getElementById("spreadScrollSpeedOutput");
+  const spreadScrollChartSection = document.getElementById("spreadScrollChartSection");
+  const spreadScrollChartWrap = document.getElementById("spreadScrollChartWrap");
+  const spreadScrollChart = document.getElementById("spreadScrollChart");
+  const spreadScrollChartTooltip = document.getElementById("spreadScrollChartTooltip");
+  const spreadScrollChartEmpty = document.getElementById("spreadScrollChartEmpty");
+  const spreadScrollDiffToggles = document.getElementById("spreadScrollDiffToggles");
+  const spreadScrollResetZoom = document.getElementById("spreadScrollResetZoom");
   const contentPermissionOutput = document.getElementById("contentPermissionOutput");
   const timelineOutput = document.getElementById("timelineOutput");
   const timelineRunButton = document.getElementById("timelineRunButton");
@@ -145,6 +152,13 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadDensityMinDiff,
     spreadFinishersOutput,
     spreadScrollSpeedOutput,
+    spreadScrollChartSection,
+    spreadScrollChartWrap,
+    spreadScrollChart,
+    spreadScrollChartTooltip,
+    spreadScrollChartEmpty,
+    spreadScrollDiffToggles,
+    spreadScrollResetZoom,
     contentPermissionOutput,
     timelineOutput,
     timelineRunButton,
