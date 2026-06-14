@@ -19,7 +19,10 @@ function runEarlyNoteCheck(text, fileName) {
     };
   }
 
-  const red = findEarlyNoteCurrentTimingPoint(timingPoints, firstCircleTime);
+  const currentRed = findEarlyNoteCurrentTimingPoint(timingPoints, firstCircleTime);
+  const isBeforeFirstRedLine = currentRed === null;
+  const red = currentRed ?? timingPoints[0];
+
   if (!red || !Number.isFinite(red.beatLength) || red.beatLength <= 0) {
     return {
       fileName,
@@ -34,7 +37,9 @@ function runEarlyNoteCheck(text, fileName) {
   }
 
   const bpm = 60000 / red.beatLength;
-  const sv = getEarlyNoteCurrentSv(svLines, firstCircleTime);
+  const sv = isBeforeFirstRedLine
+    ? 1
+    : getEarlyNoteCurrentSv(svLines, firstCircleTime);
   const visibleTime = EARLY_NOTE_VISIBLE_TIME_BASE / (bpm * sv);
 
   const positionPercent = (firstCircleTime / visibleTime) * 100;

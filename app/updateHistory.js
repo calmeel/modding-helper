@@ -173,7 +173,15 @@ const updateHistoryEntries = [
         "ソースチェック・タグチェックの項目追加"
       ]
     }
-  }
+  },
+  {
+    date: "2026/06/15",
+    type: "update",
+    items: {
+      en: ["Supports detecting first-note-lag when the first note is before the first red line."],
+      ja: ["最初のノーツが最初の赤線より前にある際のプチフリ検出に対応"]
+    }
+  },
 ];
 
 const updateHistoryTypeLabels = {
