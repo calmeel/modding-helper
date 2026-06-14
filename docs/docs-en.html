@@ -901,7 +901,7 @@ will display only cases where the volume difference is at least 15%.
 
 <div class="section section-detect">
 <span class="label label-detect">■ Detection Content</span><br>
-This check compares SV volumes between difficulties and detects sections with mismatched volume settings.<br>
+This check compares red-line and green-line volumes between difficulties and detects sections with mismatched volume settings.<br>
 (This detection cannot be performed by AiMod or Mapset Verifier.)<br><br>
 
 Enabling
@@ -910,7 +910,27 @@ will display only sections where the volume difference is at least 5%.<br><br>
 
 Enabling
 <code>Show only sections lasting at least 50 ms</code>
-can hide extremely short sections shorter than 50 ms.
+can hide extremely short sections shorter than 50 ms.<br><br>
+
+A step-line graph shows the volume changes for each difficulty.<br>
+
+The background options above the graph can display volume differences in red,
+kiai time in yellow, and breaks in blue.<br>
+Only one background option can be enabled at a time. Selecting another option automatically
+clears the previous selection, and the selected background uses the full graph height.<br><br>
+
+Kiai and break backgrounds are displayed when at least one visible difficulty is in that state.<br><br>
+
+The checkboxes above the graph can show or hide individual difficulties.
+Hidden difficulties are also excluded when calculating the volume-difference, kiai, and break backgrounds.<br><br>
+
+Line colors use virtual SR values based on the automatically sorted difficulty order.
+Kantan is treated as SR 1, Futsuu as SR 2, Muzukashii as SR 3, Oni as SR 4,
+and Inner Oni as SR 5. Each higher difficulty increases the virtual SR by 1.
+These values do not represent actual calculated Star Ratings.<br><br>
+
+Drag across the graph to zoom into a time range, and use <code>Reset zoom</code> to return to the full view.
+Clicking the graph opens that timestamp in osu!editor.
 </div>
 </section>
 

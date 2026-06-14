@@ -243,6 +243,42 @@
           </label>
         </div>
 
+        <section id="volumeCompareChartSection" class="volume-compare-chart-section">
+          <div class="volume-compare-chart-header">
+            <div>
+              <h3 data-i18n="volumeCompareGraphTitle">Volume graph</h3>
+              <p data-i18n="volumeCompareGraphGuide">Drag to zoom. Click a point on the graph to open that timestamp in osu!.</p>
+            </div>
+            <button id="volumeCompareResetZoom" class="doc-btn" type="button" data-i18n="volumeCompareResetZoom">Reset zoom</button>
+          </div>
+
+          <div class="volume-compare-background-toggles">
+            <label>
+              <input type="checkbox" id="volumeCompareShowDifferences" checked>
+              <span class="volume-compare-background-swatch volume-compare-background-difference"></span>
+              <span data-i18n="volumeCompareShowDifferences">Show volume differences</span>
+            </label>
+            <label>
+              <input type="checkbox" id="volumeCompareShowKiai">
+              <span class="volume-compare-background-swatch volume-compare-background-kiai"></span>
+              <span data-i18n="volumeCompareShowKiai">Show kiai time</span>
+            </label>
+            <label>
+              <input type="checkbox" id="volumeCompareShowBreaks">
+              <span class="volume-compare-background-swatch volume-compare-background-break"></span>
+              <span data-i18n="volumeCompareShowBreaks">Show breaks</span>
+            </label>
+          </div>
+
+          <div id="volumeCompareDiffToggles" class="volume-compare-diff-toggles"></div>
+
+          <div id="volumeCompareChartEmpty" class="volume-compare-chart-empty" data-i18n="noFileLoaded">No file loaded.</div>
+          <div id="volumeCompareChartWrap" class="volume-compare-chart-wrap" hidden>
+            <canvas id="volumeCompareChart" aria-label="Volume comparison graph"></canvas>
+            <div id="volumeCompareChartTooltip" class="volume-compare-chart-tooltip" hidden></div>
+          </div>
+        </section>
+
         <pre id="volumeCompareOutput" data-i18n="noFileLoaded">No file loaded.</pre>
       </section>
 
@@ -532,6 +568,7 @@
   <script src="i18n.js"></script>
   <script src="app/updateHistory.js"></script>
   <script src="app/formatters.js"></script>
+  <script src="app/volumeCompareChart.js"></script>
   <script src="app/fileLoader.js"></script>
   <script src="app/ui.js"></script>
   <script src="app/renderers.js"></script>

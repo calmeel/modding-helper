@@ -109,6 +109,151 @@ body {
   flex-wrap: wrap;
 }
 
+.volume-compare-chart-section {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid #3d3d48;
+  border-radius: 8px;
+  background: #202029;
+}
+
+.volume-compare-chart-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.volume-compare-chart-header h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+}
+
+.volume-compare-chart-header p {
+  max-width: 640px;
+  margin: 0;
+  color: #aaa;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.volume-compare-diff-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  min-height: 24px;
+  margin-bottom: 10px;
+}
+
+.volume-compare-background-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 12px;
+}
+
+.volume-compare-background-toggles label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.volume-compare-background-toggles input {
+  margin: 0;
+}
+
+.volume-compare-background-swatch {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 2px;
+}
+
+.volume-compare-background-difference {
+  background: rgba(255, 107, 107, 0.7);
+}
+
+.volume-compare-background-kiai {
+  background: rgba(255, 216, 107, 0.75);
+}
+
+.volume-compare-background-break {
+  background: rgba(86, 170, 255, 0.75);
+}
+
+.volume-compare-diff-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.volume-compare-diff-toggle input {
+  margin: 0;
+}
+
+.volume-compare-diff-swatch {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 2px;
+}
+
+.volume-compare-chart-wrap {
+  position: relative;
+  width: 100%;
+  min-height: 340px;
+  overflow: hidden;
+  border-top: 1px solid #393944;
+}
+
+.volume-compare-chart-wrap canvas {
+  display: block;
+  width: 100%;
+  height: 340px;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.volume-compare-chart-tooltip {
+  position: absolute;
+  z-index: 2;
+  max-width: 320px;
+  padding: 8px 10px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background: rgba(15, 15, 20, 0.96);
+  color: #f2f2f2;
+  font: 12px/1.5 "JetBrains Mono", Consolas, monospace;
+  white-space: pre-wrap;
+  pointer-events: none;
+}
+
+.volume-compare-chart-empty {
+  padding: 24px 12px;
+  border-top: 1px solid #393944;
+  color: #aaa;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .volume-compare-chart-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .volume-compare-chart-header .doc-btn {
+    align-self: flex-end;
+  }
+}
+
 .placeholder {
   margin-top: 24px;
   padding: 16px;
