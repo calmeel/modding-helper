@@ -455,9 +455,15 @@
                   <span data-i18n="spreadScrollGraphControls">Drag to zoom. Click the graph to open that timestamp in osu!.</span>
                 </p>
               </div>
-              <button class="doc-btn" id="spreadScrollResetZoom" type="button" data-i18n="volumeCompareResetZoom">
-                Reset zoom
-              </button>
+              <div class="spread-scroll-header-actions">
+                <button class="doc-btn" id="spreadScrollResetZoom" type="button" data-i18n="volumeCompareResetZoom">
+                  Reset zoom
+                </button>
+                <label>
+                  <input type="checkbox" id="spreadScrollDetailedTooltip">
+                  <span data-i18n="spreadScrollDetailedTooltip">Show detailed hover information</span>
+                </label>
+              </div>
             </div>
 
             <div class="spread-scroll-warning-toggles">
@@ -475,7 +481,7 @@
 
             <div class="spread-scroll-chart-wrap" id="spreadScrollChartWrap">
               <canvas id="spreadScrollChart"></canvas>
-              <div class="volume-compare-chart-tooltip" id="spreadScrollChartTooltip" hidden></div>
+              <div class="volume-compare-chart-tooltip spread-scroll-delta-tooltip" id="spreadScrollChartTooltip" hidden></div>
             </div>
 
             <div class="spread-scroll-delta-header" id="spreadScrollDeltaHeader">
@@ -498,7 +504,7 @@
             </div>
             <div class="spread-scroll-chart-wrap spread-scroll-delta-chart-wrap" id="spreadScrollDeltaChartWrap">
               <canvas id="spreadScrollDeltaChart"></canvas>
-              <div class="volume-compare-chart-tooltip" id="spreadScrollDeltaChartTooltip" hidden></div>
+              <div class="volume-compare-chart-tooltip spread-scroll-delta-tooltip" id="spreadScrollDeltaChartTooltip" hidden></div>
             </div>
 
             <div class="volume-compare-diff-toggles volume-compare-diff-toggles-bottom" id="spreadScrollDiffToggles"></div>

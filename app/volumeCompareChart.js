@@ -142,6 +142,7 @@ function renderVolumeCompareDiffToggles(sortedSeries) {
 
   const assignments = getVolumeCompareVirtualSrAssignments(sortedSeries);
   const fragment = document.createDocumentFragment();
+  fragment.appendChild(createVolumeCompareDiffActions(sortedSeries));
 
   for (const assignment of assignments) {
     const label = document.createElement("label");
@@ -173,6 +174,37 @@ function renderVolumeCompareDiffToggles(sortedSeries) {
   }
 
   container.replaceChildren(fragment);
+}
+
+function createVolumeCompareDiffActions(sortedSeries) {
+  const state = volumeCompareChartState;
+  const actions = document.createElement("div");
+  actions.className = "graph-diff-toggle-actions";
+
+  const selectAll = document.createElement("button");
+  selectAll.type = "button";
+  selectAll.textContent = state.t("graphSelectAllDiffs");
+  selectAll.addEventListener("click", () => {
+    state.hiddenFiles.clear();
+    renderVolumeCompareDiffToggles(sortedSeries);
+    hideVolumeCompareTooltip();
+    drawVolumeCompareChart();
+  });
+
+  const clearAll = document.createElement("button");
+  clearAll.type = "button";
+  clearAll.textContent = state.t("graphClearAllDiffs");
+  clearAll.addEventListener("click", () => {
+    state.hiddenFiles = new Set(
+      sortedSeries.map(series => series.fileName)
+    );
+    renderVolumeCompareDiffToggles(sortedSeries);
+    hideVolumeCompareTooltip();
+    drawVolumeCompareChart();
+  });
+
+  actions.append(selectAll, clearAll);
+  return actions;
 }
 
 function getVolumeCompareVirtualSrAssignments(sortedSeries) {
