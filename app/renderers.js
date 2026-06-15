@@ -240,6 +240,7 @@ function renderSpreadResultFromResults(spreadState, dom, t) {
     if (dom.spreadDensityOutput) dom.spreadDensityOutput.innerHTML = t("noFileLoaded");
     if (dom.spreadFinishersOutput) dom.spreadFinishersOutput.innerHTML = t("noFileLoaded");
     renderSpreadScrollChart(null, dom, t);
+    renderSpreadDensityChart(null, dom, t);
     return;
   }
 
@@ -271,6 +272,17 @@ function renderSpreadResultFromResults(spreadState, dom, t) {
   }
 
   if (dom.spreadDensityOutput) {
+    renderSpreadDensityChart(
+      results,
+      dom,
+      t,
+      spreadState.diffOrder,
+      spreadState.manualCategories,
+      dom.spreadDensityMinDiff
+        ? parseInt(dom.spreadDensityMinDiff.value, 10)
+        : 1
+    );
+
     dom.spreadDensityOutput.innerHTML = formatSpreadDensityResult(
       results,
       t,
