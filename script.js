@@ -69,6 +69,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const spreadScrollDiffToggles = document.getElementById("spreadScrollDiffToggles");
   const spreadScrollResetZoom = document.getElementById("spreadScrollResetZoom");
   const spreadScrollDetailedTooltip = document.getElementById("spreadScrollDetailedTooltip");
+  const spreadScrollVisualBpm = document.getElementById("spreadScrollVisualBpm");
+  const spreadScrollGraphTitle = document.getElementById("spreadScrollGraphTitle");
+  const spreadScrollDeltaGraphTitle = document.getElementById("spreadScrollDeltaGraphTitle");
   const spreadScrollShowLimits = document.getElementById("spreadScrollShowLimits");
   const spreadScrollShowRapidChanges = document.getElementById("spreadScrollShowRapidChanges");
   const spreadScrollShowProgression = document.getElementById("spreadScrollShowProgression");
@@ -173,6 +176,9 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadScrollDiffToggles,
     spreadScrollResetZoom,
     spreadScrollDetailedTooltip,
+    spreadScrollVisualBpm,
+    spreadScrollGraphTitle,
+    spreadScrollDeltaGraphTitle,
     spreadScrollShowLimits,
     spreadScrollShowRapidChanges,
     spreadScrollShowProgression,

@@ -156,8 +156,9 @@ body {
 .spread-scroll-header-actions {
   display: flex;
   flex: 0 0 auto;
-  align-items: flex-end;
-  flex-direction: column;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
 }
 

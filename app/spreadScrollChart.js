@@ -17,6 +17,9 @@ const spreadScrollChartState = {
   resizeObserver: null
 };
 
+const SPREAD_SCROLL_VISUAL_BPM_BASE_PX_PER_BEAT = 175;
+const SPREAD_SCROLL_VISUAL_BPM_SLIDER_MULTIPLIER = 1.4;
+
 function renderSpreadScrollChart(
   results,
   dom,
@@ -32,6 +35,7 @@ function renderSpreadScrollChart(
   state.manualCategories = manualCategories;
 
   initializeSpreadScrollChart();
+  updateSpreadScrollDisplayTitles();
 
   const orderedResults = getSpreadScrollOrderedResults(results, diffOrder);
   const chartResults = orderedResults.filter(
@@ -100,6 +104,7 @@ function initializeSpreadScrollChart() {
     state.dom.spreadScrollShowConsistency
   ];
   const detailedTooltipToggle = state.dom.spreadScrollDetailedTooltip;
+  const visualBpmToggle = state.dom.spreadScrollVisualBpm;
 
   initializeSpreadScrollCanvas(canvas);
   initializeSpreadScrollCanvas(deltaCanvas);
@@ -128,6 +133,14 @@ function initializeSpreadScrollChart() {
   if (detailedTooltipToggle) {
     detailedTooltipToggle.addEventListener("change", () => {
       hideSpreadScrollTooltips();
+    });
+  }
+
+  if (visualBpmToggle) {
+    visualBpmToggle.addEventListener("change", () => {
+      updateSpreadScrollDisplayTitles();
+      hideSpreadScrollTooltips();
+      drawSpreadScrollCharts();
     });
   }
 
@@ -161,12 +174,55 @@ function initializeSpreadScrollChart() {
   state.initialized = true;
 }
 
+function updateSpreadScrollDisplayTitles() {
+  const state = spreadScrollChartState;
+  const visualBpm = isSpreadScrollVisualBpmEnabled();
+
+  if (state.dom?.spreadScrollGraphTitle) {
+    state.dom.spreadScrollGraphTitle.textContent = state.t(
+      visualBpm
+        ? "spreadScrollGraphTitleVisualBpm"
+        : "spreadScrollGraphTitle"
+    );
+  }
+
+  if (state.dom?.spreadScrollDeltaGraphTitle) {
+    state.dom.spreadScrollDeltaGraphTitle.textContent = state.t(
+      visualBpm
+        ? "spreadScrollDeltaGraphTitleVisualBpm"
+        : "spreadScrollDeltaGraphTitle"
+    );
+  }
+}
+
+function isSpreadScrollVisualBpmEnabled() {
+  return spreadScrollChartState.dom?.spreadScrollVisualBpm?.checked ?? true;
+}
+
+function convertSpreadScrollDisplayValue(value) {
+  if (!Number.isFinite(value) || !isSpreadScrollVisualBpmEnabled()) {
+    return value;
+  }
+
+  return value * 60 / (
+    SPREAD_SCROLL_VISUAL_BPM_BASE_PX_PER_BEAT *
+    SPREAD_SCROLL_VISUAL_BPM_SLIDER_MULTIPLIER
+  );
+}
+
+function formatSpreadScrollDisplayValue(value) {
+  const converted = convertSpreadScrollDisplayValue(value);
+  return Number.isFinite(converted) ? String(Math.round(converted)) : "N/A";
+}
+
+function getSpreadScrollDisplayUnit() {
+  return isSpreadScrollVisualBpmEnabled() ? "BPM" : "px/s";
+}
+
 function applySpreadScrollProblemDiffFilter(toggle) {
   const state = spreadScrollChartState;
   const results = getSpreadScrollChartResults();
   const affectedFiles = getSpreadScrollAffectedFiles(toggle, results);
-
-  if (!affectedFiles.size) return;
 
   if (state.autoFilterBaselineHiddenFiles === null) {
     state.autoFilterBaselineHiddenFiles = new Set(state.hiddenFiles);
@@ -762,7 +818,7 @@ function drawSpreadScrollDeltaGrid(
     ctx.fillStyle = "#aeb8c8";
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
-    const rounded = Math.round(delta);
+    const rounded = Math.round(convertSpreadScrollDisplayValue(delta));
     ctx.fillText(
       rounded > 0 ? `+${rounded}` : String(rounded),
       plot.left - 8,
@@ -772,8 +828,12 @@ function drawSpreadScrollDeltaGrid(
 
   ctx.fillStyle = "#aeb8c8";
   ctx.textAlign = "left";
-  ctx.textBaseline = "top";
-  ctx.fillText("Δ px/s", 8, plot.top);
+  ctx.textBaseline = "bottom";
+  ctx.fillText(
+    `Δ ${getSpreadScrollDisplayUnit()}`,
+    plot.left,
+    plot.top - 4
+  );
 
   const xTickCount = Math.max(3, Math.min(8, Math.floor(plot.width / 110)));
   for (let i = 0; i <= xTickCount; i++) {
@@ -940,13 +1000,21 @@ function drawSpreadScrollGrid(
     ctx.fillStyle = "#aeb8c8";
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
-    ctx.fillText(`${Math.round(speed)}`, plot.left - 8, y);
+    ctx.fillText(
+      formatSpreadScrollDisplayValue(speed),
+      plot.left - 8,
+      y
+    );
   }
 
   ctx.fillStyle = "#aeb8c8";
   ctx.textAlign = "left";
-  ctx.textBaseline = "top";
-  ctx.fillText("px/s", 8, plot.top);
+  ctx.textBaseline = "bottom";
+  ctx.fillText(
+    getSpreadScrollDisplayUnit(),
+    plot.left,
+    plot.top - 4
+  );
 
   const xTickCount = Math.max(3, Math.min(8, Math.floor(plot.width / 110)));
   for (let i = 0; i <= xTickCount; i++) {
@@ -1184,7 +1252,9 @@ function showSpreadScrollTooltip(point, time) {
       const diffName = getDifficultyNameText(result.fileName);
       lines.push(
         `${diffName}: ` +
-        `${sample ? `${Math.round(sample.pxPerSecond)} px/s` : "N/A"}`
+        `${sample
+          ? `${formatSpreadScrollDisplayValue(sample.pxPerSecond)} ${getSpreadScrollDisplayUnit()}`
+          : "N/A"}`
       );
     }
 
@@ -1226,9 +1296,11 @@ function showSpreadScrollTooltip(point, time) {
     const values = document.createElement("div");
     values.className = "spread-scroll-delta-tooltip-values";
     values.textContent = sample
-      ? simple
-        ? `${Math.round(sample.pxPerSecond)} px/s`
-        : `${Math.round(sample.pxPerSecond)} px/s | ` +
+      ? `${isSpreadScrollVisualBpmEnabled()
+          ? `${state.t("spreadScrollVisualBpmValue")} `
+          : ""}` +
+        `${formatSpreadScrollDisplayValue(sample.pxPerSecond)} ` +
+        `${getSpreadScrollDisplayUnit()} | ` +
         `BPM ${formatSpreadScrollTooltipNumber(sample.bpm, 3)} | ` +
         `SV ${formatSpreadScrollTooltipNumber(sample.sv, 3)} | ` +
         `SM ${formatSpreadScrollTooltipNumber(sample.sliderMultiplier, 2)}`
@@ -1251,7 +1323,10 @@ function showSpreadScrollTooltip(point, time) {
     if (limits.length) {
       detailLines.push(state.t("spreadScrollGraphLimit"));
       for (const limit of limits) {
-        detailLines.push(`${limit.name}: ${Math.round(limit.value)} px/s`);
+        detailLines.push(
+          `${limit.name}: ${formatSpreadScrollDisplayValue(limit.value)} ` +
+          getSpreadScrollDisplayUnit()
+        );
       }
     }
   }
@@ -1326,9 +1401,11 @@ function showSpreadScrollDeltaTooltip(point, time) {
 
     for (const { assignment, change } of matches) {
       const diffName = getDifficultyNameText(assignment.result.fileName);
-      const delta = Math.round(change.delta);
+      const delta = Math.round(convertSpreadScrollDisplayValue(change.delta));
       const deltaText = delta > 0 ? `+${delta}` : String(delta);
-      lines.push(`${diffName}: Δ ${deltaText} px/s`);
+      lines.push(
+        `${diffName}: Δ ${deltaText} ${getSpreadScrollDisplayUnit()}`
+      );
     }
 
     const issueLines = getSpreadScrollDeltaIssueTooltipLines(
@@ -1360,7 +1437,7 @@ function showSpreadScrollDeltaTooltip(point, time) {
 
   for (const { assignment, change } of matches) {
     const diffName = getDifficultyNameText(assignment.result.fileName);
-    const delta = Math.round(change.delta);
+    const delta = Math.round(convertSpreadScrollDisplayValue(change.delta));
     const deltaText = delta > 0 ? `+${delta}` : String(delta);
 
     const item = document.createElement("div");
@@ -1373,21 +1450,19 @@ function showSpreadScrollDeltaTooltip(point, time) {
 
     const values = document.createElement("div");
     values.className = "spread-scroll-delta-tooltip-values";
-    const valueParts = simple
-      ? [`Δ ${deltaText} px/s`]
-      : [
-        `${Math.round(change.beforeSpeed)} → ${Math.round(change.afterSpeed)} px/s`,
-        `Δ ${deltaText}`
-      ];
-    if (!simple) {
-      if (Number.isFinite(change.ratio)) {
-        valueParts.push(
-          `${formatSpreadScrollTooltipNumber(change.ratio, 2)}x`
-        );
-      }
-      if (Number.isFinite(change.gapMs)) {
-        valueParts.push(`${Math.round(change.gapMs)} ms`);
-      }
+    const valueParts = [
+      `${formatSpreadScrollDisplayValue(change.beforeSpeed)} → ` +
+      `${formatSpreadScrollDisplayValue(change.afterSpeed)} ` +
+      getSpreadScrollDisplayUnit(),
+      `Δ ${deltaText} ${getSpreadScrollDisplayUnit()}`
+    ];
+    if (Number.isFinite(change.ratio)) {
+      valueParts.push(
+        `${formatSpreadScrollTooltipNumber(change.ratio, 2)}x`
+      );
+    }
+    if (Number.isFinite(change.gapMs)) {
+      valueParts.push(`${Math.round(change.gapMs)} ms`);
     }
     values.textContent = valueParts.join(" | ");
 
@@ -1451,7 +1526,10 @@ function appendSpreadScrollSimpleDetails(lines, assignments, time) {
     if (limits.length) {
       lines.push("", state.t("spreadScrollGraphLimit"));
       for (const limit of limits) {
-        lines.push(`${limit.name}: ${Math.round(limit.value)} px/s`);
+        lines.push(
+          `${limit.name}: ${formatSpreadScrollDisplayValue(limit.value)} ` +
+          getSpreadScrollDisplayUnit()
+        );
       }
     }
   }
@@ -1506,12 +1584,17 @@ function getSpreadScrollDeltaIssueTooltipLines(
       .map(result => {
         const event = byFileName.get(result.fileName);
         if (!event) return null;
-        return `${getDifficultyNameText(result.fileName)} ${Math.round(event.afterSpeed)}`;
+        return (
+          `${getDifficultyNameText(result.fileName)} ` +
+          formatSpreadScrollDisplayValue(event.afterSpeed)
+        );
       })
       .filter(Boolean);
 
     if (progression.length) {
-      lines.push(`${progression.join(" → ")} px/s`);
+      lines.push(
+        `${progression.join(" → ")} ${getSpreadScrollDisplayUnit()}`
+      );
     }
 
     for (const issue of group.issues) {
@@ -1529,14 +1612,19 @@ function getSpreadScrollDeltaIssueTooltipLines(
   for (const issue of group.issues) {
     const lowerName = getDifficultyNameText(issue.lower.fileName);
     const higherName = getDifficultyNameText(issue.higher.fileName);
-    const lowerDelta = formatSpreadScrollSignedDelta(issue.lower.event.delta);
-    const higherDelta = formatSpreadScrollSignedDelta(issue.higher.event.delta);
+    const lowerDelta = formatSpreadScrollSignedDelta(
+      convertSpreadScrollDisplayValue(issue.lower.event.delta)
+    );
+    const higherDelta = formatSpreadScrollSignedDelta(
+      convertSpreadScrollDisplayValue(issue.higher.event.delta)
+    );
     const reason = issue.type === "directionMismatch"
       ? state.t("spreadScrollOppositeDirection")
       : state.t("spreadScrollStrongerLowerDiff");
 
     lines.push(
-      `${lowerName} ${lowerDelta} / ${higherName} ${higherDelta} px/s`
+      `${lowerName} ${lowerDelta} / ${higherName} ${higherDelta} ` +
+      getSpreadScrollDisplayUnit()
     );
     lines.push(reason);
   }
