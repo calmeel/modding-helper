@@ -411,12 +411,17 @@ function updateSpreadSubtabIssueStates(spreadState) {
   for (const result of sortedResults) {
     const category = getSpreadEffectiveCategory(result, manualCategories);
     const rapidChanges = result.scrollSpeed?.rapidChanges ?? [];
+    const hasBrokenSv =
+      isSpreadLinearSvFeatureEnabled() &&
+      (result.scrollSpeed?.linearGradients ?? []).some(
+        gradient => gradient.status === "warn"
+      );
 
     const hasWarn = rapidChanges.some(change =>
       getSpreadRapidScrollLevel(change, category) === "warn"
     );
 
-    if (hasWarn) {
+    if (hasWarn || hasBrokenSv) {
       scrollLevel = "warn";
       break;
     }
@@ -1260,6 +1265,14 @@ function formatSpreadScrollSpeedResult(results, t, diffOrder = null, manualCateg
   const lines = [];
 
   lines.push(formatSpreadScrollSpeedSummaryTable(sortedResults, t, manualCategories));
+
+  if (isSpreadLinearSvFeatureEnabled()) {
+    lines.push("");
+    lines.push("=".repeat(60));
+    lines.push("");
+    lines.push(formatSpreadLinearSvGradients(sortedResults, t));
+  }
+
   lines.push("");
   lines.push("=".repeat(60));
   lines.push("");
@@ -1274,6 +1287,125 @@ function formatSpreadScrollSpeedResult(results, t, diffOrder = null, manualCateg
   lines.push(formatSpreadScrollChangeConsistency(sortedResults, t, manualCategories));
 
   return lines.join("\n").trimEnd();
+}
+
+function formatSpreadLinearSvGradients(results, t) {
+  const lines = [t("spreadLinearSvGradients")];
+  let hasAny = false;
+
+  for (const result of results) {
+    const gradients = result.scrollSpeed?.linearGradients ?? [];
+    if (!gradients.length) continue;
+
+    hasAny = true;
+    lines.push("");
+    lines.push(getDifficultyName(result.fileName));
+    lines.push(formatSpreadLinearSvGradientTable(gradients, t));
+
+    const warnings = gradients.filter(gradient => gradient.status === "warn");
+    if (!warnings.length) continue;
+
+    lines.push("");
+    lines.push(t("spreadBrokenSvReview"));
+
+    for (const gradient of warnings) {
+      for (const outlier of gradient.outliers) {
+        const errorText =
+          `${outlier.error >= 0 ? "+" : ""}${formatSpreadGradientSv(outlier.error)}`;
+
+        lines.push(
+          `<span class="result-warn">` +
+          `${formatTimestampLink(outlier.time)} | ` +
+          `${t("spreadBrokenSvCurrent")}: x${formatSpreadGradientSv(outlier.actualSv)} | ` +
+          `${t("spreadBrokenSvExpected")}: x${formatSpreadGradientSv(outlier.expectedSv)} | ` +
+          `${t("spreadBrokenSvError")}: ${errorText}` +
+          `</span>`
+        );
+      }
+    }
+  }
+
+  if (!hasAny) {
+    lines.push("");
+    lines.push(t("spreadNoLinearSvGradients"));
+  }
+
+  return lines.join("\n");
+}
+
+function formatSpreadLinearSvGradientTable(gradients, t) {
+  const rows = gradients.map(gradient => ({
+    gradient,
+    time:
+      `${formatTimestampLink(gradient.startTime)} - ` +
+      `${formatTimestampLink(gradient.endTime)}`,
+    timeText:
+      `${msToTimestamp(gradient.startTime)} - ` +
+      `${msToTimestamp(gradient.endTime)}`,
+    sv:
+      `x${formatSpreadGradientSv(gradient.startSv)} -> ` +
+      `x${formatSpreadGradientSv(gradient.endSv)}`,
+    type: t("spreadLinearSvType"),
+    status:
+      gradient.status === "warn"
+        ? "Warning"
+        : "OK"
+  }));
+
+  const headers = {
+    time: t("spreadLinearSvTime"),
+    sv: "SV",
+    type: t("spreadLinearSvKind"),
+    status: "Status"
+  };
+  const widths = {
+    time: Math.max(
+      visibleWidth(headers.time),
+      ...rows.map(row => visibleWidth(row.timeText))
+    ),
+    sv: Math.max(
+      visibleWidth(headers.sv),
+      ...rows.map(row => visibleWidth(row.sv))
+    ),
+    type: Math.max(
+      visibleWidth(headers.type),
+      ...rows.map(row => visibleWidth(row.type))
+    ),
+    status: Math.max(
+      visibleWidth(headers.status),
+      ...rows.map(row => visibleWidth(row.status))
+    )
+  };
+  const lines = [
+    `${padEndVisual(headers.time, widths.time)} | ` +
+    `${padEndVisual(headers.sv, widths.sv)} | ` +
+    `${padEndVisual(headers.type, widths.type)} | ` +
+    `${padEndVisual(headers.status, widths.status)}`,
+    `${"-".repeat(widths.time)}-+-` +
+    `${"-".repeat(widths.sv)}-+-` +
+    `${"-".repeat(widths.type)}-+-` +
+    `${"-".repeat(widths.status)}`
+  ];
+
+  for (const row of rows) {
+    const status = row.gradient.status === "warn"
+      ? `<span class="result-warn">${padEndVisual(row.status, widths.status)}</span>`
+      : padEndVisual(row.status, widths.status);
+
+    lines.push(
+      `${row.time}${" ".repeat(widths.time - visibleWidth(row.timeText))} | ` +
+      `${padEndVisual(row.sv, widths.sv)} | ` +
+      `${padEndVisual(row.type, widths.type)} | ` +
+      status
+    );
+  }
+
+  return lines.join("\n");
+}
+
+function formatSpreadGradientSv(value) {
+  if (!Number.isFinite(value)) return "N/A";
+  return value.toFixed(3);
 }
 
 function formatSpreadScrollSpeedSummaryTable(results, t, manualCategories = {}) {
