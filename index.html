@@ -427,16 +427,45 @@
         </div>
 
         <div class="spread-subtab-panel" id="spread-subtab-density">
-          <div class="options">
-            <label>
-              <span data-i18n="spreadDensityMinDiff">Show inversions from:</span>
-              <select id="spreadDensityMinDiff">
-                <option value="1" selected>+1</option>
-                <option value="2">+2</option>
-                <option value="3">+3</option>
-              </select>
-            </label>
-          </div>
+          <section class="spread-density-chart-section" id="spreadDensityChartSection">
+            <div class="volume-compare-chart-header">
+              <div>
+                <h3 data-i18n="spreadDensityGraphTitle">Note density graph</h3>
+                <p data-i18n="spreadDensityGraphHelp">
+                  This graph shows the number of notes in each measure.
+                </p>
+              </div>
+              <button class="doc-btn" id="spreadDensityResetZoom" type="button" data-i18n="volumeCompareResetZoom">
+                Reset zoom
+              </button>
+            </div>
+
+            <div class="spread-density-chart-options">
+              <label>
+                <span data-i18n="spreadDensityMinDiff">Show inversions from:</span>
+                <select id="spreadDensityMinDiff">
+                  <option value="1" selected>+1</option>
+                  <option value="2">+2</option>
+                  <option value="3">+3</option>
+                </select>
+              </label>
+              <label>
+                <input type="checkbox" id="spreadDensityShowInversions">
+                <span class="spread-density-inversion-swatch"></span>
+                <span data-i18n="spreadDensityShowInversions">Show note density inversions</span>
+              </label>
+            </div>
+
+            <div class="spread-density-chart-wrap" id="spreadDensityChartWrap">
+              <canvas id="spreadDensityChart"></canvas>
+              <div class="volume-compare-chart-tooltip spread-density-chart-tooltip" id="spreadDensityChartTooltip" hidden></div>
+            </div>
+
+            <div class="volume-compare-diff-toggles volume-compare-diff-toggles-bottom" id="spreadDensityDiffToggles"></div>
+            <div class="volume-compare-chart-empty" id="spreadDensityChartEmpty" data-i18n="noFileLoaded">
+              No file loaded.
+            </div>
+          </section>
 
           <pre id="spreadDensityOutput" data-i18n="noFileLoaded">No file loaded.</pre>
         </div>
@@ -655,6 +684,7 @@
   <script src="app/formatters.js"></script>
   <script src="app/kiaiCompareChart.js"></script>
   <script src="app/volumeCompareChart.js"></script>
+  <script src="app/spreadDensityChart.js"></script>
   <script src="app/spreadScrollChart.js"></script>
   <script src="app/fileLoader.js"></script>
   <script src="app/ui.js"></script>

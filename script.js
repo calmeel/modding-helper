@@ -55,6 +55,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const spreadNoteCountOutput = document.getElementById("spreadNoteCountOutput");
   const spreadDensityOutput = document.getElementById("spreadDensityOutput");
   const spreadDensityMinDiff = document.getElementById("spreadDensityMinDiff");
+  const spreadDensityChartSection = document.getElementById("spreadDensityChartSection");
+  const spreadDensityChartWrap = document.getElementById("spreadDensityChartWrap");
+  const spreadDensityChart = document.getElementById("spreadDensityChart");
+  const spreadDensityChartTooltip = document.getElementById("spreadDensityChartTooltip");
+  const spreadDensityChartEmpty = document.getElementById("spreadDensityChartEmpty");
+  const spreadDensityDiffToggles = document.getElementById("spreadDensityDiffToggles");
+  const spreadDensityResetZoom = document.getElementById("spreadDensityResetZoom");
+  const spreadDensityShowInversions = document.getElementById("spreadDensityShowInversions");
   const spreadFinishersOutput = document.getElementById("spreadFinishersOutput");
   const spreadScrollSpeedOutput = document.getElementById("spreadScrollSpeedOutput");
   const spreadScrollChartSection = document.getElementById("spreadScrollChartSection");
@@ -162,6 +170,14 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadNoteCountOutput,
     spreadDensityOutput,
     spreadDensityMinDiff,
+    spreadDensityChartSection,
+    spreadDensityChartWrap,
+    spreadDensityChart,
+    spreadDensityChartTooltip,
+    spreadDensityChartEmpty,
+    spreadDensityDiffToggles,
+    spreadDensityResetZoom,
+    spreadDensityShowInversions,
     spreadFinishersOutput,
     spreadScrollSpeedOutput,
     spreadScrollChartSection,
