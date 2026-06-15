@@ -477,6 +477,16 @@
                 <span class="spread-scroll-warning-swatch spread-scroll-warning-rapid"></span>
                 <span data-i18n="spreadScrollShowRapidChanges">Show rapid scroll speed changes</span>
               </label>
+              <label>
+                <input type="checkbox" id="spreadScrollShowProgression">
+                <span class="spread-scroll-warning-swatch spread-scroll-progression-swatch"></span>
+                <span data-i18n="spreadScrollShowProgression">Show unnatural scroll speed progression</span>
+              </label>
+              <label>
+                <input type="checkbox" id="spreadScrollShowConsistency">
+                <span class="spread-scroll-warning-swatch spread-scroll-consistency-swatch"></span>
+                <span data-i18n="spreadScrollShowConsistency">Show scroll change consistency issues</span>
+              </label>
             </div>
 
             <div class="spread-scroll-chart-wrap" id="spreadScrollChartWrap">
@@ -489,18 +499,6 @@
               <p data-i18n="spreadScrollDeltaGraphHelp">
                 Points show the change in scroll speed at each note. Thin lines are visual guides.
               </p>
-            </div>
-            <div class="spread-scroll-delta-toggles" id="spreadScrollDeltaToggles">
-              <label>
-                <input type="checkbox" id="spreadScrollShowProgression">
-                <span class="spread-scroll-warning-swatch spread-scroll-progression-swatch"></span>
-                <span data-i18n="spreadScrollShowProgression">Show unnatural scroll speed progression</span>
-              </label>
-              <label>
-                <input type="checkbox" id="spreadScrollShowConsistency">
-                <span class="spread-scroll-warning-swatch spread-scroll-consistency-swatch"></span>
-                <span data-i18n="spreadScrollShowConsistency">Show scroll change consistency issues</span>
-              </label>
             </div>
             <div class="spread-scroll-chart-wrap spread-scroll-delta-chart-wrap" id="spreadScrollDeltaChartWrap">
               <canvas id="spreadScrollDeltaChart"></canvas>

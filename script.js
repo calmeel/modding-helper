@@ -62,7 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const spreadScrollChart = document.getElementById("spreadScrollChart");
   const spreadScrollChartTooltip = document.getElementById("spreadScrollChartTooltip");
   const spreadScrollDeltaHeader = document.getElementById("spreadScrollDeltaHeader");
-  const spreadScrollDeltaToggles = document.getElementById("spreadScrollDeltaToggles");
   const spreadScrollDeltaChartWrap = document.getElementById("spreadScrollDeltaChartWrap");
   const spreadScrollDeltaChart = document.getElementById("spreadScrollDeltaChart");
   const spreadScrollDeltaChartTooltip = document.getElementById("spreadScrollDeltaChartTooltip");
@@ -167,7 +166,6 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadScrollChart,
     spreadScrollChartTooltip,
     spreadScrollDeltaHeader,
-    spreadScrollDeltaToggles,
     spreadScrollDeltaChartWrap,
     spreadScrollDeltaChart,
     spreadScrollDeltaChartTooltip,

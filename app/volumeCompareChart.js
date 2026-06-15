@@ -208,20 +208,8 @@ function createVolumeCompareDiffActions(sortedSeries) {
 }
 
 function getVolumeCompareVirtualSrAssignments(sortedSeries) {
-  let nextSr = 1;
-
-  return sortedSeries.map(series => {
-    const sortKey = getTaikoDifficultySortKey(series.fileName);
-    let virtualSr;
-
-    if (sortKey >= 10 && sortKey <= 60 && sortKey % 10 === 0) {
-      virtualSr = sortKey / 10;
-    } else {
-      virtualSr = Math.max(6, nextSr);
-    }
-
-    nextSr = Math.max(nextSr, virtualSr + 1);
-
+  return sortedSeries.map((series, index) => {
+    const virtualSr = index + 1;
     return {
       series,
       virtualSr,
@@ -250,8 +238,44 @@ function getVolumeCompareSrColor(sr) {
   const rgb = lower.color.map((value, index) =>
     Math.round(value + (upper.color[index] - value) * ratio)
   );
+  const readableRgb = getVolumeCompareReadableSrRgb(rgb);
 
-  return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+  return `rgb(${readableRgb[0]}, ${readableRgb[1]}, ${readableRgb[2]})`;
+}
+
+function getVolumeCompareReadableSrRgb(rgb) {
+  if (rgb.every(value => value === 0)) {
+    return [255, 255, 255];
+  }
+
+  const luminance = getVolumeCompareRelativeLuminance(rgb);
+  const start = 0.24;
+  const end = 0.06;
+
+  if (luminance >= start) {
+    return rgb;
+  }
+
+  const amount = Math.max(
+    0,
+    Math.min(1, (start - luminance) / (start - end))
+  ) * 0.9;
+  const target = [216, 214, 255];
+
+  return rgb.map((value, index) =>
+    Math.round(value + (target[index] - value) * amount)
+  );
+}
+
+function getVolumeCompareRelativeLuminance(rgb) {
+  const linear = rgb.map(value => {
+    const channel = value / 255;
+    return channel <= 0.03928
+      ? channel / 12.92
+      : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+
+  return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
 }
 
 function drawVolumeCompareChart() {
