@@ -13,7 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const includeAdvancedOffsetSnaps = document.getElementById("includeAdvancedOffsetSnaps");
   const doubleSvOutput = document.getElementById("doubleSvOutput");
   const doubleSvGap = document.getElementById("doubleSvGap");
-  const includeExactSameSv = document.getElementById("includeExactSameSv");
   const kiaiOutput = document.getElementById("kiaiOutput");
   const kiaiCompareChartSection = document.getElementById("kiaiCompareChartSection");
   const kiaiCompareChartWrap = document.getElementById("kiaiCompareChartWrap");
@@ -128,7 +127,6 @@ document.addEventListener("DOMContentLoaded", () => {
     includeAdvancedOffsetSnaps,
     doubleSvOutput,
     doubleSvGap,
-    includeExactSameSv,
     kiaiOutput,
     kiaiCompareChartSection,
     kiaiCompareChartWrap,
@@ -607,7 +605,6 @@ document.addEventListener("DOMContentLoaded", () => {
     showWhistle,
     includeAdvancedOffsetSnaps,
     doubleSvGap,
-    includeExactSameSv,
     svVolumeThreshold,
     svVolumeLargeChangeOnly,
     volumeCompareThresholdOnly,
@@ -620,7 +617,6 @@ document.addEventListener("DOMContentLoaded", () => {
     includeAdvancedOffsetSnaps,
     renderShiftResult: renderShiftResultAndUpdateTabs,
     doubleSvGap,
-    includeExactSameSv,
     renderResult: renderResultAndUpdateTabs,
     renderDoubleSvResult: renderDoubleSvResultAndUpdateTabs,
     svVolumeThreshold,
