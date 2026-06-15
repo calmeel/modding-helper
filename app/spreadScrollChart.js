@@ -476,6 +476,8 @@ function drawSpreadScrollChart() {
   const viewEnd = Math.max(viewStart + 1, state.viewEnd || endTime);
   const maxSpeed = getSpreadScrollChartMaxSpeed(
     visibleResults,
+    viewStart,
+    viewEnd,
     state.dom?.spreadScrollShowLimits?.checked
       ? visibleAssignments
           .map(assignment => getSpreadTooFastScrollRule(assignment.category))
@@ -622,7 +624,11 @@ function drawSpreadScrollDeltaChart() {
 
   const viewStart = Math.max(0, state.viewStart);
   const viewEnd = Math.max(viewStart + 1, state.viewEnd || endTime);
-  const maxAbsDelta = getSpreadScrollDeltaMaximum(visibleAssignments);
+  const maxAbsDelta = getSpreadScrollDeltaMaximum(
+    visibleAssignments,
+    viewStart,
+    viewEnd
+  );
   const xForTime = time =>
     plot.left + ((time - viewStart) / (viewEnd - viewStart)) * plot.width;
   const yForDelta = delta =>
@@ -778,11 +784,15 @@ function drawSpreadScrollDeltaIssueBands(
   ctx.restore();
 }
 
-function getSpreadScrollDeltaMaximum(assignments) {
+function getSpreadScrollDeltaMaximum(assignments, viewStart, viewEnd) {
   const max = Math.max(
     0,
     ...assignments.flatMap(assignment =>
       (assignment.result.scrollSpeed?.rapidChanges ?? [])
+        .filter(change =>
+          change.toTime >= viewStart &&
+          change.toTime <= viewEnd
+        )
         .map(change => Math.abs(change.delta))
         .filter(Number.isFinite)
     )
@@ -1105,18 +1115,48 @@ function getSpreadScrollEndTime(results) {
   );
 }
 
-function getSpreadScrollChartMaxSpeed(results, extraValues = []) {
+function getSpreadScrollChartMaxSpeed(
+  results,
+  viewStart,
+  viewEnd,
+  extraValues = []
+) {
   const max = Math.max(
     0,
     ...(results ?? []).flatMap(result =>
-      (result.scrollSpeed?.samples ?? [])
-        .map(sample => sample.pxPerSecond)
-        .filter(Number.isFinite)
+      getSpreadScrollSamplesInView(
+        result.scrollSpeed?.samples,
+        viewStart,
+        viewEnd
+      ).map(sample => sample.pxPerSecond)
     ),
     ...extraValues.filter(Number.isFinite)
   );
 
   return getSpreadScrollNiceMaximum(max);
+}
+
+function getSpreadScrollSamplesInView(samples, viewStart, viewEnd) {
+  if (!samples?.length) return [];
+
+  const visibleSamples = samples.filter(sample =>
+    sample.time >= viewStart &&
+    sample.time <= viewEnd &&
+    Number.isFinite(sample.pxPerSecond)
+  );
+  const activeSample = getSpreadScrollSampleAtTime(samples, viewStart);
+  const lastSampleTime = samples[samples.length - 1].time;
+
+  if (
+    activeSample &&
+    viewStart <= lastSampleTime &&
+    Number.isFinite(activeSample.pxPerSecond) &&
+    !visibleSamples.includes(activeSample)
+  ) {
+    visibleSamples.unshift(activeSample);
+  }
+
+  return visibleSamples;
 }
 
 function getSpreadScrollNiceMaximum(value) {
