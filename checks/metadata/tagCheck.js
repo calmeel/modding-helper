@@ -339,9 +339,16 @@ const TAG_SOURCE_RULES = [
 function runTagCheck(text, fileName) {
   const tagsLine = findMetadataTagsLine(text);
   const sourceLine = findMetadataLine(text, "Source");
+  const featMetadataFields = [
+    { field: "Title", value: findMetadataLine(text, "Title")?.value },
+    { field: "TitleUnicode", value: findMetadataLine(text, "TitleUnicode")?.value },
+    { field: "Artist", value: findMetadataLine(text, "Artist")?.value },
+    { field: "ArtistUnicode", value: findMetadataLine(text, "ArtistUnicode")?.value }
+  ];
   const results = [];
   const spellingSuggestions = [];
   const relatedSuggestions = [];
+  const metadataSuggestions = [];
   const sourceSuggestions = [];
 
   if (!tagsLine) {
@@ -356,7 +363,9 @@ function runTagCheck(text, fileName) {
         }
       ],
       spellingSuggestions,
-      relatedSuggestions
+      relatedSuggestions,
+      metadataSuggestions,
+      sourceSuggestions
     };
   }
 
@@ -389,6 +398,7 @@ function runTagCheck(text, fileName) {
 
   spellingSuggestions.push(...findTagSpellingSuggestions(tags));
   relatedSuggestions.push(...findTagRelatedSuggestions(tags, sourceLine?.value ?? ""));
+  metadataSuggestions.push(...findFeatTagSuggestions(tags, featMetadataFields));
   sourceSuggestions.push(
     ...findSourceTagSuggestions(
       sourceLine?.value ?? "",
@@ -403,6 +413,7 @@ function runTagCheck(text, fileName) {
     results,
     spellingSuggestions,
     relatedSuggestions,
+    metadataSuggestions,
     sourceSuggestions
   };
 }
@@ -637,6 +648,26 @@ function findTagRelatedSuggestions(tags, source = "") {
   }
 
   return dedupeTagRelatedSuggestions(suggestions);
+}
+
+function findFeatTagSuggestions(tags, metadataFields) {
+  const fields = metadataFields
+    .filter(item => /\bfeat\./i.test(String(item.value ?? "")))
+    .map(item => item.field);
+
+  if (!fields.length) return [];
+
+  const wordSet = new Set(getNormalizedTagWords(tags));
+  const suggestions = ["featuring", "ft."]
+    .filter(tag => !wordSet.has(normalizeTagToken(tag)));
+
+  if (!suggestions.length) return [];
+
+  return [{
+    fields,
+    marker: "feat.",
+    suggestions
+  }];
 }
 
 function normalizeSourceForTagCompare(source) {

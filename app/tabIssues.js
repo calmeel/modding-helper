@@ -266,6 +266,7 @@ function getTagIssueLevel(results) {
   const hasRelatedSuggestions =
     results.some(result =>
       (result.relatedSuggestions?.length ?? 0) > 0 ||
+      (result.metadataSuggestions?.length ?? 0) > 0 ||
       (result.sourceSuggestions?.length ?? 0) > 0
     );
 

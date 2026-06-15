@@ -196,11 +196,13 @@ const updateHistoryEntries = [
     items: {
       en: [
         "Fixed a bug in scroll speed calculation.",
-        "Added a graph comparing note densities."
+        "Added a graph comparing note densities.",
+        "Added tag check items."
       ],
       ja: [
         "スクロール速度計算におけるバグを修正",
-        "ノーツ密度比較に関するグラフを追加"
+        "ノーツ密度比較に関するグラフを追加",
+        "タグチェックの項目追加"
       ]
     }
   },

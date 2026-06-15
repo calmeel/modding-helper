@@ -504,6 +504,45 @@ This page contains the checklist used for Tag checks in Modding Helper.
   </tbody>
 </table>
 
+<h2>Title / Artist-derived tag suggestions</h2>
+
+<div class="section">
+  <p>
+    If <code>feat.</code> is included in any of the <code>Title</code>,
+    <code>TitleUnicode</code>, <code>Artist</code>, or <code>ArtistUnicode</code>
+    fields, related featured-artist tags are displayed as suggested additions.
+  </p>
+
+  <p>
+    Matching for <code>feat.</code> is case-insensitive.<br>
+    A suggestion is not displayed again if it is already included in <code>Tags</code>.
+  </p>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 30%;">Source fields</th>
+      <th style="width: 20%;">Detected marker</th>
+      <th style="width: 50%;">Suggested additions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        <code>Title</code> / <code>TitleUnicode</code><br>
+        <code>Artist</code> / <code>ArtistUnicode</code>
+      </td>
+      <td><code>feat.</code></td>
+      <td>
+        <span class="rule-tag suggest">featuring</span>
+        <span class="rule-tag suggest">ft.</span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
 <h2>Source-derived tag suggestions</h2>
 
 <div class="section">
