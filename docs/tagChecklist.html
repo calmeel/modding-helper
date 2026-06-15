@@ -503,6 +503,45 @@
   </tbody>
 </table>
 
+<h2>Title / Artist由来の tag 候補</h2>
+
+<div class="section">
+  <p>
+    <code>Title</code>、<code>TitleUnicode</code>、<code>Artist</code>、
+    <code>ArtistUnicode</code> のいずれかに <code>feat.</code> が含まれている場合、
+    featured artist に関連する tag を追加候補として表示します。
+  </p>
+
+  <p>
+    <code>feat.</code> の判定は大文字・小文字を区別しません。<br>
+    追加候補が既に <code>Tags</code> に含まれている場合、その候補は再表示しません。
+  </p>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 30%;">検出元フィールド</th>
+      <th style="width: 20%;">検出する表記</th>
+      <th style="width: 50%;">追加候補</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        <code>Title</code> / <code>TitleUnicode</code><br>
+        <code>Artist</code> / <code>ArtistUnicode</code>
+      </td>
+      <td><code>feat.</code></td>
+      <td>
+        <span class="rule-tag suggest">featuring</span>
+        <span class="rule-tag suggest">ft.</span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
 <h2>Source由来の tag 候補</h2>
 
 <div class="section">

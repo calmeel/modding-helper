@@ -1274,6 +1274,24 @@ function formatMultipleTagResults(results, t) {
   lines.push("");
   lines.push(formatSeparator());
   lines.push("");
+  lines.push(formatSectionTitle(t("tagMetadataRelatedCheck")));
+  lines.push("");
+
+  const metadataGroups = groupTagMetadataSuggestions(sortedResults);
+
+  if (!metadataGroups.length) {
+    lines.push(t("noTagMetadataSuggestions"));
+  } else {
+    lines.push(
+      metadataGroups
+        .map(group => formatTagMetadataSuggestionGroup(group, t))
+        .join("\n\n" + formatSeparator() + "\n\n")
+    );
+  }
+
+  lines.push("");
+  lines.push(formatSeparator());
+  lines.push("");
   lines.push(formatSectionTitle(t("tagSourceRelatedCheck")));
   lines.push("");
 
@@ -1977,6 +1995,67 @@ function groupTagSourceSuggestions(results) {
   }
 
   return [...map.values()];
+}
+
+function groupTagMetadataSuggestions(results) {
+  const map = new Map();
+
+  for (const result of results) {
+    for (const item of result.metadataSuggestions ?? []) {
+      const fields = [...new Set(item.fields ?? [])].sort();
+      const suggestions = [...new Set(item.suggestions ?? [])].sort();
+      if (!fields.length || !suggestions.length) continue;
+
+      const key = [
+        fields.join("|"),
+        item.marker ?? "",
+        suggestions.join("|")
+      ].join("::");
+
+      if (!map.has(key)) {
+        map.set(key, {
+          fields,
+          marker: item.marker,
+          suggestions,
+          fileNames: []
+        });
+      }
+
+      map.get(key).fileNames.push(result.fileName);
+    }
+  }
+
+  return [...map.values()];
+}
+
+function formatTagMetadataSuggestionGroup(group, t) {
+  const lines = [];
+
+  lines.push(
+    group.fileNames
+      .map(fileName => getDifficultyNameText(fileName))
+      .join(", ")
+  );
+
+  lines.push("");
+  lines.push(
+    `<span class="result-warn">${escapeHtml(t("tagMetadataFields"))}:</span> ` +
+    group.fields
+      .map(field => `<code>${escapeHtml(field)}</code>`)
+      .join(" ")
+  );
+  lines.push(
+    `<span class="result-warn">${escapeHtml(t("tagMetadataMarker"))}:</span> ` +
+    `<code>${escapeHtml(group.marker)}</code>`
+  );
+  lines.push(
+    `<span class="result-warn">${escapeHtml(t("tagSuggestedAdditions"))}:</span> ` +
+    group.suggestions
+      .map(tag => `<code>${escapeHtml(tag)}</code>`)
+      .join(" ")
+  );
+
+  return lines.join("\n");
 }
 
 function formatTagSourceSuggestionGroup(group, t) {
