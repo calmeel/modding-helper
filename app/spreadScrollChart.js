@@ -6,6 +6,7 @@ const spreadScrollChartState = {
   manualCategories: {},
   signature: "",
   hiddenFiles: new Set(),
+  autoFilterBaselineHiddenFiles: null,
   viewStart: 0,
   viewEnd: 0,
   hoverTime: null,
@@ -45,9 +46,6 @@ function renderSpreadScrollChart(
       dom.spreadScrollDeltaChartWrap.hidden = true;
     }
     if (dom.spreadScrollDeltaHeader) dom.spreadScrollDeltaHeader.hidden = true;
-    if (dom.spreadScrollDeltaToggles) {
-      dom.spreadScrollDeltaToggles.hidden = true;
-    }
     if (dom.spreadScrollDiffToggles) {
       dom.spreadScrollDiffToggles.replaceChildren();
     }
@@ -69,6 +67,7 @@ function renderSpreadScrollChart(
   if (signature !== state.signature) {
     state.signature = signature;
     state.hiddenFiles.clear();
+    state.autoFilterBaselineHiddenFiles = null;
     state.viewStart = 0;
     state.viewEnd = endTime;
     state.hoverTime = null;
@@ -82,9 +81,6 @@ function renderSpreadScrollChart(
     dom.spreadScrollDeltaChartWrap.hidden = false;
   }
   if (dom.spreadScrollDeltaHeader) dom.spreadScrollDeltaHeader.hidden = false;
-  if (dom.spreadScrollDeltaToggles) {
-    dom.spreadScrollDeltaToggles.hidden = false;
-  }
 
   renderSpreadScrollDiffToggles(chartResults);
   drawSpreadScrollCharts();
@@ -97,11 +93,9 @@ function initializeSpreadScrollChart() {
   const canvas = state.dom.spreadScrollChart;
   const deltaCanvas = state.dom.spreadScrollDeltaChart;
   const resetButton = state.dom.spreadScrollResetZoom;
-  const warningToggles = [
+  const displayToggles = [
     state.dom.spreadScrollShowLimits,
-    state.dom.spreadScrollShowRapidChanges
-  ];
-  const deltaIssueToggles = [
+    state.dom.spreadScrollShowRapidChanges,
     state.dom.spreadScrollShowProgression,
     state.dom.spreadScrollShowConsistency
   ];
@@ -110,32 +104,20 @@ function initializeSpreadScrollChart() {
   initializeSpreadScrollCanvas(canvas);
   initializeSpreadScrollCanvas(deltaCanvas);
 
-  for (const toggle of warningToggles) {
+  for (const toggle of displayToggles) {
     if (!toggle) continue;
 
     toggle.addEventListener("change", () => {
       if (toggle.checked) {
-        for (const otherToggle of warningToggles) {
+        for (const otherToggle of displayToggles) {
           if (otherToggle && otherToggle !== toggle) {
             otherToggle.checked = false;
           }
         }
-      }
 
-      drawSpreadScrollCharts();
-    });
-  }
-
-  for (const toggle of deltaIssueToggles) {
-    if (!toggle) continue;
-
-    toggle.addEventListener("change", () => {
-      if (toggle.checked) {
-        for (const otherToggle of deltaIssueToggles) {
-          if (otherToggle && otherToggle !== toggle) {
-            otherToggle.checked = false;
-          }
-        }
+        applySpreadScrollProblemDiffFilter(toggle);
+      } else {
+        restoreSpreadScrollDiffFilter();
       }
 
       hideSpreadScrollTooltips();
@@ -177,6 +159,98 @@ function initializeSpreadScrollChart() {
   }
 
   state.initialized = true;
+}
+
+function applySpreadScrollProblemDiffFilter(toggle) {
+  const state = spreadScrollChartState;
+  const results = getSpreadScrollChartResults();
+  const affectedFiles = getSpreadScrollAffectedFiles(toggle, results);
+
+  if (!affectedFiles.size) return;
+
+  if (state.autoFilterBaselineHiddenFiles === null) {
+    state.autoFilterBaselineHiddenFiles = new Set(state.hiddenFiles);
+  }
+
+  state.hiddenFiles = new Set(
+    results
+      .map(result => result.fileName)
+      .filter(fileName => !affectedFiles.has(fileName))
+  );
+  renderSpreadScrollDiffToggles(results);
+}
+
+function restoreSpreadScrollDiffFilter() {
+  const state = spreadScrollChartState;
+  if (state.autoFilterBaselineHiddenFiles === null) return;
+
+  state.hiddenFiles = new Set(state.autoFilterBaselineHiddenFiles);
+  state.autoFilterBaselineHiddenFiles = null;
+  renderSpreadScrollDiffToggles(getSpreadScrollChartResults());
+}
+
+function getSpreadScrollAffectedFiles(toggle, results) {
+  const state = spreadScrollChartState;
+  const affectedFiles = new Set();
+
+  if (toggle === state.dom?.spreadScrollShowLimits) {
+    for (const result of results) {
+      const category = getSpreadEffectiveCategory(
+        result,
+        state.manualCategories
+      );
+
+      if (getSpreadTooFastScrollLevel(result.scrollSpeed, category) === "warn") {
+        affectedFiles.add(result.fileName);
+      }
+    }
+    return affectedFiles;
+  }
+
+  if (toggle === state.dom?.spreadScrollShowRapidChanges) {
+    for (const result of results) {
+      const category = getSpreadEffectiveCategory(
+        result,
+        state.manualCategories
+      );
+      const hasWarning = (result.scrollSpeed?.rapidChanges ?? []).some(
+        change => getSpreadRapidScrollLevel(change, category) === "warn"
+      );
+
+      if (hasWarning) affectedFiles.add(result.fileName);
+    }
+    return affectedFiles;
+  }
+
+  if (toggle === state.dom?.spreadScrollShowProgression) {
+    const analysis = analyzeSpreadScrollSpeedProgressionByEvent(
+      results,
+      state.manualCategories
+    );
+
+    for (const group of analysis.issueGroups) {
+      for (const item of group.items) {
+        affectedFiles.add(item.fileName);
+      }
+    }
+    return affectedFiles;
+  }
+
+  if (toggle === state.dom?.spreadScrollShowConsistency) {
+    const analysis = analyzeSpreadScrollChangeConsistency(
+      results,
+      state.manualCategories
+    );
+
+    for (const group of analysis.issueGroups) {
+      for (const issue of group.issues) {
+        affectedFiles.add(issue.lower.fileName);
+        affectedFiles.add(issue.higher.fileName);
+      }
+    }
+  }
+
+  return affectedFiles;
 }
 
 function initializeSpreadScrollCanvas(canvas) {
@@ -356,11 +430,21 @@ function drawSpreadScrollChart() {
     plot.left + ((time - viewStart) / (viewEnd - viewStart)) * plot.width;
   const yForSpeed = speed =>
     plot.bottom - (speed / maxSpeed) * plot.height;
+  const issueDisplay = getSpreadScrollDeltaIssueDisplay(results);
 
   if (state.dom?.spreadScrollShowRapidChanges?.checked) {
     drawSpreadScrollRapidChangeBackgrounds(
       ctx,
       visibleAssignments,
+      plot,
+      viewStart,
+      viewEnd,
+      xForTime
+    );
+  } else {
+    drawSpreadScrollDeltaIssueBands(
+      ctx,
+      issueDisplay,
       plot,
       viewStart,
       viewEnd,
@@ -490,14 +574,25 @@ function drawSpreadScrollDeltaChart() {
     (delta / maxAbsDelta) * (plot.height / 2);
   const issueDisplay = getSpreadScrollDeltaIssueDisplay(results);
 
-  drawSpreadScrollDeltaIssueBands(
-    ctx,
-    issueDisplay,
-    plot,
-    viewStart,
-    viewEnd,
-    xForTime
-  );
+  if (state.dom?.spreadScrollShowRapidChanges?.checked) {
+    drawSpreadScrollRapidChangeBackgrounds(
+      ctx,
+      visibleAssignments,
+      plot,
+      viewStart,
+      viewEnd,
+      xForTime
+    );
+  } else {
+    drawSpreadScrollDeltaIssueBands(
+      ctx,
+      issueDisplay,
+      plot,
+      viewStart,
+      viewEnd,
+      xForTime
+    );
+  }
   drawSpreadScrollDeltaGrid(
     ctx,
     plot,
@@ -615,12 +710,9 @@ function drawSpreadScrollDeltaIssueBands(
   for (const group of issueDisplay.groups) {
     if (group.time < viewStart || group.time > viewEnd) continue;
 
-    const hasDirectionMismatch = group.issues.some(
-      issue => issue.type === "directionMismatch"
-    );
-    const color = issueDisplay.mode === "progression" || hasDirectionMismatch
-      ? "rgba(255, 107, 107, 0.22)"
-      : "rgba(255, 179, 71, 0.22)";
+    const color = issueDisplay.mode === "progression"
+      ? "rgba(214, 90, 103, 0.26)"
+      : "rgba(196, 147, 75, 0.26)";
     const x = xForTime(group.time);
 
     ctx.fillStyle = color;
@@ -770,8 +862,6 @@ function drawSpreadScrollRapidChangeBackgrounds(
   ctx.clip();
 
   for (const assignment of assignments) {
-    ctx.fillStyle = spreadScrollColorWithAlpha(assignment.color, 0.14);
-
     for (const change of assignment.result.scrollSpeed?.rapidChanges ?? []) {
       if (getSpreadRapidScrollLevel(change, assignment.category) !== "warn") {
         continue;
@@ -780,6 +870,7 @@ function drawSpreadScrollRapidChangeBackgrounds(
 
       const startX = xForTime(Math.max(change.fromTime, viewStart));
       const endX = xForTime(Math.min(change.toTime, viewEnd));
+      ctx.fillStyle = "rgba(224, 122, 95, 0.24)";
       ctx.fillRect(
         startX,
         plot.top,

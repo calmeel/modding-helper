@@ -204,31 +204,12 @@ body {
   font-size: 12px;
 }
 
-.spread-scroll-delta-toggles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  margin-bottom: 10px;
-}
-
-.spread-scroll-delta-toggles label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.spread-scroll-delta-toggles input {
-  margin: 0;
-}
-
 .spread-scroll-progression-swatch {
-  background: rgba(255, 107, 107, 0.55);
+  background: #d65a67;
 }
 
 .spread-scroll-consistency-swatch {
-  background: rgba(255, 179, 71, 0.55);
+  background: #c4934b;
 }
 
 .spread-scroll-delta-chart-wrap,
@@ -271,7 +252,7 @@ body {
 }
 
 .spread-scroll-warning-rapid {
-  background: rgba(255, 107, 107, 0.36);
+  background: #e07a5f;
 }
 
 .volume-compare-chart-header {
