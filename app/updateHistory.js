@@ -190,6 +190,20 @@ const updateHistoryEntries = [
       ]
     }
   },
+  {
+    date: "2026/06/16",
+    type: "update",
+    items: {
+      en: [
+        "Fixed a bug in scroll speed calculation.",
+        "Added a graph comparing note densities."
+      ],
+      ja: [
+        "スクロール速度計算におけるバグを修正",
+        "ノーツ密度比較に関するグラフを追加"
+      ]
+    }
+  },
 ];
 
 const updateHistoryTypeLabels = {

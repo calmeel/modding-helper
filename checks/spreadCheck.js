@@ -434,7 +434,11 @@ function analyzeSpreadScrollSpeed(text, difficulty = null) {
 
   const samples = noteTimes.map(time => {
     const red = getCurrentSpreadTimingPoint(redLines, time);
-    const green = getCurrentSpreadTimingPoint(greenLines, time);
+    const green = getCurrentSpreadInheritedTimingPoint(
+      greenLines,
+      time,
+      red?.time
+    );
 
     const bpm = red ? 60000 / red.beatLength : null;
     const sv = green ? green.sv : 1;
@@ -853,6 +857,21 @@ function getCurrentSpreadTimingPoint(points, time) {
   }
 
   return current;
+}
+
+function getCurrentSpreadInheritedTimingPoint(points, time, redTime) {
+  if (!points || !points.length || !Number.isFinite(redTime)) return null;
+
+  for (let i = points.length - 1; i >= 0; i--) {
+    const point = points[i];
+
+    if (point.time > time) continue;
+    if (point.time < redTime) return null;
+
+    return point;
+  }
+
+  return null;
 }
 
 function getSpreadRapidScrollRule(category) {
