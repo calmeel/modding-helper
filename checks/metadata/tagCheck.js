@@ -111,6 +111,14 @@ const TAG_RELATED_RULES = [
     triggerAll: ["東方", "project"],
     suggestGroup: ["東方project", "touhou"]
   },
+    {
+    trigger: ["上海アリス幻樂団"],
+    suggestGroup: ["上海アリス幻樂団", "team", "shanghai", "alice", "gengakudan"]
+  },
+  {
+    triggerAll: ["shanghai", "alice"],
+    suggestGroup: ["上海アリス幻樂団", "team", "shanghai", "alice", "gengakudan"]
+  },
   {
     trigger: ["drum'n'bass", "dnb", "d&b", "d'n'b"],
     suggestGroup: ["drum", "and", "&", "bass", "drum'n'bass", "dnb", "d&b", "d'n'b"]
