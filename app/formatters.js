@@ -258,7 +258,7 @@ function formatDoubleSvResult(result, t) {
     ...allItems.map(item => visibleWidth(msToTimestamp(item.time)))
   );
 
-  const svTexts = allItems.map(item => `SV ${formatSvValue(item.beatLength)}`);
+  const svTexts = allItems.map(item => `SV x${formatSvValue(item.beatLength)}`);
   const svWidth = Math.max(
     visibleWidth("SV"),
     ...svTexts.map(text => visibleWidth(text))
@@ -275,7 +275,7 @@ function formatDoubleSvResult(result, t) {
       const timeText = formatTimestampLink(item.time);
       const plainTime = msToTimestamp(item.time);
 
-      const svText = `SV ${formatSvValue(item.beatLength)}`;
+      const svText = `SV x${formatSvValue(item.beatLength)}`;
       const volumeText = `vol ${item.volume}`;
 
       const timePadding =
