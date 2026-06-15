@@ -455,6 +455,26 @@
       color: #fff;
       pointer-events: none;
     }
+
+    .doc-graph-example {
+      margin: 16px 0 4px;
+    }
+
+    .doc-graph-example img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid #3d3d48;
+      border-radius: 8px;
+      background: #15151a;
+    }
+
+    .doc-graph-example figcaption {
+      margin-top: 6px;
+      color: #aaa;
+      font-size: 12px;
+      line-height: 1.5;
+    }
   </style>
 </head>
 
@@ -832,6 +852,12 @@ Sections where the kiai ON/OFF state differs between difficulties are shown in r
 Drag across the graph to zoom into a time range, or click it to open that timestamp in osu!editor.
 Hovering over the graph shows the kiai state of each difficulty at that time.<br><br>
 
+<figure class="doc-graph-example">
+  <img src="images/kiai-compare-graph-example-en.png" alt="Kiai timeline example for Kantan, Futsuu, Muzukashii, Oni, and Inner Oni">
+  <figcaption>Kiai comparison graph example. Mismatched sections are shown in red, and Kiai ON sections for each difficulty are shown in yellow.</figcaption>
+</figure>
+<br>
+
 It also warns when the end of a kiai section is not explicitly defined (same behavior as AiMod).
 </div>
 
@@ -921,6 +947,11 @@ can hide extremely short sections shorter than 50 ms.<br><br>
 
 A step-line graph shows the volume changes for each difficulty.<br>
 
+<figure class="doc-graph-example">
+  <img src="images/volume-compare-graph-example-en.png" alt="Volume comparison graph example for Kantan, Futsuu, Muzukashii, Oni, and Inner Oni">
+  <figcaption>Volume comparison graph example. Difficulties have different volumes in the red sections and matching volumes in sections without a background.</figcaption>
+</figure>
+<br>
 The background options above the graph can display volume differences in red,
 kiai time in yellow, and breaks in blue.<br>
 Only one background option can be enabled at a time. Selecting another option automatically
