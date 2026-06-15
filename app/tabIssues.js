@@ -579,6 +579,17 @@ function getSpreadIssueLevel(spreadState) {
     hasWarn = true;
   }
 
+  if (
+    isSpreadLinearSvFeatureEnabled() &&
+    sortedResults.some(result =>
+      (result.scrollSpeed?.linearGradients ?? []).some(
+        gradient => gradient.status === "warn"
+      )
+    )
+  ) {
+    hasWarn = true;
+  }
+
   /** 追加：速すぎるスクロール速度 */
   for (const result of sortedResults) {
     const category = getSpreadEffectiveCategory(result, manualCategories);
