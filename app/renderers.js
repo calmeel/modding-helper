@@ -84,14 +84,9 @@ function analyzeDoubleSvSourcesFromSources(sources, dom) {
     ? parseInt(dom.doubleSvGap.value, 10)
     : 2;
 
-  const includeExactSame = dom.includeExactSameSv
-    ? dom.includeExactSameSv.checked
-    : true;
-
   return sources.map(source => ({
     ...runDoubleSvCheck(source.text, source.fileName, {
-      maxGapMs,
-      includeExactSame
+      maxGapMs
     }),
     mode: source.mode
   }));

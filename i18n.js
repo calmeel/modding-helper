@@ -59,7 +59,6 @@ const i18n = {
     noKiaiSnap: "No non-1/1 kiai snap found.",
 
     detectGapUpTo: "Detect gap up to:",
-    includeExactSameSv: "Include exact same-ms overlaps",
 
     DetectThreshold: "Detect threshold:",
     noSvVolumeIssues: "No suspicious SV volume changes.",
@@ -459,7 +458,6 @@ const i18n = {
     noKiaiSnap: "1/1以外のKiai snapは見つかりませんでした。",
 
     detectGapUpTo: "検出する最大間隔：",
-    includeExactSameSv: "同じmsの重複も含める",
 
     DetectThreshold: "検出閾値：",
     noSvVolumeIssues: "問題のあるSV volume変更は見つかりませんでした。",

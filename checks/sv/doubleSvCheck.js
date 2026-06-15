@@ -1,9 +1,8 @@
 function runDoubleSvCheck(text, fileName, options = {}) {
   const maxGapMs = options.maxGapMs ?? 2;
-  const includeExactSame = options.includeExactSame ?? true;
 
   const svLines = parseInheritedTimingPoints(text);
-  const groups = detectDoubleSvGroups(svLines, maxGapMs, includeExactSame);
+  const groups = detectDoubleSvGroups(svLines, maxGapMs);
 
   return {
     fileName,
@@ -11,7 +10,7 @@ function runDoubleSvCheck(text, fileName, options = {}) {
   };
 }
 
-function detectDoubleSvGroups(svLines, maxGapMs, includeExactSame) {
+function detectDoubleSvGroups(svLines, maxGapMs) {
   if (!svLines.length) return [];
 
   const groups = [];
@@ -22,13 +21,7 @@ function detectDoubleSvGroups(svLines, maxGapMs, includeExactSame) {
     const prev = currentGroup[currentGroup.length - 1];
     const diff = cur.time - prev.time;
 
-    let ok = false;
-
-    if (includeExactSame && diff >= 0 && diff <= maxGapMs) {
-      ok = true;
-    } else if (!includeExactSame && diff >= 1 && diff <= maxGapMs) {
-      ok = true;
-    }
+    const ok = diff >= 0 && diff <= maxGapMs;
 
     if (ok) {
       currentGroup.push(cur);

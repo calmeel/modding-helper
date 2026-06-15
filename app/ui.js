@@ -85,7 +85,6 @@ function setupOptionEvents(options) {
     includeAdvancedOffsetSnaps,
     renderShiftResult,
     doubleSvGap,
-    includeExactSameSv,
     renderResult,
     renderDoubleSvResult,
     svVolumeThreshold,
@@ -112,10 +111,6 @@ function setupOptionEvents(options) {
 
   if (doubleSvGap) {
     doubleSvGap.addEventListener("change", renderDoubleSvResult);
-  }
-
-  if (includeExactSameSv) {
-    includeExactSameSv.addEventListener("change", renderDoubleSvResult);
   }
 
   if (svVolumeThreshold) {
@@ -192,12 +187,6 @@ function setupPersistentOptions(options) {
       key: "moddingHelperDoubleSvGap",
       type: "select",
       defaultValue: "2"
-    },
-    {
-      element: options.includeExactSameSv,
-      key: "moddingHelperIncludeExactSameSv",
-      type: "checkbox",
-      defaultValue: true
     },
     {
       element: options.svVolumeThreshold,
