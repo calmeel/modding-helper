@@ -105,6 +105,7 @@ function initializeSpreadScrollChart() {
     state.dom.spreadScrollShowProgression,
     state.dom.spreadScrollShowConsistency
   ];
+  const detailedTooltipToggle = state.dom.spreadScrollDetailedTooltip;
 
   initializeSpreadScrollCanvas(canvas);
   initializeSpreadScrollCanvas(deltaCanvas);
@@ -139,6 +140,12 @@ function initializeSpreadScrollChart() {
 
       hideSpreadScrollTooltips();
       drawSpreadScrollCharts();
+    });
+  }
+
+  if (detailedTooltipToggle) {
+    detailedTooltipToggle.addEventListener("change", () => {
+      hideSpreadScrollTooltips();
     });
   }
 
@@ -212,6 +219,7 @@ function renderSpreadScrollDiffToggles(results) {
   if (!container) return;
 
   const fragment = document.createDocumentFragment();
+  fragment.appendChild(createSpreadScrollDiffActions(results));
 
   results.forEach((result, index) => {
     const virtualSr = index + 1;
@@ -245,6 +253,35 @@ function renderSpreadScrollDiffToggles(results) {
   });
 
   container.replaceChildren(fragment);
+}
+
+function createSpreadScrollDiffActions(results) {
+  const state = spreadScrollChartState;
+  const actions = document.createElement("div");
+  actions.className = "graph-diff-toggle-actions";
+
+  const selectAll = document.createElement("button");
+  selectAll.type = "button";
+  selectAll.textContent = state.t("graphSelectAllDiffs");
+  selectAll.addEventListener("click", () => {
+    state.hiddenFiles.clear();
+    renderSpreadScrollDiffToggles(results);
+    hideSpreadScrollTooltips();
+    drawSpreadScrollCharts();
+  });
+
+  const clearAll = document.createElement("button");
+  clearAll.type = "button";
+  clearAll.textContent = state.t("graphClearAllDiffs");
+  clearAll.addEventListener("click", () => {
+    state.hiddenFiles = new Set(results.map(result => result.fileName));
+    renderSpreadScrollDiffToggles(results);
+    hideSpreadScrollTooltips();
+    drawSpreadScrollCharts();
+  });
+
+  actions.append(selectAll, clearAll);
+  return actions;
 }
 
 function drawSpreadScrollCharts() {
@@ -1042,8 +1079,42 @@ function showSpreadScrollTooltip(point, time) {
   const assignments =
     state.dom?.spreadScrollChart?._spreadScrollVisibleAssignments ?? [];
   if (!tooltip || !wrap) return;
+  const simple = !(state.dom?.spreadScrollDetailedTooltip?.checked ?? false);
 
-  const lines = [msToTimestamp(Math.round(time))];
+  if (simple) {
+    const lines = [msToTimestamp(Math.round(time))];
+
+    for (const assignment of assignments) {
+      const result = assignment.result;
+      const sample = getSpreadScrollSampleAtTime(
+        result.scrollSpeed?.samples,
+        time
+      );
+      const diffName = getDifficultyNameText(result.fileName);
+      lines.push(
+        `${diffName}: ` +
+        `${sample ? `${Math.round(sample.pxPerSecond)} px/s` : "N/A"}`
+      );
+    }
+
+    appendSpreadScrollSimpleDetails(lines, assignments, time);
+    tooltip.classList.remove("is-dense");
+    tooltip.classList.add("is-simple");
+    tooltip.textContent = lines.join("\n");
+    tooltip.hidden = false;
+    positionSpreadScrollTooltip(tooltip, wrap, point);
+    return;
+  }
+
+  const timeElement = document.createElement("div");
+  timeElement.className = "spread-scroll-delta-tooltip-time";
+  timeElement.textContent = msToTimestamp(Math.round(time));
+
+  const grid = document.createElement("div");
+  grid.className = "spread-scroll-delta-tooltip-grid";
+  if (assignments.length >= 4) {
+    grid.classList.add("is-multicolumn");
+  }
 
   for (const assignment of assignments) {
     const result = assignment.result;
@@ -1053,22 +1124,30 @@ function showSpreadScrollTooltip(point, time) {
     );
     const diffName = getDifficultyNameText(result.fileName);
 
-    if (!sample) {
-      lines.push(`${diffName}: N/A`);
-      continue;
-    }
+    const item = document.createElement("div");
+    item.className = "spread-scroll-delta-tooltip-item";
 
-    lines.push("");
-    lines.push(
-      `${diffName}: ${Math.round(sample.pxPerSecond)} px/s`
-    );
-    lines.push(
-      `${state.t("spreadScrollGraphBpm")}: ${formatSpreadScrollTooltipNumber(sample.bpm, 3)} | ` +
-      `${state.t("spreadScrollGraphSv")}: ${formatSpreadScrollTooltipNumber(sample.sv, 3)} | ` +
-      `${state.t("spreadScrollGraphSliderMultiplier")}: ` +
-      `${formatSpreadScrollTooltipNumber(sample.sliderMultiplier, 2)}`
-    );
+    const name = document.createElement("div");
+    name.className = "spread-scroll-delta-tooltip-diff";
+    name.textContent = diffName;
+    name.title = diffName;
+
+    const values = document.createElement("div");
+    values.className = "spread-scroll-delta-tooltip-values";
+    values.textContent = sample
+      ? simple
+        ? `${Math.round(sample.pxPerSecond)} px/s`
+        : `${Math.round(sample.pxPerSecond)} px/s | ` +
+        `BPM ${formatSpreadScrollTooltipNumber(sample.bpm, 3)} | ` +
+        `SV ${formatSpreadScrollTooltipNumber(sample.sv, 3)} | ` +
+        `SM ${formatSpreadScrollTooltipNumber(sample.sliderMultiplier, 2)}`
+      : "N/A";
+
+    item.append(name, values);
+    grid.appendChild(item);
   }
+
+  const detailLines = [];
 
   if (state.dom?.spreadScrollShowLimits?.checked) {
     const limits = assignments
@@ -1079,10 +1158,9 @@ function showSpreadScrollTooltip(point, time) {
       .filter(item => Number.isFinite(item.value));
 
     if (limits.length) {
-      lines.push("");
-      lines.push(state.t("spreadScrollGraphLimit"));
+      detailLines.push(state.t("spreadScrollGraphLimit"));
       for (const limit of limits) {
-        lines.push(`${limit.name}: ${Math.round(limit.value)} px/s`);
+        detailLines.push(`${limit.name}: ${Math.round(limit.value)} px/s`);
       }
     }
   }
@@ -1097,33 +1175,27 @@ function showSpreadScrollTooltip(point, time) {
     );
 
     if (rapidChanges.length) {
-      lines.push("");
-      lines.push(state.t("spreadScrollGraphRapidChange"));
+      if (detailLines.length) detailLines.push("");
+      detailLines.push(state.t("spreadScrollGraphRapidChange"));
       for (const assignment of rapidChanges) {
-        lines.push(getDifficultyNameText(assignment.result.fileName));
+        detailLines.push(getDifficultyNameText(assignment.result.fileName));
       }
     }
   }
 
-  tooltip.textContent = lines.join("\n");
+  const children = [timeElement, grid];
+  if (detailLines.length) {
+    const details = document.createElement("div");
+    details.className = "spread-scroll-delta-tooltip-issue";
+    details.textContent = detailLines.join("\n");
+    children.push(details);
+  }
+
+  tooltip.classList.toggle("is-dense", assignments.length >= 9);
+  tooltip.classList.remove("is-simple");
+  tooltip.replaceChildren(...children);
   tooltip.hidden = false;
-
-  const gap = 14;
-  const edgePadding = 8;
-  const tooltipWidth = tooltip.offsetWidth;
-  const tooltipHeight = tooltip.offsetHeight;
-  let left = point.x + gap;
-  let top = point.y + gap;
-
-  if (left + tooltipWidth > wrap.clientWidth - edgePadding) {
-    left = point.x - tooltipWidth - gap;
-  }
-  if (top + tooltipHeight > wrap.clientHeight - edgePadding) {
-    top = point.y - tooltipHeight - gap;
-  }
-
-  tooltip.style.left = `${Math.max(edgePadding, left)}px`;
-  tooltip.style.top = `${Math.max(edgePadding, top)}px`;
+  positionSpreadScrollTooltip(tooltip, wrap, point);
 }
 
 function showSpreadScrollDeltaTooltip(point, time) {
@@ -1134,6 +1206,7 @@ function showSpreadScrollDeltaTooltip(point, time) {
   const assignments = canvas?._spreadScrollVisibleAssignments ?? [];
   const plot = canvas?._spreadScrollPlot;
   if (!tooltip || !wrap || !plot) return;
+  const simple = !(state.dom?.spreadScrollDetailedTooltip?.checked ?? false);
 
   const toleranceMs =
     ((state.viewEnd - state.viewStart) / Math.max(1, plot.width)) * 9;
@@ -1157,45 +1230,102 @@ function showSpreadScrollDeltaTooltip(point, time) {
     })
     .filter(Boolean);
 
-  const lines = [msToTimestamp(Math.round(time))];
+  if (simple) {
+    const lines = [msToTimestamp(Math.round(time))];
+
+    for (const { assignment, change } of matches) {
+      const diffName = getDifficultyNameText(assignment.result.fileName);
+      const delta = Math.round(change.delta);
+      const deltaText = delta > 0 ? `+${delta}` : String(delta);
+      lines.push(`${diffName}: Δ ${deltaText} px/s`);
+    }
+
+    const issueLines = getSpreadScrollDeltaIssueTooltipLines(
+      time,
+      toleranceMs,
+      getSpreadScrollChartResults()
+    );
+    if (issueLines.length) {
+      lines.push("", ...issueLines);
+    }
+
+    tooltip.classList.remove("is-dense");
+    tooltip.classList.add("is-simple");
+    tooltip.textContent = lines.join("\n");
+    tooltip.hidden = false;
+    positionSpreadScrollTooltip(tooltip, wrap, point);
+    return;
+  }
+
+  const timeElement = document.createElement("div");
+  timeElement.className = "spread-scroll-delta-tooltip-time";
+  timeElement.textContent = msToTimestamp(Math.round(time));
+
+  const grid = document.createElement("div");
+  grid.className = "spread-scroll-delta-tooltip-grid";
+  if (matches.length >= 4) {
+    grid.classList.add("is-multicolumn");
+  }
 
   for (const { assignment, change } of matches) {
     const diffName = getDifficultyNameText(assignment.result.fileName);
     const delta = Math.round(change.delta);
     const deltaText = delta > 0 ? `+${delta}` : String(delta);
 
-    lines.push("");
-    lines.push(diffName);
-    lines.push(
-      `${state.t("spreadScrollDeltaBeforeAfter")}: ` +
-      `${Math.round(change.beforeSpeed)} → ${Math.round(change.afterSpeed)} px/s`
-    );
-    lines.push(
-      `${state.t("spreadScrollDeltaValue")}: ${deltaText} px/s`
-    );
-    if (Number.isFinite(change.ratio)) {
-      lines.push(
-        `${state.t("spreadScrollDeltaRatio")}: ` +
-        `${formatSpreadScrollTooltipNumber(change.ratio, 2)}x`
-      );
+    const item = document.createElement("div");
+    item.className = "spread-scroll-delta-tooltip-item";
+
+    const name = document.createElement("div");
+    name.className = "spread-scroll-delta-tooltip-diff";
+    name.textContent = diffName;
+    name.title = diffName;
+
+    const values = document.createElement("div");
+    values.className = "spread-scroll-delta-tooltip-values";
+    const valueParts = simple
+      ? [`Δ ${deltaText} px/s`]
+      : [
+        `${Math.round(change.beforeSpeed)} → ${Math.round(change.afterSpeed)} px/s`,
+        `Δ ${deltaText}`
+      ];
+    if (!simple) {
+      if (Number.isFinite(change.ratio)) {
+        valueParts.push(
+          `${formatSpreadScrollTooltipNumber(change.ratio, 2)}x`
+        );
+      }
+      if (Number.isFinite(change.gapMs)) {
+        valueParts.push(`${Math.round(change.gapMs)} ms`);
+      }
     }
-    if (Number.isFinite(change.gapMs)) {
-      lines.push(
-        `${state.t("spreadScrollDeltaInterval")}: ${Math.round(change.gapMs)} ms`
-      );
-    }
+    values.textContent = valueParts.join(" | ");
+
+    item.append(name, values);
+    grid.appendChild(item);
   }
 
-  appendSpreadScrollDeltaIssueTooltip(
-    lines,
+  const issueLines = getSpreadScrollDeltaIssueTooltipLines(
     time,
     toleranceMs,
     getSpreadScrollChartResults()
   );
 
-  tooltip.textContent = lines.join("\n");
-  tooltip.hidden = false;
+  const children = [timeElement, grid];
+  if (issueLines.length) {
+    const issue = document.createElement("div");
+    issue.className = "spread-scroll-delta-tooltip-issue";
+    issue.textContent = issueLines.join("\n");
+    children.push(issue);
+  }
 
+  tooltip.classList.toggle("is-dense", matches.length >= 9);
+  tooltip.classList.remove("is-simple");
+  tooltip.replaceChildren(...children);
+  tooltip.hidden = false;
+  positionSpreadScrollTooltip(tooltip, wrap, point);
+}
+
+function positionSpreadScrollTooltip(tooltip, wrap, point) {
   const gap = 14;
   const edgePadding = 8;
   const tooltipWidth = tooltip.offsetWidth;
@@ -1210,19 +1340,57 @@ function showSpreadScrollDeltaTooltip(point, time) {
     top = point.y - tooltipHeight - gap;
   }
 
-  tooltip.style.left = `${Math.max(edgePadding, left)}px`;
-  tooltip.style.top = `${Math.max(edgePadding, top)}px`;
+  tooltip.style.left =
+    `${Math.max(edgePadding, Math.min(left, wrap.clientWidth - tooltipWidth - edgePadding))}px`;
+  tooltip.style.top =
+    `${Math.max(edgePadding, Math.min(top, wrap.clientHeight - tooltipHeight - edgePadding))}px`;
 }
 
-function appendSpreadScrollDeltaIssueTooltip(
-  lines,
+function appendSpreadScrollSimpleDetails(lines, assignments, time) {
+  const state = spreadScrollChartState;
+
+  if (state.dom?.spreadScrollShowLimits?.checked) {
+    const limits = assignments
+      .map(assignment => ({
+        name: getDifficultyNameText(assignment.result.fileName),
+        value: getSpreadTooFastScrollRule(assignment.category)
+      }))
+      .filter(item => Number.isFinite(item.value));
+
+    if (limits.length) {
+      lines.push("", state.t("spreadScrollGraphLimit"));
+      for (const limit of limits) {
+        lines.push(`${limit.name}: ${Math.round(limit.value)} px/s`);
+      }
+    }
+  }
+
+  if (state.dom?.spreadScrollShowRapidChanges?.checked) {
+    const rapidChanges = assignments.filter(assignment =>
+      (assignment.result.scrollSpeed?.rapidChanges ?? []).some(change =>
+        getSpreadRapidScrollLevel(change, assignment.category) === "warn" &&
+        change.fromTime <= time &&
+        time < change.toTime
+      )
+    );
+
+    if (rapidChanges.length) {
+      lines.push("", state.t("spreadScrollGraphRapidChange"));
+      for (const assignment of rapidChanges) {
+        lines.push(getDifficultyNameText(assignment.result.fileName));
+      }
+    }
+  }
+}
+
+function getSpreadScrollDeltaIssueTooltipLines(
   time,
   toleranceMs,
   results
 ) {
   const state = spreadScrollChartState;
   const issueDisplay = getSpreadScrollDeltaIssueDisplay(results);
-  if (!issueDisplay.mode) return;
+  if (!issueDisplay.mode) return [];
 
   const group = issueDisplay.groups.reduce((nearest, item) => {
     const distance = Math.abs(item.time - time);
@@ -1233,9 +1401,9 @@ function appendSpreadScrollDeltaIssueTooltip(
     return nearest;
   }, null)?.item;
 
-  if (!group) return;
+  if (!group) return [];
 
-  lines.push("");
+  const lines = [];
 
   if (issueDisplay.mode === "progression") {
     lines.push(state.t("spreadScrollProgressionIssue"));
@@ -1263,7 +1431,7 @@ function appendSpreadScrollDeltaIssueTooltip(
         `${formatSpreadScrollDirection(issue.curDirection)}`
       );
     }
-    return;
+    return lines;
   }
 
   lines.push(state.t("spreadScrollConsistencyIssue"));
@@ -1281,6 +1449,8 @@ function appendSpreadScrollDeltaIssueTooltip(
     );
     lines.push(reason);
   }
+
+  return lines;
 }
 
 function formatSpreadScrollDirection(direction) {
