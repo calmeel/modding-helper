@@ -120,12 +120,12 @@ const TAG_RELATED_RULES = [
     suggestGroup: ["drum", "and", "&", "bass", "drum'n'bass", "dnb", "d&b", "d'n'b"]
   },
   {
-    trigger: ["vtuber"],
-    suggestGroup: ["virtual", "youtuber", "vtuber"]
+    trigger: ["バーチャルyoutuber", "vtuber"],
+    suggestGroup: ["バーチャルyoutuber", "virtual", "youtuber", "vtuber"]
   },
   {
     triggerAll: ["virtual", "youtuber"],
-    suggestGroup: ["vtuber"]
+    suggestGroup: ["バーチャルyoutuber", "vtuber"]
   },
   {
     trigger: ["vn"],
