@@ -273,11 +273,11 @@ const TAG_RELATED_RULES = [
   },
   {
     trigger: ["ブルーアーカイブ", "ブルアカ", "buruaka"],
-    suggestGroup: ["ブルアカ", "buruaka", "yostar"]
+    suggestGroup: ["ブルアカ", "buruaka", "yostar", "nexon"]
   },
   {
     triggerAll: ["-Blue", "Archive-"],
-    suggestGroup: ["ブルーアーカイブ", "ブルアカ", "buruaka", "yostar"]
+    suggestGroup: ["ブルーアーカイブ", "ブルアカ", "buruaka", "yostar", "nexon"]
   },
 ];
 
