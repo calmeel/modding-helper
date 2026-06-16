@@ -510,36 +510,13 @@ function getVisibleVolumeCompareSections(result, visibleFiles) {
     sections.push({
       start: interval.start,
       end: interval.end,
-      diff,
-      stateKey: visibleStates
-        .map(state => `${state.fileName}:${state.volume ?? "N/A"}`)
-        .join("|")
+      diff
     });
   }
 
-  const merged = [];
+  const filtered = filterVolumeCompareSectionsByOptions(sections, options);
 
-  for (const section of sections) {
-    const last = merged[merged.length - 1];
-
-    if (
-      last &&
-      last.end === section.start &&
-      last.stateKey === section.stateKey
-    ) {
-      last.end = section.end;
-    } else {
-      merged.push({ ...section });
-    }
-  }
-
-  const filtered = options.minDurationOnly
-    ? merged.filter(section =>
-    section.end - section.start >= options.minDurationMs
-      )
-    : merged;
-
-  return filtered.map(({ stateKey, ...section }) => section);
+  return mergeVolumeCompareSectionsAsBands(filtered);
 }
 
 function drawVolumeCompareGrid(ctx, plot, viewStart, viewEnd, xForTime, yForVolume) {
