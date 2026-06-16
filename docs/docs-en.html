@@ -1880,36 +1880,48 @@ this check uses <code>effective scroll speed, <span style="color:#ffd86b; font-w
 <pre><code>effective scroll speed = 175 × SliderMultiplier × SV × BPM / 60</code></pre>
 
 Effective scroll speed represents how many pixels notes move across the screen per second.<br>
-The unit used is <code>px/s</code> (pixels per second).<br><br>
+The unit used is <code>px/s</code> (pixels per second).<br>
+It can also be converted to <code>visual BPM</code>, assuming <code>SM 1.4</code> and <code>SV x1.0</code>.<br><br>
 
-The graph uses song time as its horizontal axis and <code>px/s</code> as its vertical axis,
-displaying each difficulty's effective scroll speed as a step line.<br>
-Lines use virtual SR colors based on the difficulty order, and each difficulty can be shown or hidden using its checkbox.
-These colors do not represent calculated Star Ratings.<br>
-Drag across the graph to zoom into a time range, or click it to open that timestamp in osu!editor.
-Hovering over the graph shows the <code>px/s</code>, BPM, SV, and SliderMultiplier at that time.<br><br>
+<strong>Graph display</strong><br>
+<figure class="doc-graph-example">
+  <img src="images/spread-scroll-speed-graph-example.png" alt="Scroll speed graph example for Kantan, Futsuu, Muzukashii, Oni, and Inner Oni">
+  <figcaption>Scroll speed graph example. Each difficulty's effective scroll speed is displayed as a step line.</figcaption>
+</figure>
 
-The scroll speed change graph below plots each note-to-note change as
-<code>px/s after - px/s before</code>.<br>
-Accelerations appear above the zero line and decelerations below it. Thin connecting lines are visual guides for following the progression.
-Hovering near a point shows the before/after speeds, change amount, ratio, and note interval.<br>
-Difficulty visibility, zoom range, and hover position are shared between both graphs.<br><br>
+<figure class="doc-graph-example">
+  <img src="images/spread-scroll-delta-graph-example.png" alt="Scroll speed change graph example for Kantan, Futsuu, Muzukashii, Oni, and Inner Oni">
+  <figcaption>Scroll speed change graph example. Each note-to-note scroll speed change is displayed as a point.</figcaption>
+</figure>
+<br>
+There are two graphs. Both graphs use virtual SR colors based on the difficulty order to color lines and points.<br>
+These colors do not represent calculated Star Ratings.<br><br>
 
-The change graph can highlight the following review targets:
+The first graph, the scroll speed graph, displays the effective scroll speed at each note as a step line.<br>
+The vertical axis can be switched between <code>px/s</code> and <code>visual BPM</code>.<br>
+Hovering over the graph shows the scroll speed, BPM, SV, and SliderMultiplier at that time.<br><br>
+
+The second graph, the scroll speed change graph, displays each note-to-note speed change as a point.<br>
+The value is <code>speed after - speed before</code>, and the vertical axis can be switched between <code>Δ px/s</code> and <code>Δ visual BPM</code>.<br>
+Accelerations appear above the zero line and decelerations below it. Thin connecting lines are visual guides for following the progression.<br>
+Hovering near a point shows the before/after speeds, change amount, ratio, and note interval.<br><br>
+
+Both graphs can be dragged to zoom into a time range, and clicking a graph opens that timestamp in osu!editor.<br>
+Enabling <code>Show detailed hover information</code> displays more information than the simple hover view.<br><br>
+
+The graphs provide the following four display options:
 <ul>
-  <li><code>Show unnatural scroll speed progression</code>: Marks affected timestamps with red vertical bands and outlines the points used by the check.</li>
-  <li><code>Show scroll change consistency issues</code>: Uses orange bands when a lower difficulty has a stronger change, red bands for opposite change directions, and outlines the related points.</li>
+  <li><code>Show recommended scroll speed limits as dashed lines</code>: Displays the guideline value for affected difficulties using dashed lines in each difficulty's color.</li>
+  <li><code>Show rapid scroll speed changes</code>: Highlights sections that meet the warning conditions with translucent backgrounds in the speed graph and emphasized points in the change graph.</li>
+  <li><code>Show unnatural scroll speed progression</code>: Highlights places where the scroll speed progression is unnatural relative to difficulty order.</li>
+  <li><code>Show scroll change consistency issues</code>: Highlights places where lower difficulties have stronger changes, or where change directions are opposite.</li>
 </ul>
-Only one of these views can be enabled at a time. Hover near a band or point to see the affected difficulties and the reason.<br><br>
+These four display options cannot be enabled at the same time. Enabling another option automatically clears the previous selection.<br>
+When a display option is enabled, only difficulties with issues are shown automatically. Difficulties without issues are hidden.<br><br>
 
-The warning display options provide the following views:
-<ul>
-  <li><code>Show recommended scroll speed limits as dashed lines</code>: Displays the configured limit for each visible difficulty using a dashed line in that difficulty's color.</li>
-  <li><code>Show rapid scroll speed changes</code>: Highlights matching sections with a translucent difficulty-colored background in the upper graph and larger outlined points in the change graph.</li>
-</ul>
-Only one warning display can be enabled at a time. Enabling another option automatically clears the previous selection.<br><br>
-
-The displayed values are:
+<strong>Table display</strong><br>
+The table displays each difficulty's scroll speed summary and detected review targets as text.<br>
+The main displayed values are:
 
 <ul>
   <li><code>Min px/s</code>: The slowest effective scroll speed used in the diff</li>
@@ -1917,14 +1929,15 @@ The displayed values are:
   <li><code>Delta</code>: The difference between the maximum and minimum speed</li>
   <li><code>Ratio</code>: Maximum speed / minimum speed</li>
   <li><code>SV range</code>: The SV range used in the diff</li>
+  <li><code>Rapid scroll speed changes</code>: Locations where scroll speed changes sharply between adjacent notes</li>
+  <li><code>Scroll speed progression</code>: Locations where scroll speed progression is unnatural relative to difficulty order</li>
+  <li><code>Scroll change consistency</code>: Locations where scroll speed changes around the same time are strongly inconsistent between difficulties</li>
 </ul>
 
 <p>
 Only scroll speeds applied to sections containing actual notes are considered.<br>
 SV changes in empty sections are ignored to avoid false positives caused by decorative SV effects.
 </p>
-
-This check also detects locations where scroll speed changes drastically between adjacent notes.
 </div>
 
 <div class="section section-detect">
