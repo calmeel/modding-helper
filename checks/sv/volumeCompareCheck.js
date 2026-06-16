@@ -27,6 +27,7 @@ function runVolumeCompareCheck(sources, options = {}) {
     endTime: getLastHitObjectTime(source.text),
     breakIntervals: parseVolumeCompareBreakIntervals(source.text)
   }));
+  const overallEndTime = Math.max(0, ...parsed.map(item => item.endTime));
 
   const boundaries = collectVolumeCompareBoundaries(parsed);
   const intervals = [];
@@ -67,31 +68,25 @@ function runVolumeCompareCheck(sources, options = {}) {
     });
   }
 
-  let mergedResults = mergeAdjacentVolumeCompareSections(
-    intervals.filter(section => {
-      if (section.diff === 0) return false;
-      return !thresholdOnly || section.diff >= thresholdPercent;
-    })
-  );
-
-  if (minDurationOnly) {
-    mergedResults = mergedResults.filter(section =>
-      (section.end - section.start) >= minDurationMs
-    );
-  }
+  const displaySections = filterVolumeCompareSectionsByOptions(intervals, {
+    thresholdOnly,
+    thresholdPercent,
+    minDurationOnly,
+    minDurationMs
+  });
 
   return {
-    results: mergedResults,
+    results: displaySections,
     intervals,
     series: parsed.map(item => ({
       fileName: item.fileName,
       mode: item.mode,
       endTime: item.endTime,
-      points: buildVolumeCompareSeries(item.timingPoints, item.endTime),
+      points: buildVolumeCompareSeries(item.timingPoints, overallEndTime),
       kiaiIntervals: buildKiaiIntervals(item.timingPoints, item.endTime),
       breakIntervals: item.breakIntervals
     })),
-    endTime: Math.max(0, ...parsed.map(item => item.endTime)),
+    endTime: overallEndTime,
     options: {
       thresholdOnly,
       thresholdPercent,
@@ -100,6 +95,61 @@ function runVolumeCompareCheck(sources, options = {}) {
     },
     needTwoDiffs: parsed.length < 2
   };
+}
+
+function filterVolumeCompareSectionsByOptions(intervals, options = {}) {
+  const thresholdOnly = options.thresholdOnly ?? true;
+  const thresholdPercent = options.thresholdPercent ?? 5;
+  const minDurationOnly = options.minDurationOnly ?? true;
+  const minDurationMs = options.minDurationMs ?? 50;
+
+  const sections = intervals.filter(section => {
+    if (section.diff === 0) return false;
+    return !thresholdOnly || section.diff >= thresholdPercent;
+  });
+
+  if (!minDurationOnly) return sections;
+
+  const groups = groupContinuousVolumeCompareSections(sections);
+  const allowed = new Set();
+
+  for (const group of groups) {
+    const start = group[0].start;
+    const end = group[group.length - 1].end;
+
+    if (end - start < minDurationMs) continue;
+
+    for (const section of group) {
+      allowed.add(section);
+    }
+  }
+
+  return sections.filter(section => allowed.has(section));
+}
+
+function groupContinuousVolumeCompareSections(sections) {
+  const groups = [];
+
+  for (const section of sections) {
+    const lastGroup = groups[groups.length - 1];
+    const last = lastGroup?.[lastGroup.length - 1];
+
+    if (last && last.end === section.start) {
+      lastGroup.push(section);
+    } else {
+      groups.push([section]);
+    }
+  }
+
+  return groups;
+}
+
+function mergeVolumeCompareSectionsAsBands(sections) {
+  return groupContinuousVolumeCompareSections(sections).map(group => ({
+    start: group[0].start,
+    end: group[group.length - 1].end,
+    diff: Math.max(...group.map(section => section.diff))
+  }));
 }
 
 function collectVolumeCompareBoundaries(parsed) {
@@ -209,27 +259,6 @@ function mergeVolumeCompareSimpleIntervals(intervals) {
       last.end = Math.max(last.end, interval.end);
     } else {
       merged.push({ ...interval });
-    }
-  }
-
-  return merged;
-}
-
-function mergeAdjacentVolumeCompareSections(sections) {
-  if (!sections.length) return [];
-
-  const merged = [{ ...sections[0] }];
-
-  for (const section of sections.slice(1)) {
-    const last = merged[merged.length - 1];
-
-    const sameStates =
-      JSON.stringify(last.states) === JSON.stringify(section.states);
-
-    if (last.end === section.start && sameStates) {
-      last.end = section.end;
-    } else {
-      merged.push({ ...section });
     }
   }
 
