@@ -266,11 +266,11 @@ function findMetadataSpacingIssues(value, fieldName) {
     });
   }
 
-  for (const match of text.matchAll(/　/g)) {
+  for (const match of text.matchAll(/\u3000/g)) {
     issues.push({
       fieldName,
       type: "fullWidthSpace",
-      marker: "　",
+      marker: "\u3000",
       expected: "half-width space",
       context: getMetadataSpacingIssueContext(text, match.index)
     });
