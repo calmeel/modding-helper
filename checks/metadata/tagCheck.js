@@ -272,12 +272,12 @@ const TAG_RELATED_RULES = [
     suggestGroup: ["tiebreaker", "tb"]
   },
   {
-    trigger: ["ブルーアーカイブ", "ブルアカ", "buruaka"],
-    suggestGroup: ["ブルアカ", "buruaka", "yostar", "nexon"]
+    trigger: ["ブルーアーカイブ", "ブルアカ", "buruaka", "blueaka"],
+    suggestGroup: ["ブルアカ", "buruaka", "blueaka", "yostar", "nexon", "games"]
   },
   {
     triggerAll: ["-Blue", "Archive-"],
-    suggestGroup: ["ブルーアーカイブ", "ブルアカ", "buruaka", "yostar", "nexon"]
+    suggestGroup: ["ブルーアーカイブ", "ブルアカ", "buruaka", "blueaka", "yostar", "nexon", "games"]
   },
 ];
 
@@ -332,7 +332,7 @@ const TAG_SOURCE_RULES = [
   },
   {
     source: ["ブルーアーカイブ -Blue Archive-"],
-    tags: ["ブルアカ", "buruaka", "yostar"]
+    tags: ["ブルアカ", "buruaka", "blueaka", "yostar", "nexon", "games"]
   },
 ];
 
