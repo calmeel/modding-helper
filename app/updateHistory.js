@@ -206,6 +206,18 @@ const updateHistoryEntries = [
       ]
     }
   },
+  {
+    date: "2026/06/23",
+    type: "update",
+    items: {
+      en: [
+        "Implemented a check for duplicate tags."
+      ],
+      ja: [
+        "タグの重複チェックを実装"
+      ]
+    }
+  },
 ];
 
 const updateHistoryTypeLabels = {

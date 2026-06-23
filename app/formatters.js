@@ -1236,6 +1236,43 @@ function formatMultipleTagResults(results, t) {
   lines.push("");
   lines.push(formatSeparator());
   lines.push("");
+  lines.push(formatSectionTitle(t("tagDuplicateCheck")));
+  lines.push("");
+
+  const duplicateGroups = groupTagResultsByNormalizedTags(sortedResults)
+    .filter(group => group.representative.duplicateTags?.length > 0);
+
+  if (!duplicateGroups.length) {
+    lines.push(t("noDuplicateTags"));
+  } else {
+    lines.push(
+      duplicateGroups
+        .map(group => formatTagDuplicateResult(group.representative, t, group))
+        .join("\n\n" + formatSeparator() + "\n\n")
+    );
+  }
+
+  lines.push("");
+  lines.push(formatSeparator());
+  lines.push("");
+  lines.push(formatSectionTitle(t("tagMetadataDuplicateCheck")));
+  lines.push("");
+
+  const metadataDuplicateGroups = groupTagMetadataDuplicateTags(sortedResults);
+
+  if (!metadataDuplicateGroups.length) {
+    lines.push(t("noTagMetadataDuplicateTags"));
+  } else {
+    lines.push(
+      metadataDuplicateGroups
+        .map(group => formatTagMetadataDuplicateGroup(group, t))
+        .join("\n\n" + formatSeparator() + "\n\n")
+    );
+  }
+
+  lines.push("");
+  lines.push(formatSeparator());
+  lines.push("");
   lines.push(formatSectionTitle(t("tagSpellingCheck")));
   lines.push("");
 
@@ -1917,6 +1954,91 @@ function formatTagSpellingResult(result, t, group = null) {
   }
 
   return lines.join("\n").trimEnd();
+}
+
+function formatTagDuplicateResult(result, t, group = null) {
+  const lines = [];
+
+  lines.push(group ? formatGroupedTagHeader(group) : getDifficultyNameText(result.fileName));
+  lines.push("");
+
+  for (const item of result.duplicateTags ?? []) {
+    const variants = (item.variants ?? [item.tag])
+      .map(tag => `<code>${escapeHtml(tag)}</code>`)
+      .join(" ");
+
+    lines.push(
+      `<span class="result-warn">${escapeHtml(t("tagDuplicateFound"))}:</span> ` +
+      `${variants} ` +
+      `<span class="result-note">(${escapeHtml(t("tagDuplicateCount"))}: ${escapeHtml(String(item.count))})</span>`
+    );
+  }
+
+  return lines.join("\n").trimEnd();
+}
+
+function groupTagMetadataDuplicateTags(results) {
+  const map = new Map();
+
+  for (const result of results) {
+    for (const item of result.metadataDuplicateTags ?? []) {
+      const fields = [...new Set(item.fields ?? [])].sort();
+      const variants = [...new Set(item.metadataVariants ?? [])].sort();
+      if (!fields.length) continue;
+
+      const key = [
+        normalizeTagToken(item.tag),
+        fields.join("|"),
+        variants.join("|")
+      ].join("::");
+
+      if (!map.has(key)) {
+        map.set(key, {
+          tag: item.tag,
+          fields,
+          metadataVariants: variants,
+          fileNames: []
+        });
+      }
+
+      map.get(key).fileNames.push(result.fileName);
+    }
+  }
+
+  return [...map.values()];
+}
+
+function formatTagMetadataDuplicateGroup(group, t) {
+  const lines = [];
+
+  lines.push(
+    group.fileNames
+      .map(fileName => getDifficultyNameText(fileName))
+      .join(", ")
+  );
+
+  lines.push("");
+  lines.push(
+    `<span class="result-warn">${escapeHtml(t("tagMetadataDuplicateFound"))}:</span> ` +
+    `<code>${escapeHtml(group.tag)}</code>`
+  );
+  lines.push(
+    `<span class="result-warn">${escapeHtml(t("tagMetadataFields"))}:</span> ` +
+    group.fields
+      .map(field => `<code>${escapeHtml(field)}</code>`)
+      .join(" ")
+  );
+
+  if (group.metadataVariants?.length) {
+    lines.push(
+      `<span class="result-warn">${escapeHtml(t("tagMetadataDuplicateSourceWords"))}:</span> ` +
+      group.metadataVariants
+        .map(tag => `<code>${escapeHtml(tag)}</code>`)
+        .join(" ")
+    );
+  }
+
+  return lines.join("\n");
 }
 
 function formatTagRelatedResult(result, t, group = null) {
