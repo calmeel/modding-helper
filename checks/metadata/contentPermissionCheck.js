@@ -25,7 +25,7 @@ const CONTENT_PERMISSION_RULES = [
     messageEn:
       "This artist is disallowed by osu!official. Do not use this content.",
 
-    link: "https://osu.ppy.sh/wiki/ja/Rules/Content_usage_permissions"
+    link: "https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"
   },
   {
     category: "disallowedArtist",
@@ -47,7 +47,7 @@ const CONTENT_PERMISSION_RULES = [
     messageEn:
       "This label is disallowed by osu!official. Do not use this content.",
 
-    link: "https://osu.ppy.sh/wiki/ja/Rules/Content_usage_permissions"
+    link: "https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"
   },
   {
     category: "conditionalLabel",
@@ -67,7 +67,55 @@ const CONTENT_PERMISSION_RULES = [
     messageEn:
       "This label is conditionally allowed by osu!official. Please verify the usage conditions.",
 
-    link: "https://osu.ppy.sh/wiki/ja/Rules/Content_usage_permissions"
+    link: "https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"
+  },
+  {
+    category: "conditionalArtist",
+    level: "warn",
+
+    fields: ["artist", "artistUnicode", "title", "titleUnicode"],
+
+    keywords: [
+      "DJ Poyoshi",
+      "DJPoyoshi",
+      "DJ勝也",
+      "lapix",
+      "HiTECH NINJA",
+      "PSYQUI",
+      "Blacklolita",
+      "YUKIYANAGI"
+    ],
+
+    title: "MEGAREX affiliated artists",
+
+    messageJa:
+      "MEGAREX 所属のアーティストです。osu!official 上で条件付きで使用が許可されているレーベルです。使用条件を確認してください。",
+
+    messageEn:
+      "This artist is affiliated with MEGAREX, a label that is conditionally allowed by osu!official. Please verify the usage conditions.",
+
+    link: "https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"
+  },
+  {
+    category: "conditionalArtist",
+    level: "warn",
+
+    fields: ["artist", "artistUnicode", "title", "titleUnicode"],
+
+    keywords: [
+      "Mameyudoufu",
+      "rejection"
+    ],
+
+    title: "MEGAREX affiliated Featured Artists",
+
+    messageJa:
+      "MEGAREX 所属のアーティストです。osu!official 上で条件付きで使用が許可されているレーベルです。使用条件を確認してください。Featured Artist 楽曲一覧に含まれる場合は使用できます。",
+
+    messageEn:
+      "This artist is affiliated with MEGAREX, a label that is conditionally allowed by osu!official. Please verify the usage conditions. If the track is listed as a Featured Artist track, it can be used.",
+
+    link: "https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"
   },
   {
     category: "conditionalArtist",
@@ -104,7 +152,7 @@ const CONTENT_PERMISSION_RULES = [
       "This artist is conditionally allowed by osu!official. Please verify the usage conditions.",
 
     link:
-      "https://osu.ppy.sh/wiki/ja/Rules/Content_usage_permissions"
+      "https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"
   },
 {
   category: "personalBan",
