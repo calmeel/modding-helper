@@ -70,6 +70,36 @@ const CONTENT_PERMISSION_RULES = [
     link: "https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"
   },
   {
+    category: "conditionalLabel",
+    level: "warn",
+
+    fields: ["tags"],
+
+    keywords: [
+      "Rave Taisen Compilation Album",
+      "レイヴ大戦コンピレーション",
+      "Ultra Hitech",
+      "BASS AVENGERS",
+      "FÜGENE",
+      "SPD GAR",
+      "epoqc",
+      "Evangelix",
+      "Re:BIBLE",
+      "ネオンストライド",
+      "encore -Emotional Vocal Pop"
+    ],
+
+    title: "MEGAREX albums",
+
+    messageJa:
+      "MEGAREX のアルバムです。osu!official 上で条件付きで使用が許可されているレーベルです。使用条件を確認してください。Featured Artist 楽曲一覧に含まれる場合は使用できます。",
+
+    messageEn:
+      "This album is released by MEGAREX, a label that is conditionally allowed by osu!official. Please verify the usage conditions. If the track is listed as a Featured Artist track, it can be used.",
+
+    link: "https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"
+  },
+  {
     category: "conditionalArtist",
     level: "warn",
 
