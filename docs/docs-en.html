@@ -496,11 +496,11 @@
       Tool
     </a>
 
-    <a href="docs.html">
+    <a href="docs.html" data-doc-language-link="docs.html">
       日本語
     </a>
 
-    <a class="active-language" href="docs-en.html" aria-current="page">
+    <a class="active-language" href="docs-en.html" aria-current="page" data-doc-language-link="docs-en.html">
       English
     </a>
   </div>
@@ -2407,26 +2407,73 @@ In such cases, align the first red lines manually before comparing again.
 document.addEventListener("DOMContentLoaded", () => {
   const buttons = document.querySelectorAll(".doc-tab-button");
   const panels = document.querySelectorAll(".doc-tab-panel");
+  const languageLinks = document.querySelectorAll("[data-doc-language-link]");
+  const defaultTabName = "intro";
 
-  function activateDocTab(tabName) {
+  function getValidTabName(tabName) {
+    return Array.from(buttons).some(button => button.dataset.docTab === tabName)
+      ? tabName
+      : defaultTabName;
+  }
+
+  function updateLanguageLinks(tabName) {
+    languageLinks.forEach(link => {
+      const target = link.dataset.docLanguageLink;
+      link.href = `${target}?tab=${encodeURIComponent(tabName)}`;
+    });
+  }
+
+  function updateCurrentUrl(tabName) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", tabName);
+    window.history.replaceState(null, "", url);
+  }
+
+  function activateDocTab(tabName, options = {}) {
+    const { updateUrl = true, resetScroll = true } = options;
+    const validTabName = getValidTabName(tabName);
+
     buttons.forEach(button => {
-      button.classList.toggle("active", button.dataset.docTab === tabName);
+      const isActive = button.dataset.docTab === validTabName;
+      button.classList.toggle("active", isActive);
+
+      if (isActive) {
+        const group = button.closest(".doc-tab-group");
+        if (group) {
+          group.open = true;
+        }
+      }
     });
 
     panels.forEach(panel => {
-      panel.classList.toggle("active", panel.dataset.docTabPanel === tabName);
+      panel.classList.toggle("active", panel.dataset.docTabPanel === validTabName);
     });
 
-    window.scrollTo({
-      top: 0,
-      behavior: "instant"
-    });
+    updateLanguageLinks(validTabName);
+
+    if (updateUrl) {
+      updateCurrentUrl(validTabName);
+    }
+
+    if (resetScroll) {
+      window.scrollTo({
+        top: 0,
+        behavior: "instant"
+      });
+    }
   }
 
   buttons.forEach(button => {
     button.addEventListener("click", () => {
       activateDocTab(button.dataset.docTab);
     });
+  });
+
+  const requestedTabName = new URLSearchParams(window.location.search).get("tab")
+    || window.location.hash.replace(/^#/, "");
+  activateDocTab(requestedTabName || defaultTabName, {
+    updateUrl: false,
+    resetScroll: false
   });
 });
 </script>
