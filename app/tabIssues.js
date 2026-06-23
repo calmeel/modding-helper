@@ -263,6 +263,20 @@ function getTagIssueLevel(results) {
     return TAB_LEVEL_ERROR;
   }
 
+  const hasDuplicateTags =
+    results.some(result => result.duplicateTags?.length > 0);
+
+  if (hasDuplicateTags) {
+    return TAB_LEVEL_WARN;
+  }
+
+  const hasMetadataDuplicateTags =
+    results.some(result => result.metadataDuplicateTags?.length > 0);
+
+  if (hasMetadataDuplicateTags) {
+    return TAB_LEVEL_WARN;
+  }
+
   const hasRelatedSuggestions =
     results.some(result =>
       (result.relatedSuggestions?.length ?? 0) > 0 ||

@@ -1307,13 +1307,19 @@ cannot be detected by AiMod or Mapset Verifier.
 First, this check verifies whether Tags are consistent across all difficulties
 (same functionality as Mapset Verifier).<br><br>
 
-It then detects the following spacing issues in each difficulty's Tags:
+It then detects the following issues in each difficulty's Tags:
 <ul>
   <li>Two or more consecutive half-width spaces between tags</li>
   <li>Full-width spaces between tags</li>
+  <li>Duplicate tags appearing two or more times</li>
+  <li>Tags that are already present in Title / Artist / Source fields</li>
   <li>Tags that may contain spelling mistakes</li>
   <li>Suggested related tags / abbreviations</li>
 </ul>
+
+The duplicate tag check warns when the same tag appears multiple times in Tags.<br>
+It also treats Title / TitleUnicode / Artist / ArtistUnicode / Source as tag-like text split by half-width spaces,
+and displays confirmation targets when those words are also present in Tags.<br><br>
 
 The spell checker mainly targets genre names and mapping-related tags,
 detecting possible one-character substitutions, omissions, or extra characters.<br>

@@ -339,17 +339,20 @@ const TAG_SOURCE_RULES = [
 function runTagCheck(text, fileName) {
   const tagsLine = findMetadataTagsLine(text);
   const sourceLine = findMetadataLine(text, "Source");
-  const featMetadataFields = [
+  const metadataFields = [
     { field: "Title", value: findMetadataLine(text, "Title")?.value },
     { field: "TitleUnicode", value: findMetadataLine(text, "TitleUnicode")?.value },
     { field: "Artist", value: findMetadataLine(text, "Artist")?.value },
-    { field: "ArtistUnicode", value: findMetadataLine(text, "ArtistUnicode")?.value }
+    { field: "ArtistUnicode", value: findMetadataLine(text, "ArtistUnicode")?.value },
+    { field: "Source", value: sourceLine?.value }
   ];
   const results = [];
   const spellingSuggestions = [];
   const relatedSuggestions = [];
   const metadataSuggestions = [];
   const sourceSuggestions = [];
+  const duplicateTags = [];
+  const metadataDuplicateTags = [];
 
   if (!tagsLine) {
     return {
@@ -365,6 +368,8 @@ function runTagCheck(text, fileName) {
       spellingSuggestions,
       relatedSuggestions,
       metadataSuggestions,
+      duplicateTags,
+      metadataDuplicateTags,
       sourceSuggestions
     };
   }
@@ -398,7 +403,9 @@ function runTagCheck(text, fileName) {
 
   spellingSuggestions.push(...findTagSpellingSuggestions(tags));
   relatedSuggestions.push(...findTagRelatedSuggestions(tags, sourceLine?.value ?? ""));
-  metadataSuggestions.push(...findFeatTagSuggestions(tags, featMetadataFields));
+  metadataSuggestions.push(...findFeatTagSuggestions(tags, metadataFields));
+  duplicateTags.push(...findDuplicateTags(tags));
+  metadataDuplicateTags.push(...findMetadataDuplicateTags(tags, metadataFields));
   sourceSuggestions.push(
     ...findSourceTagSuggestions(
       sourceLine?.value ?? "",
@@ -414,6 +421,8 @@ function runTagCheck(text, fileName) {
     spellingSuggestions,
     relatedSuggestions,
     metadataSuggestions,
+    duplicateTags,
+    metadataDuplicateTags,
     sourceSuggestions
   };
 }
@@ -495,6 +504,75 @@ function getTagWords(tags) {
 
 function getNormalizedTagWords(tags) {
   return getTagWords(tags).map(normalizeTagToken).filter(Boolean);
+}
+
+function findDuplicateTags(tags) {
+  const map = new Map();
+
+  for (const tag of getTagWords(tags)) {
+    const normalized = normalizeTagToken(tag);
+    if (!normalized) continue;
+
+    if (!map.has(normalized)) {
+      map.set(normalized, {
+        tag,
+        count: 0,
+        variants: []
+      });
+    }
+
+    const item = map.get(normalized);
+    item.count++;
+
+    if (!item.variants.includes(tag)) {
+      item.variants.push(tag);
+    }
+  }
+
+  return [...map.values()]
+    .filter(item => item.count >= 2);
+}
+
+function findMetadataDuplicateTags(tags, metadataFields) {
+  const tagMap = new Map();
+
+  for (const tag of getTagWords(tags)) {
+    const normalized = normalizeTagToken(tag);
+    if (!normalized || tagMap.has(normalized)) continue;
+
+    tagMap.set(normalized, tag);
+  }
+
+  const duplicateMap = new Map();
+
+  for (const item of metadataFields) {
+    const field = item.field;
+
+    for (const metadataTag of getTagWords(item.value ?? "")) {
+      const normalized = normalizeTagToken(metadataTag);
+      if (!normalized || !tagMap.has(normalized)) continue;
+
+      if (!duplicateMap.has(normalized)) {
+        duplicateMap.set(normalized, {
+          tag: tagMap.get(normalized),
+          fields: [],
+          metadataVariants: []
+        });
+      }
+
+      const duplicate = duplicateMap.get(normalized);
+
+      if (!duplicate.fields.includes(field)) {
+        duplicate.fields.push(field);
+      }
+
+      if (!duplicate.metadataVariants.includes(metadataTag)) {
+        duplicate.metadataVariants.push(metadataTag);
+      }
+    }
+  }
+
+  return [...duplicateMap.values()];
 }
 
 function compareTagsAcrossDiffs(results) {
