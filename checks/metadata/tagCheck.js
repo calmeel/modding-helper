@@ -404,6 +404,7 @@ function runTagCheck(text, fileName) {
   spellingSuggestions.push(...findTagSpellingSuggestions(tags));
   relatedSuggestions.push(...findTagRelatedSuggestions(tags, sourceLine?.value ?? ""));
   metadataSuggestions.push(...findFeatTagSuggestions(tags, metadataFields));
+  metadataSuggestions.push(...findVersionTagSuggestions(tags, metadataFields));
   duplicateTags.push(...findDuplicateTags(tags));
   metadataDuplicateTags.push(...findMetadataDuplicateTags(tags, metadataFields));
   sourceSuggestions.push(
@@ -744,6 +745,29 @@ function findFeatTagSuggestions(tags, metadataFields) {
   return [{
     fields,
     marker: "feat.",
+    suggestions
+  }];
+}
+
+function findVersionTagSuggestions(tags, metadataFields) {
+  const fields = metadataFields
+    .filter(item =>
+      ["Title", "TitleUnicode"].includes(item.field) &&
+      /\bver\./i.test(String(item.value ?? ""))
+    )
+    .map(item => item.field);
+
+  if (!fields.length) return [];
+
+  const wordSet = new Set(getNormalizedTagWords(tags));
+  const suggestions = ["version"]
+    .filter(tag => !wordSet.has(normalizeTagToken(tag)));
+
+  if (!suggestions.length) return [];
+
+  return [{
+    fields,
+    marker: "Ver.",
     suggestions
   }];
 }
