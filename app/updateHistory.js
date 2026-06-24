@@ -218,6 +218,18 @@ const updateHistoryEntries = [
       ]
     }
   },
+  {
+    date: "2026/06/24",
+    type: "update",
+    items: {
+      en: [
+        "Added a check for the rest moment."
+      ],
+      ja: [
+        "rest moment のチェックを追加"
+      ]
+    }
+  },
 ];
 
 const updateHistoryTypeLabels = {
