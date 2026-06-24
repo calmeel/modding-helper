@@ -62,6 +62,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const spreadDensityDiffToggles = document.getElementById("spreadDensityDiffToggles");
   const spreadDensityResetZoom = document.getElementById("spreadDensityResetZoom");
   const spreadDensityShowInversions = document.getElementById("spreadDensityShowInversions");
+  const spreadRestMomentsOutput = document.getElementById("spreadRestMomentsOutput");
+  const spreadRestThresholdTable = document.getElementById("spreadRestThresholdTable");
+  const spreadRestChartSection = document.getElementById("spreadRestChartSection");
+  const spreadRestChartWrap = document.getElementById("spreadRestChartWrap");
+  const spreadRestChart = document.getElementById("spreadRestChart");
+  const spreadRestChartTooltip = document.getElementById("spreadRestChartTooltip");
+  const spreadRestChartEmpty = document.getElementById("spreadRestChartEmpty");
+  const spreadRestResetZoom = document.getElementById("spreadRestResetZoom");
+  const spreadRestHighBpmEnabled = document.getElementById("spreadRestHighBpmEnabled");
+  const spreadRestHighBpmThreshold = document.getElementById("spreadRestHighBpmThreshold");
+  const spreadRestHighBpmScale = document.getElementById("spreadRestHighBpmScale");
+  const spreadRestLowBpmEnabled = document.getElementById("spreadRestLowBpmEnabled");
+  const spreadRestLowBpmThreshold = document.getElementById("spreadRestLowBpmThreshold");
+  const spreadRestLowBpmScale = document.getElementById("spreadRestLowBpmScale");
+  const spreadRestIgnoreSliders = document.getElementById("spreadRestIgnoreSliders");
+  const spreadRestIgnoreSpinners = document.getElementById("spreadRestIgnoreSpinners");
+  const spreadRestUseAdjustedThresholds = document.getElementById("spreadRestUseAdjustedThresholds");
   const spreadFinishersOutput = document.getElementById("spreadFinishersOutput");
   const spreadScrollSpeedOutput = document.getElementById("spreadScrollSpeedOutput");
   const spreadScrollChartSection = document.getElementById("spreadScrollChartSection");
@@ -176,6 +193,23 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadDensityDiffToggles,
     spreadDensityResetZoom,
     spreadDensityShowInversions,
+    spreadRestMomentsOutput,
+    spreadRestThresholdTable,
+    spreadRestChartSection,
+    spreadRestChartWrap,
+    spreadRestChart,
+    spreadRestChartTooltip,
+    spreadRestChartEmpty,
+    spreadRestResetZoom,
+    spreadRestHighBpmEnabled,
+    spreadRestHighBpmThreshold,
+    spreadRestHighBpmScale,
+    spreadRestLowBpmEnabled,
+    spreadRestLowBpmThreshold,
+    spreadRestLowBpmScale,
+    spreadRestIgnoreSliders,
+    spreadRestIgnoreSpinners,
+    spreadRestUseAdjustedThresholds,
     spreadFinishersOutput,
     spreadScrollSpeedOutput,
     spreadScrollChartSection,
@@ -596,6 +630,11 @@ document.addEventListener("DOMContentLoaded", () => {
     updateTabIssueStates(state);
   }
 
+  function renderSpreadResultAndUpdateTabs() {
+    renderSpreadResult();
+    updateTabIssueStates(state);
+  }
+
   function renderEarlyNoteResult() {
     renderEarlyNoteResultFromResults(state.earlyNote, dom, t);
   }
@@ -626,7 +665,16 @@ document.addEventListener("DOMContentLoaded", () => {
     volumeCompareMinDurationOnly,
     renderVolumeCompareResult: renderVolumeCompareResultAndUpdateTabs,
     spreadDensityMinDiff,
-    renderSpreadResult,
+    spreadRestHighBpmEnabled,
+    spreadRestHighBpmThreshold,
+    spreadRestHighBpmScale,
+    spreadRestLowBpmEnabled,
+    spreadRestLowBpmThreshold,
+    spreadRestLowBpmScale,
+    spreadRestIgnoreSliders,
+    spreadRestIgnoreSpinners,
+    spreadRestUseAdjustedThresholds,
+    renderSpreadResult: renderSpreadResultAndUpdateTabs,
   });
 
   async function handleFile(file) {

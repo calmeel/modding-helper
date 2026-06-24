@@ -558,6 +558,7 @@
     <button class="doc-tab-button" data-doc-tab="spread2">OD / HP</button>
     <button class="doc-tab-button" data-doc-tab="spread3">Note Count</button>
     <button class="doc-tab-button" data-doc-tab="spreadDensity">Note Density</button>
+    <button class="doc-tab-button" data-doc-tab="spreadRest">Rest moment</button>
     <button class="doc-tab-button" data-doc-tab="spread4">Finishers</button>
     <button class="doc-tab-button" data-doc-tab="spread5">Scroll Speed</button>
   </details>
@@ -1826,6 +1827,61 @@ For this reason, displayed measures should always be evaluated by reviewing the 
 
 In addition, to prevent notes near measure boundaries from being incorrectly classified into adjacent measures due to approximately <code>1 ms</code> timing differences,
 notes within <code>±3 ms</code> of a measure boundary are corrected toward the boundary side.
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="spreadRest">
+<h2>Spread Comparison: Rest moment</h2>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection</span><br>
+Based on MapsetVerifier's Taiko Compose / Rest moment check, this detects overly long continuously mapped sections in Kantan / Futsuu / Muzukashii / Oni difficulties.<br><br>
+
+Gap calculation is basically the same as MapsetVerifier. When judging whether a gap counts as a rest moment, the check adds a <code>2 ms</code> tolerance to the actual gap before comparing it against the required length. For example, if a <code>1/1</code> rest is required, a gap that is up to <code>2 ms</code> shorter than exactly <code>1/1</code> is still treated as a rest moment to absorb small timing differences.<br><br>
+
+<table class="ratio-threshold-table">
+  <thead>
+    <tr>
+      <th>Difficulty</th>
+      <th>Gap treated as required rest</th>
+      <th><span style="color:#ffd86b; font-weight:bold;">Warning</span></th>
+      <th><span style="color:#ff6b6b; font-weight:bold;">Error</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Kantan</code></td>
+      <td><code>3/1</code> or longer</td>
+      <td>Above <code><span style="color:#ffd86b; font-weight:bold;">36/1</span></code></td>
+      <td>Above <code><span style="color:#ff6b6b; font-weight:bold;">44/1</span></code></td>
+    </tr>
+    <tr>
+      <td><code>Futsuu</code></td>
+      <td><code>2/1</code> or longer</td>
+      <td>Above <code><span style="color:#ffd86b; font-weight:bold;">36/1</span></code></td>
+      <td>Above <code><span style="color:#ff6b6b; font-weight:bold;">44/1</span></code></td>
+    </tr>
+    <tr>
+      <td><code>Muzukashii</code></td>
+      <td><code>3/2</code> or longer, or three consecutive <code>1/1</code> or longer gaps</td>
+      <td>Above <code><span style="color:#ffd86b; font-weight:bold;">36/1</span></code></td>
+      <td>Above <code><span style="color:#ff6b6b; font-weight:bold;">44/1</span></code></td>
+    </tr>
+    <tr>
+      <td><code>Oni</code></td>
+      <td><code>1/1</code> or longer</td>
+      <td>Above <code><span style="color:#ffd86b; font-weight:bold;">20/1</span></code></td>
+      <td>Above <code><span style="color:#ff6b6b; font-weight:bold;">32/1</span></code></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+By default, sections at <code>270 BPM</code> or higher are converted to <code>0.5x</code>, and sections at <code>110 BPM</code> or lower are converted to <code>2x</code>. These thresholds and conversion values can be adjusted manually.<br>
+Sliders and spinners can also be ignored when recalculating the rest moment result.<br><br>
+The threshold table shows both the base thresholds and adjusted thresholds. The adjusted thresholds use the dominant converted BPM, with <code>180 BPM</code> as the baseline.
 </div>
 </section>
 

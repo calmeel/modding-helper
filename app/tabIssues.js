@@ -504,9 +504,16 @@ function getSpreadIssueLevel(spreadState) {
 
   if (!results || !results.length) return TAB_LEVEL_NONE;
 
+  const restOptions = typeof getSpreadRestMomentOptionsFromDom === "function"
+    ? getSpreadRestMomentOptionsFromDom(document)
+    : {};
+  const issueResults = typeof applySpreadRestMomentOptions === "function"
+    ? applySpreadRestMomentOptions(results, restOptions)
+    : results;
+
   const sortedResults = diffOrder
-    ? applySpreadDiffOrder(results, diffOrder)
-    : sortSpreadResults(results);
+    ? applySpreadDiffOrder(issueResults, diffOrder)
+    : sortSpreadResults(issueResults);
 
   const hasUnknownCategory = sortedResults.some(result =>
     getSpreadEffectiveCategory(result, manualCategories) === "unknown"
@@ -585,6 +592,16 @@ function getSpreadIssueLevel(spreadState) {
   );
 
   if (densityAnalysisForMainTab.issueGroups.length) {
+    hasWarn = true;
+  }
+
+  const restLevel = getSpreadRestMomentsIssueLevel(sortedResults, manualCategories);
+
+  if (restLevel === "error") {
+    return TAB_LEVEL_ERROR;
+  }
+
+  if (restLevel === "warn") {
     hasWarn = true;
   }
 

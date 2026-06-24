@@ -94,6 +94,15 @@ function setupOptionEvents(options) {
     volumeCompareMinDurationOnly,
     renderVolumeCompareResult,
     spreadDensityMinDiff,
+    spreadRestHighBpmEnabled,
+    spreadRestHighBpmThreshold,
+    spreadRestHighBpmScale,
+    spreadRestLowBpmEnabled,
+    spreadRestLowBpmThreshold,
+    spreadRestLowBpmScale,
+    spreadRestIgnoreSliders,
+    spreadRestIgnoreSpinners,
+    spreadRestUseAdjustedThresholds,
     renderSpreadResult
   } = options;
 
@@ -132,6 +141,22 @@ function setupOptionEvents(options) {
   if (spreadDensityMinDiff) {
     spreadDensityMinDiff.addEventListener("change", renderSpreadResult);
   }
+
+  [
+    spreadRestHighBpmEnabled,
+    spreadRestHighBpmThreshold,
+    spreadRestHighBpmScale,
+    spreadRestLowBpmEnabled,
+    spreadRestLowBpmThreshold,
+    spreadRestLowBpmScale,
+    spreadRestIgnoreSliders,
+    spreadRestIgnoreSpinners,
+    spreadRestUseAdjustedThresholds
+  ].forEach(element => {
+    if (!element) return;
+    element.addEventListener("input", renderSpreadResult);
+    element.addEventListener("change", renderSpreadResult);
+  });
 }
 
 /** スプレッド内サブタブ用 */
