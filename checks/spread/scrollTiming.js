@@ -84,8 +84,12 @@ function parseSpreadGreenLines(text) {
 }
 
 function parseSpreadCircleNoteTimes(text) {
+  return parseSpreadCircleNotes(text).map(note => note.time);
+}
+
+function parseSpreadCircleNotes(text) {
   const hitObjects = parseHitObjects(text);
-  const times = [];
+  const notes = [];
 
   for (const line of hitObjects) {
     const parts = line.split(",");
@@ -93,17 +97,21 @@ function parseSpreadCircleNoteTimes(text) {
 
     const time = parseInt(parts[2], 10);
     const type = parseInt(parts[3], 10);
+    const hitSound = parseInt(parts[4], 10);
 
-    if (Number.isNaN(time) || Number.isNaN(type)) continue;
+    if (Number.isNaN(time) || Number.isNaN(type) || Number.isNaN(hitSound)) continue;
 
     // taikoの通常ノーツのみ対象。Slider / Spinnerはここでは除外
     if ((type & 1) === 0) continue;
 
-    times.push(time);
+    notes.push({
+      time,
+      isFinisher: (hitSound & 4) !== 0
+    });
   }
 
-  times.sort((a, b) => a - b);
-  return times;
+  notes.sort((a, b) => a.time - b.time);
+  return notes;
 }
 
 function getCurrentSpreadTimingPoint(points, time) {

@@ -54,19 +54,23 @@ function analyzeSpreadScrollSpeed(text, difficulty = null) {
 
   const redLines = parseSpreadRedLines(text);
   const greenLines = parseSpreadGreenLines(text);
-  const noteTimes = parseSpreadCircleNoteTimes(text);
+  const notes = parseSpreadCircleNotes(text);
 
-  if (!redLines.length || !noteTimes.length) {
+  if (!redLines.length || !notes.length) {
     return {
       sliderMultiplier,
       samples: [],
       summary: null,
       rapidChanges: [],
-      linearGradients: []
+      linearGradients: [],
+      geometricGradients: [],
+      linearGradientsWithoutFinishers: [],
+      geometricGradientsWithoutFinishers: []
     };
   }
 
-  const samples = noteTimes.map(time => {
+  const samples = notes.map(note => {
+    const time = note.time;
     const red = getCurrentSpreadTimingPoint(redLines, time);
     const green = getCurrentSpreadInheritedTimingPoint(
       greenLines,
@@ -93,7 +97,8 @@ function analyzeSpreadScrollSpeed(text, difficulty = null) {
       sv,
       sliderMultiplier,
       pxPerBeat,
-      pxPerSecond
+      pxPerSecond,
+      isFinisher: note.isFinisher
     };
   }).filter(sample =>
     Number.isFinite(sample.pxPerSecond)
@@ -105,7 +110,10 @@ function analyzeSpreadScrollSpeed(text, difficulty = null) {
       samples: [],
       summary: null,
       rapidChanges: [],
-      linearGradients: []
+      linearGradients: [],
+      geometricGradients: [],
+      linearGradientsWithoutFinishers: [],
+      geometricGradientsWithoutFinishers: []
     };
   }
 
@@ -170,6 +178,15 @@ function analyzeSpreadScrollSpeed(text, difficulty = null) {
     rapidChanges,
     linearGradients: isSpreadLinearSvFeatureEnabled()
       ? analyzeSpreadLinearSvGradients(samples)
+      : [],
+    geometricGradients: isSpreadLinearSvFeatureEnabled()
+      ? analyzeSpreadGeometricSvGradients(samples)
+      : [],
+    linearGradientsWithoutFinishers: isSpreadLinearSvFeatureEnabled()
+      ? analyzeSpreadLinearSvGradients(samples.filter(sample => !sample.isFinisher))
+      : [],
+    geometricGradientsWithoutFinishers: isSpreadLinearSvFeatureEnabled()
+      ? analyzeSpreadGeometricSvGradients(samples.filter(sample => !sample.isFinisher))
       : []
   };
 }
@@ -182,6 +199,7 @@ const SPREAD_LINEAR_SV_SEED_POINT_COUNTS = [
 const SPREAD_LINEAR_SV_MIN_TOTAL_CHANGE = 0.001;
 const SPREAD_LINEAR_SV_ABSOLUTE_TOLERANCE = 0.00075;
 const SPREAD_LINEAR_SV_RELATIVE_TOLERANCE = 0.03;
+const SPREAD_GEOMETRIC_SV_RELATIVE_TOLERANCE = 0.01;
 
 function isSpreadLinearSvFeatureEnabled() {
   return false;
@@ -242,6 +260,80 @@ function analyzeSpreadLinearSvGradients(samples) {
 
     if (previous && candidate.startIndex <= previous.endIndex + 1) {
       const combined = evaluateSpreadLinearSvGradient(
+        points,
+        previous.startIndex,
+        candidate.endIndex
+      );
+
+      if (combined) {
+        merged[merged.length - 1] = combined;
+        continue;
+      }
+    }
+
+    merged.push(candidate);
+  }
+
+  return merged
+    .map(({ startIndex, endIndex, normalizedMaxError, ...gradient }) => gradient);
+}
+
+function analyzeSpreadGeometricSvGradients(samples) {
+  const points = normalizeSpreadLinearSvSamples(samples)
+    .filter(point => point.sv > 0);
+  if (points.length < SPREAD_LINEAR_SV_MIN_POINTS) return [];
+
+  const selected = [];
+  let startIndex = 0;
+
+  while (startIndex <= points.length - SPREAD_LINEAR_SV_MIN_POINTS) {
+    const maxEndIndex = Math.min(
+      points.length - 1,
+      startIndex + SPREAD_LINEAR_SV_MAX_POINTS - 1
+    );
+    let best = null;
+
+    for (const pointCount of SPREAD_LINEAR_SV_SEED_POINT_COUNTS) {
+      const endIndex = startIndex + pointCount - 1;
+      if (endIndex > maxEndIndex) break;
+
+      best = evaluateSpreadGeometricSvGradient(
+        points,
+        startIndex,
+        endIndex
+      );
+      if (best) break;
+    }
+
+    if (!best) {
+      startIndex++;
+      continue;
+    }
+
+    for (
+      let endIndex = best.endIndex + 1;
+      endIndex <= maxEndIndex;
+      endIndex++
+    ) {
+      const candidate = evaluateSpreadGeometricSvGradient(
+        points,
+        startIndex,
+        endIndex
+      );
+      if (candidate) best = candidate;
+    }
+
+    selected.push(best);
+    startIndex = Math.max(startIndex + 1, best.endIndex);
+  }
+
+  const merged = [];
+
+  for (const candidate of selected) {
+    const previous = merged[merged.length - 1];
+
+    if (previous && candidate.startIndex <= previous.endIndex + 1) {
+      const combined = evaluateSpreadGeometricSvGradient(
         points,
         previous.startIndex,
         candidate.endIndex
@@ -360,6 +452,105 @@ function evaluateSpreadLinearSvGradient(points, startIndex, endIndex) {
     startSv: start.sv,
     endSv: end.sv,
     type: "linear",
+    status: outliers.length ? "warn" : "ok",
+    pointCount,
+    tolerance,
+    maxError,
+    normalizedMaxError: tolerance > 0 ? maxError / tolerance : 0,
+    outliers
+  };
+}
+
+function evaluateSpreadGeometricSvGradient(points, startIndex, endIndex) {
+  const start = points[startIndex];
+  const end = points[endIndex];
+  const duration = end.time - start.time;
+  const totalChange = end.sv - start.sv;
+
+  if (
+    duration <= 0 ||
+    start.sv <= 0 ||
+    end.sv <= 0 ||
+    Math.abs(totalChange) < SPREAD_LINEAR_SV_MIN_TOTAL_CHANGE
+  ) {
+    return null;
+  }
+
+  const ratio = end.sv / start.sv;
+  if (
+    !Number.isFinite(ratio) ||
+    ratio <= 0 ||
+    Math.abs(ratio - 1) < SPREAD_LINEAR_SV_MIN_TOTAL_CHANGE
+  ) {
+    return null;
+  }
+
+  const tolerance = Math.max(
+    SPREAD_LINEAR_SV_ABSOLUTE_TOLERANCE,
+    Math.abs(totalChange) * SPREAD_GEOMETRIC_SV_RELATIVE_TOLERANCE
+  );
+  const direction = Math.sign(totalChange);
+  const outliers = [];
+  let maxError = 0;
+  let monotonicViolations = 0;
+
+  for (let index = startIndex; index <= endIndex; index++) {
+    const point = points[index];
+    const progress = (point.time - start.time) / duration;
+    const expectedSv = start.sv * Math.pow(ratio, progress);
+    const error = point.sv - expectedSv;
+    const absError = Math.abs(error);
+
+    maxError = Math.max(maxError, absError);
+
+    if (
+      index > startIndex &&
+      index < endIndex &&
+      absError > tolerance
+    ) {
+      outliers.push({
+        time: point.time,
+        actualSv: point.sv,
+        expectedSv,
+        error
+      });
+    }
+
+    if (index > startIndex) {
+      const previous = points[index - 1];
+      if ((point.sv - previous.sv) * direction < -tolerance) {
+        monotonicViolations++;
+      }
+    }
+  }
+
+  const pointCount = endIndex - startIndex + 1;
+  const interiorCount = pointCount - 2;
+  const maxOutliers = Math.max(1, Math.floor(interiorCount * 0.25));
+
+  if (
+    outliers.length > maxOutliers ||
+    monotonicViolations > maxOutliers
+  ) {
+    return null;
+  }
+
+  const distinctSvCount = new Set(
+    points
+      .slice(startIndex, endIndex + 1)
+      .map(point => point.sv.toFixed(6))
+  ).size;
+
+  if (distinctSvCount < 3) return null;
+
+  return {
+    startIndex,
+    endIndex,
+    startTime: start.time,
+    endTime: end.time,
+    startSv: start.sv,
+    endSv: end.sv,
+    type: "geometric",
     status: outliers.length ? "warn" : "ok",
     pointCount,
     tolerance,

@@ -334,6 +334,13 @@ function renderSpreadResultFromResults(spreadState, dom, t) {
   }
 
   if (dom.spreadScrollSpeedOutput) {
+    const scrollGradientMode = getSpreadScrollGradientModeFromDom(dom);
+    const scrollIgnoreFinishers = getSpreadScrollIgnoreFinishersFromDom(dom);
+    if (spreadState) {
+      spreadState.scrollGradientMode = scrollGradientMode;
+      spreadState.scrollIgnoreFinishers = scrollIgnoreFinishers;
+    }
+
     renderSpreadScrollChart(
       results,
       dom,
@@ -346,7 +353,9 @@ function renderSpreadResultFromResults(spreadState, dom, t) {
       results,
       t,
       spreadState.diffOrder,
-      spreadState.manualCategories
+      spreadState.manualCategories,
+      scrollGradientMode,
+      scrollIgnoreFinishers
     );
   }
 
@@ -518,6 +527,10 @@ function updateSpreadSubtabIssueStates(spreadState) {
   const results = spreadState?.results;
   const diffOrder = spreadState?.diffOrder;
   const manualCategories = spreadState?.manualCategories ?? {};
+  const scrollGradientMode =
+    spreadState?.scrollGradientMode ?? getSpreadScrollGradientModeFromDom(document);
+  const scrollIgnoreFinishers =
+    spreadState?.scrollIgnoreFinishers ?? getSpreadScrollIgnoreFinishersFromDom(document);
 
   setSpreadSubtabIssueLevel("order", "none");
   setSpreadSubtabIssueLevel("odhp", "none");
@@ -606,7 +619,11 @@ function updateSpreadSubtabIssueStates(spreadState) {
     const rapidChanges = result.scrollSpeed?.rapidChanges ?? [];
     const hasBrokenSv =
       isSpreadLinearSvFeatureEnabled() &&
-      (result.scrollSpeed?.linearGradients ?? []).some(
+      getSpreadScrollSpeedGradients(
+        result.scrollSpeed,
+        scrollGradientMode,
+        scrollIgnoreFinishers
+      ).some(
         gradient => gradient.status === "warn"
       );
 
@@ -1601,7 +1618,14 @@ function renderTitleResultFromResults(results, dom, t) {
 }
 
 /** 低難易度のスクロール速度 */
-function formatSpreadScrollSpeedResult(results, t, diffOrder = null, manualCategories = {}) {
+function formatSpreadScrollSpeedResult(
+  results,
+  t,
+  diffOrder = null,
+  manualCategories = {},
+  gradientMode = "linear",
+  ignoreFinishers = false
+) {
   if (!results.length) {
     return t("noOsuFiles");
   }
@@ -1614,63 +1638,95 @@ function formatSpreadScrollSpeedResult(results, t, diffOrder = null, manualCateg
 
   lines.push(formatSpreadScrollSpeedSummaryTable(sortedResults, t, manualCategories));
 
-  if (isSpreadLinearSvFeatureEnabled()) {
-    lines.push("");
-    lines.push("=".repeat(60));
-    lines.push("");
-    lines.push(formatSpreadLinearSvGradients(sortedResults, t));
-  }
-
-  lines.push("");
-  lines.push("=".repeat(60));
-  lines.push("");
+  lines.push(formatSeparator());
   lines.push(formatSpreadRapidScrollChanges(sortedResults, t, manualCategories));
-  lines.push("");
-  lines.push("=".repeat(60));
-  lines.push("");
+  lines.push(formatSeparator());
   lines.push(formatSpreadScrollSpeedProgressionByEvent(sortedResults, t, manualCategories));
-  lines.push("");
-  lines.push("=".repeat(60));
-  lines.push("");
+
+  lines.push(formatSeparator());
   lines.push(formatSpreadScrollChangeConsistency(sortedResults, t, manualCategories));
+
+  if (isSpreadLinearSvFeatureEnabled()) {
+    lines.push(formatSeparator());
+    lines.push(formatSpreadLinearSvGradients(
+      sortedResults,
+      t,
+      gradientMode,
+      ignoreFinishers
+    ));
+  }
 
   return lines.join("\n").trimEnd();
 }
 
-function formatSpreadLinearSvGradients(results, t) {
-  const lines = [t("spreadLinearSvGradients")];
+function formatSpreadScrollSpeedSectionTitle(text) {
+  return formatSectionTitle(String(text).replace(/[:\uFF1A]\s*$/, ""));
+}
+
+function getSpreadScrollGradientModeFromDom(dom) {
+  const select =
+    dom?.spreadScrollGradientMode ??
+    (typeof dom?.getElementById === "function"
+      ? dom.getElementById("spreadScrollGradientMode")
+      : null) ??
+    (typeof document !== "undefined"
+      ? document.getElementById("spreadScrollGradientMode")
+      : null);
+  return select?.value === "geometric" ? "geometric" : "linear";
+}
+
+function getSpreadScrollIgnoreFinishersFromDom(dom) {
+  const checkbox =
+    dom?.spreadScrollIgnoreFinishers ??
+    (typeof dom?.getElementById === "function"
+      ? dom.getElementById("spreadScrollIgnoreFinishers")
+      : null) ??
+    (typeof document !== "undefined"
+      ? document.getElementById("spreadScrollIgnoreFinishers")
+      : null);
+  return checkbox?.checked ?? false;
+}
+
+function getSpreadScrollSpeedGradients(
+  scrollSpeed,
+  gradientMode = "linear",
+  ignoreFinishers = false
+) {
+  if (gradientMode === "geometric") {
+    return ignoreFinishers
+      ? scrollSpeed?.geometricGradientsWithoutFinishers ?? []
+      : scrollSpeed?.geometricGradients ?? [];
+  }
+
+  return ignoreFinishers
+    ? scrollSpeed?.linearGradientsWithoutFinishers ?? []
+    : scrollSpeed?.linearGradients ?? [];
+}
+
+function formatSpreadLinearSvGradients(
+  results,
+  t,
+  gradientMode = "linear",
+  ignoreFinishers = false
+) {
+  const lines = [
+    formatSpreadScrollSpeedSectionTitle(t("spreadLinearSvGradients")),
+    formatSpreadSvGradientOptions(t, gradientMode, ignoreFinishers)
+  ];
   let hasAny = false;
 
   for (const result of results) {
-    const gradients = result.scrollSpeed?.linearGradients ?? [];
+    const gradients = getSpreadScrollSpeedGradients(
+      result.scrollSpeed,
+      gradientMode,
+      ignoreFinishers
+    );
     if (!gradients.length) continue;
 
     hasAny = true;
     lines.push("");
     lines.push(getDifficultyName(result.fileName));
     lines.push(formatSpreadLinearSvGradientTable(gradients, t));
-
-    const warnings = gradients.filter(gradient => gradient.status === "warn");
-    if (!warnings.length) continue;
-
-    lines.push("");
-    lines.push(t("spreadBrokenSvReview"));
-
-    for (const gradient of warnings) {
-      for (const outlier of gradient.outliers) {
-        const errorText =
-          `${outlier.error >= 0 ? "+" : ""}${formatSpreadGradientSv(outlier.error)}`;
-
-        lines.push(
-          `<span class="result-warn">` +
-          `${formatTimestampLink(outlier.time)} | ` +
-          `${t("spreadBrokenSvCurrent")}: x${formatSpreadGradientSv(outlier.actualSv)} | ` +
-          `${t("spreadBrokenSvExpected")}: x${formatSpreadGradientSv(outlier.expectedSv)} | ` +
-          `${t("spreadBrokenSvError")}: ${errorText}` +
-          `</span>`
-        );
-      }
-    }
   }
 
   if (!hasAny) {
@@ -1679,6 +1735,34 @@ function formatSpreadLinearSvGradients(results, t) {
   }
 
   return lines.join("\n");
+}
+
+function formatSpreadSvGradientOptions(
+  t,
+  gradientMode = "linear",
+  ignoreFinishers = false
+) {
+  const isGeometric = gradientMode === "geometric";
+  return (
+    `<div class="result-option-group spread-scroll-gradient-options">` +
+    `<label>` +
+    `<span>${escapeHtml(t("spreadScrollGradientMode"))}</span>` +
+    `<select id="spreadScrollGradientMode">` +
+    `<option value="linear"${isGeometric ? "" : " selected"}>` +
+    `${escapeHtml(t("spreadScrollGradientModeLinear"))}` +
+    `</option>` +
+    `<option value="geometric"${isGeometric ? " selected" : ""}>` +
+    `${escapeHtml(t("spreadScrollGradientModeGeometric"))}` +
+    `</option>` +
+    `</select>` +
+    `</label>` +
+    `<label>` +
+    `<input type="checkbox" id="spreadScrollIgnoreFinishers"` +
+    `${ignoreFinishers ? " checked" : ""}>` +
+    `<span>${escapeHtml(t("spreadScrollIgnoreFinishers"))}</span>` +
+    `</label>` +
+    `</div>`
+  );
 }
 
 function formatSpreadLinearSvGradientTable(gradients, t) {
@@ -1693,7 +1777,7 @@ function formatSpreadLinearSvGradientTable(gradients, t) {
     sv:
       `x${formatSpreadGradientSv(gradient.startSv)} -> ` +
       `x${formatSpreadGradientSv(gradient.endSv)}`,
-    type: t("spreadLinearSvType"),
+    type: getSpreadSvGradientTypeLabel(gradient, t),
     status:
       gradient.status === "warn"
         ? "Warning"
@@ -1746,9 +1830,35 @@ function formatSpreadLinearSvGradientTable(gradients, t) {
       `${padEndVisual(row.type, widths.type)} | ` +
       status
     );
+
+    if (row.gradient.status === "warn") {
+      for (const outlier of row.gradient.outliers) {
+        lines.push(formatSpreadLinearSvOutlierLine(outlier, t));
+      }
+    }
   }
 
   return lines.join("\n");
+}
+
+function getSpreadSvGradientTypeLabel(gradient, t) {
+  return gradient.type === "geometric"
+    ? t("spreadGeometricSvType")
+    : t("spreadLinearSvType");
+}
+
+function formatSpreadLinearSvOutlierLine(outlier, t) {
+  const errorText =
+    `${outlier.error >= 0 ? "+" : ""}${formatSpreadGradientSv(outlier.error)}`;
+
+  return (
+    `  <span class="result-warn">` +
+    `${formatTimestampLink(outlier.time)} | ` +
+    `${t("spreadBrokenSvCurrent")}: x${formatSpreadGradientSv(outlier.actualSv)} | ` +
+    `${t("spreadBrokenSvExpected")}: x${formatSpreadGradientSv(outlier.expectedSv)} | ` +
+    `${t("spreadBrokenSvError")}: ${errorText}` +
+    `</span>`
+  );
 }
 
 function formatSpreadGradientSv(value) {
@@ -1868,8 +1978,8 @@ function formatSpreadScrollSpeedSummaryTable(results, t, manualCategories = {}) 
   const tooFastRows = rows.filter(row => row.tooFastLevel === "warn");
 
   if (tooFastRows.length) {
-    lines.push("");
-    lines.push("速すぎるスクロール速度の可能性:");
+    lines.push(formatSeparator());
+    lines.push(formatSpreadScrollSpeedSectionTitle("速すぎるスクロール速度の可能性:"));
 
     for (const row of tooFastRows) {
       lines.push(
@@ -1888,7 +1998,7 @@ function formatSpreadScrollSpeedSummaryTable(results, t, manualCategories = {}) 
 function formatSpreadRapidScrollChanges(results, t, manualCategories = {}) {
   const lines = [];
 
-  lines.push(t("spreadRapidScrollChanges"));
+  lines.push(formatSpreadScrollSpeedSectionTitle(t("spreadRapidScrollChanges")));
 
   let hasAny = false;
 
@@ -1960,7 +2070,7 @@ function formatSpreadScrollChangeConsistency(results, t, manualCategories = {}) 
 
   const lines = [];
 
-  lines.push(t("spreadScrollChangeConsistency"));
+  lines.push(formatSpreadScrollSpeedSectionTitle(t("spreadScrollChangeConsistency")));
 
   if (!analysis.issueGroups.length) {
     lines.push("");
@@ -2006,7 +2116,7 @@ function formatSpreadScrollSpeedProgressionByEvent(results, t, manualCategories 
 
   const lines = [];
 
-  lines.push(t("spreadScrollSpeedProgression"));
+  lines.push(formatSpreadScrollSpeedSectionTitle(t("spreadScrollSpeedProgression")));
 
   if (!analysis.issueGroups.length) {
     lines.push("");
