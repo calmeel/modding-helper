@@ -239,6 +239,22 @@ body {
   margin: 0;
 }
 
+.spread-rest-option-group .spread-rest-scale-controls {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.spread-rest-option-group .spread-rest-scale-controls label {
+  flex-wrap: wrap;
+}
+
+.spread-rest-option-reference {
+  color: #aeb8c8;
+  font-size: 12px;
+}
+
 .spread-rest-legend {
   display: flex;
   flex-wrap: wrap;

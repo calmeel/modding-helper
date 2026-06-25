@@ -484,23 +484,6 @@
               </button>
             </div>
 
-            <div class="spread-rest-scale-controls">
-              <label>
-                <input type="checkbox" id="spreadRestHighBpmEnabled" checked>
-                <input type="number" id="spreadRestHighBpmThreshold" value="270" min="0" step="10">
-                <span data-i18n="spreadRestHighBpmScalePrefix">BPM or higher sections are converted by</span>
-                <input type="number" id="spreadRestHighBpmScale" value="0.5" min="0" step="0.1">
-                <span data-i18n="spreadRestScaleSuffix">x</span>
-              </label>
-              <label>
-                <input type="checkbox" id="spreadRestLowBpmEnabled" checked>
-                <input type="number" id="spreadRestLowBpmThreshold" value="110" min="0" step="10">
-                <span data-i18n="spreadRestLowBpmScalePrefix">BPM or lower sections are converted by</span>
-                <input type="number" id="spreadRestLowBpmScale" value="2" min="0" step="0.1">
-                <span data-i18n="spreadRestScaleSuffix">x</span>
-              </label>
-            </div>
-
             <div class="spread-rest-legend">
               <span><span class="spread-rest-legend-swatch spread-rest-original-swatch"></span><span data-i18n="spreadRestOriginalBpm">Original BPM</span></span>
               <span><span class="spread-rest-legend-swatch spread-rest-scaled-swatch"></span><span data-i18n="spreadRestScaledBpm">Converted BPM</span></span>
@@ -519,6 +502,24 @@
           <div id="spreadRestThresholdTable"></div>
           <fieldset class="spread-rest-option-group">
             <legend data-i18n="spreadRestCalculationOptions">Rest moment calculation options</legend>
+            <div class="spread-rest-scale-controls">
+              <label>
+                <input type="checkbox" id="spreadRestHighBpmEnabled" checked>
+                <input type="number" id="spreadRestHighBpmThreshold" value="270" min="0" step="10">
+                <span data-i18n="spreadRestHighBpmScalePrefix">BPM or higher sections are converted by</span>
+                <input type="number" id="spreadRestHighBpmScale" value="0.5" min="0" step="0.1">
+                <span data-i18n="spreadRestScaleSuffix">x</span>
+                <span class="spread-rest-option-reference" data-i18n="spreadRestBpmGraphReference">(see BPM graph)</span>
+              </label>
+              <label>
+                <input type="checkbox" id="spreadRestLowBpmEnabled" checked>
+                <input type="number" id="spreadRestLowBpmThreshold" value="110" min="0" step="10">
+                <span data-i18n="spreadRestLowBpmScalePrefix">BPM or lower sections are converted by</span>
+                <input type="number" id="spreadRestLowBpmScale" value="2" min="0" step="0.1">
+                <span data-i18n="spreadRestScaleSuffix">x</span>
+                <span class="spread-rest-option-reference" data-i18n="spreadRestBpmGraphReference">(see BPM graph)</span>
+              </label>
+            </div>
             <label>
               <input type="checkbox" id="spreadRestIgnoreSliders" checked>
               <span data-i18n="spreadRestIgnoreSliders">Ignore sliders</span>
@@ -530,6 +531,7 @@
             <label>
               <input type="checkbox" id="spreadRestUseAdjustedThresholds" checked>
               <span data-i18n="spreadRestUseAdjustedThresholds">Use BPM-adjusted thresholds</span>
+              <span class="spread-rest-option-reference" data-i18n="spreadRestThresholdTableReference">(see Rest moment threshold table)</span>
             </label>
           </fieldset>
           <pre id="spreadRestMomentsOutput" data-i18n="noFileLoaded">No file loaded.</pre>
