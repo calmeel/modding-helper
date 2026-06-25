@@ -511,11 +511,11 @@ function showSpreadRestMomentTooltip(point, time) {
     if (!section) continue;
 
     lines.push(
-      `${getDifficultyNameText(result.fileName)}: ` +
-      `${formatSpreadRestMomentBpm(section.originalBpm)} -> ` +
-      `${formatSpreadRestMomentBpm(section.scaledBpm)} BPM ` +
+      `元BPM ${formatSpreadRestMomentBpm(section.originalBpm)} -> ` +
+      `変換後BPM ${formatSpreadRestMomentBpm(section.scaledBpm)} ` +
       `(${section.scale}x)`
     );
+    break;
   }
 
   tooltip.classList.add("is-simple");
