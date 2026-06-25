@@ -501,6 +501,16 @@ function getSpreadIssueLevel(spreadState) {
   const results = spreadState?.results;
   const diffOrder = spreadState?.diffOrder;
   const manualCategories = spreadState?.manualCategories ?? {};
+  const scrollGradientMode =
+    spreadState?.scrollGradientMode ??
+    (typeof getSpreadScrollGradientModeFromDom === "function"
+      ? getSpreadScrollGradientModeFromDom(document)
+      : "linear");
+  const scrollIgnoreFinishers =
+    spreadState?.scrollIgnoreFinishers ??
+    (typeof getSpreadScrollIgnoreFinishersFromDom === "function"
+      ? getSpreadScrollIgnoreFinishersFromDom(document)
+      : false);
 
   if (!results || !results.length) return TAB_LEVEL_NONE;
 
@@ -614,7 +624,14 @@ function getSpreadIssueLevel(spreadState) {
   if (
     isSpreadLinearSvFeatureEnabled() &&
     sortedResults.some(result =>
-      (result.scrollSpeed?.linearGradients ?? []).some(
+      (typeof getSpreadScrollSpeedGradients === "function"
+        ? getSpreadScrollSpeedGradients(
+          result.scrollSpeed,
+          scrollGradientMode,
+          scrollIgnoreFinishers
+        )
+        : result.scrollSpeed?.linearGradients ?? []
+      ).some(
         gradient => gradient.status === "warn"
       )
     )

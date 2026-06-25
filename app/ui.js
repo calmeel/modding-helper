@@ -103,6 +103,7 @@ function setupOptionEvents(options) {
     spreadRestIgnoreSliders,
     spreadRestIgnoreSpinners,
     spreadRestUseAdjustedThresholds,
+    spreadScrollSpeedOutput,
     renderSpreadResult
   } = options;
 
@@ -157,6 +158,17 @@ function setupOptionEvents(options) {
     element.addEventListener("input", renderSpreadResult);
     element.addEventListener("change", renderSpreadResult);
   });
+
+  if (spreadScrollSpeedOutput) {
+    spreadScrollSpeedOutput.addEventListener("change", event => {
+      if (
+        event.target?.id === "spreadScrollGradientMode" ||
+        event.target?.id === "spreadScrollIgnoreFinishers"
+      ) {
+        renderSpreadResult();
+      }
+    });
+  }
 }
 
 /** スプレッド内サブタブ用 */

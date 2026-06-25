@@ -674,6 +674,7 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadRestIgnoreSliders,
     spreadRestIgnoreSpinners,
     spreadRestUseAdjustedThresholds,
+    spreadScrollSpeedOutput,
     renderSpreadResult: renderSpreadResultAndUpdateTabs,
   });
 
