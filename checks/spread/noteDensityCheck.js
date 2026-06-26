@@ -93,13 +93,21 @@ function createSpreadDensityMeasures(redLines, firstTime, lastTime) {
 
     let start = sectionStart;
 
-    while (start <= sectionEnd && start <= lastTime) {
-      const end = start + measureLength;
+    while (start < sectionEnd && start <= lastTime) {
+      const end = Math.min(start + measureLength, sectionEnd);
 
-      if (end >= firstTime && start <= lastTime) {
+      const roundedStart = Math.round(start);
+      const roundedEnd = Math.round(end);
+
+      if (
+        end > start &&
+        roundedEnd > roundedStart &&
+        end >= firstTime &&
+        start <= lastTime
+      ) {
         measures.push({
-          start: Math.round(start),
-          end: Math.round(end),
+          start: roundedStart,
+          end: roundedEnd,
           noteCount: 0
         });
       }
