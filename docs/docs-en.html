@@ -1852,6 +1852,16 @@ then compares adjacent difficulties.<br><br>
 
 If a lower difficulty contains more notes than a higher difficulty within the same measure,
 the measure is displayed as a comparison target.
+<br><br>
+A step-line graph shows the note density per measure for each difficulty.<br>
+
+<figure class="doc-graph-example">
+  <img src="images/spread-density-graph-example-en.png" alt="Note density graph example for Kantan, Futsuu, Muzukashii, Oni, and Inner Oni">
+  <figcaption>Note density graph example. In the red background sections, a lower difficulty has higher note density than a higher difficulty.</figcaption>
+</figure>
+<br>
+Measures that meet the density inversion condition are highlighted with background bands, linked to the <code>Show note density inversions</code> checkbox.<br>
+When a display option is enabled, only difficulties with issues are shown automatically. Difficulties without issues are hidden.
 </div>
 
 <div class="section section-warning">
@@ -1879,7 +1889,8 @@ notes within <code>±3 ms</code> of a measure boundary are corrected toward the 
 
 <div class="section section-detect">
 <span class="label label-detect">■ Detection</span><br>
-Based on MapsetVerifier's Taiko Compose / Rest moment check, this detects overly long continuously mapped sections in Kantan / Futsuu / Muzukashii / Oni difficulties.<br><br>
+Based on MapsetVerifier's Taiko Compose / Rest moment check, this detects overly long continuously mapped sections in Kantan / Futsuu / Muzukashii / Oni difficulties.<br>
+The implementation is based on MapsetVerifier's <a href="https://github.com/Naxesss/MapsetVerifier/blob/main/MapsetVerifier.Checks/Taiko/Compose/CheckRestMoments.cs" target="_blank" rel="noopener noreferrer"><code>CheckRestMoments.cs</code></a>.<br><br>
 
 Gap calculation is basically the same as MapsetVerifier. When judging whether a gap counts as a rest moment, the check adds a <code>2 ms</code> tolerance to the actual gap before comparing it against the required length. For example, if a <code>1/1</code> rest is required, a gap that is up to <code>2 ms</code> shorter than exactly <code>1/1</code> is still treated as a rest moment to absorb small timing differences.<br><br>
 
@@ -1926,6 +1937,44 @@ Gap calculation is basically the same as MapsetVerifier. When judging whether a 
 By default, sections at <code>270 BPM</code> or higher are converted to <code>0.5x</code>, and sections at <code>110 BPM</code> or lower are converted to <code>2x</code>. These thresholds and conversion values can be adjusted manually.<br>
 Sliders and spinners can also be ignored when recalculating the rest moment result.<br><br>
 The threshold table shows both the base thresholds and adjusted thresholds. The adjusted thresholds use the dominant converted BPM, with <code>180 BPM</code> as the baseline.
+<br><br>
+The BPM conversion method differs from MapsetVerifier. For MapsetVerifier's BPM normalization, see <code>GetNormalizedMsPerBeat()</code> in <a href="https://github.com/Naxesss/MapsetVerifier/blob/main/MapsetVerifier.Checks/Utils/TaikoUtils.cs" target="_blank" rel="noopener noreferrer"><code>TaikoUtils.cs</code></a>.
+<table class="ratio-threshold-table">
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>MapsetVerifier</th>
+      <th>modding-helper</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>BPM 270 or higher</td>
+      <td>Uses a <code>1/2</code>x snap interval for rest detection.</td>
+      <td>By default, converts BPM by <code>0.5</code>x and uses that converted BPM for both rest moment detection and length calculation.</td>
+    </tr>
+    <tr>
+      <td>BPM 130 or higher</td>
+      <td>Uses a <code>1.5</code>x snap interval for rest detection.</td>
+      <td>By default, no conversion is applied for this condition.</td>
+    </tr>
+    <tr>
+      <td>BPM 110 or lower</td>
+      <td>Uses a <code>2</code>x snap interval for rest detection.</td>
+      <td>By default, converts BPM by <code>2</code>x and uses that converted BPM for both rest moment detection and length calculation.</td>
+    </tr>
+    <tr>
+      <td>continuous mapping length calculation</td>
+      <td>Uses the original BPM, not the converted BPM, when calculating lengths such as <code>36/1</code>.</td>
+      <td>Uses the converted BPM. This is intended to detect sections using the beat length that is actually meaningful for double-time or half-time mapping.</td>
+    </tr>
+    <tr>
+      <td>Adjustment method</td>
+      <td>Uses MapsetVerifier's fixed logic.</td>
+      <td>The high-BPM / low-BPM conversion thresholds and multipliers can be manually adjusted from the Rest moment calculation options.</td>
+    </tr>
+  </tbody>
+</table>
 </div>
 </section>
 
@@ -1991,12 +2040,12 @@ It can also be converted to <code>visual BPM</code>, assuming <code>SM 1.4</code
 
 <strong>Graph display</strong><br>
 <figure class="doc-graph-example">
-  <img src="images/spread-scroll-speed-graph-example.png" alt="Scroll speed graph example for Kantan, Futsuu, Muzukashii, Oni, and Inner Oni">
+  <img src="images/spread-scroll-speed-graph-example-en.png" alt="Scroll speed graph example for Kantan, Futsuu, Muzukashii, Oni, and Inner Oni">
   <figcaption>Scroll speed graph example. Each difficulty's effective scroll speed is displayed as a step line.</figcaption>
 </figure>
 
 <figure class="doc-graph-example">
-  <img src="images/spread-scroll-delta-graph-example.png" alt="Scroll speed change graph example for Kantan, Futsuu, Muzukashii, Oni, and Inner Oni">
+  <img src="images/spread-scroll-delta-graph-example-en.png" alt="Scroll speed change graph example for Kantan, Futsuu, Muzukashii, Oni, and Inner Oni">
   <figcaption>Scroll speed change graph example. Each note-to-note scroll speed change is displayed as a point.</figcaption>
 </figure>
 <br>
