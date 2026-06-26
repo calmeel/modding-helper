@@ -162,7 +162,7 @@
         <button class="tab-button" data-tab="contentPermission" data-i18n="tabContentPermission">Content usage permissions</button>
         <button class="tab-button" data-tab="misc" data-i18n="tabMisc">その他</button>
         <button class="tab-button" data-tab="spread" data-i18n="tabSpread">Spread</button>
-        <button class="tab-button" data-tab="offsetWaveform" data-i18n="tabOffsetWaveform">Offset</button>
+        <button class="tab-button timeline-tab-button" data-tab="offsetWaveform" data-i18n="tabOffsetWaveform">Offset</button>
         <button class="tab-button timeline-tab-button hidden-tab" data-tab="timeline" data-i18n="tabTimeline">Timeline</button>
         <button class="tab-button bn-tab-button hidden-tab" data-tab="bnCompare" data-i18n="tabBnCompare">BN評価</button>
       </div>
@@ -646,17 +646,17 @@
           </div>
 
           <div class="offset-waveform-controls">
-            <label>
-              <span data-i18n="offsetWaveformDiff">Difficulty:</span>
-              <select id="offsetWaveformDiffSelect"></select>
-            </label>
             <span id="offsetWaveformInfo" class="offset-waveform-info"></span>
           </div>
 
           <div class="offset-waveform-legend">
             <span><span class="offset-waveform-legend-swatch offset-waveform-audio-swatch"></span><span data-i18n="offsetWaveformAudio">Audio waveform</span></span>
             <span><span class="offset-waveform-legend-swatch offset-waveform-barline-swatch"></span><span data-i18n="offsetWaveformBarline">Generated barline</span></span>
+            <span class="offset-waveform-estimate-feature" hidden><span class="offset-waveform-legend-swatch offset-waveform-estimated-swatch"></span><span data-i18n="offsetWaveformEstimatedBarline">Estimated offset barline</span></span>
+            <span class="offset-waveform-estimate-feature" hidden><span class="offset-waveform-legend-swatch offset-waveform-peak-swatch"></span><span data-i18n="offsetWaveformPeakLine">Audio peak</span></span>
           </div>
+
+          <div class="offset-waveform-estimate" id="offsetWaveformEstimate" hidden></div>
 
           <div class="offset-waveform-chart-wrap" id="offsetWaveformChartWrap" hidden>
             <canvas id="offsetWaveformCanvas"></canvas>
@@ -798,6 +798,7 @@
   <script src="checks/bgOffsetCheck.js"></script>
   <script src="checks/sv/epilepsyWarningCheck.js"></script>
   <script src="checks/offset/offsetWaveformCheck.js"></script>
+  <script src="checks/offset/offsetEstimator.js"></script>
   <script src="checks/spread/difficulty.js"></script>
   <script src="checks/spread/finisherCheck.js"></script>
   <script src="checks/spread/scrollTiming.js"></script>
@@ -816,6 +817,7 @@
   <script src="app/charts/spreadDensityChart.js"></script>
   <script src="app/charts/spreadRestMomentBpmChart.js"></script>
   <script src="app/charts/spreadScrollChart.js"></script>
+  <script src="app/charts/offsetWaveformData.js"></script>
   <script src="app/charts/offsetWaveformChart.js"></script>
   <script src="app/fileLoader.js"></script>
   <script src="app/ui.js"></script>
