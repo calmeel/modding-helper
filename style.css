@@ -183,6 +183,10 @@ body {
   background: #202029;
 }
 
+.offset-waveform-chart-section .volume-compare-chart-header p {
+  white-space: pre-line;
+}
+
 .offset-waveform-controls {
   display: flex;
   align-items: center;
@@ -234,6 +238,18 @@ body {
 
 .offset-waveform-peak-swatch {
   background: #c27eff;
+}
+
+.offset-waveform-clicked-peak-swatch {
+  background: #b284ff;
+}
+
+.offset-waveform-manual-offset-swatch {
+  background: repeating-linear-gradient(
+    90deg,
+    #ffcf5c 0 6px,
+    transparent 6px 10px
+  );
 }
 
 .offset-waveform-estimate {
