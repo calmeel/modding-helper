@@ -1,4 +1,5 @@
 const OFFSET_WAVEFORM_ESTIMATE_DISPLAY_ENABLED = false;
+const OFFSET_WAVEFORM_MANUAL_PEAK_OFFSET_MS = 28.7;
 
 const offsetWaveformChartState = {
   sources: null,
@@ -15,6 +16,7 @@ const offsetWaveformChartState = {
   hoverTime: null,
   dragStartX: null,
   dragCurrentX: null,
+  manualOffsetResult: null,
   initialized: false,
   resizeObserver: null
 };
@@ -132,6 +134,8 @@ async function renderSelectedOffsetWaveformSource(source) {
     state.viewStart = 0;
     state.viewEnd = 0;
     state.hoverTime = null;
+    state.manualOffsetResult = null;
+    renderOffsetManualResult(null);
   }
 
   setOffsetWaveformEmpty(t("offsetWaveformDecoding"));
@@ -176,6 +180,7 @@ async function renderSelectedOffsetWaveformSource(source) {
     renderOffsetEstimate(
       OFFSET_WAVEFORM_ESTIMATE_DISPLAY_ENABLED ? source.offsetEstimate : null
     );
+    renderOffsetManualResult(state.manualOffsetResult);
 
     drawOffsetWaveformChart();
   } catch (error) {
@@ -214,6 +219,7 @@ function setOffsetWaveformEmpty(message) {
     state.dom.offsetWaveformInfo.textContent = "";
   }
   renderOffsetEstimate(null);
+  renderOffsetManualResult(null);
   hideOffsetWaveformTooltip();
 }
 
@@ -303,6 +309,7 @@ function drawOffsetWaveformChart() {
     viewEnd,
     xForTime
   );
+  drawManualOffsetResult(ctx, state.manualOffsetResult, plot, viewStart, viewEnd, xForTime);
 
   if (state.hoverTime !== null) {
     const x = xForTime(state.hoverTime);
@@ -475,6 +482,46 @@ function drawOffsetPeakWaveformBarlines(ctx, barlines, plot, viewStart, viewEnd,
   ctx.setLineDash([]);
 }
 
+function drawManualOffsetResult(ctx, result, plot, viewStart, viewEnd, xForTime) {
+  if (!result) return;
+
+  drawOffsetWaveformGuideLine(
+    ctx,
+    result.peakTime,
+    plot,
+    viewStart,
+    viewEnd,
+    xForTime,
+    "rgba(178, 132, 255, 0.9)",
+    []
+  );
+  drawOffsetWaveformGuideLine(
+    ctx,
+    result.recommendedOffsetTime,
+    plot,
+    viewStart,
+    viewEnd,
+    xForTime,
+    "rgba(255, 207, 92, 0.9)",
+    [6, 4]
+  );
+}
+
+function drawOffsetWaveformGuideLine(ctx, time, plot, viewStart, viewEnd, xForTime, colour, dash) {
+  if (!Number.isFinite(time) || time < viewStart || time > viewEnd) return;
+
+  const x = Math.round(xForTime(time)) + 0.5;
+  ctx.save();
+  ctx.strokeStyle = colour;
+  ctx.lineWidth = 1;
+  ctx.setLineDash(dash);
+  ctx.beginPath();
+  ctx.moveTo(x, plot.top);
+  ctx.lineTo(x, plot.bottom);
+  ctx.stroke();
+  ctx.restore();
+}
+
 function renderOffsetEstimate(estimate) {
   const state = offsetWaveformChartState;
   const element = state.dom?.offsetWaveformEstimate;
@@ -505,6 +552,33 @@ function renderOffsetEstimate(estimate) {
       <div><span>${escapeHtml(t("offsetEstimateDelta"))}</span><strong class="${estimate.delta > 0 ? "positive" : estimate.delta < 0 ? "negative" : ""}">${escapeHtml(formatOffsetEstimateSignedMs(estimate.delta))}</strong></div>
       <div><span>${escapeHtml(t("offsetEstimateBpm"))}</span><strong>${escapeHtml(formatOffsetEstimateBpm(estimate.bpm))}</strong></div>
       <div><span>${escapeHtml(t("offsetEstimateConfidence"))}</span><strong>${escapeHtml(formatOffsetEstimateConfidence(estimate.confidence))}</strong></div>
+    </div>
+  `;
+}
+
+function renderOffsetManualResult(result) {
+  const state = offsetWaveformChartState;
+  const element = state.dom?.offsetWaveformEstimate;
+  const t = state.t;
+
+  if (!element || !t) return;
+
+  if (!result) {
+    element.hidden = true;
+    element.innerHTML = "";
+    return;
+  }
+
+  element.hidden = false;
+  element.classList.remove("offset-waveform-estimate-muted");
+  element.innerHTML = `
+    <div class="offset-waveform-estimate-title">${escapeHtml(t("offsetManualTitle"))}</div>
+    <div class="offset-waveform-estimate-grid">
+      <div><span>${escapeHtml(t("offsetManualPeak"))}</span><strong>${escapeHtml(msToTimestamp(Math.round(result.peakTime)))}</strong></div>
+      <div><span>${escapeHtml(t("offsetManualNearestBarline"))}</span><strong>${escapeHtml(msToTimestamp(Math.round(result.nearestBarlineTime)))}</strong></div>
+      <div><span>${escapeHtml(t("offsetManualBarlineGap"))}</span><strong class="${result.barlineGap > 0 ? "positive" : result.barlineGap < 0 ? "negative" : ""}">${escapeHtml(formatOffsetEstimateSignedMs(result.barlineGap))}</strong></div>
+      <div><span>${escapeHtml(t("offsetManualRecommended"))}</span><strong>${escapeHtml(msToTimestamp(Math.round(result.recommendedOffsetTime)))}</strong></div>
+      <div><span>${escapeHtml(t("offsetManualDelta"))}</span><strong class="${result.recommendedDelta > 0 ? "positive" : result.recommendedDelta < 0 ? "negative" : ""}">${escapeHtml(formatOffsetEstimateSignedMs(result.recommendedDelta))}</strong></div>
     </div>
   `;
 }
@@ -590,11 +664,61 @@ function handleOffsetWaveformPointerUp(event) {
       state.viewStart = startTime;
       state.viewEnd = endTime;
     }
+  } else {
+    handleOffsetWaveformManualPeakClick(endX);
   }
 
   state.dom?.offsetWaveformCanvas?.releasePointerCapture?.(event.pointerId);
   resetOffsetWaveformDrag();
   drawOffsetWaveformChart();
+}
+
+function handleOffsetWaveformManualPeakClick(x) {
+  const state = offsetWaveformChartState;
+  const canvas = state.dom?.offsetWaveformCanvas;
+  const plot = canvas?._offsetWaveformPlot;
+  const source = getOffsetWaveformSource(
+    sortResultsForDisplay(state.sources ?? [])
+  );
+
+  if (!plot || !source?.offsetWaveformBarlines?.length) return;
+
+  const peakTime = Math.round(offsetWaveformTimeForX(x, plot));
+  const nearestBarline = findNearestOffsetWaveformBarline(
+    source.offsetWaveformBarlines,
+    peakTime
+  );
+
+  if (!nearestBarline) return;
+
+  const recommendedOffsetTime = peakTime - OFFSET_WAVEFORM_MANUAL_PEAK_OFFSET_MS;
+  const result = {
+    peakTime,
+    nearestBarlineTime: nearestBarline.time,
+    barlineGap: peakTime - nearestBarline.time,
+    recommendedOffsetTime,
+    recommendedDelta: recommendedOffsetTime - nearestBarline.time
+  };
+
+  state.manualOffsetResult = result;
+  renderOffsetManualResult(result);
+}
+
+function findNearestOffsetWaveformBarline(barlines, time) {
+  let nearest = null;
+  let nearestDistance = Infinity;
+
+  for (const barline of barlines) {
+    const distance = Math.abs(barline.time - time);
+    if (distance < nearestDistance) {
+      nearest = barline;
+      nearestDistance = distance;
+    }
+
+    if (barline.time > time && distance > nearestDistance) break;
+  }
+
+  return nearest;
 }
 
 function handleOffsetWaveformPointerCancel(event) {
