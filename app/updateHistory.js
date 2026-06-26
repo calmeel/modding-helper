@@ -219,14 +219,18 @@ const updateHistoryEntries = [
     }
   },
   {
-    date: "2026/06/25",
+    date: "2026/06/26",
     type: "update",
     items: {
       en: [
-        "Added a check for the rest moment."
+        "Added a check for the rest moment.",
+        "Added a bar line check function.",
+        "Added a function to check audio waveforms and offsets."
       ],
       ja: [
-        "rest moment のチェックを追加"
+        "rest moment のチェックを追加",
+        "小節線のチェック機能を追加",
+        "音声波形とオフセットのチェック機能を追加"
       ]
     }
   },
