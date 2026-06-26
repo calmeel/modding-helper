@@ -107,8 +107,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const offsetWaveformTooltip = document.getElementById("offsetWaveformTooltip");
   const offsetWaveformEmpty = document.getElementById("offsetWaveformEmpty");
   const offsetWaveformResetZoom = document.getElementById("offsetWaveformResetZoom");
-  const offsetWaveformDiffSelect = document.getElementById("offsetWaveformDiffSelect");
   const offsetWaveformInfo = document.getElementById("offsetWaveformInfo");
+  const offsetWaveformEstimate = document.getElementById("offsetWaveformEstimate");
   const contentPermissionOutput = document.getElementById("contentPermissionOutput");
   const timelineOutput = document.getElementById("timelineOutput");
   const timelineRunButton = document.getElementById("timelineRunButton");
@@ -247,8 +247,8 @@ document.addEventListener("DOMContentLoaded", () => {
     offsetWaveformTooltip,
     offsetWaveformEmpty,
     offsetWaveformResetZoom,
-    offsetWaveformDiffSelect,
     offsetWaveformInfo,
+    offsetWaveformEstimate,
     contentPermissionOutput,
     timelineOutput,
     timelineRunButton,
