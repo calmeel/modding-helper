@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const includeAdvancedOffsetSnaps = document.getElementById("includeAdvancedOffsetSnaps");
   const doubleSvOutput = document.getElementById("doubleSvOutput");
   const doubleSvGap = document.getElementById("doubleSvGap");
+  const barlineOutput = document.getElementById("barlineOutput");
   const kiaiOutput = document.getElementById("kiaiOutput");
   const kiaiCompareChartSection = document.getElementById("kiaiCompareChartSection");
   const kiaiCompareChartWrap = document.getElementById("kiaiCompareChartWrap");
@@ -100,6 +101,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const spreadScrollShowRapidChanges = document.getElementById("spreadScrollShowRapidChanges");
   const spreadScrollShowProgression = document.getElementById("spreadScrollShowProgression");
   const spreadScrollShowConsistency = document.getElementById("spreadScrollShowConsistency");
+  const offsetWaveformChartSection = document.getElementById("offsetWaveformChartSection");
+  const offsetWaveformChartWrap = document.getElementById("offsetWaveformChartWrap");
+  const offsetWaveformCanvas = document.getElementById("offsetWaveformCanvas");
+  const offsetWaveformTooltip = document.getElementById("offsetWaveformTooltip");
+  const offsetWaveformEmpty = document.getElementById("offsetWaveformEmpty");
+  const offsetWaveformResetZoom = document.getElementById("offsetWaveformResetZoom");
+  const offsetWaveformDiffSelect = document.getElementById("offsetWaveformDiffSelect");
+  const offsetWaveformInfo = document.getElementById("offsetWaveformInfo");
   const contentPermissionOutput = document.getElementById("contentPermissionOutput");
   const timelineOutput = document.getElementById("timelineOutput");
   const timelineRunButton = document.getElementById("timelineRunButton");
@@ -144,6 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
     includeAdvancedOffsetSnaps,
     doubleSvOutput,
     doubleSvGap,
+    barlineOutput,
     kiaiOutput,
     kiaiCompareChartSection,
     kiaiCompareChartWrap,
@@ -231,6 +241,14 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadScrollShowRapidChanges,
     spreadScrollShowProgression,
     spreadScrollShowConsistency,
+    offsetWaveformChartSection,
+    offsetWaveformChartWrap,
+    offsetWaveformCanvas,
+    offsetWaveformTooltip,
+    offsetWaveformEmpty,
+    offsetWaveformResetZoom,
+    offsetWaveformDiffSelect,
+    offsetWaveformInfo,
     contentPermissionOutput,
     timelineOutput,
     timelineRunButton,
@@ -248,6 +266,8 @@ document.addEventListener("DOMContentLoaded", () => {
     offset: null,
     doubleSvSources: null,
     doubleSvResults: null,
+    barlineSources: null,
+    barlineResults: null,
     kiaiCompare: null,
     kiaiSnap: null,
     selectedFileName: null,
@@ -271,6 +291,7 @@ document.addEventListener("DOMContentLoaded", () => {
       diffOrder: [],
       manualCategories: {}
     },
+    offsetWaveformSources: null,
     contentPermission: null,
     timelineSources: null,
     timeline: null,
@@ -372,6 +393,10 @@ document.addEventListener("DOMContentLoaded", () => {
       doubleSvOutput.textContent = t("noFileLoaded");
     }
 
+    if (!state.barlineSources && barlineOutput) {
+      barlineOutput.textContent = t("noFileLoaded");
+    }
+
     if (!state.redGreenMatch && redGreenMatchOutput) {
       redGreenMatchOutput.textContent = t("noFileLoaded");
     }
@@ -420,6 +445,10 @@ document.addEventListener("DOMContentLoaded", () => {
       spreadOdHpOutput.textContent = t("noFileLoaded");
     }
 
+    if (!state.offsetWaveformSources && offsetWaveformEmpty) {
+      offsetWaveformEmpty.textContent = t("noFileLoaded");
+    }
+
     if (!state.contentPermission && contentPermissionOutput) {
       contentPermissionOutput.textContent = t("noFileLoaded");
     }
@@ -433,6 +462,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderKiaiResult();
     renderKiaiSnapResult();
     renderDoubleSvResult();
+    renderBarlineResult();
     renderSvVolumeResult();
     renderVolumeCompareResult();
     renderRedGreenMatchResult();
@@ -447,6 +477,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderBgOffsetResult();
     renderEpilepsyWarningResult();
     renderSpreadResult();
+    renderOffsetWaveformResult();
     renderContentPermissionResult();
 
     if (state.timeline) {
@@ -472,6 +503,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderDoubleSvResult() {
     state.doubleSvResults = renderDoubleSvResultFromSources(
       state.doubleSvSources,
+      dom,
+      t
+    );
+  }
+
+  function renderBarlineResult() {
+    state.barlineResults = renderBarlineResultFromSources(
+      state.barlineSources,
       dom,
       t
     );
@@ -585,6 +624,14 @@ document.addEventListener("DOMContentLoaded", () => {
     renderSpreadResultFromResults(state.spread, dom, t);
   }
 
+  function renderOffsetWaveformResult() {
+    renderOffsetWaveformResultFromSources(
+      state.offsetWaveformSources,
+      dom,
+      t
+    );
+  }
+
   function renderContentPermissionResult() {
     renderContentPermissionResultFromResults(
       state.contentPermission,
@@ -696,6 +743,7 @@ document.addEventListener("DOMContentLoaded", () => {
       state.offset = result.offset;
       state.timeline = null;
       state.doubleSvSources = result.doubleSvSources;
+      state.barlineSources = result.barlineSources;
       state.kiaiCompare = result.kiaiCompare;
       state.kiaiSnap = result.kiaiSnap;
       state.svVolumeSources = result.svVolumeSources;
@@ -714,6 +762,7 @@ document.addEventListener("DOMContentLoaded", () => {
       state.spread.results = result.spread;
       state.spread.diffOrder = createSpreadDiffOrder(result.spread);
       state.spread.manualCategories = {};
+      state.offsetWaveformSources = result.offsetWaveformSources;
       state.contentPermission = result.contentPermission;
 
       if (timelineOutput) {
@@ -723,6 +772,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderResult();
       renderShiftResult();
       renderDoubleSvResult();
+      renderBarlineResult();
       renderKiaiResult();
       renderKiaiSnapResult();
       renderSvVolumeResult();
@@ -739,6 +789,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderBgOffsetResult();
       renderEpilepsyWarningResult();
       renderSpreadResult();
+      renderOffsetWaveformResult();
       renderContentPermissionResult();
       updateTabIssueStates(state);
     } catch (err) {

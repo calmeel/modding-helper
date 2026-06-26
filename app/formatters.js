@@ -294,6 +294,90 @@ function formatDoubleSvResult(result, t) {
   return lines.join("\n").trimEnd();
 }
 
+/** Barline系の表示関数 */
+function formatMultipleBarlineResults(results, t) {
+  if (!results.length) {
+    return t("noOsuFiles");
+  }
+
+  if (!hasMultipleModes(results)) {
+    return formatBarlineResultGroup(sortResultsForDisplay(results), t);
+  }
+
+  const lines = [];
+
+  for (const [mode, group] of groupByMode(results)) {
+    lines.push(`<span class="mode-name">[${getModeName(mode)}]</span>`);
+    lines.push("");
+    lines.push(formatBarlineResultGroup(sortResultsForDisplay(group), t));
+    lines.push("");
+    lines.push("==============================");
+    lines.push("");
+  }
+
+  return lines.join("\n").trimEnd();
+}
+
+function formatBarlineResultGroup(results, t) {
+  const lines = [];
+
+  lines.push(formatSectionTitle(t("barlineDoubleBarline")));
+
+  for (const result of results) {
+    lines.push(`${getDifficultyName(result.fileName)}`);
+    lines.push(...formatBarlineDoubleBarlineLines(result, t));
+    lines.push("");
+  }
+
+  lines.push(formatSeparator());
+  lines.push("");
+  lines.push(formatSectionTitle(t("barlineDetachedBarline")));
+
+  for (const result of results) {
+    lines.push(`${getDifficultyName(result.fileName)}`);
+    lines.push(...formatBarlineDetachedBarlineLines(result, t));
+    lines.push("");
+  }
+
+  return lines.join("\n").trimEnd();
+}
+
+function formatBarlineDoubleBarlineLines(result, t) {
+  if (!result.doubleBarlines.length) {
+    return [t("barlineNoDoubleBarline")];
+  }
+
+  return result.doubleBarlines.map(item =>
+    `<span class="result-error">` +
+    `${formatTimestampLink(item.barlineTime)} -> ${formatTimestampLink(item.redLineTime)} | ` +
+    `${escapeHtml(t("barlineMissingOmitFirst"))}` +
+    `</span>`
+  );
+}
+
+function formatBarlineDetachedBarlineLines(result, t) {
+  if (!result.detachedBarlines.length) {
+    return [t("barlineNoDetachedBarline")];
+  }
+
+  return result.detachedBarlines.map(item => {
+    const deltaSign = item.delta > 0 ? "+" : "";
+    return (
+      `<span class="result-error">` +
+      `${formatTimestampLink(item.barlineTime)} -> ${formatTimestampLink(item.noteTime)} | ` +
+      `${escapeHtml(t("barlineGeneratedBarline"))}: ${formatBarlineSpeed(item.barlineSpeed)} px/s | ` +
+      `${escapeHtml(t("barlineNote"))}: ${formatBarlineSpeed(item.noteSpeed)} px/s | ` +
+      `${escapeHtml(t("barlineDelta"))}: ${deltaSign}${formatBarlineSpeed(item.delta)} px/s` +
+      `</span>`
+    );
+  });
+}
+
+function formatBarlineSpeed(value) {
+  if (!Number.isFinite(value)) return "N/A";
+  return (Math.round(value * 100) / 100).toString();
+}
+
 /** Kiai Compare系の表示関数 */
 function formatKiaiCompareResult(results, t) {
   const lines = [];

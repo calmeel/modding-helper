@@ -78,6 +78,11 @@
         </label>
 
         <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="barline" checked>
+          <span data-i18n="tabBarline">Barline</span>
+        </label>
+
+        <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="svVolume" checked>
           <span data-i18n="tabSvVolume">SV Volume</span>
         </label>
@@ -123,6 +128,11 @@
         </label>
 
         <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="offsetWaveform" checked>
+          <span data-i18n="tabOffsetWaveform">Offset</span>
+        </label>
+
+        <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="timeline">
           <span data-i18n="tabTimeline">Timeline</span>
         </label>
@@ -141,6 +151,7 @@
         <button class="tab-button" data-tab="kiaiCompare" data-i18n="tabKiaiCompare">Kiai Compare</button>
         <button class="tab-button" data-tab="kiaiSnap" data-i18n="tabKiaiSnap">Kiai Snap</button>
         <button class="tab-button" data-tab="doubleBarline" data-i18n="tabDoubleSv">Double SV line</button>
+        <button class="tab-button" data-tab="barline" data-i18n="tabBarline">Barline</button>
         <button class="tab-button" data-tab="svVolume" data-i18n="tabSvVolume">SV Volume</button>
         <button class="tab-button" data-tab="volumeCompare" data-i18n="tabVolumeCompare">Volume Compare</button>
         <button class="tab-button" data-tab="redGreenMatch" data-i18n="tabRedGreenMatch">Red/Green Match</button>
@@ -151,6 +162,7 @@
         <button class="tab-button" data-tab="contentPermission" data-i18n="tabContentPermission">Content usage permissions</button>
         <button class="tab-button" data-tab="misc" data-i18n="tabMisc">その他</button>
         <button class="tab-button" data-tab="spread" data-i18n="tabSpread">Spread</button>
+        <button class="tab-button" data-tab="offsetWaveform" data-i18n="tabOffsetWaveform">Offset</button>
         <button class="tab-button timeline-tab-button hidden-tab" data-tab="timeline" data-i18n="tabTimeline">Timeline</button>
         <button class="tab-button bn-tab-button hidden-tab" data-tab="bnCompare" data-i18n="tabBnCompare">BN評価</button>
       </div>
@@ -221,6 +233,10 @@
         </div>
 
         <pre id="doubleSvOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+      </section>
+
+      <section class="tab-panel" id="tab-barline">
+        <pre id="barlineOutput" data-i18n="noFileLoaded">No file loaded.</pre>
       </section>
 
       <section class="tab-panel" id="tab-svVolume">
@@ -615,6 +631,44 @@
         </div>
       </section>
 
+      <section class="tab-panel" id="tab-offsetWaveform">
+        <section class="offset-waveform-chart-section" id="offsetWaveformChartSection">
+          <div class="volume-compare-chart-header">
+            <div>
+              <h3 data-i18n="offsetWaveformGraphTitle">Audio waveform</h3>
+              <p data-i18n="offsetWaveformGraphHelp">
+                This graph shows the audio waveform and generated barlines from the selected difficulty. Drag to zoom.
+              </p>
+            </div>
+            <button class="doc-btn" id="offsetWaveformResetZoom" type="button" data-i18n="volumeCompareResetZoom">
+              Reset zoom
+            </button>
+          </div>
+
+          <div class="offset-waveform-controls">
+            <label>
+              <span data-i18n="offsetWaveformDiff">Difficulty:</span>
+              <select id="offsetWaveformDiffSelect"></select>
+            </label>
+            <span id="offsetWaveformInfo" class="offset-waveform-info"></span>
+          </div>
+
+          <div class="offset-waveform-legend">
+            <span><span class="offset-waveform-legend-swatch offset-waveform-audio-swatch"></span><span data-i18n="offsetWaveformAudio">Audio waveform</span></span>
+            <span><span class="offset-waveform-legend-swatch offset-waveform-barline-swatch"></span><span data-i18n="offsetWaveformBarline">Generated barline</span></span>
+          </div>
+
+          <div class="offset-waveform-chart-wrap" id="offsetWaveformChartWrap" hidden>
+            <canvas id="offsetWaveformCanvas"></canvas>
+            <div class="volume-compare-chart-tooltip offset-waveform-tooltip" id="offsetWaveformTooltip" hidden></div>
+          </div>
+
+          <div class="volume-compare-chart-empty" id="offsetWaveformEmpty" data-i18n="noFileLoaded">
+            No file loaded.
+          </div>
+        </section>
+      </section>
+
       <section class="tab-panel hidden-tab" id="tab-timeline">
         <div class="options">
           <button id="timelineRunButton" class="doc-btn" type="button" data-i18n="timelineRun">
@@ -728,6 +782,7 @@
   <script src="checks/sv/kiaiCompareCheck.js"></script>
   <script src="checks/sv/kiaiSnapCheck.js"></script>
   <script src="checks/sv/doubleSvCheck.js"></script>
+  <script src="checks/sv/barlineCheck.js"></script>
   <script src="checks/sv/svVolumeCheck.js"></script>
   <script src="checks/sv/volumeCompareCheck.js"></script>
   <script src="checks/sv/redGreenMatchCheck.js"></script>
@@ -742,6 +797,7 @@
   <script src="checks/previewPointCheck.js"></script>
   <script src="checks/bgOffsetCheck.js"></script>
   <script src="checks/sv/epilepsyWarningCheck.js"></script>
+  <script src="checks/offset/offsetWaveformCheck.js"></script>
   <script src="checks/spread/difficulty.js"></script>
   <script src="checks/spread/finisherCheck.js"></script>
   <script src="checks/spread/scrollTiming.js"></script>
@@ -760,6 +816,7 @@
   <script src="app/charts/spreadDensityChart.js"></script>
   <script src="app/charts/spreadRestMomentBpmChart.js"></script>
   <script src="app/charts/spreadScrollChart.js"></script>
+  <script src="app/charts/offsetWaveformChart.js"></script>
   <script src="app/fileLoader.js"></script>
   <script src="app/ui.js"></script>
   <script src="app/renderers.js"></script>
