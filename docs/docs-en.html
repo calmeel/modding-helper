@@ -575,7 +575,9 @@
   </details>
 
   <details class="doc-tab-group">
-    <summary>BN Evaluation</summary>
+    <summary>Hidden Features</summary>
+    <button class="doc-tab-button" data-doc-tab="offsetWaveform">Offset</button>
+    <button class="doc-tab-button" data-doc-tab="timeline">Timeline</button>
     <button class="doc-tab-button" data-doc-tab="bnCompare">BN Evaluation</button>
   </details>
 
@@ -2472,6 +2474,79 @@ Displayed results should therefore be treated as confirmation targets rather tha
   rather than changing the BPM itself.
 </div>
 
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="offsetWaveform">
+<h2>Hidden Features: Offset</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ Background</span><br>
+This feature decodes the audio file referenced by the loaded <code>.osu</code> file with the Web Audio API and displays its waveform.<br>
+It also overlays generated barlines based on red timing points from <code>[TimingPoints]</code>.<br><br>
+
+Although this tab is treated as a hidden feature, it can be used as a helper view for checking the relationship between audio attacks and generated barlines.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Waveform Display</span><br>
+The waveform display is based on the waveform representation used by the osu!lazer editor. The following implementations were used as references:<br>
+<ul>
+  <li><a href="https://github.com/ppy/osu/blob/master/osu.Game/Screens/Edit/Timing/WaveformComparisonDisplay.cs" target="_blank" rel="noopener noreferrer">WaveformComparisonDisplay.cs</a></li>
+  <li><a href="https://github.com/ppy/osu/blob/master/osu.Game/Beatmaps/WorkingBeatmapCache.cs" target="_blank" rel="noopener noreferrer">WorkingBeatmapCache.cs</a></li>
+  <li><a href="https://github.com/ppy/osu-framework/blob/master/osu.Framework/Audio/Track/Waveform.cs" target="_blank" rel="noopener noreferrer">Waveform.cs</a></li>
+  <li><a href="https://github.com/ppy/osu-framework/blob/master/osu.Framework/Graphics/Audio/WaveformGraph.cs" target="_blank" rel="noopener noreferrer">WaveformGraph.cs</a></li>
+</ul>
+
+In modding-helper, the decoded audio is converted into a 1 ms point sequence, storing the maximum amplitude for the left and right channels.<br>
+When drawing, the point sequence is resampled to match the visible time range and canvas width, using a Gaussian-weighted average to reduce the waveform smoothly.<br>
+Following the same general idea as osu!lazer's <code>Waveform</code> / <code>WaveformGraph</code>, low, mid, and high intensity values are approximated from low-pass filters.<br>
+The current visual style does not use separate high or mid frequency fills; it mainly displays the base cyan waveform and a darker cyan inner fill.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Barlines and Click Estimation</span><br>
+Barlines are generated from red timing point time, <code>beatLength</code>, and meter values in <code>[TimingPoints]</code>.<br>
+Between one red timing point and the next, the current BPM and meter are used to calculate measure length, and generated barlines are drawn on top of the audio waveform.<br><br>
+
+Dragging on the waveform zooms the visible range. If the interaction is treated as a short click, the clicked position is treated as the selected peak, and the gap to the nearest generated barline is displayed.<br>
+The recommended offset position is calculated as <code>clicked peak - 28.7 ms</code>, and the difference from the current generated barline is also displayed.<br><br>
+
+The <code>-28.7 ms</code> idea is inspired by Timing Analyzer v0.32.4 by
+<a href="https://osu.ppy.sh/users/126198" target="_blank" rel="noopener noreferrer">statementreply</a>.
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+This feature is only a helper for checking the relationship between audio peaks and generated barlines.<br>
+The clicked position is not guaranteed to be the correct musical peak, and the recommended offset estimate is not always correct.<br>
+Please make the final determination regarding the offset based on actual gameplay.
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="timeline">
+<h2>Hidden Features: Timeline</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ Background</span><br>
+This feature displays each difficulty in the loaded mapset as a measure-based timeline.<br>
+It can be used to inspect mapping flow, density differences between difficulties, and Kiai sections in a form that is easier to compare than plain text lists.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Display Content</span><br>
+Each HitObject is placed at its snap position inside the measure, and normal notes, finishers, sliders, and spinners are displayed as symbols.<br>
+Notes are treated as <code>d</code> / <code>k</code> / <code>D</code> / <code>K</code>, while sliders are treated as <code>slider</code> and spinners as <code>spinner</code>.<br><br>
+
+Measures are generated from the red timing points of the base difficulty. The red timing point's <code>beatLength</code> and meter are used to create measure ranges, then objects from each difficulty are placed on the same measure grid.<br>
+Sliders and spinners are displayed as ranges from their start position to their end position. Slider end times are estimated from BPM, SV, <code>SliderMultiplier</code>, repeat count, and pixel length.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Snap Resolution</span><br>
+For each measure, the tool chooses the smallest snap resolution that can represent the objects from the candidates <code>1/1</code>, <code>1/2</code>, <code>1/3</code>, <code>1/4</code>, <code>1/6</code>, <code>1/8</code>, <code>1/12</code>, <code>1/16</code>, <code>1/24</code>, and <code>1/48</code>.<br>
+The display always keeps at least <code>1/4</code> resolution, and the number of cells in a measure is determined from the meter.<br>
+A 2 ms tolerance is used when assigning objects to snap positions. If an object cannot fit any candidate snap, that measure is treated as unsupported.
+</div>
 </section>
 
 <section class="doc-tab-panel" data-doc-tab-panel="bnCompare">
