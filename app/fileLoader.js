@@ -9,6 +9,8 @@ function createEmptyProcessResult() {
     offsetSources: [],
     offset: [],
     doubleSvSources: [],
+    barlineSources: [],
+    offsetWaveformSources: [],
     kiaiCompare: [],
     kiaiSnap: [],
     svVolumeSources: [],
@@ -56,6 +58,8 @@ async function analyzeOszFile(file) {
   const shiftResults = [];
   const offsetSources = [];
   const doubleSvSources = [];
+  const barlineSources = [];
+  const offsetWaveformSources = [];
   const kiaiResults = [];
   const kiaiSnapResults = [];
   const svVolumeSources = [];
@@ -75,6 +79,7 @@ async function analyzeOszFile(file) {
 
   const osuFiles = Object.values(zip.files)
     .filter(entry => !entry.dir && entry.name.toLowerCase().endsWith(".osu"));
+  const audioBlobCache = new Map();
 
   for (const entry of osuFiles) {
     const text = await entry.async("text");
@@ -106,6 +111,32 @@ async function analyzeOszFile(file) {
       text,
       fileName: entry.name,
       mode
+    });
+
+    barlineSources.push({
+      text,
+      fileName: entry.name,
+      mode
+    });
+
+    const audioFileName = parseOffsetAudioFilename(text);
+    const audioEntry = findOszAudioEntry(zip, entry.name, audioFileName);
+    let audioBlob = null;
+
+    if (audioEntry) {
+      if (!audioBlobCache.has(audioEntry.name)) {
+        audioBlobCache.set(audioEntry.name, await audioEntry.async("blob"));
+      }
+      audioBlob = audioBlobCache.get(audioEntry.name);
+    }
+
+    offsetWaveformSources.push({
+      text,
+      fileName: entry.name,
+      mode,
+      audioFileName,
+      audioEntryName: audioEntry?.name ?? "",
+      audioBlob
     });
 
     kiaiResults.push({
@@ -195,6 +226,8 @@ async function analyzeOszFile(file) {
     shiftResults,
     offsetSources,
     doubleSvSources,
+    barlineSources,
+    offsetWaveformSources,
     kiaiResults,
     kiaiSnapResults,
     svVolumeSources,
@@ -249,6 +282,19 @@ async function processFile(file) {
       ],
       doubleSvSources: [
         { text, fileName: file.name, mode }
+      ],
+      barlineSources: [
+        { text, fileName: file.name, mode }
+      ],
+      offsetWaveformSources: [
+        {
+          text,
+          fileName: file.name,
+          mode,
+          audioFileName: parseOffsetAudioFilename(text),
+          audioEntryName: "",
+          audioBlob: null
+        }
       ],
       kiaiCompare: [
         {
@@ -357,6 +403,8 @@ async function processFile(file) {
       offsetSources: analyzed.offsetSources,
       offset: analyzed.shiftResults,
       doubleSvSources: analyzed.doubleSvSources,
+      barlineSources: analyzed.barlineSources,
+      offsetWaveformSources: analyzed.offsetWaveformSources,
       kiaiCompare: analyzed.kiaiResults,
       kiaiSnap: analyzed.kiaiSnapResults,
       svVolumeSources: analyzed.svVolumeSources,
@@ -378,4 +426,40 @@ async function processFile(file) {
   }
 
   throw new Error("invalidFile");
+}
+
+function findOszAudioEntry(zip, osuEntryName, audioFileName) {
+  if (!audioFileName) return null;
+
+  const normalizedAudioName = normalizeOszPath(audioFileName);
+  const osuDir = getOszEntryDirectory(osuEntryName);
+  const relativeTarget = normalizeOszPath(`${osuDir}${audioFileName}`);
+
+  const entries = Object.values(zip.files)
+    .filter(entry => !entry.dir)
+    .filter(entry => /\.(mp3|ogg)$/i.test(entry.name));
+
+  return entries.find(entry => normalizeOszPath(entry.name) === relativeTarget) ??
+    entries.find(entry => normalizeOszPath(entry.name) === normalizedAudioName) ??
+    entries.find(entry => getOszEntryBaseName(entry.name) === getOszEntryBaseName(audioFileName)) ??
+    null;
+}
+
+function normalizeOszPath(path) {
+  return String(path ?? "")
+    .replace(/\\/g, "/")
+    .replace(/^\/+/, "")
+    .toLowerCase();
+}
+
+function getOszEntryDirectory(path) {
+  const normalized = String(path ?? "").replace(/\\/g, "/");
+  const slashIndex = normalized.lastIndexOf("/");
+  return slashIndex >= 0 ? normalized.slice(0, slashIndex + 1) : "";
+}
+
+function getOszEntryBaseName(path) {
+  const normalized = normalizeOszPath(path);
+  const slashIndex = normalized.lastIndexOf("/");
+  return slashIndex >= 0 ? normalized.slice(slashIndex + 1) : normalized;
 }

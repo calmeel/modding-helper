@@ -45,6 +45,7 @@ function updateTabIssueStates(state) {
   setTabIssueLevel("kiaiCompare", getKiaiCompareIssueLevel(state.kiaiCompare));
   setTabIssueLevel("kiaiSnap", getKiaiSnapIssueLevel(state.kiaiSnap));
   setTabIssueLevel("doubleBarline", getDoubleSvIssueLevel(state.doubleSvResults));
+  setTabIssueLevel("barline", getBarlineIssueLevel(state.barlineResults));
   setTabIssueLevel("svVolume", getSvVolumeIssueLevel(state.svVolumeSources));
   setTabIssueLevel("volumeCompare", getVolumeCompareIssueLevel(state.volumeCompareSources));
   setTabIssueLevel("redGreenMatch", getRedGreenMatchIssueLevel(state.redGreenMatch));
@@ -145,6 +146,16 @@ function getDoubleSvIssueLevel(results) {
     results?.some(result => result.groups?.length > 0) ?? false;
 
   return hasDoubleSv ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
+}
+
+function getBarlineIssueLevel(results) {
+  const hasBarlineIssue =
+    results?.some(result =>
+      (result.doubleBarlines?.length ?? 0) > 0 ||
+      (result.detachedBarlines?.length ?? 0) > 0
+    ) ?? false;
+
+  return hasBarlineIssue ? TAB_LEVEL_ERROR : TAB_LEVEL_NONE;
 }
 
 function getSvVolumeIssueLevel(sources) {

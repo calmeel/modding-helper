@@ -53,6 +53,31 @@ function renderDoubleSvResultFromSources(sources, dom, t) {
   return results;
 }
 
+function renderBarlineResultFromSources(sources, dom, t) {
+  if (!dom.barlineOutput) return;
+
+  if (!sources) {
+    dom.barlineOutput.innerHTML = t("noFileLoaded");
+    return null;
+  }
+
+  const results = sources.map(source => ({
+    ...runBarlineCheck(source.text, source.fileName),
+    mode: source.mode
+  }));
+
+  dom.barlineOutput.innerHTML = formatMultipleBarlineResults(results, t);
+
+  return results;
+}
+
+function renderOffsetWaveformResultFromSources(sources, dom, t) {
+  if (!dom.offsetWaveformCanvas) return null;
+
+  renderOffsetWaveformChart(sources, dom, t);
+  return sources;
+}
+
 function renderKiaiCompareResult(results, dom, t) {
   if (!dom.kiaiOutput) return;
 
