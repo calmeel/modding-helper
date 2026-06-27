@@ -935,6 +935,66 @@ Example:<br>
 <code>02:45:635 -> 02:45:636 | Generated barline: 934.18 px/s | Note: 935.08 px/s | Delta: +0.9 px/s</code>
 </div>
 
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Patterns</span><br>
+The generated barline position is treated as <code>T</code>, and the position 1 ms later is treated as <code>T + 1 ms</code>.<br>
+If an <code>omit first barline</code> red timing point exists at <code>T</code>, the tool treats the automatically generated barline at that position as intentionally hidden.<br><br>
+
+<table class="ratio-threshold-table">
+  <thead>
+    <tr>
+      <th><code>T</code> state</th>
+      <th><code>T + 1 ms</code> state</th>
+      <th>Note position</th>
+      <th>Double barline</th>
+      <th>Detached barline</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Normal generated barline position</td>
+      <td>Red timing point without <code>omit first barline</code></td>
+      <td>None</td>
+      <td class="ratio-error">Detected</td>
+      <td>Not detected</td>
+    </tr>
+    <tr>
+      <td>Normal generated barline position</td>
+      <td>Red timing point without <code>omit first barline</code></td>
+      <td><code>T + 1 ms</code></td>
+      <td class="ratio-error">Detected</td>
+      <td class="ratio-error">Detected if the speeds differ</td>
+    </tr>
+    <tr>
+      <td>Normal generated barline position</td>
+      <td>Red timing point with <code>omit first barline</code></td>
+      <td><code>T + 1 ms</code></td>
+      <td>Not detected</td>
+      <td class="ratio-error">Detected if the speeds differ</td>
+    </tr>
+    <tr>
+      <td>Red timing point with <code>omit first barline</code></td>
+      <td>Red timing point without <code>omit first barline</code></td>
+      <td>None</td>
+      <td>Not detected</td>
+      <td>Not detected</td>
+    </tr>
+    <tr>
+      <td>Red timing point with <code>omit first barline</code></td>
+      <td>Red timing point without <code>omit first barline</code></td>
+      <td><code>T</code></td>
+      <td>Not detected</td>
+      <td class="ratio-error">Detected if the speeds differ</td>
+    </tr>
+  </tbody>
+</table>
+
+<br>
+In the final case, the tool compares the scroll speed of the barline produced by the <code>T + 1 ms</code> red timing point with the scroll speed of the note placed at <code>T</code>.<br>
+For this reason, it is not treated as a double barline issue, and it is only reported as a detached barline issue when the visual scroll speeds do not match.<br>
+Also, even if the red timing point at <code>T + 1 ms</code> has <code>omit first barline</code> enabled, when a note is placed at the same <code>T + 1 ms</code> position, the tool compares the speed of the barline at <code>T</code> with the speed of the note at <code>T + 1 ms</code>.
+</div>
+
 <div class="section section-bg">
 <span class="label label-bg">■ Calculation Details</span><br>
 Generated barline positions are calculated from the red timing point time, <code>beatLength</code>, and meter.<br>

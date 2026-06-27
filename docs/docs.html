@@ -914,6 +914,66 @@ AiMod は同時刻の重複 SV は検出できますが、1 ms ズレの二重 S
 <code>02:45:635 -> 02:45:636 | 小節線: 934.18 px/s | ノーツ: 935.08 px/s | 差分: +0.9 px/s</code>
 </div>
 
+<div class="section section-detect">
+<span class="label label-detect">■ 判定パターン</span><br>
+小節線生成位置を <code>T</code>、その 1 ms 後を <code>T + 1 ms</code> として扱います。<br>
+<code>T</code> に <code>omit first barline</code> 有効の赤線がある場合は、その位置の自動生成小節線を意図的に消しているものとして扱います。<br><br>
+
+<table class="ratio-threshold-table">
+  <thead>
+    <tr>
+      <th><code>T</code> の状態</th>
+      <th><code>T + 1 ms</code> の状態</th>
+      <th>ノーツ位置</th>
+      <th>2重小節線</th>
+      <th>小節線の分離</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>通常の小節線生成位置</td>
+      <td><code>omit first barline</code> 無効の赤線</td>
+      <td>なし</td>
+      <td class="ratio-error">検出する</td>
+      <td>検出しない</td>
+    </tr>
+    <tr>
+      <td>通常の小節線生成位置</td>
+      <td><code>omit first barline</code> 無効の赤線</td>
+      <td><code>T + 1 ms</code></td>
+      <td class="ratio-error">検出する</td>
+      <td class="ratio-error">速度差があれば検出する</td>
+    </tr>
+    <tr>
+      <td>通常の小節線生成位置</td>
+      <td><code>omit first barline</code> 有効の赤線</td>
+      <td><code>T + 1 ms</code></td>
+      <td>検出しない</td>
+      <td class="ratio-error">速度差があれば検出する</td>
+    </tr>
+    <tr>
+      <td><code>omit first barline</code> 有効の赤線</td>
+      <td><code>omit first barline</code> 無効の赤線</td>
+      <td>なし</td>
+      <td>検出しない</td>
+      <td>検出しない</td>
+    </tr>
+    <tr>
+      <td><code>omit first barline</code> 有効の赤線</td>
+      <td><code>omit first barline</code> 無効の赤線</td>
+      <td><code>T</code></td>
+      <td>検出しない</td>
+      <td class="ratio-error">速度差があれば検出する</td>
+    </tr>
+  </tbody>
+</table>
+
+<br>
+最後のケースでは、<code>T + 1 ms</code> の赤線から見える小節線の速度と、<code>T</code> に置かれたノーツの速度を比較します。<br>
+そのため、2重小節線としては扱わず、見た目のスクロール速度が一致しない場合のみ小節線の分離として検出します。<br>
+また、<code>T + 1 ms</code> の赤線自体が <code>omit first barline</code> 有効であっても、同じ <code>T + 1 ms</code> にノーツがある場合は、<code>T</code> の小節線と <code>T + 1 ms</code> のノーツの速度差を確認します。
+</div>
+
 <div class="section section-bg">
 <span class="label label-bg">■ 計算方法の詳細</span><br>
 小節線生成位置は、赤線の時刻、<code>beatLength</code>、拍子（meter）から計算します。<br>
