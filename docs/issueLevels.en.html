@@ -166,6 +166,15 @@
     </tr>
 
     <tr>
+      <td>Sample Set</td>
+      <td class="warn-cell">
+        ・Sample sets other than 1 : Normal exist<br>
+        ・Custom sample sets exist
+      </td>
+      <td class="none">None</td>
+    </tr>
+
+    <tr>
       <td>Kiai Comparison</td>
       <td class="warn-cell">
         ・Kiai states do not match between difficulties<br>
@@ -182,6 +191,15 @@
       <td class="error-cell">
         ・Unsnapped kiai timing exists
       </td>
+    </tr>
+
+    <tr>
+      <td>Kiai Flash</td>
+      <td class="warn-cell">
+        ・Kiai <code>OFF → ON</code> transition frequency is <code>3 Hz</code> or higher<br>
+        ・BPM during Kiai is <code>360 BPM</code> or higher
+      </td>
+      <td class="none">None</td>
     </tr>
 
     <tr>
@@ -204,7 +222,29 @@
     </tr>
 
     <tr>
-      <td>SV Volume</td>
+      <td>Red Line &amp; Green Line</td>
+      <td class="none">None</td>
+      <td class="error-cell">
+        ・The following values do not match between simultaneous red lines and green lines:
+        <ul>
+          <li>Volume</li>
+          <li>Kiai ON/OFF</li>
+          <li>Sample Set</li>
+        </ul>
+      </td>
+    </tr>
+
+    <tr>
+      <td>Slider Velocity / Tick Rate</td>
+      <td class="warn-cell">
+        ・SliderTickRate is not the recommended value (1 or 3)<br>
+        ・SliderMultiplier is not <code>1.4</code>
+      </td>
+      <td class="none">None</td>
+    </tr>
+
+    <tr>
+      <td>Early Volume</td>
       <td class="warn-cell">
         ・Volume changes exist close to hit objects (within ± 1/16 snap)
       </td>
@@ -219,47 +259,6 @@
         ・Volume mismatch timing points exist between difficulties
       </td>
       <td class="none">None</td>
-    </tr>
-
-    <tr>
-      <td>Red Line &amp; Green Line</td>
-      <td class="none">None</td>
-      <td class="error-cell">
-        ・The following values do not match between simultaneous red lines and green lines:
-        <ul>
-          <li>Volume</li>
-          <li>Kiai ON/OFF</li>
-          <li>Sample Set</li>
-        </ul>
-      </td>
-    </tr>
-
-    <tr>
-      <td>Sample Set</td>
-      <td class="warn-cell">
-        ・Sample sets other than 1 : Normal exist<br>
-        ・Custom sample sets exist
-      </td>
-      <td class="none">None</td>
-    </tr>
-
-    <tr>
-      <td>Slider Velocity / Tick Rate</td>
-      <td class="warn-cell">
-        ・SliderTickRate is not the recommended value (1 or 3)<br>
-        ・SliderMultiplier is not <code>1.4</code>
-      </td>
-      <td class="none">None</td>
-    </tr>
-
-    <tr>
-      <td>First Note Lag</td>
-      <td class="warn-cell">
-        ・The first note is positioned within 50% of the judgement line when the audio starts loading
-      </td>
-      <td class="error-cell">
-        ・The first note is positioned within 25% of the judgement line when the audio starts loading
-      </td>
     </tr>
 
     <tr>
@@ -333,41 +332,6 @@
       <td class="error-cell">
         ・Artists / labels disallowed by osu!official
       </td>
-    </tr>
-
-    <tr>
-      <td>Misc: Preview Point</td>
-
-      <td class="warn-cell">
-        ・Preview point is unsnapped<br>
-        ・Preview point is not configured
-      </td>
-
-      <td class="error-cell">
-        ・Preview points differ between difficulties
-      </td>
-    </tr>
-
-    <tr>
-      <td>Misc: BG</td>
-      <td class="warn-cell">
-        ・<code>xOffset</code> / <code>yOffset</code> are inconsistent between difficulties
-        using the same background file<br>
-        ・The file extension is .png
-      </td>
-      <td class="error-cell">
-        ・The file extension is <code>.jpg</code> / <code>.jpeg</code> but the actual file is PNG<br>
-        ・The file extension is <code>.png</code> but the actual file is JPEG
-      </td>
-    </tr>
-
-    <tr>
-      <td>Misc: Flashing / Epilepsy Warning</td>
-      <td class="warn-cell">
-        ・Kiai <code>OFF → ON</code> transition frequency is <code>3 Hz</code> or higher<br>
-        ・BPM during Kiai is <code>360 BPM</code> or higher
-      </td>
-      <td class="none">None</td>
     </tr>
 
     <tr>
@@ -449,6 +413,41 @@
       </td>
     </tr>
 
+    <tr>
+      <td>Misc: Preview Point</td>
+
+      <td class="warn-cell">
+        ・Preview point is unsnapped<br>
+        ・Preview point is not configured
+      </td>
+
+      <td class="error-cell">
+        ・Preview points differ between difficulties
+      </td>
+    </tr>
+
+    <tr>
+      <td>First Note Lag</td>
+      <td class="warn-cell">
+        ・The first note is positioned within 50% of the judgement line when the audio starts loading
+      </td>
+      <td class="error-cell">
+        ・The first note is positioned within 25% of the judgement line when the audio starts loading
+      </td>
+    </tr>
+
+    <tr>
+      <td>Misc: BG</td>
+      <td class="warn-cell">
+        ・<code>xOffset</code> / <code>yOffset</code> are inconsistent between difficulties
+        using the same background file<br>
+        ・The file extension is .png
+      </td>
+      <td class="error-cell">
+        ・The file extension is <code>.jpg</code> / <code>.jpeg</code> but the actual file is PNG<br>
+        ・The file extension is <code>.png</code> but the actual file is JPEG
+      </td>
+    </tr>
   </tbody>
 </table>
 

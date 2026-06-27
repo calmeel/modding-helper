@@ -159,14 +159,19 @@ function updateSpreadSubtabIssueStates(spreadState) {
 }
 
 function setSpreadSubtabIssueLevel(tabName, level) {
-  const button = document.querySelector(`.spread-subtab-button[data-spread-subtab="${tabName}"]`);
-  if (!button) return;
+  const buttons = document.querySelectorAll(
+    `.spread-subtab-button[data-spread-subtab="${tabName}"], ` +
+    `.tab-button[data-spread-subtab-target="${tabName}"]`
+  );
+  if (!buttons.length) return;
 
-  button.classList.remove("has-warnings", "has-errors");
+  for (const button of buttons) {
+    button.classList.remove("has-warnings", "has-errors");
 
-  if (level === "error") {
-    button.classList.add("has-errors");
-  } else if (level === "warn") {
-    button.classList.add("has-warnings");
+    if (level === "error") {
+      button.classList.add("has-errors");
+    } else if (level === "warn") {
+      button.classList.add("has-warnings");
+    }
   }
 }

@@ -522,6 +522,7 @@
 </nav>
 
 <div class="docs-layout">
+
 <nav class="doc-tabs">
 
   <details class="doc-tab-group" open>
@@ -532,19 +533,31 @@
   </details>
 
   <details class="doc-tab-group">
-    <summary>General Checks</summary>
+    <summary>Notes</summary>
     <button class="doc-tab-button" data-doc-tab="clapWhistle">Clap / Whistle</button>
     <button class="doc-tab-button" data-doc-tab="offset">1ms Offset</button>
+    <button class="doc-tab-button" data-doc-tab="sampleSet">SampleSet</button>
+  </details>
+
+  <details class="doc-tab-group">
+    <summary>Kiai</summary>
     <button class="doc-tab-button" data-doc-tab="kiaiCompare">Kiai Comparison</button>
     <button class="doc-tab-button" data-doc-tab="kiaiSnap">Kiai Snap</button>
+    <button class="doc-tab-button" data-doc-tab="epilepsyWarning">Kiai Flash</button>
+  </details>
+
+  <details class="doc-tab-group">
+    <summary>SV</summary>
     <button class="doc-tab-button" data-doc-tab="doubleSv">Double SV</button>
     <button class="doc-tab-button" data-doc-tab="barline">Barline</button>
-    <button class="doc-tab-button" data-doc-tab="svVolume">SV Volume</button>
-    <button class="doc-tab-button" data-doc-tab="volumeCompare">Volume Comparison</button>
     <button class="doc-tab-button" data-doc-tab="redGreenMatch">Red/Green Match</button>
-    <button class="doc-tab-button" data-doc-tab="sampleSet">SampleSet</button>
     <button class="doc-tab-button" data-doc-tab="sliderSettings">Slider Multiplier / TickRate</button>
-    <button class="doc-tab-button" data-doc-tab="earlyNote">First Note Lag</button>
+  </details>
+
+  <details class="doc-tab-group">
+    <summary>Volume</summary>
+    <button class="doc-tab-button" data-doc-tab="svVolume">Early Volume</button>
+    <button class="doc-tab-button" data-doc-tab="volumeCompare">Volume Comparison</button>
   </details>
 
   <details class="doc-tab-group">
@@ -554,13 +567,6 @@
     <button class="doc-tab-button" data-doc-tab="source">Source</button>
     <button class="doc-tab-button" data-doc-tab="tag">Tags</button>
     <button class="doc-tab-button" data-doc-tab="contentPermission">Content Permission Check</button>
-  </details>
-
-  <details class="doc-tab-group">
-    <summary>Miscellaneous</summary>
-    <button class="doc-tab-button" data-doc-tab="previewPoint">Preview Point</button>
-    <button class="doc-tab-button" data-doc-tab="bgOffset">BG</button>
-    <button class="doc-tab-button" data-doc-tab="epilepsyWarning">Kiai Flash / Epilepsy Warning</button>
   </details>
 
   <details class="doc-tab-group">
@@ -575,8 +581,15 @@
   </details>
 
   <details class="doc-tab-group">
+    <summary>Miscellaneous</summary>
+    <button class="doc-tab-button" data-doc-tab="previewPoint">Preview Point</button>
+    <button class="doc-tab-button" data-doc-tab="earlyNote">First Note Lag</button>
+    <button class="doc-tab-button" data-doc-tab="bgOffset">BG</button>
+  </details>
+
+  <details class="doc-tab-group">
     <summary>Hidden Features</summary>
-    <button class="doc-tab-button" data-doc-tab="offsetWaveform">Offset</button>
+    <button class="doc-tab-button" data-doc-tab="offsetWaveform">Audio waveform</button>
     <button class="doc-tab-button" data-doc-tab="timeline">Timeline</button>
     <button class="doc-tab-button" data-doc-tab="bnCompare">BN Evaluation</button>
   </details>
@@ -1036,7 +1049,7 @@ This check only targets unintended detached barlines caused by 1 ms-offset red t
 </section>
 
 <section class="doc-tab-panel" data-doc-tab-panel="svVolume">
-<h2>SV Volume</h2>
+<h2>Early Volume</h2>
 
 <div class="section section-bg">
 <span class="label label-bg">■ Background</span><br>
@@ -2570,7 +2583,7 @@ Displayed results should therefore be treated as confirmation targets rather tha
 </section>
 
 <section class="doc-tab-panel" data-doc-tab-panel="offsetWaveform">
-<h2>Hidden Features: Offset</h2>
+<h2>Hidden Features: Audio waveform</h2>
 
 <div class="section section-bg">
 <span class="label label-bg">■ Background</span><br>

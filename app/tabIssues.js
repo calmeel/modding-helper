@@ -3,39 +3,48 @@ const TAB_LEVEL_WARN = "warn";
 const TAB_LEVEL_ERROR = "error";
 
 function setTabIssueLevel(tabName, level) {
-  const button = document.querySelector(`.tab-button[data-tab="${tabName}"]`);
-  if (!button) return;
+  const buttons = document.querySelectorAll(
+    `.tab-button[data-tab="${tabName}"]:not([data-bn-subtab-target]):not([data-spread-subtab-target])`
+  );
+  if (!buttons.length) return;
 
-  button.classList.remove("has-issues");
-  button.classList.remove("has-warnings");
-  button.classList.remove("has-errors");
+  for (const button of buttons) {
+    button.classList.remove("has-issues");
+    button.classList.remove("has-warnings");
+    button.classList.remove("has-errors");
 
-  if (level === TAB_LEVEL_WARN) {
-    button.classList.add("has-warnings");
-  }
+    if (level === TAB_LEVEL_WARN) {
+      button.classList.add("has-warnings");
+    }
 
-  if (level === TAB_LEVEL_ERROR) {
-    button.classList.add("has-errors");
+    if (level === TAB_LEVEL_ERROR) {
+      button.classList.add("has-errors");
+    }
   }
 }
 
 function setSubtabIssueLevel(subtabName, level) {
-  const button = document.querySelector(
-    `[data-bn-subtab="${subtabName}"], [data-spread-subtab="${subtabName}"]`
+  const buttons = document.querySelectorAll(
+    `[data-bn-subtab="${subtabName}"], ` +
+    `[data-bn-subtab-target="${subtabName}"], ` +
+    `[data-spread-subtab="${subtabName}"], ` +
+    `[data-spread-subtab-target="${subtabName}"]`
   );
 
-  if (!button) return;
+  if (!buttons.length) return;
 
-  button.classList.remove("has-issues");
-  button.classList.remove("has-warnings");
-  button.classList.remove("has-errors");
+  for (const button of buttons) {
+    button.classList.remove("has-issues");
+    button.classList.remove("has-warnings");
+    button.classList.remove("has-errors");
 
-  if (level === TAB_LEVEL_WARN) {
-    button.classList.add("has-warnings");
-  }
+    if (level === TAB_LEVEL_WARN) {
+      button.classList.add("has-warnings");
+    }
 
-  if (level === TAB_LEVEL_ERROR) {
-    button.classList.add("has-errors");
+    if (level === TAB_LEVEL_ERROR) {
+      button.classList.add("has-errors");
+    }
   }
 }
 
@@ -44,6 +53,7 @@ function updateTabIssueStates(state) {
   setTabIssueLevel("shift1ms", getOffsetIssueLevel(state.offset));
   setTabIssueLevel("kiaiCompare", getKiaiCompareIssueLevel(state.kiaiCompare));
   setTabIssueLevel("kiaiSnap", getKiaiSnapIssueLevel(state.kiaiSnap));
+  setTabIssueLevel("kiaiFlash", getEpilepsyWarningIssueLevel(state.epilepsyWarning));
   setTabIssueLevel("doubleBarline", getDoubleSvIssueLevel(state.doubleSvResults));
   setTabIssueLevel("barline", getBarlineIssueLevel(state.barlineResults));
   setTabIssueLevel("svVolume", getSvVolumeIssueLevel(state.svVolumeSources));
@@ -57,7 +67,8 @@ function updateTabIssueStates(state) {
   setSubtabIssueLevel("metadata-title",getTitleIssueLevel(state.title));
   setSubtabIssueLevel("metadata-source", getSourceIssueLevel(state.source));
   setSubtabIssueLevel("metadata-tag", getTagIssueLevel(state.tag));
-  setTabIssueLevel("misc", getMiscIssueLevel(state));
+  setTabIssueLevel("previewPoint", getPreviewPointIssueLevel(state.previewPoint));
+  setTabIssueLevel("bgOffset", getBgOffsetIssueLevel(state.bgOffset));
   setTabIssueLevel("spread", getSpreadIssueLevel(state.spread));
   setTabIssueLevel("contentPermission", getContentPermissionIssueLevel(state.contentPermission));
 }
@@ -414,20 +425,17 @@ function getSourceIssueLevel(results) {
 function getMiscIssueLevel(state) {
   const previewPointLevel = getPreviewPointIssueLevel(state.previewPoint);
   const bgOffsetLevel = getBgOffsetIssueLevel(state.bgOffset);
-  const epilepsyWarningLevel = getEpilepsyWarningIssueLevel(state.epilepsyWarning);
 
   if (
     previewPointLevel === TAB_LEVEL_ERROR ||
-    bgOffsetLevel === TAB_LEVEL_ERROR ||
-    epilepsyWarningLevel === TAB_LEVEL_ERROR
+    bgOffsetLevel === TAB_LEVEL_ERROR
   ) {
     return TAB_LEVEL_ERROR;
   }
 
   if (
     previewPointLevel === TAB_LEVEL_WARN ||
-    bgOffsetLevel === TAB_LEVEL_WARN ||
-    epilepsyWarningLevel === TAB_LEVEL_WARN
+    bgOffsetLevel === TAB_LEVEL_WARN
   ) {
     return TAB_LEVEL_WARN;
   }
