@@ -100,13 +100,32 @@ function detectBarlineIssues(
       const redLine = findBarlineRedLineAtTime(redLinesByTime, redLineTime, {
         omitFirstBarline: false
       });
+      const omittedRedLine = findBarlineRedLineAtTime(redLinesByTime, redLineTime, {
+        omitFirstBarline: true
+      });
       const omittedBarlineRedLine = findBarlineRedLineAtTime(
         redLinesByTime,
         barlineTime,
         { omitFirstBarline: true }
       );
 
-      if (!redLine) continue;
+      if (!redLine) {
+        if (omittedRedLine && noteTimes.has(redLineTime)) {
+          addDetachedBarlineIssue(
+            detachedBarlines,
+            redLines,
+            greenLines,
+            sliderMultiplier,
+            barlineTime,
+            redLineTime,
+            omittedRedLine,
+            barlineTime,
+            redLineTime
+          );
+        }
+
+        continue;
+      }
 
       if (!omittedBarlineRedLine) {
         doubleBarlines.push({
