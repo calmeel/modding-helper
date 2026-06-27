@@ -470,6 +470,10 @@ function getBgOffsetIssueLevel(results) {
 
   for (const result of results) {
     for (const bg of result.backgrounds ?? []) {
+      if (bg.imageTypeMismatch) {
+        return TAB_LEVEL_ERROR;
+      }
+
       if (bg.imageType === "png") {
         return TAB_LEVEL_WARN;
       }

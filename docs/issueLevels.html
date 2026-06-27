@@ -350,13 +350,16 @@
     </tr>
 
     <tr>
-      <td>その他：BGオフセット</td>
+      <td>その他：BG</td>
       <td class="warn-cell">
         ・同じ background file を使用している difficulty 間で
         <code>xOffset</code> / <code>yOffset</code> が一致していない<br>
         ・拡張子が .png
       </td>
-      <td class="none">なし</td>
+      <td class="error-cell">
+        ・拡張子が <code>.jpg</code> / <code>.jpeg</code> だが実体は PNG<br>
+        ・拡張子が <code>.png</code> だが実体は JPEG
+      </td>
     </tr>
 
     <tr>

@@ -559,7 +559,7 @@
   <details class="doc-tab-group">
     <summary>Miscellaneous</summary>
     <button class="doc-tab-button" data-doc-tab="previewPoint">Preview Point</button>
-    <button class="doc-tab-button" data-doc-tab="bgOffset">BG Offset</button>
+    <button class="doc-tab-button" data-doc-tab="bgOffset">BG</button>
     <button class="doc-tab-button" data-doc-tab="epilepsyWarning">Kiai Flash / Epilepsy Warning</button>
   </details>
 
@@ -1575,7 +1575,7 @@ you should verify whether the displayed position is intentional whenever a warni
 </section>
 
 <section class="doc-tab-panel" data-doc-tab-panel="bgOffset">
-<h2>Misc: BG Offset</h2>
+<h2>Misc: BG</h2>
 
 <div class="section section-bg">
 <span class="label label-bg">■ Background</span><br>
@@ -1593,7 +1593,7 @@ If <code>xOffset</code> / <code>yOffset</code> is <code>0,0</code>, the values m
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ Detection 1: BG offset differences</span><br>
+<span class="label label-detect">■ Detection 1: BG: offset differences</span><br>
 This check reads the background events of each difficulty in the mapset and verifies whether
 <code>xOffset</code> / <code>yOffset</code> are consistent between difficulties that use the same background image file.<br><br>
 
@@ -1609,6 +1609,11 @@ This check reads the file extension of each background image referenced by backg
 <code>.jpg</code> / <code>.jpeg</code> / <code>.png</code> files.<br>
 If a <code>.png</code> background image is used, a warning will be displayed because
 <code>.jpg</code> is recommended from a file-size reduction perspective.<br><br>
+
+When an <code>.osz</code> file is loaded, the tool also checks the actual image file signature.
+If the extension says <code>.jpg</code> / <code>.jpeg</code> but the file is actually PNG,
+or if the extension says <code>.png</code> but the file is actually JPEG,
+an error will be displayed.<br><br>
 
 If multiple background events exist, each image file name and format will be listed.
 </div>
