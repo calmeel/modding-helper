@@ -219,7 +219,7 @@ const updateHistoryEntries = [
     }
   },
   {
-    date: "2026/06/26",
+    date: "2026/06/27",
     type: "update",
     items: {
       en: [
