@@ -22,7 +22,26 @@ function setupTabs() {
       if (targetPanel) {
         targetPanel.classList.add("active");
       }
+
+      activateLinkedSubtab(button);
     });
+  }
+}
+
+function activateLinkedSubtab(button) {
+  const bnSubtab = button.dataset.bnSubtabTarget;
+  const spreadSubtab = button.dataset.spreadSubtabTarget;
+
+  if (bnSubtab) {
+    document
+      .querySelector(`.bn-subtab-button[data-bn-subtab="${bnSubtab}"]`)
+      ?.click();
+  }
+
+  if (spreadSubtab) {
+    document
+      .querySelector(`.spread-subtab-button[data-spread-subtab="${spreadSubtab}"]`)
+      ?.click();
   }
 }
 
@@ -380,17 +399,42 @@ function applyTabVisibilitySettings() {
   const checkboxes = document.querySelectorAll(".tab-visibility-toggle");
 
   for (const checkbox of checkboxes) {
-    const tabName = checkbox.dataset.targetTab;
     const visible = checkbox.checked;
+    const tabNames = getTabVisibilityTargets(checkbox.dataset.targetTab);
 
-    const button = document.querySelector(`.tab-button[data-tab="${tabName}"]`);
-    const panel = document.getElementById(`tab-${tabName}`);
+    for (const tabName of tabNames) {
+      const buttons = document.querySelectorAll(`.tab-button[data-tab="${tabName}"]`);
+      const panel = document.getElementById(`tab-${tabName}`);
 
-    if (button) button.classList.toggle("hidden-tab", !visible);
-    if (panel) panel.classList.toggle("hidden-tab", !visible);
+      for (const button of buttons) {
+        button.classList.toggle("hidden-tab", !visible);
+      }
+
+      if (panel) panel.classList.toggle("hidden-tab", !visible);
+    }
   }
 
+  updateHiddenTabGroups();
   ensureVisibleActiveTab();
+}
+
+function getTabVisibilityTargets(tabName) {
+  if (tabName === "metadata") {
+    return ["metadata", "contentPermission"];
+  }
+
+  return [tabName];
+}
+
+function updateHiddenTabGroups() {
+  for (const group of document.querySelectorAll(".tab-group")) {
+    const buttons = group.querySelectorAll(".tab-button");
+    const hasVisibleButton = [...buttons].some(button =>
+      !button.classList.contains("hidden-tab")
+    );
+
+    group.classList.toggle("hidden-tab-group", !hasVisibleButton);
+  }
 }
 
 function ensureVisibleActiveTab() {

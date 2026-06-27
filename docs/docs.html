@@ -522,6 +522,7 @@
 </nav>
 
 <div class="docs-layout">
+
 <nav class="doc-tabs">
 
   <details class="doc-tab-group" open>
@@ -532,19 +533,31 @@
   </details>
 
   <details class="doc-tab-group">
-    <summary>一般チェック</summary>
+    <summary>ノーツ</summary>
     <button class="doc-tab-button" data-doc-tab="clapWhistle">Clap / Whistle</button>
     <button class="doc-tab-button" data-doc-tab="offset">1msズレ</button>
+    <button class="doc-tab-button" data-doc-tab="sampleSet">サンプルセット</button>
+  </details>
+
+  <details class="doc-tab-group">
+    <summary>Kiai</summary>
     <button class="doc-tab-button" data-doc-tab="kiaiCompare">Kiai比較</button>
     <button class="doc-tab-button" data-doc-tab="kiaiSnap">Kiaiスナップ</button>
+    <button class="doc-tab-button" data-doc-tab="epilepsyWarning">Kiaiフラッシュ</button>
+  </details>
+
+  <details class="doc-tab-group">
+    <summary>SV</summary>
     <button class="doc-tab-button" data-doc-tab="doubleSv">二重SV</button>
     <button class="doc-tab-button" data-doc-tab="barline">小節線</button>
-    <button class="doc-tab-button" data-doc-tab="svVolume">SV ボリューム</button>
-    <button class="doc-tab-button" data-doc-tab="volumeCompare">ボリューム比較</button>
-    <button class="doc-tab-button" data-doc-tab="redGreenMatch">赤線 & 緑線の一致</button>
-    <button class="doc-tab-button" data-doc-tab="sampleSet">サンプルセット</button>
+    <button class="doc-tab-button" data-doc-tab="redGreenMatch">赤線&amp;緑線</button>
     <button class="doc-tab-button" data-doc-tab="sliderSettings">スライダー感度・目盛り</button>
-    <button class="doc-tab-button" data-doc-tab="earlyNote">プチフリ</button>
+  </details>
+
+  <details class="doc-tab-group">
+    <summary>ボリューム</summary>
+    <button class="doc-tab-button" data-doc-tab="svVolume">ボリューム早入り</button>
+    <button class="doc-tab-button" data-doc-tab="volumeCompare">ボリューム比較</button>
   </details>
 
   <details class="doc-tab-group">
@@ -557,16 +570,9 @@
   </details>
 
   <details class="doc-tab-group">
-    <summary>その他</summary>
-    <button class="doc-tab-button" data-doc-tab="previewPoint">プレビューポイント</button>
-    <button class="doc-tab-button" data-doc-tab="bgOffset">BG</button>
-    <button class="doc-tab-button" data-doc-tab="epilepsyWarning">点滅・てんかん警告</button>
-  </details>
-
-  <details class="doc-tab-group">
     <summary>スプレッド比較</summary>
-    <button class="doc-tab-button" data-doc-tab="spread1">Diff 順</button>
-    <button class="doc-tab-button" data-doc-tab="spread2">OD・HP</button>
+    <button class="doc-tab-button" data-doc-tab="spread1">Diff順</button>
+    <button class="doc-tab-button" data-doc-tab="spread2">OD / HP</button>
     <button class="doc-tab-button" data-doc-tab="spread3">ノーツ数</button>
     <button class="doc-tab-button" data-doc-tab="spreadDensity">ノーツ密度</button>
     <button class="doc-tab-button" data-doc-tab="spreadRest">Rest moment</button>
@@ -575,8 +581,15 @@
   </details>
 
   <details class="doc-tab-group">
-    <summary>隠し機能</summary>
-    <button class="doc-tab-button" data-doc-tab="offsetWaveform">オフセット</button>
+    <summary>その他</summary>
+    <button class="doc-tab-button" data-doc-tab="previewPoint">プレビューポイント</button>
+    <button class="doc-tab-button" data-doc-tab="earlyNote">プチフリ</button>
+    <button class="doc-tab-button" data-doc-tab="bgOffset">BG</button>
+  </details>
+
+  <details class="doc-tab-group">
+    <summary>ツール</summary>
+    <button class="doc-tab-button" data-doc-tab="offsetWaveform">音声波形</button>
     <button class="doc-tab-button" data-doc-tab="timeline">タイムライン</button>
     <button class="doc-tab-button" data-doc-tab="bnCompare">BN評価</button>
   </details>
@@ -1015,7 +1028,7 @@ AiMod は同時刻の重複 SV は検出できますが、1 ms ズレの二重 S
 </section>
 
 <section class="doc-tab-panel" data-doc-tab-panel="svVolume">
-<h2>SV ボリューム</h2>
+<h2>ボリューム早入り</h2>
 
 <div class="section section-bg">
 <span class="label label-bg">■ 背景</span><br>
@@ -2457,7 +2470,7 @@ difficulty ごとにノーツ配置や timing が完全一致しない場合が�
 </section>
 
 <section class="doc-tab-panel" data-doc-tab-panel="offsetWaveform">
-<h2>隠し機能：オフセット</h2>
+<h2>隠し機能：音声波形</h2>
 
 <div class="section section-bg">
 <span class="label label-bg">■ 背景</span><br>

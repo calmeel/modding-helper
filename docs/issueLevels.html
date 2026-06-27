@@ -167,6 +167,15 @@
     </tr>
 
     <tr>
+      <td>サンプルセット</td>
+      <td class="warn-cell">
+        ・1 : Normal 以外のサンプルセットが存在する <br>
+        ・カスタムサンプルセットが存在する
+      </td>
+      <td class="none">なし</td>
+    </tr>
+
+    <tr>
       <td>Kiai比較</td>
       <td class="warn-cell">
         ・diff 間で Kiai 状態が一致していない<br>
@@ -183,6 +192,15 @@
       <td class="error-cell">
         ・kiai unsnapped が存在する
       </td>
+    </tr>
+
+    <tr>
+      <td>Kiaiフラッシュ</td>
+      <td class="warn-cell">
+        ・Kiai の <code>OFF → ON</code> 切り替え頻度が <code>3 Hz</code> 以上である<br>
+        ・Kiai 中の BPM が <code>360 BPM</code> 以上である
+      </td>
+      <td class="none">なし</td>
     </tr>
 
     <tr>
@@ -205,7 +223,29 @@
     </tr>
 
     <tr>
-      <td>SVボリューム</td>
+      <td>赤線&緑線</td>
+      <td class="none">なし</td>
+      <td class="error-cell">
+        ・同時刻の 赤線・緑線 で以下が一致していない：
+        <ul>
+          <li>ボリューム</li>
+          <li>Kiai ON/OFF</li>
+          <li>サンプルセット</li>
+        </ul>
+      </td>
+    </tr>
+
+    <tr>
+      <td>スライダー感度・目盛り</td>
+      <td class="warn-cell">
+        ・SliderTickRate が推奨値（1 or 3）ではない <br>
+        ・SliderMultiplier が <code>1.4</code> ではない
+      </td>
+      <td class="none">なし</td>
+    </tr>
+
+    <tr>
+      <td>ボリューム早入り</td>
       <td class="warn-cell">
         ・ヒットオブジェクトの近く（± 1/16 snap）に ボリューム変化が存在する
       </td>
@@ -220,47 +260,6 @@
         ・diff 間でボリュームが一致していないタイムポイントが存在する
       </td>
       <td class="none">なし</td>
-    </tr>
-
-    <tr>
-      <td>赤線&緑線</td>
-      <td class="none">なし</td>
-      <td class="error-cell">
-        ・同時刻の 赤線・緑線 で以下が一致していない：
-        <ul>
-          <li>ボリューム</li>
-          <li>Kiai ON/OFF</li>
-          <li>サンプルセット</li>
-        </ul>
-      </td>
-    </tr>
-
-    <tr>
-      <td>サンプルセット</td>
-      <td class="warn-cell">
-        ・1 : Normal 以外のサンプルセットが存在する <br>
-        ・カスタムサンプルセットが存在する
-      </td>
-      <td class="none">なし</td>
-    </tr>
-
-    <tr>
-      <td>スライダー感度・目盛り</td>
-      <td class="warn-cell">
-        ・SliderTickRate が推奨値（1 or 3）ではない <br>
-        ・SliderMultiplier が <code>1.4</code> ではない
-      </td>
-      <td class="none">なし</td>
-    </tr>
-
-    <tr>
-      <td>プチフリ</td>
-      <td class="warn-cell">
-        ・音源読込み時の最初のノーツの位置が判定枠まで 50% 以下
-      </td>
-      <td class="error-cell">
-        ・音源読込み時の最初のノーツの位置が判定枠まで 25% 以下
-      </td>
     </tr>
 
     <tr>
@@ -334,41 +333,6 @@
       <td class="error-cell">
         ・osu!official 上で使用禁止のアーティスト / レーベル
       </td>
-    </tr>
-
-    <tr>
-      <td>その他：プレビューポイント</td>
-
-      <td class="warn-cell">
-        ・プレビューポイントが unsnapped である<br>
-        ・プレビューポイントが設定されていない
-      </td>
-
-      <td class="error-cell">
-        ・diff 間でプレビューポイントが一致していない
-      </td>
-    </tr>
-
-    <tr>
-      <td>その他：BG</td>
-      <td class="warn-cell">
-        ・同じ background file を使用している difficulty 間で
-        <code>xOffset</code> / <code>yOffset</code> が一致していない<br>
-        ・拡張子が .png
-      </td>
-      <td class="error-cell">
-        ・拡張子が <code>.jpg</code> / <code>.jpeg</code> だが実体は PNG<br>
-        ・拡張子が <code>.png</code> だが実体は JPEG
-      </td>
-    </tr>
-
-    <tr>
-      <td>その他：点滅・てんかん警告</td>
-      <td class="warn-cell">
-        ・Kiai の <code>OFF → ON</code> 切り替え頻度が <code>3 Hz</code> 以上である<br>
-        ・Kiai 中の BPM が <code>360 BPM</code> 以上である
-      </td>
-      <td class="none">なし</td>
     </tr>
 
     <tr>
@@ -451,6 +415,41 @@
       </td>
     </tr>
 
+    <tr>
+      <td>その他：プレビューポイント</td>
+
+      <td class="warn-cell">
+        ・プレビューポイントが unsnapped である<br>
+        ・プレビューポイントが設定されていない
+      </td>
+
+      <td class="error-cell">
+        ・diff 間でプレビューポイントが一致していない
+      </td>
+    </tr>
+
+    <tr>
+      <td>プチフリ</td>
+      <td class="warn-cell">
+        ・音源読込み時の最初のノーツの位置が判定枠まで 50% 以下
+      </td>
+      <td class="error-cell">
+        ・音源読込み時の最初のノーツの位置が判定枠まで 25% 以下
+      </td>
+    </tr>
+
+    <tr>
+      <td>その他：BG</td>
+      <td class="warn-cell">
+        ・同じ background file を使用している difficulty 間で
+        <code>xOffset</code> / <code>yOffset</code> が一致していない<br>
+        ・拡張子が .png
+      </td>
+      <td class="error-cell">
+        ・拡張子が <code>.jpg</code> / <code>.jpeg</code> だが実体は PNG<br>
+        ・拡張子が <code>.png</code> だが実体は JPEG
+      </td>
+    </tr>
   </tbody>
 </table>
 

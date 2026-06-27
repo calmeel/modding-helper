@@ -63,6 +63,11 @@
         </label>
 
         <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="sampleSet" checked>
+          <span data-i18n="tabSampleSet">SampleSet</span>
+        </label>
+
+        <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="kiaiCompare" checked>
           <span data-i18n="tabKiaiCompare">Kiai Compare</span>
         </label>
@@ -70,6 +75,11 @@
         <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="kiaiSnap" checked>
           <span data-i18n="tabKiaiSnap">Kiai Snap</span>
+        </label>
+
+        <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="kiaiFlash" checked>
+          <span data-i18n="tabKiaiFlash">Kiai Flash</span>
         </label>
 
         <label>
@@ -83,8 +93,18 @@
         </label>
 
         <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="redGreenMatch" checked>
+          <span data-i18n="tabRedGreenMatch">Red/Green Match</span>
+        </label>
+
+        <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="sliderSettings" checked>
+          <span data-i18n="tabSliderSettings">Slider settings</span>
+        </label>
+
+        <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="svVolume" checked>
-          <span data-i18n="tabSvVolume">SV Volume</span>
+          <span data-i18n="tabSvVolume">Early Volume</span>
         </label>
 
         <label>
@@ -93,33 +113,8 @@
         </label>
 
         <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="redGreenMatch" checked>
-          <span data-i18n="tabRedGreenMatch">Red/Green Match</span>
-        </label>
-
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="sampleSet" checked>
-          <span data-i18n="tabSampleSet">SampleSet</span>
-        </label>
-
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="sliderSettings" checked>
-          <span data-i18n="tabSliderSettings">スライダー感度・目盛り</span>
-        </label>
-
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="earlyNote" checked>
-          <span data-i18n="tabEarlyNote">プチフリ</span>
-        </label>
-
-        <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="metadata" checked>
-          <span data-i18n="tabMetadata">メタデータ</span>
-        </label>
-
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="misc" checked>
-          <span data-i18n="tabMisc">その他</span>
+          <span data-i18n="tabMetadata">Metadata</span>
         </label>
 
         <label>
@@ -128,8 +123,23 @@
         </label>
 
         <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="previewPoint" checked>
+          <span data-i18n="tabPreviewPoint">Preview point</span>
+        </label>
+
+        <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="earlyNote" checked>
+          <span data-i18n="tabEarlyNote">Early notes</span>
+        </label>
+
+        <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="bgOffset" checked>
+          <span data-i18n="tabBgOffset">BG</span>
+        </label>
+
+        <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="offsetWaveform">
-          <span data-i18n="tabOffsetWaveform">Offset</span>
+          <span data-i18n="tabOffsetWaveform">Audio waveform</span>
         </label>
 
         <label>
@@ -139,34 +149,75 @@
 
         <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="bnCompare">
-          <span data-i18n="tabBnCompare">BN評価</span>
+          <span data-i18n="tabBnCompare">BN Compare</span>
         </label>
       </div>
     </section>
 
     <section class="tabs">
-      <div class="tab-buttons">
-        <button class="tab-button active" data-tab="clapWhistle" data-i18n="tabClapWhistle">Clap & Whistle</button>
-        <button class="tab-button" data-tab="shift1ms" data-i18n="tabOffset">1ms Offset</button>
-        <button class="tab-button" data-tab="kiaiCompare" data-i18n="tabKiaiCompare">Kiai Compare</button>
-        <button class="tab-button" data-tab="kiaiSnap" data-i18n="tabKiaiSnap">Kiai Snap</button>
-        <button class="tab-button" data-tab="doubleBarline" data-i18n="tabDoubleSv">Double SV line</button>
-        <button class="tab-button" data-tab="barline" data-i18n="tabBarline">Barline</button>
-        <button class="tab-button" data-tab="svVolume" data-i18n="tabSvVolume">SV Volume</button>
-        <button class="tab-button" data-tab="volumeCompare" data-i18n="tabVolumeCompare">Volume Compare</button>
-        <button class="tab-button" data-tab="redGreenMatch" data-i18n="tabRedGreenMatch">Red/Green Match</button>
-        <button class="tab-button" data-tab="sampleSet" data-i18n="tabSampleSet">SampleSet</button>
-        <button class="tab-button" data-tab="sliderSettings" data-i18n="tabSliderSettings">スライダー感度・目盛り</button>
-        <button class="tab-button" data-tab="earlyNote" data-i18n="tabEarlyNote">プチフリ</button>
-        <button class="tab-button" data-tab="metadata" data-i18n="tabMetadata">メタデータ</button>
-        <button class="tab-button" data-tab="contentPermission" data-i18n="tabContentPermission">Content usage permissions</button>
-        <button class="tab-button" data-tab="misc" data-i18n="tabMisc">その他</button>
-        <button class="tab-button" data-tab="spread" data-i18n="tabSpread">Spread</button>
-        <button class="tab-button timeline-tab-button" data-tab="offsetWaveform" data-i18n="tabOffsetWaveform">Offset</button>
-        <button class="tab-button timeline-tab-button hidden-tab" data-tab="timeline" data-i18n="tabTimeline">Timeline</button>
-        <button class="tab-button bn-tab-button hidden-tab" data-tab="bnCompare" data-i18n="tabBnCompare">BN評価</button>
-      </div>
+      <div class="tab-buttons tab-groups">
+        <div class="tab-group">
+          <div class="tab-group-title" data-i18n="tabGroupNotes">Notes</div>
+          <button class="tab-button active" data-tab="clapWhistle" data-i18n="tabClapWhistle">Clap & Whistle</button>
+          <button class="tab-button" data-tab="shift1ms" data-i18n="tabOffset">1ms Offset</button>
+          <button class="tab-button" data-tab="sampleSet" data-i18n="tabSampleSet">SampleSet</button>
+        </div>
 
+        <div class="tab-group">
+          <div class="tab-group-title" data-i18n="tabGroupKiai">Kiai</div>
+          <button class="tab-button" data-tab="kiaiCompare" data-i18n="tabKiaiCompare">Kiai Compare</button>
+          <button class="tab-button" data-tab="kiaiSnap" data-i18n="tabKiaiSnap">Kiai Snap</button>
+          <button class="tab-button" data-tab="kiaiFlash" data-i18n="tabKiaiFlash">Kiai Flash</button>
+        </div>
+
+        <div class="tab-group">
+          <div class="tab-group-title" data-i18n="tabGroupSv">SV</div>
+          <button class="tab-button" data-tab="doubleBarline" data-i18n="tabDoubleSv">Double SV line</button>
+          <button class="tab-button" data-tab="barline" data-i18n="tabBarline">Barline</button>
+          <button class="tab-button" data-tab="redGreenMatch" data-i18n="tabRedGreenMatch">Red/Green Match</button>
+          <button class="tab-button" data-tab="sliderSettings" data-i18n="tabSliderSettings">Slider settings</button>
+        </div>
+
+        <div class="tab-group">
+          <div class="tab-group-title" data-i18n="tabGroupVolume">Volume</div>
+          <button class="tab-button" data-tab="svVolume" data-i18n="tabSvVolume">Early Volume</button>
+          <button class="tab-button" data-tab="volumeCompare" data-i18n="tabVolumeCompare">Volume Compare</button>
+        </div>
+
+        <div class="tab-group">
+          <div class="tab-group-title" data-i18n="tabMetadata">Metadata</div>
+          <button class="tab-button" data-tab="metadata" data-bn-subtab-target="metadata-artist" data-i18n="tabArtist">Artist</button>
+          <button class="tab-button" data-tab="metadata" data-bn-subtab-target="metadata-title" data-i18n="tabTitle">Title</button>
+          <button class="tab-button" data-tab="metadata" data-bn-subtab-target="metadata-source" data-i18n="sourceCheckTitle">Source</button>
+          <button class="tab-button" data-tab="metadata" data-bn-subtab-target="metadata-tag" data-i18n="tabTag">Tag</button>
+          <button class="tab-button" data-tab="contentPermission" data-i18n="tabContentPermission">Content usage permissions</button>
+        </div>
+
+        <div class="tab-group">
+          <div class="tab-group-title" data-i18n="tabSpread">Spread</div>
+          <button class="tab-button" data-tab="spread" data-spread-subtab-target="order" data-i18n="spreadDiffOrder">Diff Order</button>
+          <button class="tab-button" data-tab="spread" data-spread-subtab-target="odhp" data-i18n="spreadOdHp">OD / HP</button>
+          <button class="tab-button" data-tab="spread" data-spread-subtab-target="notes" data-i18n="spreadNoteCount">Note Count</button>
+          <button class="tab-button" data-tab="spread" data-spread-subtab-target="density" data-i18n="spreadDensity">Density</button>
+          <button class="tab-button" data-tab="spread" data-spread-subtab-target="rest" data-i18n="spreadRestMoments">Rest moments</button>
+          <button class="tab-button" data-tab="spread" data-spread-subtab-target="finishers" data-i18n="spreadFinishers">Finishers</button>
+          <button class="tab-button" data-tab="spread" data-spread-subtab-target="scroll" data-i18n="spreadScrollSpeed">Scroll Speed</button>
+        </div>
+
+        <div class="tab-group">
+          <div class="tab-group-title" data-i18n="tabMisc">Misc</div>
+          <button class="tab-button" data-tab="previewPoint" data-i18n="tabPreviewPoint">Preview point</button>
+          <button class="tab-button" data-tab="earlyNote" data-i18n="tabEarlyNote">Early notes</button>
+          <button class="tab-button" data-tab="bgOffset" data-i18n="tabBgOffset">BG</button>
+        </div>
+
+        <div class="tab-group">
+          <div class="tab-group-title" data-i18n="tabGroupTools">Tools</div>
+          <button class="tab-button timeline-tab-button" data-tab="offsetWaveform" data-i18n="tabOffsetWaveform">Audio waveform</button>
+          <button class="tab-button timeline-tab-button hidden-tab" data-tab="timeline" data-i18n="tabTimeline">Timeline</button>
+          <button class="tab-button bn-tab-button hidden-tab" data-tab="bnCompare" data-i18n="tabBnCompare">BN Compare</button>
+        </div>
+      </div>
       <section class="tab-panel active" id="tab-clapWhistle">
         <div class="options">
           <label>
@@ -216,6 +267,10 @@
 
       <section class="tab-panel" id="tab-kiaiSnap">
         <pre id="kiaiSnapOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+      </section>
+
+      <section class="tab-panel" id="tab-kiaiFlash">
+        <pre id="epilepsyWarningOutput" data-i18n="noFileLoaded">No file loaded.</pre>
       </section>
 
       <section class="tab-panel" id="tab-doubleBarline">
@@ -376,21 +431,12 @@
         <pre id="contentPermissionOutput" data-i18n="noFileLoaded">No file loaded.</pre>
       </section>
 
-      <section class="tab-panel" id="tab-misc">
-        <div class="misc-section">
-          <h3 data-i18n="previewPointSnapTitle">Preview point snap</h3>
-          <pre id="previewPointOutput" data-i18n="noFileLoaded">No file loaded.</pre>
-        </div>
+      <section class="tab-panel" id="tab-previewPoint">
+        <pre id="previewPointOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+      </section>
 
-        <div class="misc-section">
-          <h3 data-i18n="bgOffsetTitle">BG</h3>
-          <pre id="bgOffsetOutput" data-i18n="noFileLoaded">No file loaded.</pre>
-        </div>
-
-        <div class="misc-section">
-          <h3 data-i18n="epilepsyWarningTitle">Flash / Epilepsy Warning</h3>
-          <pre id="epilepsyWarningOutput" data-i18n="noFileLoaded">No file loaded.</pre>
-        </div>
+      <section class="tab-panel" id="tab-bgOffset">
+        <pre id="bgOffsetOutput" data-i18n="noFileLoaded">No file loaded.</pre>
       </section>
 
       <section class="tab-panel" id="tab-spread">
@@ -620,7 +666,7 @@
             </div>
 
             <div class="spread-scroll-delta-header" id="spreadScrollDeltaHeader">
-              <h4 id="spreadScrollDeltaGraphTitle" data-i18n="spreadScrollDeltaGraphTitle">Scroll speed change graph (Δ px/s)</h4>
+              <h4 id="spreadScrollDeltaGraphTitle" data-i18n="spreadScrollDeltaGraphTitle">Scroll speed change graph (΁Epx/s)</h4>
               <p data-i18n="spreadScrollDeltaGraphHelp">
                 Points show the change in scroll speed at each note. Thin lines are visual guides.
               </p>
@@ -715,25 +761,25 @@
 
           <div class="bn-offset-controls">
             <button id="bnApplyRedOffsetButton" class="doc-btn" type="button" data-i18n="bnApplyRedOffset">
-              赤線を元にオフセット補正
+              Apply red offset correction
             </button>
             <span id="bnOffsetStatus" class="bn-offset-status">offset: 0 ms</span>
           </div>
 
-          <button id="bnCompareRunButton" class="doc-btn" type="button" data-i18n="bnRunCompare">比較実行</button>
+                    <button id="bnCompareRunButton" class="doc-btn" type="button" data-i18n="bnRunCompare">Compare</button>
 
           <div class="bn-result-controls">
             <label>
               <span data-i18n="bnDisplayDiff">表示するDiff:</span>
               <select id="bnPairSelect"></select>
             </label>
-          </div>
+            </div>
 
           <div class="bn-subtabs">
-            <button class="bn-subtab-button active" data-bn-subtab="notes" data-i18n="bnNotesInfo">ノーツ情報</button>
+            <button class="bn-subtab-button active" data-bn-subtab="notes" data-i18n="bnNotesInfo">Notes info</button>
             <button class="bn-subtab-button" data-bn-subtab="timeline" data-i18n="bnTimelineTab">Timeline</button>
-            <button class="bn-subtab-button" data-bn-subtab="timing" data-i18n="bnTimingInfo">SV情報</button>
-            <button class="bn-subtab-button" data-bn-subtab="metadata" data-i18n="bnMetadataInfo">メタデータ情報</button>
+            <button class="bn-subtab-button" data-bn-subtab="timing" data-i18n="bnTimingInfo">SV info</button>
+            <button class="bn-subtab-button" data-bn-subtab="metadata" data-i18n="bnMetadataInfo">Metadata info</button>
             <button class="bn-subtab-button" data-bn-subtab="difficulty" data-i18n="bnDifficultyTab">OD / HP</button>
           </div>
 
