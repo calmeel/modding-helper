@@ -995,6 +995,31 @@ For this reason, it is not treated as a double barline issue, and it is only rep
 Also, even if the red timing point at <code>T + 1 ms</code> has <code>omit first barline</code> enabled, when a note is placed at the same <code>T + 1 ms</code> position, the tool compares the speed of the barline at <code>T</code> with the speed of the note at <code>T + 1 ms</code>.
 </div>
 
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content 3: Negative-start Barline Bug</span><br>
+When the first red timing point is placed at a negative timestamp, the tool compares the first generated barline position from that red timing point with the next red timing point position.<br>
+If the first generated barline position matches or passes the next red timing point, the result is shown as a Warning because osu!stable and osu!lazer may display the barline differently.<br><br>
+
+<table class="ratio-threshold-table">
+  <thead>
+    <tr>
+      <th>Next red timing point state</th>
+      <th>Warning content</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>omit first barline</code> enabled</td>
+      <td class="ratio-warn">In osu!stable, this may be displayed as one barline, while in osu!lazer, the barline may disappear.</td>
+    </tr>
+    <tr>
+      <td><code>omit first barline</code> disabled</td>
+      <td class="ratio-warn">In osu!stable, this may be displayed as a double barline, while in osu!lazer, it may be displayed as one barline.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
 <div class="section section-bg">
 <span class="label label-bg">■ Calculation Details</span><br>
 Generated barline positions are calculated from the red timing point time, <code>beatLength</code>, and meter.<br>

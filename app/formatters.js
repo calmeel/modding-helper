@@ -331,6 +331,16 @@ function formatBarlineResultGroup(results, t) {
 
   lines.push(formatSeparator());
   lines.push("");
+  lines.push(formatSectionTitle(t("barlineNegativeStartBug")));
+
+  for (const result of results) {
+    lines.push(`${getDifficultyName(result.fileName)}`);
+    lines.push(...formatBarlineNegativeStartWarningLines(result, t));
+    lines.push("");
+  }
+
+  lines.push(formatSeparator());
+  lines.push("");
   lines.push(formatSectionTitle(t("barlineDetachedBarline")));
 
   for (const result of results) {
@@ -351,6 +361,21 @@ function formatBarlineDoubleBarlineLines(result, t) {
     `<span class="result-error">` +
     `${formatTimestampLink(item.barlineTime)} -> ${formatTimestampLink(item.redLineTime)} | ` +
     `${escapeHtml(t("barlineMissingOmitFirst"))}` +
+    `</span>`
+  );
+}
+
+function formatBarlineNegativeStartWarningLines(result, t) {
+  if (!result.negativeStartBarlineWarnings?.length) {
+    return [t("barlineNoNegativeStartBug")];
+  }
+
+  return result.negativeStartBarlineWarnings.map(item =>
+    `<span class="result-warning">` +
+    `${formatTimestampLink(item.firstRedLineTime)} -> ` +
+    `${formatTimestampLink(item.generatedBarlineTime)} / ` +
+    `${formatTimestampLink(item.nextRedLineTime)} | ` +
+    `${escapeHtml(t(item.stableLazerMessageKey))}` +
     `</span>`
   );
 }
