@@ -80,6 +80,7 @@ async function analyzeOszFile(file) {
   const osuFiles = Object.values(zip.files)
     .filter(entry => !entry.dir && entry.name.toLowerCase().endsWith(".osu"));
   const audioBlobCache = new Map();
+  const bgImageTypeCache = new Map();
 
   for (const entry of osuFiles) {
     const text = await entry.async("text");
@@ -200,8 +201,16 @@ async function analyzeOszFile(file) {
       mode
     });
 
+    const bgOffsetResult = runBgOffsetCheck(text, entry.name);
+    await attachBgImageTypesFromOsz(
+      bgOffsetResult,
+      zip,
+      entry.name,
+      bgImageTypeCache
+    );
+
     bgOffsetResults.push({
-      ...runBgOffsetCheck(text, entry.name),
+      ...bgOffsetResult,
       mode
     });
 
@@ -426,6 +435,45 @@ async function processFile(file) {
   }
 
   throw new Error("invalidFile");
+}
+
+async function attachBgImageTypesFromOsz(result, zip, osuEntryName, cache) {
+  for (const bg of result?.backgrounds ?? []) {
+    const imageEntry = findOszImageEntry(zip, osuEntryName, bg.fileName);
+
+    bg.imageEntryName = imageEntry?.name ?? "";
+    bg.actualImageType = "";
+    bg.imageTypeMismatch = null;
+
+    if (!imageEntry) continue;
+
+    if (!cache.has(imageEntry.name)) {
+      const bytes = await imageEntry.async("uint8array");
+      cache.set(imageEntry.name, detectBgImageTypeFromBytes(bytes));
+    }
+
+    bg.actualImageType = cache.get(imageEntry.name) ?? "";
+    bg.imageTypeMismatch = getBgImageTypeMismatch(
+      bg.imageType,
+      bg.actualImageType
+    );
+  }
+}
+
+function findOszImageEntry(zip, osuEntryName, imageFileName) {
+  if (!imageFileName) return null;
+
+  const normalizedImageName = normalizeOszPath(imageFileName);
+  const osuDir = getOszEntryDirectory(osuEntryName);
+  const relativeTarget = normalizeOszPath(`${osuDir}${imageFileName}`);
+
+  const entries = Object.values(zip.files)
+    .filter(entry => !entry.dir);
+
+  return entries.find(entry => normalizeOszPath(entry.name) === relativeTarget) ??
+    entries.find(entry => normalizeOszPath(entry.name) === normalizedImageName) ??
+    entries.find(entry => getOszEntryBaseName(entry.name) === getOszEntryBaseName(imageFileName)) ??
+    null;
 }
 
 function findOszAudioEntry(zip, osuEntryName, audioFileName) {

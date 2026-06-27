@@ -108,3 +108,51 @@ function getBgImageType(fileName) {
 
   return "";
 }
+
+function normalizeBgImageType(type) {
+  return type === "jpg" ? "jpeg" : type;
+}
+
+function getBgImageTypeMismatch(expectedType, actualType) {
+  const expected = normalizeBgImageType(expectedType);
+  const actual = normalizeBgImageType(actualType);
+
+  if (!expected || !actual) return null;
+  if (
+    (expected === "jpeg" || expected === "png") &&
+    (actual === "jpeg" || actual === "png") &&
+    expected !== actual
+  ) {
+    return { expected, actual };
+  }
+
+  return null;
+}
+
+function detectBgImageTypeFromBytes(bytes) {
+  if (!bytes || bytes.length < 3) return "";
+
+  if (
+    bytes.length >= 8 &&
+    bytes[0] === 0x89 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x4e &&
+    bytes[3] === 0x47 &&
+    bytes[4] === 0x0d &&
+    bytes[5] === 0x0a &&
+    bytes[6] === 0x1a &&
+    bytes[7] === 0x0a
+  ) {
+    return "png";
+  }
+
+  if (
+    bytes[0] === 0xff &&
+    bytes[1] === 0xd8 &&
+    bytes[2] === 0xff
+  ) {
+    return "jpeg";
+  }
+
+  return "";
+}
