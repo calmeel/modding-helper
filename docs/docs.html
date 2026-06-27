@@ -974,6 +974,31 @@ AiMod は同時刻の重複 SV は検出できますが、1 ms ズレの二重 S
 また、<code>T + 1 ms</code> の赤線自体が <code>omit first barline</code> 有効であっても、同じ <code>T + 1 ms</code> にノーツがある場合は、<code>T</code> の小節線と <code>T + 1 ms</code> のノーツの速度差を確認します。
 </div>
 
+<div class="section section-detect">
+<span class="label label-detect">■ 検出内容3：マイナス時刻開始による小節線バグ</span><br>
+最初の赤線がマイナス時刻にある場合、その赤線から最初に生成される小節線位置と、次の赤線位置を比較します。<br>
+最初に生成される小節線位置が次の赤線と一致する、または次の赤線を超える場合、osu!stable と osu!lazer で小節線の見え方が異なる可能性があるため Warning として表示します。<br><br>
+
+<table class="ratio-threshold-table">
+  <thead>
+    <tr>
+      <th>次の赤線の状態</th>
+      <th>Warning 内容</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>omit first barline</code> 有効</td>
+      <td class="ratio-warn">osu!stable では1本の小節線である一方、osu!lazer では小節線が消失している可能性があります。</td>
+    </tr>
+    <tr>
+      <td><code>omit first barline</code> 無効</td>
+      <td class="ratio-warn">osu!stable では2重小節線である一方、osu!lazer では1本の小節線になっている可能性があります。</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
 <div class="section section-bg">
 <span class="label label-bg">■ 計算方法の詳細</span><br>
 小節線生成位置は、赤線の時刻、<code>beatLength</code>、拍子（meter）から計算します。<br>

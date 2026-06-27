@@ -18,6 +18,7 @@ function runBarlineCheck(text, fileName) {
   return {
     fileName,
     doubleBarlines: issues.doubleBarlines,
+    negativeStartBarlineWarnings: issues.negativeStartBarlineWarnings,
     detachedBarlines: issues.detachedBarlines
   };
 }
@@ -65,10 +66,11 @@ function detectBarlineIssues(
   lastHitObjectTime
 ) {
   const doubleBarlines = [];
+  const negativeStartBarlineWarnings = [];
   const detachedBarlines = [];
 
   if (!redLines.length) {
-    return { doubleBarlines, detachedBarlines };
+    return { doubleBarlines, negativeStartBarlineWarnings, detachedBarlines };
   }
 
   const redLinesByTime = new Map();
@@ -78,6 +80,11 @@ function detectBarlineIssues(
     }
     redLinesByTime.get(redLine.time).push(redLine);
   }
+
+  detectNegativeStartBarlineWarnings(
+    negativeStartBarlineWarnings,
+    redLines
+  );
 
   for (let i = 0; i < redLines.length; i++) {
     const section = redLines[i];
@@ -169,8 +176,34 @@ function detectBarlineIssues(
 
   return {
     doubleBarlines,
+    negativeStartBarlineWarnings,
     detachedBarlines
   };
+}
+
+function detectNegativeStartBarlineWarnings(warnings, redLines) {
+  if (redLines.length < 2) return;
+
+  const firstRedLine = redLines[0];
+  const nextRedLine = redLines[1];
+
+  if (firstRedLine.time >= 0) return;
+
+  const measureLength = firstRedLine.beatLength * firstRedLine.meter;
+  if (!Number.isFinite(measureLength) || measureLength <= 0) return;
+
+  const generatedBarlineTime = Math.floor(firstRedLine.time + measureLength);
+  if (generatedBarlineTime < nextRedLine.time) return;
+
+  warnings.push({
+    firstRedLineTime: firstRedLine.time,
+    generatedBarlineTime,
+    nextRedLineTime: nextRedLine.time,
+    nextRedLine,
+    stableLazerMessageKey: nextRedLine.omitFirstBarline
+      ? "barlineNegativeStartStableSingleLazerMissing"
+      : "barlineNegativeStartStableDoubleLazerSingle"
+  });
 }
 
 function findBarlineRedLineAtTime(redLinesByTime, time, options = {}) {
