@@ -80,6 +80,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const spreadRestIgnoreSliders = document.getElementById("spreadRestIgnoreSliders");
   const spreadRestIgnoreSpinners = document.getElementById("spreadRestIgnoreSpinners");
   const spreadRestUseAdjustedThresholds = document.getElementById("spreadRestUseAdjustedThresholds");
+  const spreadRestUseMsGap = document.getElementById("spreadRestUseMsGap");
+  const spreadRestUseMsThresholds = document.getElementById("spreadRestUseMsThresholds");
   const spreadFinishersOutput = document.getElementById("spreadFinishersOutput");
   const spreadScrollSpeedOutput = document.getElementById("spreadScrollSpeedOutput");
   const spreadScrollChartSection = document.getElementById("spreadScrollChartSection");
@@ -220,6 +222,8 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadRestIgnoreSliders,
     spreadRestIgnoreSpinners,
     spreadRestUseAdjustedThresholds,
+    spreadRestUseMsGap,
+    spreadRestUseMsThresholds,
     spreadFinishersOutput,
     spreadScrollSpeedOutput,
     spreadScrollChartSection,
@@ -721,6 +725,8 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadRestIgnoreSliders,
     spreadRestIgnoreSpinners,
     spreadRestUseAdjustedThresholds,
+    spreadRestUseMsGap,
+    spreadRestUseMsThresholds,
     spreadScrollSpeedOutput,
     renderSpreadResult: renderSpreadResultAndUpdateTabs,
   });

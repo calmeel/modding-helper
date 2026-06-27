@@ -1926,7 +1926,10 @@ gap の計算方法は基本的に MapsetVerifier と同じです。rest moment 
 <span class="label label-warning">■ 注意点</span><br>
 デフォルトでは、<code>270 BPM</code> 以上の区間は <code>0.5倍</code>、<code>110 BPM</code> 以下の区間は <code>2倍</code> に変換します。これらの閾値と倍率は手動で調整できます。<br>
 再計算時にスライダーやスピナーを無視することもできます。<br><br>
-しきい値表では、基準しきい値と補正後しきい値を表示します。補正後しきい値は、変換後の dominant BPM を使い、<code>180 BPM</code> を基準として計算します。
+しきい値表では、基準しきい値と補正後しきい値を表示します。補正後しきい値は、変換後の dominant BPM を使い、<code>180 BPM</code> を基準として計算します。<br><br>
+
+Rest moment 計算オプションでは、gap 計算としきい値計算をそれぞれ <code>ms</code> 基準に切り替えることもできます。<code>ms</code> 判定では <code>180 BPM</code> の拍長を基準にし、<code>1/1 = 333.333 ms</code>、<code>2/1 = 666.667 ms</code>、<code>3/2 = 500 ms</code>、<code>3/1 = 1000 ms</code> として扱います。<br>
+<code>gap 計算を ms で判定する</code> を有効にすると、BPM 変換オプションは無効になります。<code>しきい値を ms で判定する</code> を有効にすると、BPM 補正後のしきい値は無効になります。しきい値表の gap 欄と Warning / Error 欄も、選択中の判定方法に合わせて <code>ms</code> 表示へ切り替わります。
 <br><br>
 MapsetVerifier とは BPM の変換方法が異なります。MapsetVerifier 側の BPM 正規化は <a href="https://github.com/Naxesss/MapsetVerifier/blob/main/MapsetVerifier.Checks/Utils/TaikoUtils.cs" target="_blank" rel="noopener noreferrer"><code>TaikoUtils.cs</code></a> の <code>GetNormalizedMsPerBeat()</code> を参考にしてください。
 <table class="ratio-threshold-table">
