@@ -71,11 +71,12 @@ function detectBarlineIssues(
     return { doubleBarlines, detachedBarlines };
   }
 
-  const redLineByTime = new Map();
+  const redLinesByTime = new Map();
   for (const redLine of redLines) {
-    if (!redLineByTime.has(redLine.time)) {
-      redLineByTime.set(redLine.time, redLine);
+    if (!redLinesByTime.has(redLine.time)) {
+      redLinesByTime.set(redLine.time, []);
     }
+    redLinesByTime.get(redLine.time).push(redLine);
   }
 
   for (let i = 0; i < redLines.length; i++) {
@@ -96,47 +97,54 @@ function detectBarlineIssues(
     ) {
       const barlineTime = Math.floor(rawBarlineTime);
       const redLineTime = barlineTime + 1;
-      const redLine = redLineByTime.get(redLineTime);
-
-      if (!redLine || redLine.omitFirstBarline) continue;
-
-      doubleBarlines.push({
-        barlineTime,
-        redLineTime,
-        redLine
+      const redLine = findBarlineRedLineAtTime(redLinesByTime, redLineTime, {
+        omitFirstBarline: false
       });
-
-      if (!noteTimes.has(redLineTime)) continue;
-
-      const barlineSpeed = calculateBarlineVisualScrollSpeed(
-        redLines,
-        greenLines,
-        sliderMultiplier,
-        barlineTime
-      );
-      const noteSpeed = calculateBarlineVisualScrollSpeed(
-        redLines,
-        greenLines,
-        sliderMultiplier,
-        redLineTime
+      const omittedBarlineRedLine = findBarlineRedLineAtTime(
+        redLinesByTime,
+        barlineTime,
+        { omitFirstBarline: true }
       );
 
-      if (
-        !Number.isFinite(barlineSpeed) ||
-        !Number.isFinite(noteSpeed) ||
-        Math.abs(barlineSpeed - noteSpeed) <= BARLINE_SCROLL_SPEED_EPSILON
-      ) {
+      if (!redLine) continue;
+
+      if (!omittedBarlineRedLine) {
+        doubleBarlines.push({
+          barlineTime,
+          redLineTime,
+          redLine
+        });
+
+        if (noteTimes.has(redLineTime)) {
+          addDetachedBarlineIssue(
+            detachedBarlines,
+            redLines,
+            greenLines,
+            sliderMultiplier,
+            barlineTime,
+            redLineTime,
+            redLine,
+            barlineTime,
+            redLineTime
+          );
+        }
+
         continue;
       }
 
-      detachedBarlines.push({
-        barlineTime,
-        noteTime: redLineTime,
-        barlineSpeed,
-        noteSpeed,
-        delta: noteSpeed - barlineSpeed,
-        redLine
-      });
+      if (noteTimes.has(barlineTime)) {
+        addDetachedBarlineIssue(
+          detachedBarlines,
+          redLines,
+          greenLines,
+          sliderMultiplier,
+          barlineTime,
+          barlineTime,
+          redLine,
+          redLineTime,
+          barlineTime
+        );
+      }
     }
   }
 
@@ -144,6 +152,60 @@ function detectBarlineIssues(
     doubleBarlines,
     detachedBarlines
   };
+}
+
+function findBarlineRedLineAtTime(redLinesByTime, time, options = {}) {
+  const candidates = redLinesByTime.get(time) ?? [];
+
+  if (typeof options.omitFirstBarline === "boolean") {
+    return candidates.find(redLine =>
+      redLine.omitFirstBarline === options.omitFirstBarline
+    ) ?? null;
+  }
+
+  return candidates[0] ?? null;
+}
+
+function addDetachedBarlineIssue(
+  detachedBarlines,
+  redLines,
+  greenLines,
+  sliderMultiplier,
+  barlineTime,
+  noteTime,
+  redLine,
+  barlineSpeedTime,
+  noteSpeedTime
+) {
+  const barlineSpeed = calculateBarlineVisualScrollSpeed(
+    redLines,
+    greenLines,
+    sliderMultiplier,
+    barlineSpeedTime
+  );
+  const noteSpeed = calculateBarlineVisualScrollSpeed(
+    redLines,
+    greenLines,
+    sliderMultiplier,
+    noteSpeedTime
+  );
+
+  if (
+    !Number.isFinite(barlineSpeed) ||
+    !Number.isFinite(noteSpeed) ||
+    Math.abs(barlineSpeed - noteSpeed) <= BARLINE_SCROLL_SPEED_EPSILON
+  ) {
+    return;
+  }
+
+  detachedBarlines.push({
+    barlineTime,
+    noteTime,
+    barlineSpeed,
+    noteSpeed,
+    delta: noteSpeed - barlineSpeed,
+    redLine
+  });
 }
 
 function calculateBarlineVisualScrollSpeed(
