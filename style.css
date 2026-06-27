@@ -466,11 +466,15 @@ body {
 }
 
 .spread-rest-threshold-difficulty-col {
-  width: 20%;
+  width: 16%;
+}
+
+.spread-rest-threshold-gap-col {
+  width: 24%;
 }
 
 .spread-rest-threshold-value-col {
-  width: 20%;
+  width: 15%;
 }
 
 .spread-rest-threshold-table th,

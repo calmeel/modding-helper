@@ -2025,6 +2025,9 @@ By default, sections at <code>270 BPM</code> or higher are converted to <code>0.
 Sliders and spinners can also be ignored when recalculating the rest moment result.<br><br>
 The threshold table shows both the base thresholds and adjusted thresholds. The adjusted thresholds use the dominant converted BPM, with <code>180 BPM</code> as the baseline.
 <br><br>
+The Rest moment calculation options can also switch gap calculation and threshold calculation independently to <code>ms</code>-based judging. In <code>ms</code> mode, the check uses the beat length at <code>180 BPM</code>: <code>1/1 = 333.333 ms</code>, <code>2/1 = 666.667 ms</code>, <code>3/2 = 500 ms</code>, and <code>3/1 = 1000 ms</code>.<br>
+When <code>Judge gap by ms</code> is enabled, the BPM conversion options are disabled. When <code>Judge thresholds by ms</code> is enabled, BPM-adjusted thresholds are disabled. The gap column and Warning / Error columns in the threshold table also switch to <code>ms</code> display according to the selected judging method.
+<br><br>
 The BPM conversion method differs from MapsetVerifier. For MapsetVerifier's BPM normalization, see <code>GetNormalizedMsPerBeat()</code> in <a href="https://github.com/Naxesss/MapsetVerifier/blob/main/MapsetVerifier.Checks/Utils/TaikoUtils.cs" target="_blank" rel="noopener noreferrer"><code>TaikoUtils.cs</code></a>.
 <table class="ratio-threshold-table">
   <thead>

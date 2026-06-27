@@ -1,4 +1,5 @@
 const SPREAD_REST_MOMENT_EPSILON_MS = 2;
+const SPREAD_REST_MOMENT_BPM180_BEAT_LENGTH = 60000 / 180;
 const SPREAD_REST_MOMENT_DEFAULT_SCALE_OPTIONS = {
   highEnabled: true,
   highBpm: 270,
@@ -8,24 +9,29 @@ const SPREAD_REST_MOMENT_DEFAULT_SCALE_OPTIONS = {
   lowScale: 2,
   ignoreSliders: true,
   ignoreSpinners: true,
-  useAdjustedThresholds: true
+  useAdjustedThresholds: true,
+  useMsGap: false,
+  useMsThresholds: false
 };
 
 const SPREAD_REST_MOMENT_RULES = {
   kantan: {
     breakType: "3/1",
+    gapType: "3/1 x1",
     acceptableRests: [{ consecutiveGaps: 1, beats: 3.0 }],
     minorLimit: 36,
     warningLimit: 44
   },
   futsuu: {
     breakType: "2/1",
+    gapType: "2/1 x1",
     acceptableRests: [{ consecutiveGaps: 1, beats: 2.0 }],
     minorLimit: 36,
     warningLimit: 44
   },
   muzukashii: {
     breakType: "3/2 or 3 x 1/1",
+    gapType: "3/2 x1 or 1/1 x3",
     acceptableRests: [
       { consecutiveGaps: 1, beats: 1.5 },
       { consecutiveGaps: 3, beats: 1.0 }
@@ -35,6 +41,7 @@ const SPREAD_REST_MOMENT_RULES = {
   },
   oni: {
     breakType: "1/1",
+    gapType: "1/1 x1",
     acceptableRests: [{ consecutiveGaps: 1, beats: 1.0 }],
     minorLimit: 20,
     warningLimit: 32
@@ -150,16 +157,23 @@ function normalizeSpreadRestMomentScaleOptions(options = {}) {
     ? options.lowScale
     : defaults.lowScale;
 
+  const useMsGap = options.useMsGap ?? defaults.useMsGap;
+  const useMsThresholds = options.useMsThresholds ?? defaults.useMsThresholds;
+
   return {
-    highEnabled: options.highEnabled ?? defaults.highEnabled,
+    highEnabled: useMsGap ? false : (options.highEnabled ?? defaults.highEnabled),
     highBpm,
     highScale,
-    lowEnabled: options.lowEnabled ?? defaults.lowEnabled,
+    lowEnabled: useMsGap ? false : (options.lowEnabled ?? defaults.lowEnabled),
     lowBpm,
     lowScale,
     ignoreSliders: options.ignoreSliders ?? defaults.ignoreSliders,
     ignoreSpinners: options.ignoreSpinners ?? defaults.ignoreSpinners,
-    useAdjustedThresholds: options.useAdjustedThresholds ?? defaults.useAdjustedThresholds
+    useAdjustedThresholds: useMsThresholds
+      ? false
+      : (options.useAdjustedThresholds ?? defaults.useAdjustedThresholds),
+    useMsGap,
+    useMsThresholds
   };
 }
 
@@ -242,8 +256,12 @@ function analyzeSpreadRestMomentsForCategory(objects, timingPoints, rule, scaleO
   const issues = [];
   let continuousStartTime = objects[0]?.time ?? 0;
   let isWithinContinuousMapping = false;
-  const minorLimit = rule.minorLimit * thresholdMultiplier;
-  const warningLimit = rule.warningLimit * thresholdMultiplier;
+  const minorLimit = scaleOptions.useMsThresholds
+    ? rule.minorLimit * SPREAD_REST_MOMENT_BPM180_BEAT_LENGTH
+    : rule.minorLimit * thresholdMultiplier;
+  const warningLimit = scaleOptions.useMsThresholds
+    ? rule.warningLimit * SPREAD_REST_MOMENT_BPM180_BEAT_LENGTH
+    : rule.warningLimit * thresholdMultiplier;
 
   for (let i = 0; i < objects.length; i++) {
     const current = objects[i];
@@ -261,7 +279,10 @@ function analyzeSpreadRestMomentsForCategory(objects, timingPoints, rule, scaleO
     let isEndOfContinuousMapping = false;
 
     for (const acceptableRest of rule.acceptableRests) {
-      const minimalRestMomentGapMs = acceptableRest.beats * scaledBeatLength;
+      const restBeatLength = scaleOptions.useMsGap
+        ? SPREAD_REST_MOMENT_BPM180_BEAT_LENGTH
+        : scaledBeatLength;
+      const minimalRestMomentGapMs = acceptableRest.beats * restBeatLength;
       const backwardGap = getSpreadRestSmallestConsecutiveGap(
         objects,
         i - acceptableRest.consecutiveGaps,
@@ -292,29 +313,34 @@ function analyzeSpreadRestMomentsForCategory(objects, timingPoints, rule, scaleO
       isWithinContinuousMapping = false;
 
       const durationMs = current.endTime - continuousStartTime;
-      const beatsWithoutBreaks = Math.floor(
-        (durationMs + SPREAD_REST_MOMENT_EPSILON_MS) / scaledBeatLength
+      const thresholdUnitLength = scaleOptions.useMsThresholds
+        ? 1
+        : scaledBeatLength;
+      const lengthWithoutBreaks = Math.floor(
+        (durationMs + SPREAD_REST_MOMENT_EPSILON_MS) / thresholdUnitLength
       );
 
-      if (beatsWithoutBreaks > warningLimit) {
+      if (lengthWithoutBreaks > warningLimit) {
         issues.push({
           level: "error",
           start: continuousStartTime,
           end: current.endTime,
-          breakType: rule.breakType,
-          beats: beatsWithoutBreaks,
+          breakType: formatSpreadRestMomentBreakType(rule, scaleOptions),
+          beats: lengthWithoutBreaks,
+          lengthUnit: scaleOptions.useMsThresholds ? "ms" : "beats",
           minorLimit,
           warningLimit,
           baseMinorLimit: rule.minorLimit,
           baseWarningLimit: rule.warningLimit
         });
-      } else if (beatsWithoutBreaks > minorLimit) {
+      } else if (lengthWithoutBreaks > minorLimit) {
         issues.push({
           level: "warn",
           start: continuousStartTime,
           end: current.endTime,
-          breakType: rule.breakType,
-          beats: beatsWithoutBreaks,
+          breakType: formatSpreadRestMomentBreakType(rule, scaleOptions),
+          beats: lengthWithoutBreaks,
+          lengthUnit: scaleOptions.useMsThresholds ? "ms" : "beats",
           minorLimit,
           warningLimit,
           baseMinorLimit: rule.minorLimit,
@@ -325,6 +351,24 @@ function analyzeSpreadRestMomentsForCategory(objects, timingPoints, rule, scaleO
   }
 
   return issues;
+}
+
+function formatSpreadRestMomentBreakType(rule, scaleOptions) {
+  if (!scaleOptions.useMsGap) return rule.breakType;
+
+  return rule.acceptableRests
+    .map(rest => {
+      const ms = rest.beats * SPREAD_REST_MOMENT_BPM180_BEAT_LENGTH;
+      const count = rest.consecutiveGaps > 1 ? ` x${rest.consecutiveGaps}` : "";
+      return `${formatSpreadRestMomentMs(ms)} ms${count}`;
+    })
+    .join(" or ");
+}
+
+function formatSpreadRestMomentMs(value) {
+  if (!Number.isFinite(value)) return "-";
+  if (Number.isInteger(value)) return String(value);
+  return value.toFixed(3).replace(/\.?0+$/, "");
 }
 
 function getSpreadRestSmallestConsecutiveGap(objects, startIndex, consecutiveGaps) {
@@ -472,4 +516,3 @@ function getSpreadRestOffsetIntoBeat(time, timing) {
   const offset = (time - timing.time) % timing.beatLength;
   return offset < 0 ? offset + timing.beatLength : offset;
 }
-

@@ -411,17 +411,21 @@ function getSpreadRestMomentOptionsFromDom(dom) {
   const ignoreSliders = findElement("spreadRestIgnoreSliders", "spreadRestIgnoreSliders");
   const ignoreSpinners = findElement("spreadRestIgnoreSpinners", "spreadRestIgnoreSpinners");
   const useAdjustedThresholds = findElement("spreadRestUseAdjustedThresholds", "spreadRestUseAdjustedThresholds");
+  const useMsGap = findElement("spreadRestUseMsGap", "spreadRestUseMsGap");
+  const useMsThresholds = findElement("spreadRestUseMsThresholds", "spreadRestUseMsThresholds");
 
   return {
-    highEnabled: highEnabled?.checked ?? true,
+    highEnabled: (useMsGap?.checked ?? false) ? false : (highEnabled?.checked ?? true),
     highBpm: readNumber(highBpm, 270),
     highScale: readNumber(highScale, 0.5),
-    lowEnabled: lowEnabled?.checked ?? true,
+    lowEnabled: (useMsGap?.checked ?? false) ? false : (lowEnabled?.checked ?? true),
     lowBpm: readNumber(lowBpm, 110),
     lowScale: readNumber(lowScale, 2),
     ignoreSliders: ignoreSliders?.checked ?? true,
     ignoreSpinners: ignoreSpinners?.checked ?? true,
-    useAdjustedThresholds: useAdjustedThresholds?.checked ?? true
+    useAdjustedThresholds: (useMsThresholds?.checked ?? false) ? false : (useAdjustedThresholds?.checked ?? true),
+    useMsGap: useMsGap?.checked ?? false,
+    useMsThresholds: useMsThresholds?.checked ?? false
   };
 }
 
@@ -440,6 +444,7 @@ function formatSpreadRestThresholdTable(results, t, diffOrder = null, options = 
     : sortSpreadResults(results ?? []);
   const dominantBpm = getSpreadRestDominantScaledBpm(sortedResults, options);
   const multiplier = dominantBpm > 0 ? 180 / dominantBpm : 1;
+  const showAdjustedThresholds = (options.useAdjustedThresholds ?? true) && !options.useMsThresholds;
   const dominantBpmText = dominantBpm > 0
     ? formatSpreadRestThresholdNumber(dominantBpm)
     : "-";
@@ -452,11 +457,12 @@ function formatSpreadRestThresholdTable(results, t, diffOrder = null, options = 
     .replace("{multiplier}", multiplierText);
 
   const rows = [
-    ["Kantan", SPREAD_REST_MOMENT_RULES.kantan],
-    ["Futsuu", SPREAD_REST_MOMENT_RULES.futsuu],
-    ["Muzukashii", SPREAD_REST_MOMENT_RULES.muzukashii],
-    ["Oni", SPREAD_REST_MOMENT_RULES.oni]
+    ["Kantan", formatSpreadRestThresholdGap(SPREAD_REST_MOMENT_RULES.kantan, options), SPREAD_REST_MOMENT_RULES.kantan],
+    ["Futsuu", formatSpreadRestThresholdGap(SPREAD_REST_MOMENT_RULES.futsuu, options), SPREAD_REST_MOMENT_RULES.futsuu],
+    ["Muzukashii", formatSpreadRestThresholdGap(SPREAD_REST_MOMENT_RULES.muzukashii, options), SPREAD_REST_MOMENT_RULES.muzukashii],
+    ["Oni", formatSpreadRestThresholdGap(SPREAD_REST_MOMENT_RULES.oni, options), SPREAD_REST_MOMENT_RULES.oni]
   ];
+  const valueColCount = showAdjustedThresholds ? 4 : 2;
 
   return `
     <section class="spread-rest-threshold-section">
@@ -466,32 +472,36 @@ function formatSpreadRestThresholdTable(results, t, diffOrder = null, options = 
       <table class="spread-rest-threshold-table">
         <colgroup>
           <col class="spread-rest-threshold-difficulty-col">
-          <col class="spread-rest-threshold-value-col">
-          <col class="spread-rest-threshold-value-col">
-          <col class="spread-rest-threshold-value-col">
-          <col class="spread-rest-threshold-value-col">
+          <col class="spread-rest-threshold-gap-col">
+          ${Array.from({ length: valueColCount }, () => `<col class="spread-rest-threshold-value-col">`).join("")}
         </colgroup>
         <thead>
           <tr>
             <th rowspan="2">${escapeHtml(t("spreadRestThresholdDifficulty"))}</th>
+            <th rowspan="2">${escapeHtml(t("spreadRestThresholdGap"))}</th>
             <th colspan="2">${escapeHtml(baseThresholdLabel)}</th>
-            <th colspan="2">${escapeHtml(scaledThresholdLabel)}</th>
+            ${showAdjustedThresholds ? `<th colspan="2">${escapeHtml(scaledThresholdLabel)}</th>` : ""}
           </tr>
           <tr>
             <th class="spread-rest-threshold-warn">${escapeHtml(t("spreadRestThresholdWarning"))}</th>
             <th class="spread-rest-threshold-error">${escapeHtml(t("spreadRestThresholdError"))}</th>
-            <th class="spread-rest-threshold-warn">${escapeHtml(t("spreadRestThresholdWarning"))}</th>
-            <th class="spread-rest-threshold-error">${escapeHtml(t("spreadRestThresholdError"))}</th>
+            ${showAdjustedThresholds ? `
+              <th class="spread-rest-threshold-warn">${escapeHtml(t("spreadRestThresholdWarning"))}</th>
+              <th class="spread-rest-threshold-error">${escapeHtml(t("spreadRestThresholdError"))}</th>
+            ` : ""}
           </tr>
         </thead>
         <tbody>
-          ${rows.map(([difficulty, rule]) => `
+          ${rows.map(([difficulty, gap, rule]) => `
             <tr>
               <th>${escapeHtml(difficulty)}</th>
-              <td class="spread-rest-threshold-warn">${escapeHtml(formatSpreadRestThresholdBeat(rule.minorLimit))}</td>
-              <td class="spread-rest-threshold-error">${escapeHtml(formatSpreadRestThresholdBeat(rule.warningLimit))}</td>
-              <td class="spread-rest-threshold-warn">${escapeHtml(formatSpreadRestThresholdBeat(rule.minorLimit * multiplier))}</td>
-              <td class="spread-rest-threshold-error">${escapeHtml(formatSpreadRestThresholdBeat(rule.warningLimit * multiplier))}</td>
+              <td>${escapeHtml(gap)}</td>
+              <td class="spread-rest-threshold-warn">${escapeHtml(formatSpreadRestThresholdValue(rule.minorLimit, options))}</td>
+              <td class="spread-rest-threshold-error">${escapeHtml(formatSpreadRestThresholdValue(rule.warningLimit, options))}</td>
+              ${showAdjustedThresholds ? `
+                <td class="spread-rest-threshold-warn">${escapeHtml(formatSpreadRestThresholdBeat(rule.minorLimit * multiplier))}</td>
+                <td class="spread-rest-threshold-error">${escapeHtml(formatSpreadRestThresholdBeat(rule.warningLimit * multiplier))}</td>
+              ` : ""}
             </tr>
           `).join("")}
         </tbody>
@@ -542,10 +552,40 @@ function formatSpreadRestThresholdBeat(value) {
   return `${formatSpreadRestThresholdNumber(value)}/1`;
 }
 
+function formatSpreadRestThresholdValue(value, options = {}) {
+  if (options.useMsThresholds) {
+    return `${formatSpreadRestThresholdMs(value * SPREAD_REST_MOMENT_BPM180_BEAT_LENGTH)} ms`;
+  }
+
+  return formatSpreadRestThresholdBeat(value);
+}
+
+function formatSpreadRestThresholdGap(rule, options = {}) {
+  if (!options.useMsGap) return getSpreadRestThresholdBeatGap(rule);
+
+  return rule.acceptableRests
+    .map(rest => {
+      const ms = rest.beats * SPREAD_REST_MOMENT_BPM180_BEAT_LENGTH;
+      const count = rest.consecutiveGaps > 1 ? ` x${rest.consecutiveGaps}` : " x1";
+      return `${formatSpreadRestThresholdMs(ms)} ms${count}`;
+    })
+    .join(" or ");
+}
+
+function getSpreadRestThresholdBeatGap(rule) {
+  return rule.gapType ?? rule.breakType;
+}
+
 function formatSpreadRestThresholdNumber(value) {
   if (!Number.isFinite(value)) return "-";
   if (Number.isInteger(value)) return String(value);
   return value.toFixed(2).replace(/\.?0+$/, "");
+}
+
+function formatSpreadRestThresholdMs(value) {
+  if (!Number.isFinite(value)) return "-";
+  if (Number.isInteger(value)) return String(value);
+  return value.toFixed(3).replace(/\.?0+$/, "");
 }
 
 function updateSpreadSubtabIssueStates(spreadState) {
@@ -1350,7 +1390,7 @@ function formatSpreadRestMomentsResult(results, t, diffOrder = null, manualCateg
       const cls = issue.level === "error" ? "result-error" : "result-warn";
       const message = t("spreadRestMomentMessage")
         .replace("{break}", issue.breakType)
-        .replace("{length}", `${issue.beats}/1`);
+        .replace("{length}", formatSpreadRestMomentIssueLength(issue));
 
       lines.push(
         `<span class="${cls}">` +
@@ -1367,6 +1407,14 @@ function formatSpreadRestMomentsResult(results, t, diffOrder = null, manualCateg
   }
 
   return lines.join("\n");
+}
+
+function formatSpreadRestMomentIssueLength(issue) {
+  if (issue.lengthUnit === "ms") {
+    return `${formatSpreadRestThresholdMs(issue.beats)} ms`;
+  }
+
+  return `${issue.beats}/1`;
 }
 
 function getSpreadRestTimingPointMismatches(results) {

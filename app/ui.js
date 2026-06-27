@@ -103,6 +103,8 @@ function setupOptionEvents(options) {
     spreadRestIgnoreSliders,
     spreadRestIgnoreSpinners,
     spreadRestUseAdjustedThresholds,
+    spreadRestUseMsGap,
+    spreadRestUseMsThresholds,
     spreadScrollSpeedOutput,
     renderSpreadResult
   } = options;
@@ -152,12 +154,63 @@ function setupOptionEvents(options) {
     spreadRestLowBpmScale,
     spreadRestIgnoreSliders,
     spreadRestIgnoreSpinners,
-    spreadRestUseAdjustedThresholds
+    spreadRestUseAdjustedThresholds,
+    spreadRestUseMsGap,
+    spreadRestUseMsThresholds
   ].forEach(element => {
     if (!element) return;
     element.addEventListener("input", renderSpreadResult);
     element.addEventListener("change", renderSpreadResult);
   });
+
+  const handleRestMsGapChange = () => {
+    if (spreadRestUseMsGap?.checked) {
+      if (spreadRestHighBpmEnabled) spreadRestHighBpmEnabled.checked = false;
+      if (spreadRestLowBpmEnabled) spreadRestLowBpmEnabled.checked = false;
+    }
+    renderSpreadResult?.();
+  };
+
+  const handleRestBpmConversionChange = event => {
+    if (event.target?.checked && spreadRestUseMsGap) {
+      spreadRestUseMsGap.checked = false;
+    }
+    renderSpreadResult?.();
+  };
+
+  const handleRestMsThresholdChange = () => {
+    if (spreadRestUseMsThresholds?.checked && spreadRestUseAdjustedThresholds) {
+      spreadRestUseAdjustedThresholds.checked = false;
+    }
+    renderSpreadResult?.();
+  };
+
+  const handleRestAdjustedThresholdChange = event => {
+    if (event.target?.checked && spreadRestUseMsThresholds) {
+      spreadRestUseMsThresholds.checked = false;
+    }
+    renderSpreadResult?.();
+  };
+
+  if (spreadRestUseMsGap) {
+    spreadRestUseMsGap.addEventListener("change", handleRestMsGapChange);
+  }
+
+  if (spreadRestHighBpmEnabled) {
+    spreadRestHighBpmEnabled.addEventListener("change", handleRestBpmConversionChange);
+  }
+
+  if (spreadRestLowBpmEnabled) {
+    spreadRestLowBpmEnabled.addEventListener("change", handleRestBpmConversionChange);
+  }
+
+  if (spreadRestUseMsThresholds) {
+    spreadRestUseMsThresholds.addEventListener("change", handleRestMsThresholdChange);
+  }
+
+  if (spreadRestUseAdjustedThresholds) {
+    spreadRestUseAdjustedThresholds.addEventListener("change", handleRestAdjustedThresholdChange);
+  }
 
   if (spreadScrollSpeedOutput) {
     spreadScrollSpeedOutput.addEventListener("change", event => {
