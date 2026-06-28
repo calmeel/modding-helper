@@ -446,11 +446,11 @@ function createWindow() {
         display: flex;
         align-items: baseline;
         justify-content: space-between;
-        padding: 2px 0;
+        padding: 3px 0;
       }
 
       .osu-timing-label {
-        font-size: 10px;
+        font-size: 11.5px;
         color: #666;
         text-transform: uppercase;
         letter-spacing: 0.06em;
@@ -460,13 +460,13 @@ function createWindow() {
 
       .osu-timing-value {
         font-family: "Consolas", "Courier New", monospace;
-        font-size: 11.5px;
+        font-size: 13.5px;
         color: #bbb;
         text-align: right;
         margin-left: 6px;
       }
 
-      #osu-t-timing { font-size: 13px; color: #ddd; letter-spacing: 0.02em; }
+      #osu-t-timing { font-size: 15px; color: #ddd; letter-spacing: 0.02em; }
 
       /* ── タブ列（チェックリストカード） ── */
       #electron-col-tabs {
