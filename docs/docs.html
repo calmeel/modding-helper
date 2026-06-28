@@ -933,12 +933,14 @@ AiMod は同時刻の重複 SV は検出できますが、1 ms ズレの二重 S
 <span class="label label-detect">■ 検出内容3：演出の可能性がある小節線の分離</span><br>
 小節線生成位置を <code>T</code> としたとき、<code>T + 1 ms</code> に赤線がなく、同じ位置にノーツと SV線がある場合に確認します。<br>
 小節線生成位置の見た目のスクロール速度と、<code>T + 1 ms</code> のノーツ位置の見た目のスクロール速度を比較し、値が一致しない場合に演出の可能性がある小節線の分離として Warning 表示します。<br><br>
+また、<code>T - 1 ms</code> にノーツがある場合も、小節線生成位置 <code>T</code> の見た目のスクロール速度と、<code>T - 1 ms</code> のノーツ位置の見た目のスクロール速度を比較します。<br>
+値が一致しない場合は、同じく演出の可能性がある小節線の分離として Warning 表示します。<br><br>
 <code>T + 1 ms</code> に赤線がある場合は従来通り、速度差があれば「意図しない小節線の分離」として Error 表示します。
 </div>
 
 <div class="section section-detect">
 <span class="label label-detect">■ 判定パターン</span><br>
-小節線生成位置を <code>T</code>、その 1 ms 後を <code>T + 1 ms</code> として扱います。<br>
+小節線生成位置を <code>T</code>、その 1 ms 後を <code>T + 1 ms</code>、その 1 ms 前を <code>T - 1 ms</code> として扱います。<br>
 <code>T</code> に <code>omit first barline</code> 有効の赤線がある場合は、その位置の自動生成小節線を意図的に消しているものとして扱います。<br><br>
 
 <table class="ratio-threshold-table">
@@ -981,6 +983,13 @@ AiMod は同時刻の重複 SV は検出できますが、1 ms ズレの二重 S
       <td class="ratio-warn">速度差があれば Warning</td>
     </tr>
     <tr>
+      <td>通常の小節線生成位置</td>
+      <td>既存判定に従う</td>
+      <td><code>T - 1 ms</code></td>
+      <td>既存判定に従う</td>
+      <td class="ratio-warn">速度差があれば Warning</td>
+    </tr>
+    <tr>
       <td><code>omit first barline</code> 有効の赤線</td>
       <td><code>omit first barline</code> 無効の赤線</td>
       <td>なし</td>
@@ -1000,7 +1009,8 @@ AiMod は同時刻の重複 SV は検出できますが、1 ms ズレの二重 S
 <br>
 最後のケースでは、<code>T + 1 ms</code> の赤線から見える小節線の速度と、<code>T</code> に置かれたノーツの速度を比較します。<br>
 そのため、2重小節線としては扱わず、見た目のスクロール速度が一致しない場合のみ小節線の分離として検出します。<br>
-また、<code>T + 1 ms</code> の赤線自体が <code>omit first barline</code> 有効であっても、同じ <code>T + 1 ms</code> にノーツがある場合は、<code>T</code> の小節線と <code>T + 1 ms</code> のノーツの速度差を確認します。
+また、<code>T + 1 ms</code> の赤線自体が <code>omit first barline</code> 有効であっても、同じ <code>T + 1 ms</code> にノーツがある場合は、<code>T</code> の小節線と <code>T + 1 ms</code> のノーツの速度差を確認します。<br>
+<code>T - 1 ms</code> にノーツがある場合は、<code>T</code> の小節線と <code>T - 1 ms</code> のノーツの速度差を確認します。
 </div>
 
 <div class="section section-detect">
