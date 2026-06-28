@@ -148,6 +148,15 @@ function detectBarlineIssues(
           );
         }
 
+        addBeforeBarlineIntentionalDetachedIssue(
+          intentionalDetachedBarlines,
+          redLines,
+          greenLines,
+          noteTimes,
+          sliderMultiplier,
+          barlineTime
+        );
+
         if (omittedRedLine && noteTimes.has(redLineTime)) {
           addDetachedBarlineIssue(
             detachedBarlines,
@@ -171,6 +180,15 @@ function detectBarlineIssues(
           redLineTime,
           redLine
         });
+
+        addBeforeBarlineIntentionalDetachedIssue(
+          intentionalDetachedBarlines,
+          redLines,
+          greenLines,
+          noteTimes,
+          sliderMultiplier,
+          barlineTime
+        );
 
         if (noteTimes.has(redLineTime)) {
           addDetachedBarlineIssue(
@@ -248,6 +266,30 @@ function findBarlineRedLineAtTime(redLinesByTime, time, options = {}) {
   }
 
   return candidates[0] ?? null;
+}
+
+function addBeforeBarlineIntentionalDetachedIssue(
+  intentionalDetachedBarlines,
+  redLines,
+  greenLines,
+  noteTimes,
+  sliderMultiplier,
+  barlineTime
+) {
+  const noteTime = barlineTime - 1;
+  if (!noteTimes.has(noteTime)) return;
+
+  addDetachedBarlineIssue(
+    intentionalDetachedBarlines,
+    redLines,
+    greenLines,
+    sliderMultiplier,
+    barlineTime,
+    noteTime,
+    null,
+    barlineTime,
+    noteTime
+  );
 }
 
 function addDetachedBarlineIssue(
