@@ -10,6 +10,15 @@ let lastSentPath = null;
 let cachedTimingPoints = null;
 let lastTimingMs = -2;  // -2 = 未初期化、-1 = 取得不可
 
+// データ配信の差し替え口。main.js がブロードキャスタ（メイン+ポップアウトへ送信）を
+// 設定する。未設定ならメインウィンドウへ直接送る。
+let deliverFn = null;
+function setDeliver(fn) { deliverFn = fn; }
+function deliver(channel, data) {
+  if (deliverFn) { deliverFn(channel, data); return; }
+  if (win_ && !win_.isDestroyed()) win_.webContents.send(channel, data);
+}
+
 function parseOsuFile(filePath) {
   const content = fs.readFileSync(filePath, 'utf-8');
   const lines = content.split(/\r?\n/);
@@ -94,7 +103,7 @@ function sendMapInfo(filePath) {
       bgDataUrl  = `data:${mime};base64,${fs.readFileSync(bgFile).toString('base64')}`;
     }
 
-    win_.webContents.send('osu-map-info', {
+    deliver('osu-map-info', {
       title:         meta.Title         || '',
       titleUnicode:  meta.TitleUnicode  || '',
       artist:        meta.Artist        || '',
@@ -110,8 +119,8 @@ function clearMapInfo() {
   if (!win_ || win_.isDestroyed()) return;
   cachedTimingPoints = null;
   lastTimingMs = -2;
-  win_.webContents.send('osu-map-info', null);
-  win_.webContents.send('osu-timing-info', null);
+  deliver('osu-map-info', null);
+  deliver('osu-timing-info', null);
 }
 
 function handleLine(line) {
@@ -140,7 +149,7 @@ function handleLine(line) {
     if (ms < 0) {
       if (lastTimingMs !== -1) {
         lastTimingMs = -1;
-        win_.webContents.send('osu-timing-info', null);
+        deliver('osu-timing-info', null);
       }
       return;
     }
@@ -149,13 +158,13 @@ function handleLine(line) {
     lastTimingMs = ms;
 
     if (!cachedTimingPoints || cachedTimingPoints.length === 0) {
-      win_.webContents.send('osu-timing-info', { time: ms, bpm: null, sv: null, volume: null, vbpm: null });
+      deliver('osu-timing-info', { time: ms, bpm: null, sv: null, volume: null, vbpm: null });
       return;
     }
 
     const { bpm, sv, volume } = computeTimingAt(cachedTimingPoints, ms);
     const vbpm = bpm !== null ? bpm * sv : null;
-    win_.webContents.send('osu-timing-info', { time: ms, bpm, sv, volume, vbpm });
+    deliver('osu-timing-info', { time: ms, bpm, sv, volume, vbpm });
     return;
   }
 }
@@ -206,4 +215,4 @@ function getCurrentOsuPath() {
   return lastSentPath;
 }
 
-module.exports = { start, stop, getCurrentOsuPath };
+module.exports = { start, stop, getCurrentOsuPath, setDeliver };

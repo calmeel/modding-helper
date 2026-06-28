@@ -11,6 +11,68 @@ const docsPath = path.join(root, 'docs', 'docs.html');
 
 let mainWin = null;
 
+// 分離ポップアウト（メタデータ / リアルタイム）と最新データのキャッシュ
+const popoutWindows = { metadata: null, timing: null };
+let lastMapInfo = null;
+let lastTimingInfo = null;
+
+// osu! データをメインウィンドウ＋開いているポップアウトへ配信し、最新値をキャッシュする
+function broadcastOsuData(channel, data) {
+  const targets = [mainWin];
+  if (channel === 'osu-map-info')        { lastMapInfo    = data; targets.push(popoutWindows.metadata); }
+  else if (channel === 'osu-timing-info') { lastTimingInfo = data; targets.push(popoutWindows.timing); }
+  for (const w of targets) {
+    if (w && !w.isDestroyed()) {
+      try { w.webContents.send(channel, data); } catch (_) {}
+    }
+  }
+}
+
+function openPopout(name, lang) {
+  if (name !== 'metadata' && name !== 'timing') return;
+  if (popoutWindows[name] && !popoutWindows[name].isDestroyed()) {
+    popoutWindows[name].focus();
+    return;
+  }
+  const isEn = lang === 'en';
+  const conf = {
+    metadata: { width: 340, height: 540, title: isEn ? 'Metadata' : 'メタデータ' },
+    timing:   { width: 300, height: 230, title: isEn ? 'Real-time' : 'リアルタイム表示' },
+  }[name];
+
+  const pop = new BrowserWindow({
+    width: conf.width,
+    height: conf.height,
+    title: conf.title,
+    backgroundColor: '#1e1e1e',
+    webPreferences: {
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
+    },
+    icon: path.join(root, 'images', 'icon.ico'),
+  });
+  pop.setMenu(null);
+  popoutWindows[name] = pop;
+
+  const url = 'file:///' + path.join(__dirname, 'popout.html').replace(/\\/g, '/')
+    + '?panel=' + name + '&lang=' + (isEn ? 'en' : 'ja');
+  pop.loadURL(url);
+
+  // 読み込み完了時に最新データを送って即時反映
+  pop.webContents.on('did-finish-load', () => {
+    if (pop.isDestroyed()) return;
+    if (name === 'metadata') pop.webContents.send('osu-map-info', lastMapInfo);
+    else pop.webContents.send('osu-timing-info', lastTimingInfo);
+  });
+
+  pop.on('closed', () => {
+    popoutWindows[name] = null;
+    if (mainWin && !mainWin.isDestroyed()) {
+      mainWin.webContents.send('panel-redocked', name);  // メイン側でカードを復帰
+    }
+  });
+}
+
 function createWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
@@ -126,6 +188,11 @@ function createWindow() {
         color: #dedede;
         letter-spacing: 0.01em;
         white-space: nowrap;
+      }
+
+      #etb-title-suffix {
+        font-weight: 400;
+        color: #9a9a9a;
       }
 
       #etb-badge {
@@ -249,6 +316,24 @@ function createWindow() {
       }
       .etb-card-body { padding: 8px; min-height: 0; }
 
+      /* カードヘッダーの分離ボタン */
+      .etb-detach-btn {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 18px;
+        padding: 0;
+        background: transparent;
+        border: none;
+        border-radius: 4px;
+        color: #6b6b78;
+        cursor: pointer;
+        transition: background 0.1s, color 0.1s;
+      }
+      .etb-detach-btn:hover { background: #3a3a44; color: #cfcfe0; }
+
       /* ── 左カラム: 複数カードを縦に並べ、列ごとスクロール ── */
       #electron-col-future {
         flex: 2 !important;
@@ -314,7 +399,17 @@ function createWindow() {
         font-size: 11px;
         line-height: 1.6;
         white-space: nowrap;
+        cursor: pointer;
+        user-select: none;
+        transition: background 0.1s, border-color 0.1s, color 0.1s;
       }
+      .osu-tag-chip:hover { border-color: rgba(255,255,255,0.32); color: #ddd; }
+      .osu-tag-chip.checked {
+        background: rgba(74,222,128,0.18);
+        border-color: #4ade80;
+        color: #c9f5d6;
+      }
+      .osu-tag-chip.checked:hover { border-color: #6ee79a; }
 
       #osu-map-waiting { padding: 12px 8px; color: #555; font-size: 11px; }
 
@@ -328,7 +423,14 @@ function createWindow() {
       }
       #electron-col-future .drop-area .file-picker {
         flex-wrap: wrap;
-        gap: 6px;
+        gap: 6px 8px;
+      }
+      #electron-col-future .drop-area .file-button {
+        font-size: 11px !important;
+        padding: 4px 9px !important;
+      }
+      #electron-col-future .drop-area .file-name {
+        font-size: 11px !important;
       }
       #electron-col-future .drop-area p {
         font-size: 11px;
@@ -416,6 +518,28 @@ function createWindow() {
       }
       #electron-col-tabs .tab-group-title { font-size: 11px !important; }
 
+      /* 設定モード: 移設したチェック対象選択をカードに馴染ませる */
+      #etb-card-loadsettings .osu-source-settings {
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+      }
+
+      /* 設定モード: 移設したタブ表示トグルを縦リスト表示にする
+         （.tab-settings-panel から出したので元の flex 指定が効かないため再指定） */
+      #etb-checklist-settings-body { padding: 10px 12px 8px !important; }
+      #etb-checklist-settings-body label {
+        display: flex !important;
+        align-items: center !important;
+        gap: 7px !important;
+        font-size: 12px !important;
+        color: #cfcfcf !important;
+        padding: 4px 2px !important;
+        cursor: pointer !important;
+        white-space: normal !important;
+      }
+      #etb-checklist-settings-body input { cursor: pointer; flex-shrink: 0; }
+
       /* ── タイトルバーに移動した .top-links 要素のスタイル上書き ── */
       #etb-nav > a,
       #etb-nav > button {
@@ -496,6 +620,7 @@ function createWindow() {
         var svgMax  = '<svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="0.6" y="0.6" width="10.8" height="10.8" rx="0.5"/></svg>';
         var svgRes  = '<svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="0.6" width="8.4" height="8.4" rx="0.5"/><path d="M0.6 3.5v7.4a.5.5 0 0 0 .5.5h7.4"/></svg>';
         var svgX    = '<svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="1.5" y1="1.5" x2="10.5" y2="10.5"/><line x1="10.5" y1="1.5" x2="1.5" y2="10.5"/></svg>';
+        var svgDetach = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>';
 
         /* ── タイトルバー生成 ── */
         var titlebar = document.createElement('div');
@@ -503,7 +628,7 @@ function createWindow() {
         titlebar.innerHTML =
           '<div id="etb-brand">' +
             '<img id="etb-icon" src="${iconUrl}" alt="">' +
-            '<span id="etb-title">osu!taiko Modding Helper</span>' +
+            '<span id="etb-title">osu!taiko Modding Helper<span id="etb-title-suffix"> for Desktop</span></span>' +
             '<span id="etb-badge">v${version}</span>' +
           '</div>' +
           '<div id="etb-vsep"></div>' +
@@ -523,8 +648,9 @@ function createWindow() {
         futureCol.id = 'electron-col-future';
         futureCol.innerHTML =
           /* メタデータカード */
-          '<div class="etb-card">' +
-            '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-meta">メタデータ</span></div>' +
+          '<div class="etb-card" id="etb-card-meta">' +
+            '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-meta">メタデータ</span>' +
+              '<button class="etb-detach-btn" data-panel="metadata" title="別ウィンドウに分離">' + svgDetach + '</button></div>' +
             '<div class="etb-card-body" id="etb-meta-body">' +
               '<div id="osu-map-panel">' +
                 '<div id="osu-map-bg-wrap" style="display:none"><img id="osu-map-bg" src="" alt=""></div>' +
@@ -534,7 +660,8 @@ function createWindow() {
           '</div>' +
           /* リアルタイム表示カード（osu! モードのみ表示） */
           '<div class="etb-card" id="etb-card-realtime">' +
-            '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-realtime">リアルタイム表示</span></div>' +
+            '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-realtime">リアルタイム表示</span>' +
+              '<button class="etb-detach-btn" data-panel="timing" title="別ウィンドウに分離">' + svgDetach + '</button></div>' +
             '<div class="etb-card-body" id="osu-timing-panel">' +
               '<div class="osu-timing-row"><span class="osu-timing-label">Timing</span><span class="osu-timing-value" id="osu-t-timing">--:--:---</span></div>' +
               '<div class="osu-timing-row"><span class="osu-timing-label">BPM</span><span class="osu-timing-value" id="osu-t-bpm">---</span></div>' +
@@ -555,6 +682,17 @@ function createWindow() {
         fileCard.appendChild(fileBody);
         futureCol.appendChild(fileCard);
 
+        /* 譜面読み込み設定カード（設定モード時のみ表示。チェック対象選択を内包） */
+        var loadSettingsCard = document.createElement('div');
+        loadSettingsCard.className = 'etb-card';
+        loadSettingsCard.id = 'etb-card-loadsettings';
+        loadSettingsCard.style.display = 'none';
+        loadSettingsCard.innerHTML = '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-loadsettings">譜面読み込み設定</span></div>';
+        var loadSettingsBody = document.createElement('div');
+        loadSettingsBody.className = 'etb-card-body';
+        loadSettingsCard.appendChild(loadSettingsBody);
+        futureCol.appendChild(loadSettingsCard);
+
         /* チェックリストカード */
         var tabsCol = document.createElement('div');
         tabsCol.id = 'electron-col-tabs';
@@ -564,9 +702,16 @@ function createWindow() {
         tabsHead.innerHTML = '<span class="etb-card-title" id="etb-title-checklist">チェックリスト</span>';
         var tabsBody = document.createElement('div');
         tabsBody.className = 'etb-card-body';
+        tabsBody.id = 'etb-checklist-buttons-body';
         tabsBody.appendChild(tabButtons);
+        /* 設定モード時に表示する「チェックリストの設定」ボディ（表示トグルを内包） */
+        var tabsSettingsBody = document.createElement('div');
+        tabsSettingsBody.className = 'etb-card-body';
+        tabsSettingsBody.id = 'etb-checklist-settings-body';
+        tabsSettingsBody.style.display = 'none';
         tabsCol.appendChild(tabsHead);
         tabsCol.appendChild(tabsBody);
+        tabsCol.appendChild(tabsSettingsBody);
 
         /* チェック結果カード */
         var outputCol = document.createElement('div');
@@ -591,6 +736,40 @@ function createWindow() {
         appEl.appendChild(layout);
         tabsSec.remove();
 
+        /* 設定項目を各カードへ移設:
+           - チェック対象選択(#osuSourceSettings) → 譜面読み込み設定カード
+           - タブ表示トグル(チェックボックス各 label) → チェックリスト設定ボディ
+           移動後、空になった旧設定パネルは隠す */
+        var osuSrcEl = document.getElementById('osuSourceSettings');
+        if (osuSrcEl) { osuSrcEl.hidden = false; loadSettingsBody.appendChild(osuSrcEl); }
+        var tabSettingsPanelEl = document.getElementById('tabSettingsPanel');
+        if (tabSettingsPanelEl) {
+          Array.prototype.slice.call(tabSettingsPanelEl.querySelectorAll('label')).forEach(function(lb) {
+            tabsSettingsBody.appendChild(lb);
+          });
+        }
+        var tabVisEl = document.querySelector('.tab-visibility-settings');
+        if (tabVisEl) tabVisEl.style.display = 'none';
+
+        /* Electron 既定: 保存設定がまだ無い初回のみ、web では既定 OFF の
+           「音声波形・タイムライン・BN評価」を ON にする。
+           （localStorage は web と exe で別管理。既存ユーザーの保存設定は尊重） */
+        try {
+          if (!localStorage.getItem('moddingHelperVisibleTabs')) {
+            var defaultOnTabs = ['offsetWaveform', 'timeline', 'bnCompare'];
+            var dispatchTarget = null;
+            defaultOnTabs.forEach(function(tab) {
+              var cb = document.querySelector('.tab-visibility-toggle[data-target-tab="' + tab + '"]');
+              if (cb) {
+                if (!dispatchTarget) dispatchTarget = cb;
+                cb.checked = true;
+              }
+            });
+            /* change を発火して ui.js 側の保存(applyTabVisibilitySettings 含む)を実行 */
+            if (dispatchTarget) dispatchTarget.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        } catch (e) {}
+
         /* 左パネルの動作モード: 'osu' = osu! メモリからリアルタイム表示 /
            'file' = 読み込んだファイルのメタデータを表示。
            初期値は保存済みのチェック対象設定に合わせる（script.js と一致させる）。 */
@@ -598,6 +777,13 @@ function createWindow() {
         try {
           if (localStorage.getItem('moddingHelperCheckSource') === 'osu') panelMode = 'osu';
         } catch (e) {}
+
+        /* 設定モード: ⚙設定 で ON/OFF。
+           ON のとき 左カードを「譜面読み込み設定」、中央カードを「チェックリストの設定」に切替 */
+        var settingsMode = false;
+
+        /* 分離状態: 別ウィンドウに出しているパネルは true（メイン側のカードを隠す） */
+        var detachState = { metadata: false, timing: false };
 
         /* 待機テキスト（言語・モード対応） */
         var updateWaitingText = function() {
@@ -616,15 +802,33 @@ function createWindow() {
         };
         updateWaitingText();
 
-        /* モードに応じた左カラムのカード表示切替:
-           osu  モード → リアルタイム表示カード表示・譜面ファイルカード非表示
-           file モード → リアルタイム表示カード非表示・譜面ファイルカード表示 */
+        /* カード表示の切替（panelMode と settingsMode を反映）:
+           通常時   左→リアルタイム/譜面ファイル, 中央→チェックリスト
+           設定時   左→譜面読み込み設定,          中央→チェックリストの設定 */
         var applyPanelModeUi = function() {
           var isOsu = (panelMode === 'osu');
-          var rt = document.getElementById('etb-card-realtime');
-          if (rt) rt.style.display = isOsu ? '' : 'none';
-          var fc = document.getElementById('etb-card-file');
-          if (fc) fc.style.display = isOsu ? 'none' : '';
+          var s = settingsMode;
+          var setDisp = function(id, show) {
+            var el = document.getElementById(id);
+            if (el) el.style.display = show ? '' : 'none';
+          };
+          /* 左カラム（分離中のカードは隠す） */
+          setDisp('etb-card-meta',         !detachState.metadata);
+          setDisp('etb-card-realtime',     !s && isOsu && !detachState.timing);
+          setDisp('etb-card-file',         !s && !isOsu);
+          setDisp('etb-card-loadsettings',  s);
+          /* 中央カラム（チェックリスト） */
+          setDisp('etb-checklist-buttons-body',  !s);
+          setDisp('etb-checklist-settings-body',  s);
+          /* チェックリストカードのタイトル切替 */
+          var isEn = document.getElementById('langEn') && document.getElementById('langEn').classList.contains('active');
+          var clT = document.getElementById('etb-title-checklist');
+          if (clT) clT.textContent = s
+            ? (isEn ? 'Check list settings' : 'チェックリストの設定')
+            : (isEn ? 'Check list' : 'チェックリスト');
+          /* 設定ボタンのアクティブ表示 */
+          var sBtn = document.getElementById('toggleTabSettings');
+          if (sBtn) sBtn.classList.toggle('active', s);
         };
         var resetTimingPanel = function() {
           var ids = { 'osu-t-timing': '--:--:---', 'osu-t-bpm': '---',
@@ -644,6 +848,41 @@ function createWindow() {
         };
         applyPanelModeUi();
 
+        /* TAGS チップのクリックで色付けトグル（全タグを確認する際のチェックオフ用）。
+           チップは再描画で作り直されるため #osu-map-meta にイベント委譲する */
+        var metaForTags = document.getElementById('osu-map-meta');
+        if (metaForTags) {
+          metaForTags.addEventListener('click', function(e) {
+            var chip = e.target && e.target.closest ? e.target.closest('.osu-tag-chip') : null;
+            if (chip) chip.classList.toggle('checked');
+          });
+        }
+
+        /* パネル分離ボタン: クリックで別ウィンドウに出し、メイン側のカードを隠す */
+        Array.prototype.slice.call(document.querySelectorAll('.etb-detach-btn')).forEach(function(btn) {
+          btn.addEventListener('click', function(ev) {
+            ev.stopPropagation();
+            var panel = btn.getAttribute('data-panel');
+            if (panel !== 'metadata' && panel !== 'timing') return;
+            detachState[panel] = true;
+            applyPanelModeUi();
+            var isEn = document.getElementById('langEn') && document.getElementById('langEn').classList.contains('active');
+            if (window.electronAPI && window.electronAPI.detachPanel) {
+              window.electronAPI.detachPanel(panel, isEn ? 'en' : 'ja');
+            }
+          });
+        });
+
+        /* 分離ウィンドウが閉じられたらカードを復帰 */
+        if (window.electronAPI && window.electronAPI.onPanelRedocked) {
+          window.electronAPI.onPanelRedocked(function(panel) {
+            if (panel === 'metadata' || panel === 'timing') {
+              detachState[panel] = false;
+              applyPanelModeUi();
+            }
+          });
+        }
+
         /* タイミングパネルの言語対応ラベル */
         var updateTimingLabels = function() {
           var vbpmLabel = document.getElementById('osu-t-vbpm-label');
@@ -660,13 +899,25 @@ function createWindow() {
             var el = document.getElementById(id);
             if (el) el.textContent = isEn ? en : ja;
           };
-          set('etb-title-meta',      'メタデータ',      'Metadata');
-          set('etb-title-realtime',  'リアルタイム表示', 'Real-time');
-          set('etb-title-file',      '譜面ファイル',     'Beatmap file');
-          set('etb-title-checklist', 'チェックリスト',   'Check list');
-          set('etb-title-results',   'チェック結果',     'Check results');
+          set('etb-title-meta',         'メタデータ',        'Metadata');
+          set('etb-title-realtime',     'リアルタイム表示',   'Real-time');
+          set('etb-title-file',         '譜面ファイル',       'Beatmap file');
+          set('etb-title-loadsettings', '譜面読み込み設定',   'Beatmap loading');
+          set('etb-title-checklist',
+              settingsMode ? 'チェックリストの設定' : 'チェックリスト',
+              settingsMode ? 'Check list settings'  : 'Check list');
+          set('etb-title-results',      'チェック結果',       'Check results');
         };
         updatePanelTitles();
+
+        /* ⚙設定 ボタンで設定モードを切替 */
+        var settingsToggleBtn = document.getElementById('toggleTabSettings');
+        if (settingsToggleBtn) {
+          settingsToggleBtn.addEventListener('click', function() {
+            settingsMode = !settingsMode;
+            applyPanelModeUi();
+          });
+        }
 
         /* ── .top-links の子要素を #etb-nav に移動 ── */
         try {
@@ -876,8 +1127,12 @@ function createWindow() {
             },
             renderFileMeta: function(data) {
               if (panelMode !== 'file') return;
-              if (!data) { clearMetaToWaiting(); return; }
-              renderMapPanel(data);
+              if (!data) { clearMetaToWaiting(); }
+              else { renderMapPanel(data); }
+              /* メタデータ分離ウィンドウにも反映（osu モードは osuWatcher 経由で届く） */
+              if (window.electronAPI && window.electronAPI.sendMapMetaToPopout) {
+                window.electronAPI.sendMapMetaToPopout(data || null);
+              }
             }
           };
         }
@@ -920,8 +1175,10 @@ function createWindow() {
         })();
       })();
     `).then(function() {
+      osuWatcher.setDeliver(broadcastOsuData);
       osuWatcher.start(win);
     }).catch(function() {
+      osuWatcher.setDeliver(broadcastOsuData);
       osuWatcher.start(win);
     });
   });
@@ -929,6 +1186,11 @@ function createWindow() {
   win.on('page-title-updated', function(e) { e.preventDefault(); });
   win.on('closed', function() {
     osuWatcher.stop();
+    // メインを閉じたら分離ウィンドウも閉じる
+    ['metadata', 'timing'].forEach(function(n) {
+      if (popoutWindows[n] && !popoutWindows[n].isDestroyed()) popoutWindows[n].destroy();
+      popoutWindows[n] = null;
+    });
     mainWin = null;
   });
 
@@ -946,6 +1208,16 @@ app.whenReady().then(() => {
   });
   ipcMain.on('win-close',     () => { if (mainWin) mainWin.close(); });
   ipcMain.on('win-open-docs', () => { shell.openExternal('file:///' + docsPath.replace(/\\/g, '/')); });
+
+  // パネルを別ウィンドウに分離
+  ipcMain.on('detach-panel', (e, name, lang) => openPopout(name, lang));
+
+  // file モードのメタデータをメタデータ・ポップアウトへ転送（osu モードは osuWatcher 経由）
+  ipcMain.on('popout-map-meta', (e, data) => {
+    lastMapInfo = data;
+    const w = popoutWindows.metadata;
+    if (w && !w.isDestroyed()) { try { w.webContents.send('osu-map-info', data); } catch (_) {} }
+  });
 
   // 現在 osu! で開いている譜面のフォルダを .osz 相当の zip にまとめて返す。
   // knownFolder と同じフォルダなら再構築せず { unchanged:true } を返す。
