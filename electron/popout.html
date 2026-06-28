@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>panel</title>
+<style>
+  html, body {
+    margin: 0; height: 100%;
+    background: #1e1e1e;
+    font-family: Arial, "Meiryo", "Yu Gothic UI", "Hiragino Sans", sans-serif;
+    color: #ddd;
+    overflow: hidden;
+  }
+  #root { display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; padding: 8px; }
+
+  /* メタデータ */
+  #osu-map-bg-wrap { padding: 0 0 8px 0; }
+  #osu-map-bg {
+    width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block;
+    background: #111; border-radius: 6px;
+  }
+  #osu-map-meta { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; flex: 1; }
+  .osu-map-row { display: flex; flex-direction: column; gap: 1px; }
+  .osu-map-label { font-size: 11px; color: #777; text-transform: uppercase; letter-spacing: 0.05em; }
+  .osu-map-value { color: #eee; word-break: break-all; font-size: 13px; }
+  .osu-map-value.unicode { color: #aac4ff; }
+  .osu-map-value.source  { color: #e8b462; }
+  .osu-map-value.none    { color: #444; font-style: italic; font-size: 12px; }
+  #osu-map-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 2px; }
+  .osu-tag-chip {
+    display: inline-block; background: rgba(255,255,255,0.07); color: #bbb;
+    border: 1px solid rgba(255,255,255,0.13); border-radius: 999px;
+    padding: 1px 7px; font-size: 11px; line-height: 1.6; white-space: nowrap;
+    cursor: pointer; user-select: none; transition: background .1s, border-color .1s, color .1s;
+  }
+  .osu-tag-chip:hover { border-color: rgba(255,255,255,0.32); color: #ddd; }
+  .osu-tag-chip.checked { background: rgba(74,222,128,0.18); border-color: #4ade80; color: #c9f5d6; }
+  #osu-map-waiting { padding: 12px 4px; color: #555; font-size: 11px; }
+
+  /* リアルタイム */
+  #osu-timing-panel { padding: 4px 6px; }
+  .osu-timing-row { display: flex; align-items: baseline; justify-content: space-between; padding: 4px 0; }
+  .osu-timing-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; flex-shrink: 0; }
+  .osu-timing-value { font-family: "Consolas","Courier New",monospace; font-size: 14px; color: #cfcfcf; text-align: right; margin-left: 8px; }
+  #osu-t-timing { font-size: 17px; color: #fff; letter-spacing: 0.02em; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var panel  = params.get('panel') || 'metadata';
+      var isEn   = (params.get('lang') || 'ja') === 'en';
+      var root   = document.getElementById('root');
+      document.title = panel === 'timing'
+        ? (isEn ? 'Real-time' : 'リアルタイム表示')
+        : (isEn ? 'Metadata' : 'メタデータ');
+
+      var noneText = isEn ? 'None' : 'なし';
+
+      if (panel === 'metadata') {
+        root.innerHTML =
+          '<div id="osu-map-bg-wrap" style="display:none"><img id="osu-map-bg" src="" alt=""></div>' +
+          '<div id="osu-map-meta"><div id="osu-map-waiting"></div></div>';
+
+        var setWaiting = function () {
+          var w = document.getElementById('osu-map-waiting');
+          if (w) w.innerHTML = isEn
+            ? 'No beatmap data'
+            : '譜面データがありません';
+        };
+        setWaiting();
+
+        var renderMeta = function (data) {
+          var bg   = document.getElementById('osu-map-bg');
+          var meta = document.getElementById('osu-map-meta');
+          if (!meta) return;
+          if (!data) {
+            if (bg) bg.src = '';
+            document.getElementById('osu-map-bg-wrap').style.display = 'none';
+            meta.innerHTML = '<div id="osu-map-waiting"></div>';
+            setWaiting();
+            return;
+          }
+          if (bg) bg.src = data.bgDataUrl || '';
+          document.getElementById('osu-map-bg-wrap').style.display = data.bgDataUrl ? '' : 'none';
+          var row = function (label, value, cls, alwaysShow) {
+            if (!value && !alwaysShow) return '';
+            var empty = !value;
+            return '<div class="osu-map-row"><span class="osu-map-label">' + label + '</span>' +
+              '<span class="osu-map-value ' + (empty ? 'none' : (cls || '')) + '">' +
+              (empty ? noneText : value) + '</span></div>';
+          };
+          var tagsHtml = (function () {
+            if (!data.tags) {
+              return '<div class="osu-map-row"><span class="osu-map-label">Tags</span>' +
+                '<span class="osu-map-value none">' + noneText + '</span></div>';
+            }
+            var chips = data.tags.split(' ').filter(function (t) { return t; })
+              .map(function (t) { return '<span class="osu-tag-chip">' + t + '</span>'; }).join('');
+            return '<div class="osu-map-row"><span class="osu-map-label">Tags</span>' +
+              '<div id="osu-map-tags">' + chips + '</div></div>';
+          })();
+          meta.innerHTML =
+            row('Artist (Unicode)', data.artistUnicode, 'unicode') +
+            row('Artist',           data.artist) +
+            row('Title (Unicode)',  data.titleUnicode,  'unicode') +
+            row('Title',            data.title) +
+            row('Source',           data.source, 'source', true) +
+            tagsHtml;
+        };
+
+        /* TAGS チップのクリックでチェックトグル */
+        var metaEl = document.getElementById('osu-map-meta');
+        metaEl.addEventListener('click', function (e) {
+          var chip = e.target && e.target.closest ? e.target.closest('.osu-tag-chip') : null;
+          if (chip) chip.classList.toggle('checked');
+        });
+
+        if (window.electronAPI && window.electronAPI.onOsuMapInfo) {
+          window.electronAPI.onOsuMapInfo(renderMeta);
+        }
+      } else {
+        root.innerHTML =
+          '<div id="osu-timing-panel">' +
+            '<div class="osu-timing-row"><span class="osu-timing-label">Timing</span><span class="osu-timing-value" id="osu-t-timing">--:--:---</span></div>' +
+            '<div class="osu-timing-row"><span class="osu-timing-label">BPM</span><span class="osu-timing-value" id="osu-t-bpm">---</span></div>' +
+            '<div class="osu-timing-row"><span class="osu-timing-label">SV</span><span class="osu-timing-value" id="osu-t-sv">---</span></div>' +
+            '<div class="osu-timing-row"><span class="osu-timing-label">' + (isEn ? 'Visual BPM' : '見た目 BPM') + '</span><span class="osu-timing-value" id="osu-t-vbpm">---</span></div>' +
+            '<div class="osu-timing-row"><span class="osu-timing-label">Volume</span><span class="osu-timing-value" id="osu-t-vol">---</span></div>' +
+          '</div>';
+
+        var renderTiming = function (data) {
+          var t = document.getElementById('osu-t-timing');
+          if (!t) return;
+          var bpm = document.getElementById('osu-t-bpm');
+          var sv  = document.getElementById('osu-t-sv');
+          var vb  = document.getElementById('osu-t-vbpm');
+          var vol = document.getElementById('osu-t-vol');
+          if (!data) {
+            t.textContent = '--:--:---'; bpm.textContent = '---'; sv.textContent = '---';
+            vb.textContent = '---'; vol.textContent = '---';
+            return;
+          }
+          var ms = data.time, m = Math.floor(ms / 60000), s = Math.floor((ms % 60000) / 1000), mil = ms % 1000;
+          t.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + ':' + String(mil).padStart(3, '0');
+          bpm.textContent = data.bpm   !== null ? data.bpm.toFixed(2)  : '---';
+          sv.textContent  = data.sv    !== null ? data.sv.toFixed(2)   : '---';
+          vb.textContent  = data.vbpm  !== null ? data.vbpm.toFixed(2) : '---';
+          vol.textContent = data.volume !== null ? data.volume + '%'   : '---';
+        };
+
+        if (window.electronAPI && window.electronAPI.onTimingInfo) {
+          window.electronAPI.onTimingInfo(renderTiming);
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
