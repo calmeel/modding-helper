@@ -295,6 +295,16 @@ function formatBarlineResultGroup(results, t) {
     lines.push("");
   }
 
+  lines.push(formatSeparator());
+  lines.push("");
+  lines.push(formatSectionTitle(t("barlineIntentionalDetachedBarline")));
+
+  for (const result of results) {
+    lines.push(`${getDifficultyName(result.fileName)}`);
+    lines.push(...formatBarlineIntentionalDetachedBarlineLines(result, t));
+    lines.push("");
+  }
+
   return lines.join("\n").trimEnd();
 }
 
@@ -318,8 +328,6 @@ function formatBarlineNegativeStartWarningLines(result, t) {
 
   return result.negativeStartBarlineWarnings.map(item =>
     `<span class="result-warning">` +
-    `${formatTimestampLink(item.firstRedLineTime)} -> ` +
-    `${formatTimestampLink(item.generatedBarlineTime)} / ` +
     `${formatTimestampLink(item.nextRedLineTime)} | ` +
     `${escapeHtml(t(item.stableLazerMessageKey))}` +
     `</span>`
@@ -331,17 +339,31 @@ function formatBarlineDetachedBarlineLines(result, t) {
     return [t("barlineNoDetachedBarline")];
   }
 
-  return result.detachedBarlines.map(item => {
-    const deltaSign = item.delta > 0 ? "+" : "";
-    return (
-      `<span class="result-error">` +
-      `${formatTimestampLink(item.barlineTime)} -> ${formatTimestampLink(item.noteTime)} | ` +
-      `${escapeHtml(t("barlineGeneratedBarline"))}: ${formatBarlineSpeed(item.barlineSpeed)} px/s | ` +
-      `${escapeHtml(t("barlineNote"))}: ${formatBarlineSpeed(item.noteSpeed)} px/s | ` +
-      `${escapeHtml(t("barlineDelta"))}: ${deltaSign}${formatBarlineSpeed(item.delta)} px/s` +
-      `</span>`
-    );
-  });
+  return result.detachedBarlines.map(item =>
+    formatBarlineDetachedBarlineLine(item, t, "result-error")
+  );
+}
+
+function formatBarlineIntentionalDetachedBarlineLines(result, t) {
+  if (!result.intentionalDetachedBarlines?.length) {
+    return [t("barlineNoIntentionalDetachedBarline")];
+  }
+
+  return result.intentionalDetachedBarlines.map(item =>
+    formatBarlineDetachedBarlineLine(item, t, "result-warning")
+  );
+}
+
+function formatBarlineDetachedBarlineLine(item, t, className) {
+  const deltaSign = item.delta > 0 ? "+" : "";
+  return (
+    `<span class="${className}">` +
+    `${formatTimestampLink(item.barlineTime)} -> ${formatTimestampLink(item.noteTime)} | ` +
+    `${escapeHtml(t("barlineGeneratedBarline"))}: ${formatBarlineSpeed(item.barlineSpeed)} px/s | ` +
+    `${escapeHtml(t("barlineNote"))}: ${formatBarlineSpeed(item.noteSpeed)} px/s | ` +
+    `${escapeHtml(t("barlineDelta"))}: ${deltaSign}${formatBarlineSpeed(item.delta)} px/s` +
+    `</span>`
+  );
 }
 
 function formatBarlineSpeed(value) {
