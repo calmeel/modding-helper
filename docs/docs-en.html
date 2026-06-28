@@ -1573,7 +1573,13 @@ HitObjects and TimingPoints may be adjusted correctly while forgetting to update
 
 Additionally,
 different difficulties may accidentally use different <code>PreviewTime</code> values,
-or some difficulties may have no <code>PreviewTime</code> configured at all.
+or some difficulties may have no <code>PreviewTime</code> configured at all.<br><br>
+
+There is also an osu-web-specific issue with variable bitrate <code>mp3</code> files:
+even when <code>PreviewTime</code> itself is set correctly,
+the preview playback position on osu-web may start from an unintended position.<br>
+Variable bitrate <code>ogg</code> files do not normally cause this problem, but variable bitrate <code>mp3</code> files can be problematic
+because osu-web may calculate the playback position differently for that format.
 </div>
 
 <div class="section section-detect">
@@ -1588,7 +1594,22 @@ The following checks are also performed:
 <ul>
   <li><code>PreviewTime</code> differs between difficulties → error</li>
   <li><code>PreviewTime</code> is not configured → warning</li>
+  <li>The <code>mp3</code> inside the <code>.osz</code> uses variable bitrate (VBR) → warning</li>
 </ul>
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection: mp3 variable bitrate check</span><br>
+When an <code>.osz</code> file is loaded, the tool checks the actual <code>mp3</code> file referenced by the beatmap.
+If it appears to use variable bitrate (VBR), a warning is displayed.<br><br>
+
+The check looks for VBR headers such as <code>Xing</code> / <code>VBRI</code>,
+and also checks whether the bitrate changes between multiple mp3 frames.<br>
+If only a standalone <code>.osu</code> file is loaded, the audio file itself is unavailable, so this check cannot be performed.<br><br>
+
+Variable bitrate <code>ogg</code> files are not warned by this check.<br>
+The concern is mainly variable bitrate <code>mp3</code>, because it may cause the preview point to be shifted on osu-web.
+If this warning appears, consider using a constant bitrate (CBR) <code>mp3</code> instead.
 
 </div>
 
@@ -1597,7 +1618,12 @@ The following checks are also performed:
 A PreviewTime that is not snapped does not necessarily mean the map is unrankable.<br><br>
 
 However, since this may indicate that PreviewTime was accidentally left unchanged after an offset adjustment,
-you should verify whether the displayed position is intentional whenever a warning appears.<br>
+you should verify whether the displayed position is intentional whenever a warning appears.<br><br>
+
+The mp3 variable bitrate warning does not necessarily mean that <code>PreviewTime</code> in the beatmap is wrong.<br>
+Even if the preview sounds correct in osu!stable or in the editor,
+only osu-web preview playback may start from an unintended position.
+When this warning appears, check the preview on osu-web or consider converting the audio to constant bitrate.<br>
 </div>
 </section>
 
