@@ -80,6 +80,7 @@ async function analyzeOszFile(file) {
   const osuFiles = Object.values(zip.files)
     .filter(entry => !entry.dir && entry.name.toLowerCase().endsWith(".osu"));
   const audioBlobCache = new Map();
+  const audioBytesCache = new Map();
   const bgImageTypeCache = new Map();
 
   for (const entry of osuFiles) {
@@ -123,12 +124,20 @@ async function analyzeOszFile(file) {
     const audioFileName = parseOffsetAudioFilename(text);
     const audioEntry = findOszAudioEntry(zip, entry.name, audioFileName);
     let audioBlob = null;
+    let audioBytes = null;
 
     if (audioEntry) {
       if (!audioBlobCache.has(audioEntry.name)) {
         audioBlobCache.set(audioEntry.name, await audioEntry.async("blob"));
       }
       audioBlob = audioBlobCache.get(audioEntry.name);
+
+      if (/\.mp3$/i.test(audioEntry.name)) {
+        if (!audioBytesCache.has(audioEntry.name)) {
+          audioBytesCache.set(audioEntry.name, await audioEntry.async("uint8array"));
+        }
+        audioBytes = audioBytesCache.get(audioEntry.name);
+      }
     }
 
     offsetWaveformSources.push({
@@ -197,7 +206,11 @@ async function analyzeOszFile(file) {
     });
 
     previewPointResults.push({
-      ...runPreviewPointCheck(text, entry.name),
+      ...runPreviewPointCheck(text, entry.name, {
+        audioFileName,
+        audioEntryName: audioEntry?.name ?? "",
+        audioBytes
+      }),
       mode
     });
 
@@ -373,7 +386,9 @@ async function processFile(file) {
       ],
       previewPoint: [
         {
-          ...runPreviewPointCheck(text, file.name),
+          ...runPreviewPointCheck(text, file.name, {
+            audioFileName: parseOffsetAudioFilename(text)
+          }),
           mode
         }
       ],

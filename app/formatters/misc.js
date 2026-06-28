@@ -182,6 +182,7 @@ function formatPreviewPointResult(results, t) {
   const missingResults = results.filter(result => result.previewTime === null);
   const validResults = results.filter(result => result.previewTime !== null);
   const groups = groupPreviewPointResults(validResults);
+  const audioWarnings = getPreviewPointAudioWarnings(results);
   const lines = [];
 
   lines.push(formatSectionTitle(t("previewPointConsistencyTitle")));
@@ -199,7 +200,8 @@ function formatPreviewPointResult(results, t) {
     lines.push("");
     lines.push(formatSectionTitle(t("previewPointSnapTitle")));
     lines.push(t("previewPointNotFound"));
-    return lines.join("\n");
+    appendPreviewPointAudioSection(lines, audioWarnings, t);
+    return lines.join("\n").trimEnd();
   }
 
   if (groups.length === 1 && !missingResults.length) {
@@ -217,13 +219,56 @@ function formatPreviewPointResult(results, t) {
   lines.push("");
   lines.push(formatSectionTitle(t("previewPointSnapTitle")));
 
-  for (const result of sortResultsForDisplay(validResults)) {
-    lines.push(formatPreviewPointSingleResult(result, t));
-    lines.push(getDifficultyNameText(result.fileName));
+  for (const group of groupPreviewPointSnapResults(validResults)) {
+    lines.push(formatPreviewPointSingleResult(group.items[0], t));
+    lines.push(
+      group.items
+        .map(result => escapeHtml(getDifficultyNameText(result.fileName)))
+        .join(", ")
+    );
     lines.push("");
   }
 
+  appendPreviewPointAudioSection(lines, audioWarnings, t);
+
   return lines.join("\n").trimEnd();
+}
+
+function appendPreviewPointAudioSection(lines, audioWarnings, t) {
+  lines.push("");
+  lines.push(formatSectionTitle(t("previewPointAudioTitle")));
+
+  if (!audioWarnings.length) {
+    lines.push(t("previewPointVbrOk"));
+    return;
+  }
+
+  for (const warning of audioWarnings) {
+    lines.push(
+      `<span class="result-warn">${escapeHtml(t("previewPointVbrWarning"))}</span>`
+    );
+    lines.push(escapeHtml(warning.displayName));
+    lines.push("");
+  }
+}
+
+function getPreviewPointAudioWarnings(results) {
+  const warnings = [];
+  const seen = new Set();
+
+  for (const result of results ?? []) {
+    const audio = result.audioBitrate;
+    if (!audio?.isVbr) continue;
+
+    const displayName = audio.audioEntryName || audio.audioFileName || "mp3";
+    const key = displayName.toLowerCase();
+    if (seen.has(key)) continue;
+
+    seen.add(key);
+    warnings.push({ displayName });
+  }
+
+  return warnings;
 }
 
 function formatPreviewPointConsistencyGroup(group) {
@@ -249,6 +294,27 @@ function groupPreviewPointResults(results) {
   }
 
   return [...map.values()].map(items => ({ items }));
+}
+
+function groupPreviewPointSnapResults(results) {
+  const groups = new Map();
+
+  for (const result of sortResultsForDisplay(results)) {
+    const key = [
+      result.previewTime,
+      result.snap,
+      result.diff,
+      result.level
+    ].join("|");
+
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+
+    groups.get(key).push(result);
+  }
+
+  return [...groups.values()].map(items => ({ items }));
 }
 
 function formatPreviewPointSingleResult(item, t) {
