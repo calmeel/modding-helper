@@ -225,12 +225,16 @@ const updateHistoryEntries = [
       en: [
         "Added a check for the rest moment.",
         "Added a bar line check function.",
-        "Added a function to check audio waveforms and offsets."
+        "Added a function to check audio waveforms and offsets.",
+        "Change the appearance of the tabs",
+        "Implemented MP3 variable bit rate detection."
       ],
       ja: [
         "rest moment のチェックを追加",
         "小節線のチェック機能を追加",
-        "音声波形とオフセットのチェック機能を追加"
+        "音声波形とオフセットのチェック機能を追加",
+        "タブの見た目を変更",
+        "mp3の可変ビットレート判定を実装"
       ]
     }
   },
