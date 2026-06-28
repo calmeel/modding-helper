@@ -262,7 +262,9 @@ const i18n = {
 
     tabMisc: "Misc",
     tabPreviewPoint: "Preview point",
-    previewPointSnapTitle: "Preview point",
+    previewPointConsistencyTitle: "Preview point consistency between diffs",
+    previewPointConsistencyOk: "Preview points are consistent between difficulties.",
+    previewPointSnapTitle: "Preview point snap",
     previewPointNotFound: "Preview point was not found.",
     previewPointMismatch: "Preview point differs between difficulties.",
     previewPointMissingWarning: "Preview point is not set. Please check whether this is intentional.",
@@ -732,7 +734,9 @@ const i18n = {
     
     tabMisc: "その他",
     tabPreviewPoint: "プレビューポイント",
-    previewPointSnapTitle: "プレビューポイント",
+    previewPointConsistencyTitle: "Diff間のプレビューポイントの一致",
+    previewPointConsistencyOk: "diff間でプレビューポイントは一致しています。",
+    previewPointSnapTitle: "プレビューポイントのsnap",
     previewPointNotFound: "PreviewTime が見つかりませんでした。",
     previewPointMismatch: "diff間でプレビューポイントが一致していません。",
     previewPointMissingWarning: "プレビューポイントが設定されていません。意図しているものか確認して下さい。",
