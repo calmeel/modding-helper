@@ -953,12 +953,14 @@ Example:<br>
 <span class="label label-detect">■ Detection Content 3: Possibly Intentional Detached Barline</span><br>
 When the generated barline position is treated as <code>T</code>, this is checked when there is no red timing point at <code>T + 1 ms</code>, but a note and an SV line exist at that same position.<br>
 The check compares the visual scroll speed at the generated barline position with the visual scroll speed at the <code>T + 1 ms</code> note position. If the values do not match, it is reported as a possibly intentional detached barline warning.<br><br>
+The check also handles notes at <code>T - 1 ms</code>. In that case, it compares the visual scroll speed at the generated barline position <code>T</code> with the visual scroll speed at the <code>T - 1 ms</code> note position.<br>
+If the values do not match, it is also reported as a possibly intentional detached barline warning.<br><br>
 When a red timing point exists at <code>T + 1 ms</code>, the existing behavior is kept: if the speeds differ, it is reported as an unintended detached barline error.
 </div>
 
 <div class="section section-detect">
 <span class="label label-detect">■ Detection Patterns</span><br>
-The generated barline position is treated as <code>T</code>, and the position 1 ms later is treated as <code>T + 1 ms</code>.<br>
+The generated barline position is treated as <code>T</code>, the position 1 ms later as <code>T + 1 ms</code>, and the position 1 ms earlier as <code>T - 1 ms</code>.<br>
 If an <code>omit first barline</code> red timing point exists at <code>T</code>, the tool treats the automatically generated barline at that position as intentionally hidden.<br><br>
 
 <table class="ratio-threshold-table">
@@ -1001,6 +1003,13 @@ If an <code>omit first barline</code> red timing point exists at <code>T</code>,
       <td class="ratio-warn">Warning if the speeds differ</td>
     </tr>
     <tr>
+      <td>Normal generated barline position</td>
+      <td>Follows the existing checks</td>
+      <td><code>T - 1 ms</code></td>
+      <td>Follows the existing checks</td>
+      <td class="ratio-warn">Warning if the speeds differ</td>
+    </tr>
+    <tr>
       <td>Red timing point with <code>omit first barline</code></td>
       <td>Red timing point without <code>omit first barline</code></td>
       <td>None</td>
@@ -1020,7 +1029,8 @@ If an <code>omit first barline</code> red timing point exists at <code>T</code>,
 <br>
 In the final case, the tool compares the scroll speed of the barline produced by the <code>T + 1 ms</code> red timing point with the scroll speed of the note placed at <code>T</code>.<br>
 For this reason, it is not treated as a double barline issue, and it is only reported as a detached barline issue when the visual scroll speeds do not match.<br>
-Also, even if the red timing point at <code>T + 1 ms</code> has <code>omit first barline</code> enabled, when a note is placed at the same <code>T + 1 ms</code> position, the tool compares the speed of the barline at <code>T</code> with the speed of the note at <code>T + 1 ms</code>.
+Also, even if the red timing point at <code>T + 1 ms</code> has <code>omit first barline</code> enabled, when a note is placed at the same <code>T + 1 ms</code> position, the tool compares the speed of the barline at <code>T</code> with the speed of the note at <code>T + 1 ms</code>.<br>
+When a note is placed at <code>T - 1 ms</code>, the tool compares the speed of the barline at <code>T</code> with the speed of the note at <code>T - 1 ms</code>.
 </div>
 
 <div class="section section-detect">
