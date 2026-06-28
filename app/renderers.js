@@ -71,6 +71,17 @@ function renderBarlineResultFromSources(sources, dom, t) {
   return results;
 }
 
+function renderUnappliedSvResultFromResults(results, dom, t) {
+  if (!dom.unappliedSvOutput) return;
+
+  if (!results) {
+    dom.unappliedSvOutput.innerHTML = t("noFileLoaded");
+    return;
+  }
+
+  dom.unappliedSvOutput.innerHTML = formatMultipleUnappliedSvResults(results, t);
+}
+
 function renderOffsetWaveformResultFromSources(sources, dom, t) {
   if (!dom.offsetWaveformCanvas) return null;
 

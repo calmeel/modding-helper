@@ -177,6 +177,12 @@ function formatShiftResult(result, t) {
   return lines.join("\n");
 }
 
+function formatSvValue(beatLength) {
+  const value = beatLength < 0 ? -100 / beatLength : 1;
+  if (!Number.isFinite(value)) return "N/A";
+  return (Math.round(value * 1000) / 1000).toString();
+}
+
 /** Double SV系の表示関数 */
 function formatMultipleDoubleSvResults(results, t) {
   if (!results.length) {
@@ -364,6 +370,95 @@ function formatBarlineDetachedBarlineLine(item, t, className) {
     `${escapeHtml(t("barlineDelta"))}: ${deltaSign}${formatBarlineSpeed(item.delta)} px/s` +
     `</span>`
   );
+}
+
+function formatMultipleUnappliedSvResults(results, t) {
+  if (!results.length) {
+    return t("noOsuFiles");
+  }
+
+  const sortedResults = sortResultsForDisplay(results);
+  const lines = [];
+
+  lines.push(formatSectionTitle(t("unappliedSvNoteTitle")));
+  lines.push(...formatUnappliedSvResultsByDiff(
+    sortedResults,
+    "noteIssues",
+    "unappliedSvNoNoteIssues",
+    "unappliedSvNoteMessage",
+    t
+  ));
+
+  lines.push("");
+  lines.push(formatSectionTitle(t("unappliedSvBarlineTitle")));
+  lines.push(...formatUnappliedSvResultsByDiff(
+    sortedResults,
+    "barlineIssues",
+    "unappliedSvNoBarlineIssues",
+    "unappliedSvBarlineMessage",
+    t
+  ));
+
+  return lines.join("\n").trimEnd();
+}
+
+function formatUnappliedSvResultsByDiff(results, issueKey, noIssueKey, messageKey, t) {
+  const lines = [];
+
+  for (const result of results) {
+    lines.push(getDifficultyName(result));
+
+    const issues = result[issueKey] ?? [];
+    if (!issues.length) {
+      lines.push(t(noIssueKey));
+    } else {
+      for (const issue of issues) {
+        lines.push(formatUnappliedSvIssueLine(issue, t, messageKey));
+      }
+    }
+
+    lines.push("");
+  }
+
+  return lines;
+}
+
+function formatUnappliedSvIssueLine(issue, t, messageKey) {
+  const targetSvLabel =
+    issue.targetType === "barline"
+      ? t("unappliedSvBarlineSvLabel")
+      : t("unappliedSvNoteSvLabel");
+  const targetSv = getUnappliedSvNumericValue(issue.targetGreenLine);
+  const followingSv = getUnappliedSvNumericValue(issue.greenLine);
+  const targetSvText = `${targetSvLabel} x${formatUnappliedSvNumber(targetSv)}`;
+  const followingSvText = `${t("unappliedSvFollowingSvLabel")} x${formatUnappliedSvNumber(followingSv)}`;
+  const deltaText = `${t("unappliedSvDeltaLabel")} ${formatUnappliedSvDelta(followingSv - targetSv)}`;
+  const svText = `${targetSvText} -> ${followingSvText} (${deltaText})`;
+  const message = t(messageKey).replace("{offset}", `+${issue.offset} ms`);
+
+  return `<span class="result-warn">` +
+    `${formatTimestampLink(issue.targetTime)} -> ` +
+    `${formatTimestampLink(issue.greenTime)} | ` +
+    `+${issue.offset} ms | ` +
+    `${escapeHtml(svText)} | ` +
+    `${escapeHtml(message)}` +
+    `</span>`;
+}
+
+function getUnappliedSvNumericValue(greenLine) {
+  if (!greenLine) return 1;
+  return greenLine.beatLength < 0 ? -100 / greenLine.beatLength : 1;
+}
+
+function formatUnappliedSvNumber(value) {
+  if (!Number.isFinite(value)) return "N/A";
+  return (Math.round(value * 1000) / 1000).toString();
+}
+
+function formatUnappliedSvDelta(value) {
+  if (!Number.isFinite(value)) return "N/A";
+  const rounded = Math.round(value * 1000) / 1000;
+  return `${rounded > 0 ? "+" : ""}${rounded}`;
 }
 
 function formatBarlineSpeed(value) {

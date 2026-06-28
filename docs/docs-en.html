@@ -550,6 +550,7 @@
     <summary>SV</summary>
     <button class="doc-tab-button" data-doc-tab="doubleSv">Double SV</button>
     <button class="doc-tab-button" data-doc-tab="barline">Barline</button>
+    <button class="doc-tab-button" data-doc-tab="unappliedSv">Unapplied SV</button>
     <button class="doc-tab-button" data-doc-tab="redGreenMatch">Red/Green Match</button>
     <button class="doc-tab-button" data-doc-tab="sliderSettings">Slider Multiplier / TickRate</button>
   </details>
@@ -1128,6 +1129,37 @@ These values do not represent actual calculated Star Ratings.<br><br>
 
 Drag across the graph to zoom into a time range, and use <code>Reset zoom</code> to return to the full view.
 Clicking the graph opens that timestamp in osu!editor.
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="unappliedSv">
+<h2>Unapplied SV</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ Background</span><br>
+SV lines (green timing points) apply from their own timestamp onward.<br>
+Therefore, if an SV line is placed immediately after a note or an automatically generated barline, that note or barline may not receive the intended SV.<br><br>
+
+For example, if a note is at <code>T</code> and an SV line is placed at <code>T + 1 ms</code>, the note itself is displayed using the scroll speed before that SV change.<br>
+Likewise, if an SV line is placed immediately after a generated barline position, that barline may be generated and displayed using the previous scroll speed.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection 1: SV may not be applied to notes</span><br>
+For each HitObject time <code>T</code>, this check looks for SV lines between <code>T + 1 ms</code> and <code>T + 5 ms</code>.<br>
+If such an SV line exists, the tool displays a yellow warning because the SV may not be applied to that note.<br><br>
+
+Example output:<br>
+<code>00:01:000 -> 00:01:003 | +3 ms | Note SV x1 -> Following SV x1.25 (SV delta +0.25) | An SV line exists +3 ms after the note. The SV may not be applied to the note.</code>
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection 2: SV may not be applied to barlines</span><br>
+The tool calculates generated barline positions from red timing point BPM and meter values, then treats each generated barline position as <code>T</code> and checks for SV lines between <code>T + 1 ms</code> and <code>T + 5 ms</code>.<br>
+If such an SV line exists, the tool displays a yellow warning because the SV may not be applied to that barline.<br><br>
+
+Example output:<br>
+<code>02:33:864 -> 02:33:865 | +1 ms | Barline SV x1 -> Following SV x0.5 (SV delta -0.5) | An SV line exists +1 ms after the generated barline. The SV may not be applied to the barline.</code>
 </div>
 </section>
 

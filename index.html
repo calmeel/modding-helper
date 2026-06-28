@@ -93,6 +93,11 @@
         </label>
 
         <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="unappliedSv" checked>
+          <span data-i18n="tabUnappliedSv">Unapplied SV</span>
+        </label>
+
+        <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="redGreenMatch" checked>
           <span data-i18n="tabRedGreenMatch">Red/Green Match</span>
         </label>
@@ -174,6 +179,7 @@
           <div class="tab-group-title" data-i18n="tabGroupSv">SV</div>
           <button class="tab-button" data-tab="doubleBarline" data-i18n="tabDoubleSv">Double SV line</button>
           <button class="tab-button" data-tab="barline" data-i18n="tabBarline">Barline</button>
+          <button class="tab-button" data-tab="unappliedSv" data-i18n="tabUnappliedSv">Unapplied SV</button>
           <button class="tab-button" data-tab="redGreenMatch" data-i18n="tabRedGreenMatch">Red/Green Match</button>
           <button class="tab-button" data-tab="sliderSettings" data-i18n="tabSliderSettings">Slider settings</button>
         </div>
@@ -292,6 +298,10 @@
 
       <section class="tab-panel" id="tab-barline">
         <pre id="barlineOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+      </section>
+
+      <section class="tab-panel" id="tab-unappliedSv">
+        <pre id="unappliedSvOutput" data-i18n="noFileLoaded">No file loaded.</pre>
       </section>
 
       <section class="tab-panel" id="tab-svVolume">
@@ -840,6 +850,7 @@
   <script src="checks/sv/kiaiSnapCheck.js"></script>
   <script src="checks/sv/doubleSvCheck.js"></script>
   <script src="checks/sv/barlineCheck.js"></script>
+  <script src="checks/sv/unappliedSvCheck.js"></script>
   <script src="checks/sv/svVolumeCheck.js"></script>
   <script src="checks/sv/volumeCompareCheck.js"></script>
   <script src="checks/sv/redGreenMatchCheck.js"></script>
