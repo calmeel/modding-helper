@@ -314,8 +314,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  setupFileInput(fileInput, handleFile);
-  setupDropArea(dropArea, handleFile);
+  // ユーザーが手動でファイルを選択/ドロップしたら自動でファイルモードに戻す
+  const userFileHandler = async (file) => {
+    const osuRadio = document.querySelector('input[name="osuSource"][value="osu"]');
+    if (osuRadio && osuRadio.checked) {
+      const fileRadio = document.querySelector('input[name="osuSource"][value="file"]');
+      if (fileRadio) fileRadio.checked = true;
+      applyOsuSourceMode("file");
+    }
+    await handleFile(file);
+  };
+  setupFileInput(fileInput, userFileHandler);
+  setupDropArea(dropArea, userFileHandler);
 
   setupLanguageButtons(
     langEn,
@@ -366,6 +376,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const key = el.dataset.i18n;
       el.textContent = t(key);
     });
+
+    refreshOsuSourceStatus();
 
     if (fileName) {
       fileName.textContent = state.selectedFileName || t("noFileSelected");
@@ -816,6 +828,12 @@ document.addEventListener("DOMContentLoaded", () => {
       renderOffsetWaveformResult();
       renderContentPermissionResult();
       updateTabIssueStates(state);
+
+      // file モードのときは読み込んだファイルのメタデータを左パネルに表示
+      lastLoadedFileForMeta = file;
+      if (osuSourceMode === "file") {
+        await renderFileMetaToPanel(file);
+      }
     } catch (err) {
       if (err.message === "invalidFile") {
         output.textContent = t("invalidFile");
@@ -825,6 +843,193 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   }
+
+  // ───────────────────────────────────────────────
+  // チェック対象の切替（ファイル / osu! で開いている譜面）— Electron 専用
+  // ───────────────────────────────────────────────
+  let osuSourceMode        = "file";
+  let osuLastLoadedFolder  = null;
+  let osuStatusKey         = "";
+  let osuStatusCls         = "";
+  let lastLoadedFileForMeta = null;  // file モードで左パネルに出すため最後に読んだ File を保持
+
+  // .osu テキストからメタデータを取り出す
+  function metaFromOsuText(text, bgDataUrl) {
+    return {
+      artist:        parseMetadataValue(text, "Artist"),
+      artistUnicode: parseMetadataValue(text, "ArtistUnicode"),
+      title:         parseMetadataValue(text, "Title"),
+      titleUnicode:  parseMetadataValue(text, "TitleUnicode"),
+      source:        parseMetadataValue(text, "Source"),
+      tags:          parseMetadataValue(text, "Tags"),
+      bgDataUrl:     bgDataUrl || null
+    };
+  }
+
+  function parseBgFilename(text) {
+    const m = text.match(/^\s*0\s*,\s*0\s*,\s*"(.+?)"/m);
+    return m ? m[1] : "";
+  }
+
+  function blobToDataUrl(blob) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload  = () => resolve(reader.result);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  // 読み込んだ File からメタデータ（+ .osz なら BG）を抽出
+  async function extractMapMetaFromFile(file) {
+    if (!file) return null;
+    const lower = file.name.toLowerCase();
+
+    if (lower.endsWith(".osu")) {
+      const text = await file.text();
+      return metaFromOsuText(text, null);
+    }
+
+    if (lower.endsWith(".osz")) {
+      const zip = await loadOszZip(file);
+      const osuEntries = Object.values(zip.files)
+        .filter(e => !e.dir && e.name.toLowerCase().endsWith(".osu"));
+
+      let chosenEntry = null;
+      let chosenText  = null;
+      for (const entry of osuEntries) {
+        const text = await entry.async("text");
+        if (parseMode(text) === 1) { chosenEntry = entry; chosenText = text; break; }
+        if (!chosenEntry) { chosenEntry = entry; chosenText = text; }  // taiko が無ければ先頭
+      }
+      if (!chosenText) return null;
+
+      let bgDataUrl = null;
+      const bgName = parseBgFilename(chosenText);
+      if (bgName && typeof findOszImageEntry === "function") {
+        const imgEntry = findOszImageEntry(zip, chosenEntry.name, bgName);
+        if (imgEntry) {
+          try { bgDataUrl = await blobToDataUrl(await imgEntry.async("blob")); } catch {}
+        }
+      }
+      return metaFromOsuText(chosenText, bgDataUrl);
+    }
+
+    return null;
+  }
+
+  async function renderFileMetaToPanel(file) {
+    if (!window.__osuPanel || typeof window.__osuPanel.renderFileMeta !== "function") return;
+    try {
+      const fileMeta = await extractMapMetaFromFile(file);
+      window.__osuPanel.renderFileMeta(fileMeta);
+    } catch { /* メタ抽出失敗は無視（チェック結果には影響しない） */ }
+  }
+
+  function refreshOsuSourceStatus() {
+    const el = document.getElementById("osuSourceStatus");
+    if (!el) return;
+    el.classList.remove("error", "ok");
+    if (!osuStatusKey) { el.textContent = ""; return; }
+    el.textContent = t(osuStatusKey);
+    if (osuStatusCls) el.classList.add(osuStatusCls);
+  }
+
+  function setOsuStatus(key, cls) {
+    osuStatusKey = key;
+    osuStatusCls = cls || "";
+    refreshOsuSourceStatus();
+  }
+
+  function applyOsuSourceMode(mode) {
+    osuSourceMode = (mode === "osu") ? "osu" : "file";
+    try { localStorage.setItem("moddingHelperCheckSource", osuSourceMode); } catch {}
+
+    const reloadBtn = document.getElementById("osuReloadBtn");
+    if (reloadBtn) reloadBtn.hidden = (osuSourceMode !== "osu");
+    if (dropArea) dropArea.classList.toggle("osu-linked", osuSourceMode === "osu");
+
+    if (osuSourceMode === "file") setOsuStatus("", "");
+
+    // 左パネル（メタ/タイミング）のモードを連動。osu モードはリアルタイム表示、
+    // file モードは読み込んだファイルのメタデータ表示に切り替える。
+    if (window.__osuPanel && typeof window.__osuPanel.setMode === "function") {
+      window.__osuPanel.setMode(osuSourceMode);
+      // file モードに切り替えた際、既に読み込み済みのファイルがあれば即反映
+      if (osuSourceMode === "file" && lastLoadedFileForMeta) {
+        renderFileMetaToPanel(lastLoadedFileForMeta);
+      }
+    }
+  }
+
+  async function loadFromOsu(force) {
+    if (osuSourceMode !== "osu") return;
+    setOsuStatus("osuSourceLoading", "");
+
+    let res;
+    try {
+      res = await window.electronAPI.getCurrentMapset(force ? null : osuLastLoadedFolder);
+    } catch {
+      setOsuStatus("osuSourceNoMap", "error");
+      return;
+    }
+
+    if (!res) {
+      osuLastLoadedFolder = null;
+      setOsuStatus("osuSourceNoMap", "error");
+      return;
+    }
+    if (res.unchanged) {
+      setOsuStatus("osuSourceLoaded", "ok");
+      return;
+    }
+
+    osuLastLoadedFolder = res.folder;
+    try {
+      const file = new File([res.buffer], res.name, { type: "application/octet-stream" });
+      await handleFile(file);
+      setOsuStatus("osuSourceLoaded", "ok");
+    } catch {
+      setOsuStatus("osuSourceNoMap", "error");
+    }
+  }
+
+  function setupOsuSourceMode() {
+    const settings = document.getElementById("osuSourceSettings");
+    if (!settings ||
+        !window.electronAPI ||
+        typeof window.electronAPI.getCurrentMapset !== "function") {
+      return;
+    }
+    settings.hidden = false;
+
+    let saved = "file";
+    try { saved = localStorage.getItem("moddingHelperCheckSource") || "file"; } catch {}
+
+    settings.querySelectorAll('input[name="osuSource"]').forEach(radio => {
+      radio.checked = (radio.value === saved);
+      radio.addEventListener("change", () => {
+        if (!radio.checked) return;
+        applyOsuSourceMode(radio.value);
+        if (radio.value === "osu") loadFromOsu(true);
+      });
+    });
+
+    const reloadBtn = document.getElementById("osuReloadBtn");
+    if (reloadBtn) reloadBtn.addEventListener("click", () => loadFromOsu(true));
+
+    // osu! 側で譜面が変わったら（osu モード時）自動で再読み込み
+    if (typeof window.electronAPI.onOsuMapInfo === "function") {
+      window.electronAPI.onOsuMapInfo(() => {
+        if (osuSourceMode === "osu") loadFromOsu(false);
+      });
+    }
+
+    applyOsuSourceMode(saved);
+    if (saved === "osu") loadFromOsu(true);
+  }
+
+  setupOsuSourceMode();
 
 applyLanguage();
 });
