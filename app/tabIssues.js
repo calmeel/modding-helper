@@ -261,7 +261,7 @@ function getEarlyNoteIssueLevel(results) {
       return TAB_LEVEL_ERROR;
     }
 
-    if (result.level === "warn") {
+    if (result.level === "warn" || result.audioBitrate?.isVbr) {
       hasWarn = true;
     }
   }

@@ -174,6 +174,7 @@ function formatSectionTitle(text) {
   return `<h3 class="result-section-title">${escapeHtml(text)}</h3>`;
 }
 
+
 /** 区切り線 */
 function formatSeparator() {
   return '<span class="result-separator-line"></span>';
