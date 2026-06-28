@@ -1135,13 +1135,6 @@ pre {
 .osu-source-status.error { color: #d98a8a; }
 .osu-source-status.ok    { color: #8ac49a; }
 
-/* osu! 連動中はドロップエリアを淡色化 */
-.drop-area.osu-linked {
-  opacity: 0.45;
-  pointer-events: none;
-  position: relative;
-}
-
 .tab-panel.hidden-tab {
   display: none !important;
 }

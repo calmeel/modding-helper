@@ -947,7 +947,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const reloadBtn = document.getElementById("osuReloadBtn");
     if (reloadBtn) reloadBtn.hidden = (osuSourceMode !== "osu");
-    if (dropArea) dropArea.classList.toggle("osu-linked", osuSourceMode === "osu");
 
     if (osuSourceMode === "file") setOsuStatus("", "");
 
