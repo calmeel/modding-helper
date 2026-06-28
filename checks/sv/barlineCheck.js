@@ -19,7 +19,8 @@ function runBarlineCheck(text, fileName) {
     fileName,
     doubleBarlines: issues.doubleBarlines,
     negativeStartBarlineWarnings: issues.negativeStartBarlineWarnings,
-    detachedBarlines: issues.detachedBarlines
+    detachedBarlines: issues.detachedBarlines,
+    intentionalDetachedBarlines: issues.intentionalDetachedBarlines
   };
 }
 
@@ -68,9 +69,15 @@ function detectBarlineIssues(
   const doubleBarlines = [];
   const negativeStartBarlineWarnings = [];
   const detachedBarlines = [];
+  const intentionalDetachedBarlines = [];
 
   if (!redLines.length) {
-    return { doubleBarlines, negativeStartBarlineWarnings, detachedBarlines };
+    return {
+      doubleBarlines,
+      negativeStartBarlineWarnings,
+      detachedBarlines,
+      intentionalDetachedBarlines
+    };
   }
 
   const redLinesByTime = new Map();
@@ -80,6 +87,12 @@ function detectBarlineIssues(
     }
     redLinesByTime.get(redLine.time).push(redLine);
   }
+
+  const greenLineTimes = new Set(
+    greenLines
+      .map(line => line.time)
+      .filter(time => Number.isFinite(time))
+  );
 
   detectNegativeStartBarlineWarnings(
     negativeStartBarlineWarnings,
@@ -117,6 +130,24 @@ function detectBarlineIssues(
       );
 
       if (!redLine) {
+        if (
+          !redLinesByTime.has(redLineTime) &&
+          noteTimes.has(redLineTime) &&
+          greenLineTimes.has(redLineTime)
+        ) {
+          addDetachedBarlineIssue(
+            intentionalDetachedBarlines,
+            redLines,
+            greenLines,
+            sliderMultiplier,
+            barlineTime,
+            redLineTime,
+            null,
+            barlineTime,
+            redLineTime
+          );
+        }
+
         if (omittedRedLine && noteTimes.has(redLineTime)) {
           addDetachedBarlineIssue(
             detachedBarlines,
@@ -177,7 +208,8 @@ function detectBarlineIssues(
   return {
     doubleBarlines,
     negativeStartBarlineWarnings,
-    detachedBarlines
+    detachedBarlines,
+    intentionalDetachedBarlines
   };
 }
 

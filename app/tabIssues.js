@@ -170,7 +170,8 @@ function getBarlineIssueLevel(results) {
 
   const hasBarlineWarning =
     results?.some(result =>
-      (result.negativeStartBarlineWarnings?.length ?? 0) > 0
+      (result.negativeStartBarlineWarnings?.length ?? 0) > 0 ||
+      (result.intentionalDetachedBarlines?.length ?? 0) > 0
     ) ?? false;
 
   return hasBarlineWarning ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;

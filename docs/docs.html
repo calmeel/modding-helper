@@ -919,12 +919,19 @@ AiMod は同時刻の重複 SV は検出できますが、1 ms ズレの二重 S
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ 検出内容2：小節線の分離</span><br>
+<span class="label label-detect">■ 検出内容2：意図しない小節線の分離</span><br>
 2重小節線の条件に加えて、<code>+1 ms</code> の赤線位置にノーツがある場合に確認します。<br>
-小節線生成位置の見た目のスクロール速度と、ノーツ位置の見た目のスクロール速度を比較し、値が一致しない場合に小節線の分離として検出します。<br><br>
+小節線生成位置の見た目のスクロール速度と、ノーツ位置の見た目のスクロール速度を比較し、値が一致しない場合に意図しない小節線の分離として Error 表示します。<br><br>
 見た目のスクロール速度は、スプレッド比較の「スクロール速度」サブタブと同じ考え方で、現在の BPM、現在の SV、<code>SliderMultiplier</code> から計算します。<br><br>
 例：<br>
 <code>02:45:635 -> 02:45:636 | 小節線: 934.18 px/s | ノーツ: 935.08 px/s | 差分: +0.9 px/s</code>
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ 検出内容3：演出の可能性がある小節線の分離</span><br>
+小節線生成位置を <code>T</code> としたとき、<code>T + 1 ms</code> に赤線がなく、同じ位置にノーツと SV線がある場合に確認します。<br>
+小節線生成位置の見た目のスクロール速度と、<code>T + 1 ms</code> のノーツ位置の見た目のスクロール速度を比較し、値が一致しない場合に演出の可能性がある小節線の分離として Warning 表示します。<br><br>
+<code>T + 1 ms</code> に赤線がある場合は従来通り、速度差があれば「意図しない小節線の分離」として Error 表示します。
 </div>
 
 <div class="section section-detect">
@@ -965,6 +972,13 @@ AiMod は同時刻の重複 SV は検出できますが、1 ms ズレの二重 S
       <td class="ratio-error">速度差があれば検出する</td>
     </tr>
     <tr>
+      <td>通常の小節線生成位置</td>
+      <td>赤線なし / SV線あり</td>
+      <td><code>T + 1 ms</code></td>
+      <td>検出しない</td>
+      <td class="ratio-warn">速度差があれば Warning</td>
+    </tr>
+    <tr>
       <td><code>omit first barline</code> 有効の赤線</td>
       <td><code>omit first barline</code> 無効の赤線</td>
       <td>なし</td>
@@ -988,7 +1002,7 @@ AiMod は同時刻の重複 SV は検出できますが、1 ms ズレの二重 S
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ 検出内容3：マイナス時刻開始による小節線バグ</span><br>
+<span class="label label-detect">■ 検出内容4：マイナス時刻開始による小節線バグ</span><br>
 最初の赤線がマイナス時刻にある場合、その赤線から最初に生成される小節線位置と、次の赤線位置を比較します。<br>
 最初に生成される小節線位置が次の赤線と一致する、または次の赤線を超える場合、osu!stable と osu!lazer で小節線の見え方が異なる可能性があるため Warning として表示します。<br><br>
 
@@ -1022,8 +1036,8 @@ AiMod は同時刻の重複 SV は検出できますが、1 ms ズレの二重 S
 
 <div class="section section-warning">
 <span class="label label-warning">■ 注意点</span><br>
-ユーザーが演出のために行った「小節線の分離ギミック」は「小節線の分離」として検知されません。<br>
-あくまで、1msズレ赤線による意図しない「小節線の分離」のみを検出対象としています。
+演出の可能性がある小節線の分離は、意図的なギミックである可能性があるため Warning として扱います。<br>
+実際に問題があるかどうかは、該当箇所の見た目を確認してください。
 </div>
 </section>
 

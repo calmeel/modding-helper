@@ -940,12 +940,19 @@ Example:<br>
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ Detection Content 2: Detached Barline</span><br>
+<span class="label label-detect">■ Detection Content 2: Unintended Detached Barline</span><br>
 This is checked when the double barline condition is met and a note exists on the <code>+1 ms</code> red timing point.<br>
-The check compares the effective visual scroll speed at the generated barline position with the effective visual scroll speed at the note position. If the values do not match, it is reported as a detached barline issue.<br><br>
+The check compares the effective visual scroll speed at the generated barline position with the effective visual scroll speed at the note position. If the values do not match, it is reported as an unintended detached barline error.<br><br>
 The visual scroll speed is calculated using the same idea as the Spread Comparison / Scroll Speed subtab, based on the current BPM, current SV, and <code>SliderMultiplier</code>.<br><br>
 Example:<br>
 <code>02:45:635 -> 02:45:636 | Generated barline: 934.18 px/s | Note: 935.08 px/s | Delta: +0.9 px/s</code>
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content 3: Possibly Intentional Detached Barline</span><br>
+When the generated barline position is treated as <code>T</code>, this is checked when there is no red timing point at <code>T + 1 ms</code>, but a note and an SV line exist at that same position.<br>
+The check compares the visual scroll speed at the generated barline position with the visual scroll speed at the <code>T + 1 ms</code> note position. If the values do not match, it is reported as a possibly intentional detached barline warning.<br><br>
+When a red timing point exists at <code>T + 1 ms</code>, the existing behavior is kept: if the speeds differ, it is reported as an unintended detached barline error.
 </div>
 
 <div class="section section-detect">
@@ -986,6 +993,13 @@ If an <code>omit first barline</code> red timing point exists at <code>T</code>,
       <td class="ratio-error">Detected if the speeds differ</td>
     </tr>
     <tr>
+      <td>Normal generated barline position</td>
+      <td>No red timing point / SV line exists</td>
+      <td><code>T + 1 ms</code></td>
+      <td>Not detected</td>
+      <td class="ratio-warn">Warning if the speeds differ</td>
+    </tr>
+    <tr>
       <td>Red timing point with <code>omit first barline</code></td>
       <td>Red timing point without <code>omit first barline</code></td>
       <td>None</td>
@@ -1009,7 +1023,7 @@ Also, even if the red timing point at <code>T + 1 ms</code> has <code>omit first
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ Detection Content 3: Negative-start Barline Bug</span><br>
+<span class="label label-detect">■ Detection Content 4: Negative-start Barline Bug</span><br>
 When the first red timing point is placed at a negative timestamp, the tool compares the first generated barline position from that red timing point with the next red timing point position.<br>
 If the first generated barline position matches or passes the next red timing point, the result is shown as a Warning because osu!stable and osu!lazer may display the barline differently.<br><br>
 
@@ -1043,8 +1057,8 @@ Each red timing section is checked from the current red timing point until the n
 
 <div class="section section-warning">
 <span class="label label-warning">■ Notes</span><br>
-Intentional detached barline gimmicks created for visual effects are not detected as detached barline issues.<br>
-This check only targets unintended detached barlines caused by 1 ms-offset red timing points.
+Possibly intentional detached barlines are treated as warnings because they may be deliberate visual gimmicks.<br>
+Check the actual in-game appearance before deciding whether the placement is a problem.
 </div>
 </section>
 
