@@ -153,15 +153,9 @@ function formatShiftResult(result, t) {
   }
 
   for (const item of result.results) {
-    const sign = item.diff > 0 ? "+" : "-";
-
-    const absDiff = Math.abs(item.diff);
-
-    const cls =
-      absDiff >= 2
-        ? "result-error"
-        : "";
-
+    const sign = item.diff > 0 ? "+" : "";
+    const className = item.level === "warn" ? "result-warn" : "result-error";
+    const objectText = getOffsetObjectTypeLabel(item, t);
     const targetText =
       item.target === "sliderTail"
         ? ` | ${t("sliderTail")}`
@@ -170,11 +164,19 @@ function formatShiftResult(result, t) {
           : "";
 
     lines.push(
-      `<span class="${cls}">${formatTimestampLink(item.time)}${targetText} | ${sign}${Math.abs(item.diff)} ms  [1/${item.snap} ${t("snap")}]</span>`
+      `<span class="${className}">${formatTimestampLink(item.time)} | ` +
+      `${escapeHtml(objectText)}${targetText} ${escapeHtml(t("offsetUnsnappedBy"))} ` +
+      `${sign}${item.diff} ms  [1/${item.snap} ${escapeHtml(t("snap"))}]</span>`
     );
   }
 
   return lines.join("\n");
+}
+
+function getOffsetObjectTypeLabel(item, t) {
+  if (item.objectType === "slider") return t("offsetObjectSlider");
+  if (item.objectType === "spinner") return t("offsetObjectSpinner");
+  return t("offsetObjectCircle");
 }
 
 function formatSvValue(beatLength) {

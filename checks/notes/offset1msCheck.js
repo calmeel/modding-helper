@@ -38,16 +38,16 @@ function runOffset1msCheck(text, fileName, options = {}) {
       );
 
       if (!best) continue;
-      if (Math.abs(best.rawDiff) < 1) continue;
+      if (best.diff === 0) continue;
 
-      if (Math.abs(best.diff) >= 1 && Math.abs(best.diff) <= 3) {
-        results.push({
-          time: item.time,
-          diff: best.diff,
-          snap: best.snap,
-          target: item.target
-        });
-      }
+      results.push({
+        time: item.time,
+        diff: best.diff,
+        snap: best.snap,
+        target: item.target,
+        objectType: item.objectType,
+        level: getOffsetIssueLevelFromDiff(best.diff)
+      });
     }
   }
 
@@ -55,6 +55,10 @@ function runOffset1msCheck(text, fileName, options = {}) {
     fileName,
     results
   };
+}
+
+function getOffsetIssueLevelFromDiff(diff) {
+  return Math.abs(diff) === 1 ? "warn" : "error";
 }
 
 function getOffsetCheckTimesFromHitObject(line, timingPoints, svLines, sliderMultiplier, beatSnaps) {
@@ -66,10 +70,12 @@ function getOffsetCheckTimesFromHitObject(line, timingPoints, svLines, sliderMul
 
   if (Number.isNaN(startTime) || Number.isNaN(type)) return [];
 
+  const objectType = getOffsetObjectType(type);
   const items = [
     {
       time: startTime,
-      target: "start"
+      target: "start",
+      objectType
     }
   ];
 
@@ -86,7 +92,8 @@ function getOffsetCheckTimesFromHitObject(line, timingPoints, svLines, sliderMul
     if (sliderTailTime !== null) {
       items.push({
         time: sliderTailTime,
-        target: "sliderTail"
+        target: "sliderTail",
+        objectType
       });
     }
   }
@@ -97,12 +104,19 @@ function getOffsetCheckTimesFromHitObject(line, timingPoints, svLines, sliderMul
     if (!Number.isNaN(endTime)) {
       items.push({
         time: endTime,
-        target: "spinnerTail"
+        target: "spinnerTail",
+        objectType
       });
     }
   }
 
   return items;
+}
+
+function getOffsetObjectType(type) {
+  if (isOffsetSliderType(type)) return "slider";
+  if (isOffsetSpinnerType(type)) return "spinner";
+  return "circle";
 }
 
 function isOffsetSpinnerType(type) {
@@ -238,12 +252,10 @@ function findNearestSnapDiff(time, redTime, beatLength, beatSnaps) {
     const snapLength = beatLength / beatSnap;
     const snapIndex = Math.round((time - redTime) / snapLength);
     const nearestSnap = redTime + snapIndex * snapLength;
-
-    const snapped = Math.trunc(nearestSnap);
-    const diff = snapped - time;
     const rawDiff = nearestSnap - time;
+    const diff = Math.round(rawDiff);
 
-    if (!best || Math.abs(diff) < Math.abs(best.diff)) {
+    if (!best || Math.abs(rawDiff) < Math.abs(best.rawDiff)) {
       best = {
         diff,
         rawDiff,
