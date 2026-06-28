@@ -832,23 +832,23 @@ Mapset Verifier and AiMod do not display ±1 ms offsets because they are not con
 
 <div class="section section-detect">
 <span class="label label-detect">■ Detection Content</span><br>
-Notes, sliders, and spinners that are offset from snap positions by
-<code><span style="color:#ffd86b; font-weight:bold;">±1 ms</span></code>
-are displayed as warnings, while offsets of
-<code><span style="color:#ff6b6b; font-weight:bold;">±2,3 ms</span></code>
-are displayed as errors.<br><br>
+Notes, sliders, and spinners that are not on the target snap grid are detected.<br>
+Offsets of <code><span style="color:#ffd86b; font-weight:bold;">±1 ms</span></code>
+are displayed as warnings, while
+<code><span style="color:#ff6b6b; font-weight:bold;">unsnapped objects</span></code>
+with offsets of ±2 ms or more are displayed as errors.<br><br>
 
 <div class="note-subtext">
-Accurate snap estimation at the 1 ms level is performed using <code>beatLength</code>, with the final value truncated to an integer.
+Snap estimation at the 1 ms level is calculated using <code>beatLength</code>, and the difference from the nearest target snap is rounded to milliseconds.
 This allows the tool to estimate snap positions very similarly to the osu! editor.<br><br>
 
 In addition to spinner tails, slider tail offset detection is also supported.<br>
 Slider tail timing is estimated using <code>pixelLength</code>, <code>SliderMultiplier</code>, SV, and BPM, then rounded to the nearest millisecond.<br>
 In some maps, the estimated slider tail timing may not perfectly match the actual timing shown in the osu! editor.<br><br>
 
-The following snap divisions are checked:
+The following snap divisions are used as the target grid:
 <code>1/1</code>, <code>1/2</code>, <code>1/3</code>, <code>1/4</code>, <code>1/6</code>, <code>1/8</code>, <code>1/12</code>, <code>1/16</code>.<br>
-Other snap divisions are not checked.<br><br>
+Objects that are not on this target grid are detected as unsnapped.<br><br>
 
 <code>1/5</code>, <code>1/7</code>, and <code>1/9</code> snaps are only checked when the corresponding checkbox is enabled.
 </div>
