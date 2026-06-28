@@ -199,22 +199,67 @@ function createWindow() {
       .etb-ctrl:hover         { background: #363636; color: #eee; }
       #etb-close:hover        { background: #c42b1c; color: #fff; }
 
-      /* ── 3カラムレイアウト ── */
+      /* ── 3カラムレイアウト（カード型パネル） ── */
       #electron-layout {
         display: flex !important;
         flex: 1 !important;
         overflow: hidden !important;
         min-height: 0 !important;
+        gap: 8px !important;
+        padding: 8px !important;
+        background: #19191e !important;
+        box-sizing: border-box !important;
       }
 
+      /* カード共通スタイル */
+      .etb-card {
+        background: #26262e;
+        border: 1px solid #383842;
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        box-sizing: border-box;
+      }
+      .etb-card-head {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 11px;
+        background: #2c2c35;
+        border-bottom: 1px solid #383842;
+        flex-shrink: 0;
+      }
+      .etb-card-head::before {
+        content: '';
+        width: 3px;
+        height: 12px;
+        border-radius: 2px;
+        background: #5b6c9c;
+        flex-shrink: 0;
+      }
+      .etb-card-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: #a6a6b4;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .etb-card-body { padding: 8px; min-height: 0; }
+
+      /* ── 左カラム: 複数カードを縦に並べ、列ごとスクロール ── */
       #electron-col-future {
         flex: 2 !important;
-        border-right: 1px solid var(--border-strong, #404040) !important;
-        overflow-y: auto !important;
         min-width: 0 !important;
+        overflow-y: auto !important;
         display: flex !important;
         flex-direction: column !important;
+        gap: 8px !important;
       }
+      #electron-col-future > .etb-card { flex: 0 0 auto; }
+      #etb-meta-body { padding: 0 !important; }
 
       /* ── osu! マップパネル ── */
       #osu-map-panel {
@@ -273,12 +318,26 @@ function createWindow() {
 
       #osu-map-waiting { padding: 12px 8px; color: #555; font-size: 11px; }
 
-      /* ── タイミングパネル ── */
-      #osu-timing-panel {
-        padding: 0 8px 10px;
+      /* ── 左カラムに移動したドロップエリア（file モード時のみ表示） ── */
+      #electron-col-future .drop-area {
+        margin: 0;
+        padding: 16px 12px;
+        border-radius: 6px;
         flex-shrink: 0;
-        border-top: 1px solid rgba(255,255,255,0.07);
-        margin-top: 6px;
+        box-sizing: border-box;
+      }
+      #electron-col-future .drop-area .file-picker {
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      #electron-col-future .drop-area p {
+        font-size: 11px;
+        margin: 8px 0 0;
+      }
+
+      /* ── タイミングパネル（カード本体） ── */
+      #osu-timing-panel {
+        padding: 8px 11px;
       }
 
       .osu-timing-row {
@@ -307,14 +366,18 @@ function createWindow() {
 
       #osu-t-timing { font-size: 13px; color: #ddd; letter-spacing: 0.02em; }
 
-      /* ── タブ列 ── */
+      /* ── タブ列（チェックリストカード） ── */
       #electron-col-tabs {
         flex: 1.6 !important;
-        border-right: 1px solid var(--border-strong, #404040) !important;
-        overflow-y: auto !important;
-        padding: 20px 6px 6px !important;
+        overflow: hidden !important;
+        padding: 0 !important;
         box-sizing: border-box !important;
         min-width: 0 !important;
+      }
+      #electron-col-tabs > .etb-card-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: 12px 6px 6px;
       }
 
       #electron-col-tabs .tab-buttons {
@@ -330,7 +393,18 @@ function createWindow() {
         box-sizing: border-box !important;
       }
 
-      #electron-col-tabs .tab-group  { width: auto !important; min-width: 0 !important; }
+      /* グループ枠とタイトルの背景をカード色に馴染ませる
+         （web版のページ背景色だと新カード背景から浮くため上書き） */
+      #electron-col-tabs .tab-group {
+        width: auto !important;
+        min-width: 0 !important;
+        background: transparent !important;
+        border-color: #3d3d48 !important;
+      }
+      #electron-col-tabs .tab-group-title {
+        background: #26262e !important;
+        color: #b6bac6 !important;
+      }
       #electron-col-tabs .tab-button {
         font-size: 11px !important;
         padding: 6px 4px !important;
@@ -377,13 +451,27 @@ function createWindow() {
         background: #353535 !important;
       }
 
-      /* ── 出力列 ── */
+      /* ── 出力列（チェック結果カード） ── */
       #electron-col-output {
         flex: 5 !important;
-        overflow: auto !important;
-        padding: 8px !important;
+        overflow: hidden !important;
+        padding: 0 !important;
         box-sizing: border-box !important;
         min-width: 0 !important;
+      }
+      #electron-col-output > .etb-card-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: 10px;
+      }
+
+      /* Clap/Whistle の #output だけ箱型（黒背景）なので、他の出力 pre と
+         同じくカード背景に同化させる */
+      #electron-col-output #output {
+        background: transparent !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        margin-top: 0 !important;
       }
     `);
 
@@ -434,29 +522,65 @@ function createWindow() {
         var futureCol = document.createElement('div');
         futureCol.id = 'electron-col-future';
         futureCol.innerHTML =
-          '<div id="osu-map-panel">' +
-            '<div id="osu-map-bg-wrap" style="display:none"><img id="osu-map-bg" src="" alt=""></div>' +
-            '<div id="osu-map-meta">' +
-              '<div id="osu-map-waiting"></div>' +
+          /* メタデータカード */
+          '<div class="etb-card">' +
+            '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-meta">メタデータ</span></div>' +
+            '<div class="etb-card-body" id="etb-meta-body">' +
+              '<div id="osu-map-panel">' +
+                '<div id="osu-map-bg-wrap" style="display:none"><img id="osu-map-bg" src="" alt=""></div>' +
+                '<div id="osu-map-meta"><div id="osu-map-waiting"></div></div>' +
+              '</div>' +
             '</div>' +
           '</div>' +
-          '<div id="osu-timing-panel">' +
-            '<div class="osu-timing-row"><span class="osu-timing-label">Timing</span><span class="osu-timing-value" id="osu-t-timing">--:--:---</span></div>' +
-            '<div class="osu-timing-row"><span class="osu-timing-label">BPM</span><span class="osu-timing-value" id="osu-t-bpm">---</span></div>' +
-            '<div class="osu-timing-row"><span class="osu-timing-label">SV</span><span class="osu-timing-value" id="osu-t-sv">---</span></div>' +
-            '<div class="osu-timing-row"><span class="osu-timing-label" id="osu-t-vbpm-label">見た目 BPM</span><span class="osu-timing-value" id="osu-t-vbpm">---</span></div>' +
-            '<div class="osu-timing-row"><span class="osu-timing-label">Volume</span><span class="osu-timing-value" id="osu-t-vol">---</span></div>' +
+          /* リアルタイム表示カード（osu! モードのみ表示） */
+          '<div class="etb-card" id="etb-card-realtime">' +
+            '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-realtime">リアルタイム表示</span></div>' +
+            '<div class="etb-card-body" id="osu-timing-panel">' +
+              '<div class="osu-timing-row"><span class="osu-timing-label">Timing</span><span class="osu-timing-value" id="osu-t-timing">--:--:---</span></div>' +
+              '<div class="osu-timing-row"><span class="osu-timing-label">BPM</span><span class="osu-timing-value" id="osu-t-bpm">---</span></div>' +
+              '<div class="osu-timing-row"><span class="osu-timing-label">SV</span><span class="osu-timing-value" id="osu-t-sv">---</span></div>' +
+              '<div class="osu-timing-row"><span class="osu-timing-label" id="osu-t-vbpm-label">見た目 BPM</span><span class="osu-timing-value" id="osu-t-vbpm">---</span></div>' +
+              '<div class="osu-timing-row"><span class="osu-timing-label">Volume</span><span class="osu-timing-value" id="osu-t-vol">---</span></div>' +
+            '</div>' +
           '</div>';
 
+        /* 譜面ファイルカード（file モードのみ表示。ドロップエリアを内包） */
+        var fileCard = document.createElement('div');
+        fileCard.className = 'etb-card';
+        fileCard.id = 'etb-card-file';
+        fileCard.innerHTML = '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-file">譜面ファイル</span></div>';
+        var fileBody = document.createElement('div');
+        fileBody.className = 'etb-card-body';
+        fileBody.appendChild(dropArea);
+        fileCard.appendChild(fileBody);
+        futureCol.appendChild(fileCard);
+
+        /* チェックリストカード */
         var tabsCol = document.createElement('div');
         tabsCol.id = 'electron-col-tabs';
-        tabsCol.appendChild(tabButtons);
+        tabsCol.className = 'etb-card';
+        var tabsHead = document.createElement('div');
+        tabsHead.className = 'etb-card-head';
+        tabsHead.innerHTML = '<span class="etb-card-title" id="etb-title-checklist">チェックリスト</span>';
+        var tabsBody = document.createElement('div');
+        tabsBody.className = 'etb-card-body';
+        tabsBody.appendChild(tabButtons);
+        tabsCol.appendChild(tabsHead);
+        tabsCol.appendChild(tabsBody);
 
+        /* チェック結果カード */
         var outputCol = document.createElement('div');
         outputCol.id = 'electron-col-output';
-        outputCol.appendChild(dropArea);
-        outputCol.appendChild(tabVis);
-        tabPanels.forEach(function(p) { outputCol.appendChild(p); });
+        outputCol.className = 'etb-card';
+        var outHead = document.createElement('div');
+        outHead.className = 'etb-card-head';
+        outHead.innerHTML = '<span class="etb-card-title" id="etb-title-results">チェック結果</span>';
+        var outBody = document.createElement('div');
+        outBody.className = 'etb-card-body';
+        outBody.appendChild(tabVis);
+        tabPanels.forEach(function(p) { outBody.appendChild(p); });
+        outputCol.appendChild(outHead);
+        outputCol.appendChild(outBody);
 
         layout.appendChild(futureCol);
         layout.appendChild(tabsCol);
@@ -470,9 +594,9 @@ function createWindow() {
         /* 左パネルの動作モード: 'osu' = osu! メモリからリアルタイム表示 /
            'file' = 読み込んだファイルのメタデータを表示。
            初期値は保存済みのチェック対象設定に合わせる（script.js と一致させる）。 */
-        var panelMode = 'osu';
+        var panelMode = 'file';
         try {
-          if (localStorage.getItem('moddingHelperCheckSource') === 'file') panelMode = 'file';
+          if (localStorage.getItem('moddingHelperCheckSource') === 'osu') panelMode = 'osu';
         } catch (e) {}
 
         /* 待機テキスト（言語・モード対応） */
@@ -492,10 +616,15 @@ function createWindow() {
         };
         updateWaitingText();
 
-        /* タイミングパネルの表示/非表示（file モードでは隠す） */
+        /* モードに応じた左カラムのカード表示切替:
+           osu  モード → リアルタイム表示カード表示・譜面ファイルカード非表示
+           file モード → リアルタイム表示カード非表示・譜面ファイルカード表示 */
         var applyPanelModeUi = function() {
-          var tp = document.getElementById('osu-timing-panel');
-          if (tp) tp.style.display = (panelMode === 'osu') ? '' : 'none';
+          var isOsu = (panelMode === 'osu');
+          var rt = document.getElementById('etb-card-realtime');
+          if (rt) rt.style.display = isOsu ? '' : 'none';
+          var fc = document.getElementById('etb-card-file');
+          if (fc) fc.style.display = isOsu ? 'none' : '';
         };
         var resetTimingPanel = function() {
           var ids = { 'osu-t-timing': '--:--:---', 'osu-t-bpm': '---',
@@ -523,6 +652,21 @@ function createWindow() {
           vbpmLabel.textContent = isEn ? 'Visual BPM' : '見た目 BPM';
         };
         updateTimingLabels();
+
+        /* カードタイトルの言語対応 */
+        var updatePanelTitles = function() {
+          var isEn = document.getElementById('langEn') && document.getElementById('langEn').classList.contains('active');
+          var set = function(id, ja, en) {
+            var el = document.getElementById(id);
+            if (el) el.textContent = isEn ? en : ja;
+          };
+          set('etb-title-meta',      'メタデータ',      'Metadata');
+          set('etb-title-realtime',  'リアルタイム表示', 'Real-time');
+          set('etb-title-file',      '譜面ファイル',     'Beatmap file');
+          set('etb-title-checklist', 'チェックリスト',   'Check list');
+          set('etb-title-results',   'チェック結果',     'Check results');
+        };
+        updatePanelTitles();
 
         /* ── .top-links の子要素を #etb-nav に移動 ── */
         try {
@@ -591,6 +735,7 @@ function createWindow() {
                 updateDocsUrl();
                 updateWaitingText();
                 updateTimingLabels();
+                updatePanelTitles();
               }).observe(langEnBtn, { attributes: true, attributeFilter: ['class'] });
             }
 
