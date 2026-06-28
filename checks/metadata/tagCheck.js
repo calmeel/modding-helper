@@ -188,6 +188,15 @@ const TAG_RELATED_RULES = [
     suggestGroup: ["25時、ナイトコードで。", "25-ji,", "25ji", "nightcord", "de.", "at", "25:00", "ニーゴ", "ni-go", "niigo"]
   },
   {
+    trigger: ["バンドリ！", "ガールズバンドパーティ！", "バンドリ", "bandori", "ガルパ", "garupa"],
+    suggestGroup: ["バンドリ！", "ガールズバンドパーティ！", "bang", "dream!", "girls", "band", "party", "バンドリ", "bandori", "ガルパ", "garupa"]
+  },
+  {
+    triggerAll: ["bang", "dream!", "girls", "band", "party"],
+    suggestGroup: ["バンドリ！", "ガールズバンドパーティ！", "bang", "dream!", "girls", "band", "party", "バンドリ", "bandori", "ガルパ", "garupa"]
+  },
+
+  {
     trigger: ["太鼓の達人"],
     suggestGroup: ["太鼓の達人", "taiko", "no", "tatsujin", "tnt"]
   },
@@ -329,6 +338,10 @@ const TAG_SOURCE_RULES = [
       "prsk",
       "pjsk"
     ]
+  },
+  {
+    source: ["バンドリ！ ガールズバンドパーティ！"],
+    tags: ["bang", "dream!", "girls", "band", "party", "バンドリ", "bandori", "ガルパ", "garupa"]
   },
   {
     source: ["ブルーアーカイブ -Blue Archive-"],
