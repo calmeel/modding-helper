@@ -53,6 +53,20 @@
     <section class="tab-visibility-settings">
 
       <div id="tabSettingsPanel" class="tab-settings-panel hidden">
+        <div id="osuSourceSettings" class="osu-source-settings" hidden>
+          <div class="osu-source-title" data-i18n="checkSourceTitle">Check target</div>
+          <label class="osu-source-option">
+            <input type="radio" name="osuSource" value="file" checked>
+            <span data-i18n="checkSourceFile">File (select / drag &amp; drop)</span>
+          </label>
+          <label class="osu-source-option">
+            <input type="radio" name="osuSource" value="osu">
+            <span data-i18n="checkSourceOsu">Beatmap open in osu!</span>
+          </label>
+          <button id="osuReloadBtn" class="doc-btn osu-source-reload" data-i18n="checkSourceReload" hidden>🔄 Reload</button>
+          <div id="osuSourceStatus" class="osu-source-status"></div>
+        </div>
+
         <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="clapWhistle" checked>
           <span data-i18n="tabClapWhistle">Clap & Whistle</span>

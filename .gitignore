@@ -1,2 +1,11 @@
 node_modules/
 dist/
+
+# Claude Code (ローカル設定)
+.claude/
+
+# VSCode (launch.json / tasks.json / extensions.json は共有のため除外しない)
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json

@@ -1080,6 +1080,68 @@ pre {
   display: none;
 }
 
+/* チェック対象（ファイル / osu! 連動）切替 — Electron 専用 */
+.osu-source-settings {
+  flex-basis: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px 12px;
+  margin-bottom: 4px;
+  border: 1px solid #4a4a58;
+  border-radius: 8px;
+  background: #23232c;
+}
+
+.osu-source-settings[hidden] {
+  display: none;
+}
+
+.osu-source-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #cfcfe0;
+  letter-spacing: 0.03em;
+}
+
+.osu-source-option {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: #ddd;
+  cursor: pointer;
+}
+
+.osu-source-option input {
+  cursor: pointer;
+}
+
+.osu-source-reload {
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.osu-source-reload[hidden] {
+  display: none;
+}
+
+.osu-source-status {
+  font-size: 11.5px;
+  color: #8a8a9a;
+  min-height: 1em;
+}
+
+.osu-source-status.error { color: #d98a8a; }
+.osu-source-status.ok    { color: #8ac49a; }
+
+/* osu! 連動中はドロップエリアを淡色化 */
+.drop-area.osu-linked {
+  opacity: 0.45;
+  pointer-events: none;
+  position: relative;
+}
+
 .tab-panel.hidden-tab {
   display: none !important;
 }
