@@ -1490,7 +1490,13 @@ warning が出た場合は、リンク先のガイドラインや DMCA 原文を
 mapset 全体のオフセットを変更した場合、HitObject や TimingPoint は修正していても、<code>PreviewTime</code> の変更を忘れることがあります。<br><br>
 
 また、diff ごとに異なる <code>PreviewTime</code> が設定されていたり、
-一部 difficulty のみ <code>PreviewTime</code> が未設定になっている場合があります。
+一部 difficulty のみ <code>PreviewTime</code> が未設定になっている場合があります。<br><br>
+
+さらに、audio file が <code>mp3</code> かつ可変ビットレート（VBR）の場合、
+osu-web 上でプレビューポイントの再生位置が意図した位置からずれることがあります。<br>
+これは <code>ogg</code> の可変ビットレートでは通常問題にならない一方で、
+<code>mp3</code> の可変ビットレートでは osu-web 側の再生位置計算と相性が悪く、
+<code>PreviewTime</code> 自体が正しく設定されていても、web 上のプレビュー開始位置だけがずれて見える場合があるためです。
 </div>
 
 <div class="section section-detect">
@@ -1504,14 +1510,34 @@ mapset 全体のオフセットを変更した場合、HitObject や TimingPoint
 <ul>
   <li>diff 間で <code>PreviewTime</code> が一致していない → error</li>
   <li><code>PreviewTime</code> が設定されていない → warning</li>
+  <li><code>.osz</code> 内の <code>mp3</code> が可変ビットレート（VBR）である → warning</li>
 </ul>
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ 検出内容：mp3の可変ビットレート判定</span><br>
+<code>.osz</code> ファイルを読み込んだ場合、譜面で参照されている <code>mp3</code> の実ファイルを確認し、
+可変ビットレート（VBR）である可能性がある場合は warning として表示します。<br><br>
+
+判定では、<code>Xing</code> / <code>VBRI</code> などの VBR ヘッダや、
+複数の mp3 フレーム間でビットレートが変化しているかを確認します。<br>
+単体の <code>.osu</code> ファイルのみを読み込んだ場合は audio file 本体を確認できないため、この判定は行えません。<br><br>
+
+<code>ogg</code> の可変ビットレートは、このチェックでは warning にしません。<br>
+問題になるのは主に <code>mp3</code> の可変ビットレートであり、
+osu-web 上でプレビューポイントがずれてしまう可能性があるため、
+warning が出た場合は固定ビットレート（CBR）の <code>mp3</code> を使用することを検討してください。
 
 </div>
 
 <div class="section section-warning">
 <span class="label label-warning">■ 注意点</span><br>
 PreviewTime が snap 上にないことは、必ずしも unrankable を意味するわけではありません。<br><br>
-ただし、オフセット変更後の修正漏れを見つける手がかりになるため、warning が出た場合は意図した位置かどうか確認してください。<br>
+ただし、オフセット変更後の修正漏れを見つける手がかりになるため、warning が出た場合は意図した位置かどうか確認してください。<br><br>
+
+mp3 の可変ビットレート warning は、譜面上の <code>PreviewTime</code> が間違っているという意味ではありません。<br>
+osu!stable や editor 上では問題なく聞こえても、osu-web 上のプレビュー再生だけが意図しない位置になる可能性があるため、
+web 上での確認や固定ビットレートへの変換を検討してください。<br>
 </div>
 </section>
 
