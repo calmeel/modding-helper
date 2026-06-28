@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const doubleSvOutput = document.getElementById("doubleSvOutput");
   const doubleSvGap = document.getElementById("doubleSvGap");
   const barlineOutput = document.getElementById("barlineOutput");
+  const unappliedSvOutput = document.getElementById("unappliedSvOutput");
   const kiaiOutput = document.getElementById("kiaiOutput");
   const kiaiCompareChartSection = document.getElementById("kiaiCompareChartSection");
   const kiaiCompareChartWrap = document.getElementById("kiaiCompareChartWrap");
@@ -156,6 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
     doubleSvOutput,
     doubleSvGap,
     barlineOutput,
+    unappliedSvOutput,
     kiaiOutput,
     kiaiCompareChartSection,
     kiaiCompareChartWrap,
@@ -272,6 +274,7 @@ document.addEventListener("DOMContentLoaded", () => {
     doubleSvResults: null,
     barlineSources: null,
     barlineResults: null,
+    unappliedSv: null,
     kiaiCompare: null,
     kiaiSnap: null,
     selectedFileName: null,
@@ -401,6 +404,10 @@ document.addEventListener("DOMContentLoaded", () => {
       barlineOutput.textContent = t("noFileLoaded");
     }
 
+    if (!state.unappliedSv && unappliedSvOutput) {
+      unappliedSvOutput.textContent = t("noFileLoaded");
+    }
+
     if (!state.redGreenMatch && redGreenMatchOutput) {
       redGreenMatchOutput.textContent = t("noFileLoaded");
     }
@@ -467,6 +474,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderKiaiSnapResult();
     renderDoubleSvResult();
     renderBarlineResult();
+    renderUnappliedSvResult();
     renderSvVolumeResult();
     renderVolumeCompareResult();
     renderRedGreenMatchResult();
@@ -515,6 +523,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderBarlineResult() {
     state.barlineResults = renderBarlineResultFromSources(
       state.barlineSources,
+      dom,
+      t
+    );
+  }
+
+  function renderUnappliedSvResult() {
+    renderUnappliedSvResultFromResults(
+      state.unappliedSv,
       dom,
       t
     );
@@ -750,6 +766,7 @@ document.addEventListener("DOMContentLoaded", () => {
       state.timeline = null;
       state.doubleSvSources = result.doubleSvSources;
       state.barlineSources = result.barlineSources;
+      state.unappliedSv = result.unappliedSv;
       state.kiaiCompare = result.kiaiCompare;
       state.kiaiSnap = result.kiaiSnap;
       state.svVolumeSources = result.svVolumeSources;
@@ -779,6 +796,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderShiftResult();
       renderDoubleSvResult();
       renderBarlineResult();
+      renderUnappliedSvResult();
       renderKiaiResult();
       renderKiaiSnapResult();
       renderSvVolumeResult();

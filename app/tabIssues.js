@@ -56,6 +56,7 @@ function updateTabIssueStates(state) {
   setTabIssueLevel("kiaiFlash", getEpilepsyWarningIssueLevel(state.epilepsyWarning));
   setTabIssueLevel("doubleBarline", getDoubleSvIssueLevel(state.doubleSvResults));
   setTabIssueLevel("barline", getBarlineIssueLevel(state.barlineResults));
+  setTabIssueLevel("unappliedSv", getUnappliedSvIssueLevel(state.unappliedSv));
   setTabIssueLevel("svVolume", getSvVolumeIssueLevel(state.svVolumeSources));
   setTabIssueLevel("volumeCompare", getVolumeCompareIssueLevel(state.volumeCompareSources));
   setTabIssueLevel("redGreenMatch", getRedGreenMatchIssueLevel(state.redGreenMatch));
@@ -175,6 +176,16 @@ function getBarlineIssueLevel(results) {
     ) ?? false;
 
   return hasBarlineWarning ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
+}
+
+function getUnappliedSvIssueLevel(results) {
+  const hasIssues =
+    results?.some(result =>
+      (result.noteIssues?.length ?? 0) > 0 ||
+      (result.barlineIssues?.length ?? 0) > 0
+    ) ?? false;
+
+  return hasIssues ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
 }
 
 function getSvVolumeIssueLevel(sources) {

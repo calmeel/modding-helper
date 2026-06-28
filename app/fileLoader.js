@@ -10,6 +10,7 @@ function createEmptyProcessResult() {
     offset: [],
     doubleSvSources: [],
     barlineSources: [],
+    unappliedSv: [],
     offsetWaveformSources: [],
     kiaiCompare: [],
     kiaiSnap: [],
@@ -59,6 +60,7 @@ async function analyzeOszFile(file) {
   const offsetSources = [];
   const doubleSvSources = [];
   const barlineSources = [];
+  const unappliedSvResults = [];
   const offsetWaveformSources = [];
   const kiaiResults = [];
   const kiaiSnapResults = [];
@@ -118,6 +120,11 @@ async function analyzeOszFile(file) {
     barlineSources.push({
       text,
       fileName: entry.name,
+      mode
+    });
+
+    unappliedSvResults.push({
+      ...runUnappliedSvCheck(text, entry.name),
       mode
     });
 
@@ -249,6 +256,7 @@ async function analyzeOszFile(file) {
     offsetSources,
     doubleSvSources,
     barlineSources,
+    unappliedSvResults,
     offsetWaveformSources,
     kiaiResults,
     kiaiSnapResults,
@@ -307,6 +315,12 @@ async function processFile(file) {
       ],
       barlineSources: [
         { text, fileName: file.name, mode }
+      ],
+      unappliedSv: [
+        {
+          ...runUnappliedSvCheck(text, file.name),
+          mode
+        }
       ],
       offsetWaveformSources: [
         {
@@ -428,6 +442,7 @@ async function processFile(file) {
       offset: analyzed.shiftResults,
       doubleSvSources: analyzed.doubleSvSources,
       barlineSources: analyzed.barlineSources,
+      unappliedSv: analyzed.unappliedSvResults,
       offsetWaveformSources: analyzed.offsetWaveformSources,
       kiaiCompare: analyzed.kiaiResults,
       kiaiSnap: analyzed.kiaiSnapResults,

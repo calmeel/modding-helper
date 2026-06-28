@@ -550,6 +550,7 @@
     <summary>SV</summary>
     <button class="doc-tab-button" data-doc-tab="doubleSv">二重SV</button>
     <button class="doc-tab-button" data-doc-tab="barline">小節線</button>
+    <button class="doc-tab-button" data-doc-tab="unappliedSv">SV未適用</button>
     <button class="doc-tab-button" data-doc-tab="redGreenMatch">赤線&amp;緑線</button>
     <button class="doc-tab-button" data-doc-tab="sliderSettings">スライダー感度・目盛り</button>
   </details>
@@ -1093,6 +1094,37 @@ Kantan を SR 1、Futsuu を SR 2、Muzukashii を SR 3、Oni を SR 4、Inner O
 グラフをドラッグすると時間範囲を拡大でき、<code>ズームをリセット</code>から全体表示へ戻せます。
 グラフ上をクリックすると、そのタイムスタンプを osu!editor で開きます。
 
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="unappliedSv">
+<h2>SV未適用</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ 背景</span><br>
+SV線（緑線）は、その時刻以降のノーツや小節線に適用されます。<br>
+そのため、ノーツや自動生成される小節線の直後にSV線が置かれている場合、そのノーツや小節線には意図したSVが適用されていない可能性があります。<br><br>
+
+例えば、ノーツが <code>T</code> にあり、SV線が <code>T + 1 ms</code> に置かれている場合、そのノーツ自体はSV変更前のスクロール速度で表示されます。<br>
+同様に、小節線生成位置の直後にSV線がある場合、その小節線はSV変更前の速度で生成・表示される可能性があります。
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ 検出内容1：ノーツにSVが適用されていない可能性</span><br>
+各 HitObject の時刻を <code>T</code> として、<code>T + 1 ms</code> から <code>T + 5 ms</code> の範囲にSV線があるかを確認します。<br>
+該当するSV線がある場合、ノーツにそのSVが適用されていない可能性があるため、黄色の警告として表示します。<br><br>
+
+出力例：<br>
+<code>00:01:000 -> 00:01:003 | +3 ms | ノーツSV x1 -> 直後SV x1.25 (SV差 +0.25) | ノーツの +3 ms 後にSV線があります。ノーツにSVが適用されていない可能性があります。</code>
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ 検出内容2：小節線にSVが適用されていない可能性</span><br>
+赤線のBPMと拍子から小節線生成位置を計算し、その時刻を <code>T</code> として、<code>T + 1 ms</code> から <code>T + 5 ms</code> の範囲にSV線があるかを確認します。<br>
+該当するSV線がある場合、小節線にそのSVが適用されていない可能性があるため、黄色の警告として表示します。<br><br>
+
+出力例：<br>
+<code>02:33:864 -> 02:33:865 | +1 ms | 小節線SV x1 -> 直後SV x0.5 (SV差 -0.5) | 小節線生成位置の +1 ms 後にSV線があります。小節線にSVが適用されていない可能性があります。</code>
 </div>
 </section>
 
