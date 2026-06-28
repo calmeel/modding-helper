@@ -333,7 +333,7 @@ function formatBarlineNegativeStartWarningLines(result, t) {
   }
 
   return result.negativeStartBarlineWarnings.map(item =>
-    `<span class="result-warning">` +
+    `<span class="result-warn">` +
     `${formatTimestampLink(item.nextRedLineTime)} | ` +
     `${escapeHtml(t(item.stableLazerMessageKey))}` +
     `</span>`
@@ -356,7 +356,7 @@ function formatBarlineIntentionalDetachedBarlineLines(result, t) {
   }
 
   return result.intentionalDetachedBarlines.map(item =>
-    formatBarlineDetachedBarlineLine(item, t, "result-warning")
+    formatBarlineDetachedBarlineLine(item, t, "result-warn")
   );
 }
 
