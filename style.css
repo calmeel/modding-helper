@@ -22,9 +22,6 @@ body {
 
 #output {
   margin-top: 24px;
-  padding: 16px;
-  background: #111;
-  border-radius: 8px;
   white-space: pre-wrap;
 }
 
