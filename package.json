@@ -1,0 +1,44 @@
+{
+  "name": "modding-helper",
+  "version": "1.0.0",
+  "description": "osu!taiko modding support tool",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win portable"
+  },
+  "build": {
+    "appId": "com.vanity8.modding-helper",
+    "productName": "Modding Helper",
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "images/icon.ico",
+      "artifactName": "${productName} v${version}.${ext}"
+    },
+    "files": [
+      "**/*",
+      "!.git/**",
+      "!node_modules/.cache/**"
+    ],
+    "extraFiles": [],
+    "directories": {
+      "output": "electron/dist"
+    }
+  },
+  "devDependencies": {
+    "electron": "^13.4.0",
+    "electron-builder": "^25.0.0",
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.35.2"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1"
+  }
+}
