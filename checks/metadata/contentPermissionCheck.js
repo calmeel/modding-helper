@@ -3,7 +3,7 @@ const CONTENT_PERMISSION_RULES = [
     category: "disallowedArtist",
     level: "error",
 
-    fields: ["artist", "artistUnicode", "title", "titleUnicode"],
+    fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
 
     keywords: [
       "40mP",
@@ -103,7 +103,7 @@ const CONTENT_PERMISSION_RULES = [
     category: "conditionalArtist",
     level: "warn",
 
-    fields: ["artist", "artistUnicode", "title", "titleUnicode"],
+    fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
 
     keywords: [
       "DJ Poyoshi",
@@ -130,7 +130,7 @@ const CONTENT_PERMISSION_RULES = [
     category: "conditionalArtist",
     level: "warn",
 
-    fields: ["artist", "artistUnicode", "title", "titleUnicode"],
+    fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
 
     keywords: [
       "Mameyudoufu",
@@ -151,7 +151,7 @@ const CONTENT_PERMISSION_RULES = [
     category: "conditionalArtist",
     level: "warn",
 
-    fields: ["artist", "artistUnicode", "title", "titleUnicode"],
+    fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
 
     keywords: [
       "ak+q",
@@ -188,7 +188,7 @@ const CONTENT_PERMISSION_RULES = [
   category: "personalBan",
   level: "warn",
 
-  fields: ["artist", "artistUnicode", "title", "titleUnicode"],
+  fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
 
   keywords: [
     "ぱらどっと",
@@ -210,7 +210,7 @@ const CONTENT_PERMISSION_RULES = [
   category: "permissionRequired",
   level: "warn",
 
-  fields: ["artist", "artistUnicode", "title", "titleUnicode"],
+  fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
 
   keywords: [
     "smilybruh"
@@ -281,7 +281,7 @@ const CONTENT_PERMISSION_RULES = [
   category: "personalBan",
   level: "warn",
 
-  fields: ["artist", "artistUnicode", "title", "titleUnicode"],
+  fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
 
   keywords: [
     "slave.v-v-r"
@@ -331,7 +331,7 @@ const CONTENT_PERMISSION_RULES = [
   category: "personalBan",
   level: "warn",
 
-  fields: ["artist", "artistUnicode", "title", "titleUnicode"],
+  fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
 
   keywords: [
     "skrillex"
@@ -356,7 +356,7 @@ const CONTENT_PERMISSION_RULES = [
   category: "personalBan",
   level: "warn",
 
-  fields: ["artist", "artistUnicode", "title", "titleUnicode"],
+  fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
 
   keywords: [
     "cosmograph",
@@ -414,7 +414,7 @@ const CONTENT_PERMISSION_RULES = [
   category: "personalBan",
   level: "warn",
 
-  fields: ["artist", "artistUnicode"],
+  fields: ["artist", "artistUnicode", "tags"],
   matchMode: "word",
 
   keywords: [
@@ -465,7 +465,7 @@ const CONTENT_PERMISSION_RULES = [
   category: "personalBan",
   level: "warn",
 
-  fields: ["artist", "artistUnicode", "title", "titleUnicode"],
+  fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
 
   keywords: [
     "luis fonsi"
@@ -719,7 +719,7 @@ const CONTENT_PERMISSION_RULES = [
   category: "personalBan",
   level: "warn",
 
-  fields: ["artist", "artistUnicode"],
+  fields: ["artist", "artistUnicode", "tags"],
 
   keywords: [
     "tydi"
@@ -798,7 +798,7 @@ const CONTENT_PERMISSION_RULES = [
   fields: ["source", "tags"],
 
   keywords: [
-    "とある",
+    "とある科学の超電磁砲",
     "涼宮ハルヒの憂鬱",
     "艦隊これくしょん"
   ],
