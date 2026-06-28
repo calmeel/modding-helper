@@ -188,14 +188,25 @@ const TAG_RELATED_RULES = [
     suggestGroup: ["25時、ナイトコードで。", "25-ji,", "25ji", "nightcord", "de.", "at", "25:00", "ニーゴ", "ni-go", "niigo"]
   },
   {
-    trigger: ["バンドリ！", "ガールズバンドパーティ！", "バンドリ", "bandori", "ガルパ", "garupa"],
+    trigger: ["ガルパ", "garupa"],
+    suggestGroup: ["バンドリ！", "ガールズバンドパーティ！", "bang", "dream!", "girls", "band", "party", "バンドリ", "bandori", "ガルパ", "garupa"]
+  },
+  {
+    triggerAll: ["バンドリ！", "ガールズバンドパーティ！"],
     suggestGroup: ["バンドリ！", "ガールズバンドパーティ！", "bang", "dream!", "girls", "band", "party", "バンドリ", "bandori", "ガルパ", "garupa"]
   },
   {
     triggerAll: ["bang", "dream!", "girls", "band", "party"],
     suggestGroup: ["バンドリ！", "ガールズバンドパーティ！", "bang", "dream!", "girls", "band", "party", "バンドリ", "bandori", "ガルパ", "garupa"]
   },
-
+  {
+    trigger: ["バンドリ！", "バンドリ", "bandori"],
+    suggestGroup: ["バンドリ！", "bang", "dream!", "バンドリ", "bandori"]
+  },
+  {
+    triggerAll: ["bang", "dream!"],
+    suggestGroup: ["バンドリ！", "bang", "dream!", "バンドリ", "bandori"]
+  },
   {
     trigger: ["太鼓の達人"],
     suggestGroup: ["太鼓の達人", "taiko", "no", "tatsujin", "tnt"]
