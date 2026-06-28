@@ -181,8 +181,10 @@ function formatPreviewPointResult(results, t) {
 
   const missingResults = results.filter(result => result.previewTime === null);
   const validResults = results.filter(result => result.previewTime !== null);
-
+  const groups = groupPreviewPointResults(validResults);
   const lines = [];
+
+  lines.push(formatSectionTitle(t("previewPointConsistencyTitle")));
 
   if (missingResults.length) {
     lines.push(`<span class="result-warn">${escapeHtml(t("previewPointMissingWarning"))}</span>`);
@@ -194,44 +196,43 @@ function formatPreviewPointResult(results, t) {
   }
 
   if (!validResults.length) {
+    lines.push("");
+    lines.push(formatSectionTitle(t("previewPointSnapTitle")));
+    lines.push(t("previewPointNotFound"));
     return lines.join("\n");
   }
 
-  const groups = groupPreviewPointResults(validResults);
+  if (groups.length === 1 && !missingResults.length) {
+    lines.push(t("previewPointConsistencyOk"));
+  } else if (groups.length > 1) {
+    lines.push(`<span class="result-error">${escapeHtml(t("previewPointMismatch"))}</span>`);
+    lines.push("");
 
-  if (groups.length === 1) {
-    const item =
-      groups[0].items.find(result => result.level === "warn") ??
-      groups[0].items[0];
-
-    if (lines.length) {
+    for (const group of groups) {
+      lines.push(formatPreviewPointConsistencyGroup(group));
       lines.push("");
     }
-    lines.push(formatPreviewPointSingleResult(item, t));
-    return lines.join("\n");
   }
 
-  if (lines.length) {
-    lines.push("");
-  }
-
-  lines.push(`<span class="result-error">${escapeHtml(t("previewPointMismatch"))}</span>`);
   lines.push("");
+  lines.push(formatSectionTitle(t("previewPointSnapTitle")));
 
-  for (const group of groups) {
-    const item = group.items[0];
-    lines.push(formatPreviewPointSingleResult(item, t));
-
-    lines.push(
-      group.items
-        .map(result => getDifficultyNameText(result.fileName))
-        .join(", ")
-    );
-
+  for (const result of sortResultsForDisplay(validResults)) {
+    lines.push(formatPreviewPointSingleResult(result, t));
+    lines.push(getDifficultyNameText(result.fileName));
     lines.push("");
   }
 
   return lines.join("\n").trimEnd();
+}
+
+function formatPreviewPointConsistencyGroup(group) {
+  const item = group.items[0];
+  const diffNames = group.items
+    .map(result => getDifficultyNameText(result.fileName))
+    .join(", ");
+
+  return `${formatTimestampLink(item.previewTime)} | ${escapeHtml(diffNames)}`;
 }
 
 function groupPreviewPointResults(results) {
