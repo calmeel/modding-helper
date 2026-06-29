@@ -681,10 +681,11 @@ function createWindow() {
         left: auto !important;
         width: 100% !important;
         display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
+        /* 列幅に応じて自動で列数を調整（狭い時は1列になり、ボタンが広く使える） */
+        grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)) !important;
         align-items: start !important;
-        column-gap: 4px !important;
-        row-gap: 22px !important;
+        column-gap: 5px !important;
+        row-gap: 20px !important;
         box-sizing: border-box !important;
       }
 
@@ -702,12 +703,17 @@ function createWindow() {
       }
       #electron-col-tabs .tab-button {
         font-size: 11px !important;
-        padding: 6px 4px !important;
+        padding: 5px 6px !important;
         width: 100% !important;
+        min-width: 0 !important;
         box-sizing: border-box !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
+        /* 切らずに折り返す（狭い時は2行になる） */
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        line-height: 1.2 !important;
+        min-height: 28px !important;
+        word-break: break-word !important;
       }
       #electron-col-tabs .tab-group-title { font-size: 11px !important; }
 
