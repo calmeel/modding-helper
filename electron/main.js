@@ -1,7 +1,8 @@
-const { app, BrowserWindow, session, Menu, screen, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, session, Menu, screen, ipcMain, shell, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const JSZip = require('jszip');
+const { autoUpdater } = require('electron-updater');
 const osuWatcher = require('./osuWatcher');
 
 const root     = path.join(__dirname, '..');
@@ -1634,9 +1635,61 @@ function createWindow() {
   return win;
 }
 
+// ── 自動アップデート（GitHub Releases + electron-updater）──
+// 起動時に最新版を確認し、あれば「アップデートしますか?」ダイアログ → DL → 再起動で適用。
+function setupAutoUpdate() {
+  if (!app.isPackaged) return;  // 開発時(electron .)は更新しない
+  autoUpdater.autoDownload = false;          // ダイアログで承諾を得てから DL する
+  autoUpdater.autoInstallOnAppQuit = false;
+
+  let dialogOpen = false;
+
+  autoUpdater.on('update-available', (info) => {
+    if (dialogOpen) return;
+    dialogOpen = true;
+    dialog.showMessageBox(mainWin && !mainWin.isDestroyed() ? mainWin : null, {
+      type: 'info',
+      title: 'アップデート',
+      message: '新しいバージョン v' + info.version + ' があります。',
+      detail: '今すぐアップデートしますか？\n（ダウンロード後、自動で再起動して適用します）',
+      buttons: ['アップデート', '後で'],
+      defaultId: 0,
+      cancelId: 1,
+      noLink: true,
+    }).then((res) => {
+      dialogOpen = false;
+      if (res.response === 0) autoUpdater.downloadUpdate().catch(() => {});
+    }).catch(() => { dialogOpen = false; });
+  });
+
+  autoUpdater.on('update-downloaded', (info) => {
+    dialog.showMessageBox(mainWin && !mainWin.isDestroyed() ? mainWin : null, {
+      type: 'info',
+      title: 'アップデート',
+      message: 'v' + info.version + ' のダウンロードが完了しました。',
+      detail: '再起動して適用します。',
+      buttons: ['今すぐ再起動', '後で'],
+      defaultId: 0,
+      cancelId: 1,
+      noLink: true,
+    }).then((res) => {
+      if (res.response === 0) {
+        setImmediate(() => autoUpdater.quitAndInstall());
+      }
+    }).catch(() => {});
+  });
+
+  // 失敗してもアプリは通常通り使えるよう、エラーは握りつぶす（ログのみ）
+  autoUpdater.on('error', (err) => { console.error('[updater]', err && err.message ? err.message : err); });
+
+  // メイン窓が表示された後に確認（UI 表示前にダイアログが出ないよう少し遅延）
+  setTimeout(() => { autoUpdater.checkForUpdates().catch(() => {}); }, 4000);
+}
+
 app.whenReady().then(() => {
   Menu.setApplicationMenu(null);
   mainWin = createWindow();
+  setupAutoUpdate();
 
   ipcMain.on('win-minimize',  () => { if (mainWin) mainWin.minimize(); });
   ipcMain.on('win-maximize',  () => {
