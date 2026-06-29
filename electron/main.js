@@ -15,6 +15,7 @@ let mainWin = null;
 const popoutWindows = { metadata: null, timing: null };
 let lastMapInfo = null;
 let lastTimingInfo = null;
+let popoutMetaChecked = [];  // メタデータ分離窓と同期する Tags チェック状態（タグ文字列の配列）
 
 // osu! データをメインウィンドウ＋開いているポップアウトへ配信し、最新値をキャッシュする
 function broadcastOsuData(channel, data) {
@@ -61,14 +62,19 @@ function openPopout(name, lang) {
   // 読み込み完了時に最新データを送って即時反映
   pop.webContents.on('did-finish-load', () => {
     if (pop.isDestroyed()) return;
-    if (name === 'metadata') pop.webContents.send('osu-map-info', lastMapInfo);
-    else pop.webContents.send('osu-timing-info', lastTimingInfo);
+    if (name === 'metadata') {
+      pop.webContents.send('osu-map-info', lastMapInfo);
+      pop.webContents.send('popout-set-checked', popoutMetaChecked);  // Tags チェック状態を引き継ぐ
+    } else {
+      pop.webContents.send('osu-timing-info', lastTimingInfo);
+    }
   });
 
   pop.on('closed', () => {
     popoutWindows[name] = null;
     if (mainWin && !mainWin.isDestroyed()) {
-      mainWin.webContents.send('panel-redocked', name);  // メイン側でカードを復帰
+      // メイン側でカードを復帰。メタデータは最新のチェック状態を渡す
+      mainWin.webContents.send('panel-redocked', name, name === 'metadata' ? popoutMetaChecked : null);
     }
   });
 }
@@ -799,6 +805,19 @@ function createWindow() {
         /* 分離状態: 別ウィンドウに出しているパネルは true（メイン側のカードを隠す） */
         var detachState = { metadata: false, timing: false };
 
+        /* Tags のチェック状態（タグ文字列→true）。譜面切替でリセット、分離/復帰で引き継ぐ */
+        var tagChecked = Object.create(null);
+        var lastRenderedTags = null;
+        var applyTagChecked = function() {
+          var meta = document.getElementById('osu-map-meta');
+          if (!meta) return;
+          var chips = meta.querySelectorAll('.osu-tag-chip');
+          for (var i = 0; i < chips.length; i++) {
+            if (tagChecked[chips[i].textContent]) chips[i].classList.add('checked');
+            else chips[i].classList.remove('checked');
+          }
+        };
+
         /* ── グラフの再生ヘッド（リアルタイム時刻バー） ──
            各グラフは描画時に canvas.__playheadGeom = { plot, viewStart, viewEnd } を保存する。
            osu! モードで時刻が流れている時のみ、表示中グラフに縦バーを重ねる。 */
@@ -914,7 +933,11 @@ function createWindow() {
         if (metaForTags) {
           metaForTags.addEventListener('click', function(e) {
             var chip = e.target && e.target.closest ? e.target.closest('.osu-tag-chip') : null;
-            if (chip) chip.classList.toggle('checked');
+            if (!chip) return;
+            chip.classList.toggle('checked');
+            var tag = chip.textContent;
+            if (chip.classList.contains('checked')) tagChecked[tag] = true;
+            else delete tagChecked[tag];
           });
         }
 
@@ -927,17 +950,24 @@ function createWindow() {
             detachState[panel] = true;
             applyPanelModeUi();
             var isEn = document.getElementById('langEn') && document.getElementById('langEn').classList.contains('active');
+            var checkedArr = (panel === 'metadata') ? Object.keys(tagChecked) : undefined;
             if (window.electronAPI && window.electronAPI.detachPanel) {
-              window.electronAPI.detachPanel(panel, isEn ? 'en' : 'ja');
+              window.electronAPI.detachPanel(panel, isEn ? 'en' : 'ja', checkedArr);
             }
           });
         });
 
         /* 分離ウィンドウが閉じられたらカードを復帰 */
         if (window.electronAPI && window.electronAPI.onPanelRedocked) {
-          window.electronAPI.onPanelRedocked(function(panel) {
+          window.electronAPI.onPanelRedocked(function(panel, checked) {
             if (panel === 'metadata' || panel === 'timing') {
               detachState[panel] = false;
+              /* メタデータ: 分離窓の Tags チェック状態を引き継ぐ */
+              if (panel === 'metadata' && Array.isArray(checked)) {
+                tagChecked = Object.create(null);
+                checked.forEach(function(t) { tagChecked[t] = true; });
+                applyTagChecked();
+              }
               applyPanelModeUi();
             }
           });
@@ -1137,6 +1167,10 @@ function createWindow() {
               row('Title',            data.title)                    +
               row('Source',           data.source, 'source', true)   +
               tagsHtml;
+            /* 譜面(タグ)が変わったらチェック状態をリセット。同一譜面なら維持して再適用 */
+            var tagsKey = data.tags || '';
+            if (tagsKey !== lastRenderedTags) { tagChecked = Object.create(null); lastRenderedTags = tagsKey; }
+            applyTagChecked();
           };
 
           /* ── osu! タイミング情報 IPC（osu モードのみ反映） ── */
@@ -1273,8 +1307,16 @@ app.whenReady().then(() => {
   ipcMain.on('win-close',     () => { if (mainWin) mainWin.close(); });
   ipcMain.on('win-open-docs', () => { shell.openExternal('file:///' + docsPath.replace(/\\/g, '/')); });
 
-  // パネルを別ウィンドウに分離
-  ipcMain.on('detach-panel', (e, name, lang) => openPopout(name, lang));
+  // パネルを別ウィンドウに分離（メタデータは現在のチェック状態を引き継ぐ）
+  ipcMain.on('detach-panel', (e, name, lang, checked) => {
+    if (name === 'metadata') popoutMetaChecked = Array.isArray(checked) ? checked : [];
+    openPopout(name, lang);
+  });
+
+  // 分離窓での Tags チェック状態の変化を保持（復帰時にメインへ反映するため）
+  ipcMain.on('popout-checked-changed', (e, arr) => {
+    popoutMetaChecked = Array.isArray(arr) ? arr : [];
+  });
 
   // file モードのメタデータをメタデータ・ポップアウトへ転送（osu モードは osuWatcher 経由）
   ipcMain.on('popout-map-meta', (e, data) => {
