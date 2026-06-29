@@ -541,6 +541,11 @@ function createWindow() {
       #electron-col-future > .etb-card { flex: 0 0 auto; }
       #etb-meta-body { padding: 0 !important; }
 
+      /* 設定モード: 「譜面読み込み設定」「チェックリストの設定」を 50/50・全高に統一 */
+      #electron-layout.etb-settings #electron-col-future { flex: 1 1 0 !important; }
+      #electron-layout.etb-settings #electron-col-tabs   { flex: 1 1 0 !important; }
+      #electron-layout.etb-settings #etb-card-loadsettings { flex: 1 1 auto !important; }
+
       /* ── osu! マップパネル ── */
       #osu-map-panel {
         display: flex;
@@ -1167,6 +1172,9 @@ function createWindow() {
           setDisp('etb-checklist-settings-body',  s);
           /* 右カラム（チェック結果）は設定モード中は隠す */
           setDisp('electron-col-output',  !s);
+          /* 設定モードは左右カードを 50/50・全高にするため layout にクラス付与 */
+          var layoutEl = document.getElementById('electron-layout');
+          if (layoutEl) layoutEl.classList.toggle('etb-settings', s);
           /* osu! モード以外・設定モードでは再生ヘッドを隠す */
           if (!isOsu || s) hideAllPlayheads();
           /* チェックリストカードのタイトル切替 */
