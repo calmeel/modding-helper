@@ -571,6 +571,7 @@ function drawSpreadScrollChart() {
   ctx.restore();
 
   canvas._spreadScrollPlot = plot;
+  canvas.__playheadGeom = { plot, viewStart, viewEnd };
   canvas._spreadScrollVisibleAssignments = visibleAssignments;
 }
 
@@ -708,6 +709,7 @@ function drawSpreadScrollDeltaChart() {
   ctx.restore();
 
   canvas._spreadScrollPlot = plot;
+  canvas.__playheadGeom = { plot, viewStart, viewEnd };
   canvas._spreadScrollVisibleAssignments = visibleAssignments;
 }
 

@@ -597,6 +597,16 @@ function createWindow() {
         border-radius: 0 !important;
         margin-top: 0 !important;
       }
+
+      /* グラフの再生ヘッド（リアルタイム時刻バー） */
+      .etb-playhead {
+        position: absolute;
+        width: 2px;
+        background: #ff5a5a;
+        pointer-events: none;
+        z-index: 6;
+        box-shadow: 0 0 4px rgba(255,90,90,0.7);
+      }
     `);
 
     // ─────────────────────────────────────────────
@@ -785,6 +795,48 @@ function createWindow() {
         /* 分離状態: 別ウィンドウに出しているパネルは true（メイン側のカードを隠す） */
         var detachState = { metadata: false, timing: false };
 
+        /* ── グラフの再生ヘッド（リアルタイム時刻バー） ──
+           各グラフは描画時に canvas.__playheadGeom = { plot, viewStart, viewEnd } を保存する。
+           osu! モードで時刻が流れている時のみ、表示中グラフに縦バーを重ねる。 */
+        var playheadChartIds = ['kiaiCompareChart', 'volumeCompareChart', 'spreadDensityChart',
+                                'spreadRestChart', 'spreadScrollChart', 'spreadScrollDeltaChart',
+                                'offsetWaveformCanvas'];
+        var playheadEls = {};
+        var getPlayheadEl = function(id) {
+          if (playheadEls[id]) return playheadEls[id];
+          var cv = document.getElementById(id);
+          if (!cv || !cv.parentElement) return null;
+          var wrap = cv.parentElement;
+          if (window.getComputedStyle(wrap).position === 'static') wrap.style.position = 'relative';
+          var d = document.createElement('div');
+          d.className = 'etb-playhead';
+          d.style.display = 'none';
+          wrap.appendChild(d);
+          playheadEls[id] = d;
+          return d;
+        };
+        var updatePlayheads = function(ms) {
+          for (var i = 0; i < playheadChartIds.length; i++) {
+            var id = playheadChartIds[i];
+            var cv = document.getElementById(id);
+            var d  = getPlayheadEl(id);
+            if (!cv || !d) continue;
+            var g = cv.__playheadGeom;
+            if (ms < 0 || !g || !g.plot || cv.offsetParent === null) { d.style.display = 'none'; continue; }
+            var span = g.viewEnd - g.viewStart;
+            if (span <= 0) { d.style.display = 'none'; continue; }
+            var frac = (ms - g.viewStart) / span;
+            if (frac < 0 || frac > 1) { d.style.display = 'none'; continue; }
+            d.style.left   = (cv.offsetLeft + g.plot.left + frac * g.plot.width) + 'px';
+            d.style.top    = (cv.offsetTop + g.plot.top) + 'px';
+            d.style.height = g.plot.height + 'px';
+            d.style.display = '';
+          }
+        };
+        var hideAllPlayheads = function() {
+          for (var k in playheadEls) { if (playheadEls[k]) playheadEls[k].style.display = 'none'; }
+        };
+
         /* 待機テキスト（言語・モード対応） */
         var updateWaitingText = function() {
           var w = document.getElementById('osu-map-waiting');
@@ -812,14 +864,18 @@ function createWindow() {
             var el = document.getElementById(id);
             if (el) el.style.display = show ? '' : 'none';
           };
-          /* 左カラム（分離中のカードは隠す） */
-          setDisp('etb-card-meta',         !detachState.metadata);
+          /* 左カラム（設定モード中・分離中のカードは隠す） */
+          setDisp('etb-card-meta',         !s && !detachState.metadata);
           setDisp('etb-card-realtime',     !s && isOsu && !detachState.timing);
           setDisp('etb-card-file',         !s && !isOsu);
           setDisp('etb-card-loadsettings',  s);
           /* 中央カラム（チェックリスト） */
           setDisp('etb-checklist-buttons-body',  !s);
           setDisp('etb-checklist-settings-body',  s);
+          /* 右カラム（チェック結果）は設定モード中は隠す */
+          setDisp('electron-col-output',  !s);
+          /* osu! モード以外・設定モードでは再生ヘッドを隠す */
+          if (!isOsu || s) hideAllPlayheads();
           /* チェックリストカードのタイトル切替 */
           var isEn = document.getElementById('langEn') && document.getElementById('langEn').classList.contains('active');
           var clT = document.getElementById('etb-title-checklist');
@@ -1082,6 +1138,8 @@ function createWindow() {
           /* ── osu! タイミング情報 IPC（osu モードのみ反映） ── */
           window.electronAPI.onTimingInfo(function(data) {
             if (panelMode !== 'osu') return;
+            /* グラフ上の再生ヘッドを更新（時刻が無ければ -1 で非表示） */
+            updatePlayheads(data && typeof data.time === 'number' ? data.time : -1);
             var timing = document.getElementById('osu-t-timing');
             var bpm    = document.getElementById('osu-t-bpm');
             var sv     = document.getElementById('osu-t-sv');

@@ -377,6 +377,7 @@ function drawSpreadDensityChart() {
   ctx.restore();
 
   canvas._spreadDensityPlot = plot;
+  canvas.__playheadGeom = { plot, viewStart, viewEnd };
   canvas._spreadDensityVisibleResults = visibleResults;
   canvas._spreadDensityIssueGroups = issueAnalysis.issueGroups;
 }
