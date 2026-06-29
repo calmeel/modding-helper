@@ -109,17 +109,52 @@
             row('Title',            data.title) +
             row('Source',           data.source, 'source', true) +
             tagsHtml;
+          /* 譜面(タグ)が変わったらチェック状態をリセット。同一譜面なら維持して再適用 */
+          var tagsKey = data.tags || '';
+          if (tagsKey !== lastTags) { checkedSet = Object.create(null); lastTags = tagsKey; }
+          applyChecked();
         };
 
-        /* TAGS チップのクリックでチェックトグル */
+        /* Tags チェック状態（メインと引き継ぎ） */
+        var checkedSet = Object.create(null);
+        var lastTags = null;
+        var applyChecked = function () {
+          var m = document.getElementById('osu-map-meta');
+          if (!m) return;
+          var chips = m.querySelectorAll('.osu-tag-chip');
+          for (var i = 0; i < chips.length; i++) {
+            if (checkedSet[chips[i].textContent]) chips[i].classList.add('checked');
+            else chips[i].classList.remove('checked');
+          }
+        };
+        var reportChecked = function () {
+          if (window.electronAPI && window.electronAPI.sendPopoutChecked) {
+            window.electronAPI.sendPopoutChecked(Object.keys(checkedSet));
+          }
+        };
+
+        /* TAGS チップのクリックでチェックトグル → メインへ通知 */
         var metaEl = document.getElementById('osu-map-meta');
         metaEl.addEventListener('click', function (e) {
           var chip = e.target && e.target.closest ? e.target.closest('.osu-tag-chip') : null;
-          if (chip) chip.classList.toggle('checked');
+          if (!chip) return;
+          chip.classList.toggle('checked');
+          var tag = chip.textContent;
+          if (chip.classList.contains('checked')) checkedSet[tag] = true;
+          else delete checkedSet[tag];
+          reportChecked();
         });
 
         if (window.electronAPI && window.electronAPI.onOsuMapInfo) {
           window.electronAPI.onOsuMapInfo(renderMeta);
+        }
+        /* メインから引き継いだチェック状態を反映 */
+        if (window.electronAPI && window.electronAPI.onPopoutSetChecked) {
+          window.electronAPI.onPopoutSetChecked(function (arr) {
+            checkedSet = Object.create(null);
+            (arr || []).forEach(function (t) { checkedSet[t] = true; });
+            applyChecked();
+          });
         }
       } else {
         root.innerHTML =
