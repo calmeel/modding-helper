@@ -393,6 +393,19 @@ function drawVolumeCompareChart() {
   canvas._volumeComparePlot = plot;
   canvas.__playheadGeom = { plot, viewStart, viewEnd };
   canvas._volumeCompareVisibleAssignments = visibleAssignments;
+
+  // 再生ヘッド用: 指定時刻・現在Diffの値とy座標（リアルタイム強調マーカー用）
+  canvas.__markerAt = function (timeMs, diffFile) {
+    if (!diffFile || timeMs < viewStart || timeMs > viewEnd) return null;
+    const base = String(diffFile).split(/[\\/]/).pop();
+    const asg = visibleAssignments.find(
+      a => String(a.series.fileName || "").split(/[\\/]/).pop() === base
+    );
+    if (!asg) return null;
+    const vol = getVolumeCompareVolumeAtTime(asg.series, timeMs);
+    if (vol === null || vol === undefined) return null;
+    return { y: yForVolume(vol), color: asg.color, label: Math.round(vol) + "%" };
+  };
 }
 
 function drawVolumeCompareBackgroundBands(

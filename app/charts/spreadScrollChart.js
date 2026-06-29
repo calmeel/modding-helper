@@ -573,6 +573,23 @@ function drawSpreadScrollChart() {
   canvas._spreadScrollPlot = plot;
   canvas.__playheadGeom = { plot, viewStart, viewEnd };
   canvas._spreadScrollVisibleAssignments = visibleAssignments;
+
+  // 再生ヘッド用: 指定時刻・現在Diffのスクロール速度とy座標
+  canvas.__markerAt = function (timeMs, diffFile) {
+    if (!diffFile || timeMs < viewStart || timeMs > viewEnd) return null;
+    const base = String(diffFile).split(/[\\/]/).pop();
+    const asg = visibleAssignments.find(
+      a => String(a.result.fileName || "").split(/[\\/]/).pop() === base
+    );
+    if (!asg || !asg.result.scrollSpeed || !asg.result.scrollSpeed.samples) return null;
+    const sample = getSpreadScrollSampleAtTime(asg.result.scrollSpeed.samples, timeMs);
+    if (!sample || sample.pxPerSecond == null) return null;
+    return {
+      y: yForSpeed(sample.pxPerSecond),
+      color: asg.color,
+      label: formatSpreadScrollDisplayValue(sample.pxPerSecond) + " " + getSpreadScrollDisplayUnit(),
+    };
+  };
 }
 
 function drawSpreadScrollDeltaChart() {

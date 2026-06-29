@@ -234,6 +234,23 @@ function drawSpreadRestMomentBpmChart() {
   canvas._spreadRestMomentPlot = plot;
   canvas.__playheadGeom = { plot, viewStart, viewEnd };
   canvas._spreadRestMomentVisibleResults = visibleResults;
+
+  // 再生ヘッド用: 指定時刻・現在Diffの BPM(変換後) とy座標
+  canvas.__markerAt = function (timeMs, diffFile) {
+    if (!diffFile || timeMs < viewStart || timeMs > viewEnd) return null;
+    const base = String(diffFile).split(/[\\/]/).pop();
+    const res = visibleResults.find(
+      r => String(r.fileName || "").split(/[\\/]/).pop() === base
+    );
+    if (!res) return null;
+    const sections = getSpreadRestMomentBpmSections(res, state.options);
+    let found = null;
+    for (const section of sections) {
+      if (timeMs >= section.start && timeMs < section.end) { found = section; break; }
+    }
+    if (!found || found.scaledBpm == null) return null;
+    return { y: yForBpm(found.scaledBpm), color: "#f2b84b", label: Math.round(found.scaledBpm) + " BPM" };
+  };
 }
 
 function drawSpreadRestMomentGrid(

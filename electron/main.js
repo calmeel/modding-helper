@@ -97,6 +97,9 @@ function injectChartPopout(pop, chartId) {
     .spread-subtab-panel { display:none; }
     .spread-subtab-panel.active { display:block; }
     .etb-popout-playhead { position:absolute; width:2px; background:#ff5a5a; pointer-events:none; z-index:6; box-shadow:0 0 4px rgba(255,90,90,0.7); }
+    .etb-chart-marker { position:absolute; pointer-events:none; z-index:8; }
+    .etb-chart-marker-dot { position:absolute; left:0; top:0; width:12px; height:12px; border-radius:50%; border:2px solid #fff; box-sizing:border-box; transform:translate(-50%,-50%); box-shadow:0 0 5px rgba(0,0,0,0.6); }
+    .etb-chart-marker-label { position:absolute; left:10px; top:0; transform:translateY(-50%); font-size:11px; font-weight:700; color:#fff; background:rgba(0,0,0,0.66); padding:1px 6px; border-radius:4px; white-space:nowrap; }
   `);
 
   pop.webContents.executeJavaScript(`
@@ -135,34 +138,55 @@ function injectChartPopout(pop, chartId) {
       setTimeout(isolateChart, 400);
       setTimeout(isolateChart, 1200);
 
-      /* 再生ヘッド */
-      var phEl = null;
-      var ensurePh = function() {
+      /* 再生ヘッド＋現 Diff 交点マーカー */
+      var phEl = null, mkEl = null;
+      var currentDiffFile = null;
+      var ensureEls = function() {
         var cv = document.getElementById(chartId);
         if (!cv || !cv.parentElement) return null;
         var wrap = cv.parentElement;
         if (window.getComputedStyle(wrap).position === 'static') wrap.style.position = 'relative';
         if (!phEl) { phEl = document.createElement('div'); phEl.className = 'etb-popout-playhead'; phEl.style.display = 'none'; wrap.appendChild(phEl); }
-        return phEl;
+        if (!mkEl) {
+          mkEl = document.createElement('div'); mkEl.className = 'etb-chart-marker'; mkEl.style.display = 'none';
+          mkEl.innerHTML = '<span class="etb-chart-marker-dot"></span><span class="etb-chart-marker-label"></span>';
+          wrap.appendChild(mkEl);
+        }
+        return cv;
       };
       var updatePh = function(ms) {
-        var cv = document.getElementById(chartId);
-        var d = ensurePh();
-        if (!cv || !d) return;
+        var cv = ensureEls();
+        if (!cv || !phEl) return;
         var g = cv.__playheadGeom;
-        if (ms < 0 || !g || !g.plot || cv.offsetParent === null) { d.style.display = 'none'; return; }
+        if (ms < 0 || !g || !g.plot || cv.offsetParent === null) { phEl.style.display = 'none'; if (mkEl) mkEl.style.display = 'none'; return; }
         var span = g.viewEnd - g.viewStart;
-        if (span <= 0) { d.style.display = 'none'; return; }
+        if (span <= 0) { phEl.style.display = 'none'; if (mkEl) mkEl.style.display = 'none'; return; }
         var frac = (ms - g.viewStart) / span;
-        if (frac < 0 || frac > 1) { d.style.display = 'none'; return; }
-        d.style.left = (cv.offsetLeft + g.plot.left + frac * g.plot.width) + 'px';
-        d.style.top = (cv.offsetTop + g.plot.top) + 'px';
-        d.style.height = g.plot.height + 'px';
-        d.style.display = '';
+        if (frac < 0 || frac > 1) { phEl.style.display = 'none'; if (mkEl) mkEl.style.display = 'none'; return; }
+        var x = cv.offsetLeft + g.plot.left + frac * g.plot.width;
+        phEl.style.left = x + 'px';
+        phEl.style.top = (cv.offsetTop + g.plot.top) + 'px';
+        phEl.style.height = g.plot.height + 'px';
+        phEl.style.display = '';
+        if (mkEl && typeof cv.__markerAt === 'function') {
+          var info = cv.__markerAt(ms, currentDiffFile);
+          if (info && typeof info.y === 'number') {
+            mkEl.style.left = x + 'px';
+            mkEl.style.top = (cv.offsetTop + info.y) + 'px';
+            mkEl.firstChild.style.background = info.color || '#fff';
+            mkEl.lastChild.textContent = info.label != null ? info.label : '';
+            mkEl.style.display = '';
+          } else { mkEl.style.display = 'none'; }
+        } else if (mkEl) { mkEl.style.display = 'none'; }
       };
       if (window.electronAPI && window.electronAPI.onTimingInfo) {
         window.electronAPI.onTimingInfo(function(data) {
           updatePh(data && typeof data.time === 'number' ? data.time : -1);
+        });
+      }
+      if (window.electronAPI && window.electronAPI.onOsuMapInfo) {
+        window.electronAPI.onOsuMapInfo(function(data) {
+          currentDiffFile = data && data.diffFileName ? data.diffFileName : null;
         });
       }
     })();
@@ -295,6 +319,12 @@ function createWindow() {
       }
 
       pre {
+        font-family: "Consolas", "Meiryo", "Yu Gothic UI", monospace !important;
+      }
+
+      /* <code>（タグ候補等）も pre と同じフォントに揃える
+         （既定の Consolas のみだと日本語がシステム既定の旧 monospace になるため） */
+      code {
         font-family: "Consolas", "Meiryo", "Yu Gothic UI", monospace !important;
       }
 
@@ -618,7 +648,13 @@ function createWindow() {
         color: #bbb;
         text-align: right;
         margin-left: 6px;
+        cursor: pointer;
+        user-select: none;
+        border-radius: 3px;
+        transition: color 0.15s, background 0.15s;
       }
+      .osu-timing-value:hover { background: rgba(255,255,255,0.06); }
+      .osu-timing-value.etb-copied { color: #6ee79a !important; background: rgba(74,222,128,0.16); }
 
       #osu-t-timing { font-size: 15px; color: #ddd; letter-spacing: 0.02em; }
 
@@ -760,6 +796,23 @@ function createWindow() {
         pointer-events: none;
         z-index: 6;
         box-shadow: 0 0 4px rgba(255,90,90,0.7);
+      }
+
+      /* 現 Diff との交点マーカー＋値ラベル */
+      .etb-chart-marker { position: absolute; pointer-events: none; z-index: 8; }
+      .etb-chart-marker-dot {
+        position: absolute; left: 0; top: 0;
+        width: 12px; height: 12px; border-radius: 50%;
+        border: 2px solid #fff; box-sizing: border-box;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 0 5px rgba(0,0,0,0.6);
+      }
+      .etb-chart-marker-label {
+        position: absolute; left: 10px; top: 0;
+        transform: translateY(-50%);
+        font-size: 11px; font-weight: 700; color: #fff;
+        background: rgba(0,0,0,0.66); padding: 1px 6px; border-radius: 4px;
+        white-space: nowrap;
       }
 
       /* グラフの分離ボタン（各グラフ右上） */
@@ -989,6 +1042,8 @@ function createWindow() {
                                 'spreadRestChart', 'spreadScrollChart', 'spreadScrollDeltaChart',
                                 'offsetWaveformCanvas'];
         var playheadEls = {};
+        var markerEls = {};
+        var currentDiffFile = null;  // osu! で現在開いている .osu 名（マーカー対象 Diff）
         var getPlayheadEl = function(id) {
           if (playheadEls[id]) return playheadEls[id];
           var cv = document.getElementById(id);
@@ -1002,26 +1057,60 @@ function createWindow() {
           playheadEls[id] = d;
           return d;
         };
+        var getMarkerEl = function(id) {
+          if (markerEls[id]) return markerEls[id];
+          var cv = document.getElementById(id);
+          if (!cv || !cv.parentElement) return null;
+          var wrap = cv.parentElement;
+          var m = document.createElement('div');
+          m.className = 'etb-chart-marker';
+          m.style.display = 'none';
+          m.innerHTML = '<span class="etb-chart-marker-dot"></span><span class="etb-chart-marker-label"></span>';
+          wrap.appendChild(m);
+          markerEls[id] = m;
+          return m;
+        };
         var updatePlayheads = function(ms) {
           for (var i = 0; i < playheadChartIds.length; i++) {
             var id = playheadChartIds[i];
             var cv = document.getElementById(id);
             var d  = getPlayheadEl(id);
+            var mk = getMarkerEl(id);
             if (!cv || !d) continue;
             var g = cv.__playheadGeom;
-            if (ms < 0 || !g || !g.plot || cv.offsetParent === null) { d.style.display = 'none'; continue; }
+            if (ms < 0 || !g || !g.plot || cv.offsetParent === null) {
+              d.style.display = 'none'; if (mk) mk.style.display = 'none'; continue;
+            }
             var span = g.viewEnd - g.viewStart;
-            if (span <= 0) { d.style.display = 'none'; continue; }
+            if (span <= 0) { d.style.display = 'none'; if (mk) mk.style.display = 'none'; continue; }
             var frac = (ms - g.viewStart) / span;
-            if (frac < 0 || frac > 1) { d.style.display = 'none'; continue; }
-            d.style.left   = (cv.offsetLeft + g.plot.left + frac * g.plot.width) + 'px';
+            if (frac < 0 || frac > 1) { d.style.display = 'none'; if (mk) mk.style.display = 'none'; continue; }
+            var x = cv.offsetLeft + g.plot.left + frac * g.plot.width;
+            d.style.left   = x + 'px';
             d.style.top    = (cv.offsetTop + g.plot.top) + 'px';
             d.style.height = g.plot.height + 'px';
             d.style.display = '';
+            /* 現 Diff との交点マーカー（チャートが __markerAt を提供する場合のみ） */
+            if (mk && typeof cv.__markerAt === 'function') {
+              var info = cv.__markerAt(ms, currentDiffFile);
+              if (info && typeof info.y === 'number') {
+                mk.style.left = x + 'px';
+                mk.style.top  = (cv.offsetTop + info.y) + 'px';
+                var dot = mk.firstChild, lab = mk.lastChild;
+                if (dot) dot.style.background = info.color || '#fff';
+                if (lab) lab.textContent = info.label != null ? info.label : '';
+                mk.style.display = '';
+              } else {
+                mk.style.display = 'none';
+              }
+            } else if (mk) {
+              mk.style.display = 'none';
+            }
           }
         };
         var hideAllPlayheads = function() {
           for (var k in playheadEls) { if (playheadEls[k]) playheadEls[k].style.display = 'none'; }
+          for (var k2 in markerEls) { if (markerEls[k2]) markerEls[k2].style.display = 'none'; }
         };
 
         /* 待機テキスト（言語・モード対応） */
@@ -1162,6 +1251,22 @@ function createWindow() {
             }
           });
           wrap.appendChild(btn);
+        });
+
+        /* リアルタイム表示の値をダブルクリックでクリップボードにコピー */
+        ['osu-t-timing', 'osu-t-bpm', 'osu-t-sv', 'osu-t-vbpm', 'osu-t-vol'].forEach(function(id) {
+          var el = document.getElementById(id);
+          if (!el) return;
+          el.title = 'ダブルクリックでコピー';
+          el.addEventListener('dblclick', function() {
+            var txt = (el.textContent || '').trim();
+            if (!txt || txt === '---' || txt === '--:--:---') return;
+            if (window.electronAPI && window.electronAPI.copyText) {
+              window.electronAPI.copyText(txt);
+              el.classList.add('etb-copied');
+              setTimeout(function() { el.classList.remove('etb-copied'); }, 450);
+            }
+          });
         });
 
         /* タイミングパネルの言語対応ラベル */
@@ -1401,6 +1506,7 @@ function createWindow() {
           /* ── osu! マップ情報 IPC（osu モードのみ反映） ── */
           window.electronAPI.onOsuMapInfo(function(data) {
             if (panelMode !== 'osu') return;
+            currentDiffFile = data && data.diffFileName ? data.diffFileName : null;
             renderMapPanel(data);
           });
 

@@ -380,6 +380,23 @@ function drawSpreadDensityChart() {
   canvas.__playheadGeom = { plot, viewStart, viewEnd };
   canvas._spreadDensityVisibleResults = visibleResults;
   canvas._spreadDensityIssueGroups = issueAnalysis.issueGroups;
+
+  // 再生ヘッド用: 指定時刻・現在Diffの密度とy座標
+  canvas.__markerAt = function (timeMs, diffFile) {
+    if (!diffFile || timeMs < viewStart || timeMs > viewEnd) return null;
+    const base = String(diffFile).split(/[\\/]/).pop();
+    const res = visibleResults.find(
+      r => String(r.fileName || "").split(/[\\/]/).pop() === base
+    );
+    if (!res || !res.density || !res.density.measures) return null;
+    let found = null;
+    for (const measure of res.density.measures) {
+      if (timeMs >= measure.start && timeMs < measure.end) { found = measure; break; }
+    }
+    if (!found) return null;
+    const index = results.findIndex(item => item.fileName === res.fileName);
+    return { y: yForDensity(found.noteCount), color: getVolumeCompareSrColor(index + 1), label: String(found.noteCount) };
+  };
 }
 
 function drawSpreadDensityIssueBands(
