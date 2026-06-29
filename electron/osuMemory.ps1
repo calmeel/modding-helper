@@ -194,24 +194,27 @@ $lastBeatmapCheck   = [DateTime]::MinValue
 
 while ($true) {
     try {
-        # osu! プロセスを 2 秒ごとに再確認
-        if (([DateTime]::Now - $lastProcCheckTime).TotalSeconds -ge 2) {
-            $p = Get-CimInstance Win32_Process -Filter "Name='osu!.exe'" -ErrorAction SilentlyContinue | Select-Object -First 1
-            if ($p) {
-                $exeDir = Split-Path $p.ExecutablePath
-                $cfg    = Join-Path $exeDir "osu!.cfg"
-                $sDir   = "Songs"
-                if (Test-Path $cfg) {
-                    $line = (Get-Content $cfg -Encoding UTF8 -ErrorAction SilentlyContinue) |
-                            Where-Object { $_ -match '^BeatmapDirectory\s*=' } | Select-Object -First 1
-                    if ($line) { $sDir = ($line -split '=', 2)[1].Trim() }
+        # osu! 未接続のときだけ CIM(重い WMI 列挙) で探索する。
+        # 接続中は CIM を回さない（毎回走るとループがブロックされ、再生時刻が周期的に止まるため）。
+        # 終了検知は下の GetBeatmap の "ERR:OPEN"(OpenProcess 失敗)で行う。
+        if ($null -eq $osuProcInfo) {
+            if (([DateTime]::Now - $lastProcCheckTime).TotalSeconds -ge 2) {
+                $p = Get-CimInstance Win32_Process -Filter "Name='osu!.exe'" -ErrorAction SilentlyContinue | Select-Object -First 1
+                if ($p) {
+                    $exeDir = Split-Path $p.ExecutablePath
+                    $cfg    = Join-Path $exeDir "osu!.cfg"
+                    $sDir   = "Songs"
+                    if (Test-Path $cfg) {
+                        $line = (Get-Content $cfg -Encoding UTF8 -ErrorAction SilentlyContinue) |
+                                Where-Object { $_ -match '^BeatmapDirectory\s*=' } | Select-Object -First 1
+                        if ($line) { $sDir = ($line -split '=', 2)[1].Trim() }
+                    }
+                    if (-not [IO.Path]::IsPathRooted($sDir)) { $sDir = Join-Path $exeDir $sDir }
+                    $osuProcInfo = @{ Pid = [int]$p.ProcessId; SongsDir = $sDir }
+                    $lastBeatmapCheck = [DateTime]::MinValue  # 接続直後はすぐ譜面取得
                 }
-                if (-not [IO.Path]::IsPathRooted($sDir)) { $sDir = Join-Path $exeDir $sDir }
-                $osuProcInfo = @{ Pid = [int]$p.ProcessId; SongsDir = $sDir }
-            } else {
-                $osuProcInfo = $null
+                $lastProcCheckTime = [DateTime]::Now
             }
-            $lastProcCheckTime = [DateTime]::Now
         }
 
         if (-not $osuProcInfo) {
@@ -231,6 +234,19 @@ while ($true) {
         # 譜面パス（250ms ごと・変化した場合のみ出力）
         if (([DateTime]::Now - $lastBeatmapCheck).TotalMilliseconds -ge $BEATMAP_MS) {
             $bmResult = [OsuMem]::GetBeatmap($osuPid)
+            if ($bmResult -eq 'ERR:OPEN') {
+                # osu! が終了した（OpenProcess 失敗）→ 切断して再探索へ
+                $osuProcInfo = $null
+                $lastProcCheckTime = [DateTime]::MinValue
+                if ($lastStatus -ne 'NOT_RUNNING') {
+                    $lastStatus      = 'NOT_RUNNING'
+                    $lastBeatmapPath = ''
+                    Write-Output 'NOT_RUNNING'
+                    [Console]::Out.Flush()
+                }
+                Start-Sleep -Milliseconds 100
+                continue
+            }
             if ($bmResult -match '^([^|]+)\|(.+\.osu)$') {
                 $fullPath = Join-Path $songsDir (Join-Path $Matches[1] $Matches[2])
                 if ($fullPath -ne $lastBeatmapPath) {
