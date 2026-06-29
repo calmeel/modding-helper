@@ -88,10 +88,20 @@ function parseSpreadCircleNoteTimes(text) {
 }
 
 function parseSpreadCircleNotes(text) {
-  const hitObjects = parseHitObjects(text);
-  const notes = [];
+  return parseSpreadScrollObjects(text)
+    .filter(object => object.objectType === "circle")
+    .map(object => ({
+      time: object.time,
+      isFinisher: object.isFinisher
+    }));
+}
 
-  for (const line of hitObjects) {
+function parseSpreadScrollObjects(text) {
+  const hitObjects = parseHitObjects(text);
+  const objects = [];
+
+  for (let index = 0; index < hitObjects.length; index++) {
+    const line = hitObjects[index];
     const parts = line.split(",");
     if (parts.length < 5) continue;
 
@@ -101,17 +111,30 @@ function parseSpreadCircleNotes(text) {
 
     if (Number.isNaN(time) || Number.isNaN(type) || Number.isNaN(hitSound)) continue;
 
-    // taikoの通常ノーツのみ対象。Slider / Spinnerはここでは除外
-    if ((type & 1) === 0) continue;
+    let objectType = null;
+    if ((type & 1) !== 0) {
+      objectType = "circle";
+    } else if ((type & 2) !== 0) {
+      objectType = "slider";
+    } else if ((type & 8) !== 0) {
+      objectType = "spinner";
+    }
 
-    notes.push({
+    if (!objectType) continue;
+
+    objects.push({
       time,
-      isFinisher: (hitSound & 4) !== 0
+      objectType,
+      isFinisher: (hitSound & 4) !== 0,
+      index
     });
   }
 
-  notes.sort((a, b) => a.time - b.time);
-  return notes;
+  objects.sort((a, b) =>
+    a.time - b.time ||
+    a.index - b.index
+  );
+  return objects;
 }
 
 function getCurrentSpreadTimingPoint(points, time) {

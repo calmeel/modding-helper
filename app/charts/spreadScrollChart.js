@@ -1107,12 +1107,28 @@ function getSpreadScrollSampleAtTime(samples, time) {
   return current;
 }
 
+function isAfterLastSpreadScrollSample(canvas, time) {
+  const assignments = canvas?._spreadScrollVisibleAssignments ?? [];
+  const lastTime = Math.max(
+    -Infinity,
+    ...assignments.map(assignment => {
+      const samples = assignment.result?.scrollSpeed?.samples ?? [];
+      return samples[samples.length - 1]?.time ?? -Infinity;
+    })
+  );
+
+  return Number.isFinite(lastTime) && time > lastTime;
+}
+
 function getSpreadScrollEndTime(results) {
   return Math.max(
     0,
     ...(results ?? []).map(result => {
       const samples = result.scrollSpeed?.samples ?? [];
-      return samples[samples.length - 1]?.time ?? 0;
+      return Math.max(
+        result.audioDurationMs ?? 0,
+        samples[samples.length - 1]?.time ?? 0
+      );
     })
   );
 }
@@ -1209,9 +1225,19 @@ function handleSpreadScrollPointerMove(event, canvas) {
     return;
   }
 
-  state.hoverTime = spreadScrollXToTime(point.x, plot);
+  const hoverTime = spreadScrollXToTime(point.x, plot);
+  const isDeltaChart = canvas === state.dom?.spreadScrollDeltaChart;
+
+  if (!isDeltaChart && isAfterLastSpreadScrollSample(canvas, hoverTime)) {
+    state.hoverTime = null;
+    hideSpreadScrollTooltips();
+    drawSpreadScrollCharts();
+    return;
+  }
+
+  state.hoverTime = hoverTime;
   hideSpreadScrollTooltips();
-  if (canvas === state.dom?.spreadScrollDeltaChart) {
+  if (isDeltaChart) {
     showSpreadScrollDeltaTooltip(point, state.hoverTime);
   } else {
     showSpreadScrollTooltip(point, state.hoverTime);
