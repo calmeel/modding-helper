@@ -189,6 +189,7 @@ function drawKiaiCompareChart() {
   ctx.restore();
 
   canvas._kiaiComparePlot = plot;
+  canvas.__playheadGeom = { plot, viewStart, viewEnd };
   canvas._kiaiCompareResults = sortedResults;
   canvas._kiaiCompareMismatchSections = mismatchSections;
 }

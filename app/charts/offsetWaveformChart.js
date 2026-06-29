@@ -336,6 +336,7 @@ function drawOffsetWaveformChart() {
   ctx.restore();
 
   canvas._offsetWaveformPlot = plot;
+  canvas.__playheadGeom = { plot, viewStart, viewEnd };
 }
 
 function clearOffsetWaveformEstimate(source) {

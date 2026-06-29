@@ -232,6 +232,7 @@ function drawSpreadRestMomentBpmChart() {
   ctx.restore();
 
   canvas._spreadRestMomentPlot = plot;
+  canvas.__playheadGeom = { plot, viewStart, viewEnd };
   canvas._spreadRestMomentVisibleResults = visibleResults;
 }
 

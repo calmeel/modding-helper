@@ -380,6 +380,7 @@ function drawVolumeCompareChart() {
   ctx.restore();
 
   canvas._volumeComparePlot = plot;
+  canvas.__playheadGeom = { plot, viewStart, viewEnd };
   canvas._volumeCompareVisibleAssignments = visibleAssignments;
 }
 
