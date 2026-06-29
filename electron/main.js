@@ -13,6 +13,7 @@ let mainWin = null;
 
 // 分離ポップアウト（メタデータ / リアルタイム）と最新データのキャッシュ
 const popoutWindows = { metadata: null, timing: null };
+const chartPopouts = {};  // chartId -> BrowserWindow（グラフ分離窓）
 let lastMapInfo = null;
 let lastTimingInfo = null;
 let popoutMetaChecked = [];  // メタデータ分離窓と同期する Tags チェック状態（タグ文字列の配列）
@@ -22,11 +23,150 @@ function broadcastOsuData(channel, data) {
   const targets = [mainWin];
   if (channel === 'osu-map-info')        { lastMapInfo    = data; targets.push(popoutWindows.metadata); }
   else if (channel === 'osu-timing-info') { lastTimingInfo = data; targets.push(popoutWindows.timing); }
+  // グラフ分離窓は譜面追従(osu-map-info)と再生ヘッド(osu-timing-info)の両方を受ける
+  for (const id in chartPopouts) { if (chartPopouts[id]) targets.push(chartPopouts[id]); }
   for (const w of targets) {
     if (w && !w.isDestroyed()) {
       try { w.webContents.send(channel, data); } catch (_) {}
     }
   }
+}
+
+// グラフを別ウィンドウに分離（index.html をフルに読み込み、該当グラフのみ全画面表示）
+const CHART_TAB_MAP = {
+  kiaiCompareChart:       { tab: 'kiaiCompare',   ja: 'Kiai タイムライン',          en: 'Kiai timeline' },
+  volumeCompareChart:     { tab: 'volumeCompare', ja: 'ボリュームグラフ',           en: 'Volume graph' },
+  offsetWaveformCanvas:   { tab: 'offsetWaveform',ja: '音声波形',                   en: 'Audio waveform' },
+  spreadDensityChart:     { tab: 'spread', sub: 'density', ja: 'ノーツ密度グラフ',    en: 'Note density graph' },
+  spreadRestChart:        { tab: 'spread', sub: 'rest',    ja: 'BPM グラフ',          en: 'BPM graph' },
+  spreadScrollChart:      { tab: 'spread', sub: 'scroll',  ja: 'スクロール速度グラフ', en: 'Scroll speed graph' },
+  spreadScrollDeltaChart: { tab: 'spread', sub: 'scroll',  ja: 'スクロール速度変化量', en: 'Scroll speed delta' },
+};
+
+function openChartPopout(chartId, lang) {
+  const conf = CHART_TAB_MAP[chartId];
+  if (!conf) return;
+  if (chartPopouts[chartId] && !chartPopouts[chartId].isDestroyed()) {
+    chartPopouts[chartId].focus();
+    return;
+  }
+  const isEn = lang === 'en';
+
+  const pop = new BrowserWindow({
+    width: 900,
+    height: 480,
+    title: isEn ? conf.en : conf.ja,
+    backgroundColor: '#1e1e1e',
+    webPreferences: {
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
+    },
+    icon: path.join(root, 'images', 'icon.ico'),
+  });
+  pop.setMenu(null);
+  chartPopouts[chartId] = pop;
+
+  // リンク類は外部ブラウザで開く（メインと同様）
+  pop.webContents.on('new-window', (e, url) => { e.preventDefault(); shell.openExternal(url); });
+
+  const url = 'file:///' + path.join(root, 'index.html').replace(/\\/g, '/') + '?popoutChart=' + chartId;
+  pop.loadURL(url);
+
+  pop.webContents.on('did-finish-load', () => {
+    if (pop.isDestroyed()) return;
+    injectChartPopout(pop, chartId);
+    // 現在の譜面・時刻を即時反映
+    pop.webContents.send('osu-map-info', lastMapInfo);
+    pop.webContents.send('osu-timing-info', lastTimingInfo);
+  });
+
+  pop.on('closed', () => { chartPopouts[chartId] = null; delete chartPopouts[chartId]; });
+}
+
+// グラフ分離窓: web の余計な UI を隠し、対象グラフのタブを開いて全画面表示＋再生ヘッド
+function injectChartPopout(pop, chartId) {
+  pop.webContents.insertCSS(`
+    html, body { height:100%; margin:0; overflow:hidden; background:#1e1e1e; }
+    body { font-family: Arial,"Meiryo","Yu Gothic UI","Hiragino Sans",sans-serif; color:#ddd; }
+    .app { height:100vh; max-width:none !important; width:100% !important; margin:0 !important; padding:10px !important; box-sizing:border-box; display:flex; flex-direction:column; overflow:hidden; }
+    h1, p[data-i18n="subtitle"], .top-links, .drop-area, .tab-visibility-settings { display:none !important; }
+    .tabs .tab-buttons, .spread-subtab-button { display:none !important; }
+    .tabs { position:static !important; margin:0 !important; flex:1; min-height:0; display:flex; flex-direction:column; }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:flex !important; flex-direction:column; flex:1; min-height:0; overflow:auto; }
+    .spread-subtab-panel { display:none; }
+    .spread-subtab-panel.active { display:block; }
+    .etb-popout-playhead { position:absolute; width:2px; background:#ff5a5a; pointer-events:none; z-index:6; box-shadow:0 0 4px rgba(255,90,90,0.7); }
+  `);
+
+  pop.webContents.executeJavaScript(`
+    (function() {
+      var chartId = ${JSON.stringify(chartId)};
+      var tabMap = ${JSON.stringify(CHART_TAB_MAP)};
+      var m = tabMap[chartId];
+      var activate = function() {
+        if (!m) return;
+        var sel = '.tab-button[data-tab="' + m.tab + '"]';
+        if (m.sub) sel += '[data-spread-subtab-target="' + m.sub + '"]';
+        var btn = document.querySelector(sel);
+        if (btn) btn.click();
+      };
+      activate();
+      setTimeout(activate, 400);
+      setTimeout(activate, 1200);
+
+      /* グラフ本体(チャートセクション)だけ残し、テキスト結果・フィルタ・サブタブ等は隠す */
+      var isolateChart = function() {
+        var cv = document.getElementById(chartId);
+        if (!cv) return;
+        var section = cv.closest('section');
+        if (!section) return;
+        var node = section;
+        while (node && node.parentElement) {
+          var parent = node.parentElement;
+          Array.prototype.slice.call(parent.children).forEach(function(sib) {
+            if (sib !== node) sib.style.display = 'none';
+          });
+          if (parent.classList && parent.classList.contains('tab-panel')) break;
+          node = parent;
+        }
+      };
+      isolateChart();
+      setTimeout(isolateChart, 400);
+      setTimeout(isolateChart, 1200);
+
+      /* 再生ヘッド */
+      var phEl = null;
+      var ensurePh = function() {
+        var cv = document.getElementById(chartId);
+        if (!cv || !cv.parentElement) return null;
+        var wrap = cv.parentElement;
+        if (window.getComputedStyle(wrap).position === 'static') wrap.style.position = 'relative';
+        if (!phEl) { phEl = document.createElement('div'); phEl.className = 'etb-popout-playhead'; phEl.style.display = 'none'; wrap.appendChild(phEl); }
+        return phEl;
+      };
+      var updatePh = function(ms) {
+        var cv = document.getElementById(chartId);
+        var d = ensurePh();
+        if (!cv || !d) return;
+        var g = cv.__playheadGeom;
+        if (ms < 0 || !g || !g.plot || cv.offsetParent === null) { d.style.display = 'none'; return; }
+        var span = g.viewEnd - g.viewStart;
+        if (span <= 0) { d.style.display = 'none'; return; }
+        var frac = (ms - g.viewStart) / span;
+        if (frac < 0 || frac > 1) { d.style.display = 'none'; return; }
+        d.style.left = (cv.offsetLeft + g.plot.left + frac * g.plot.width) + 'px';
+        d.style.top = (cv.offsetTop + g.plot.top) + 'px';
+        d.style.height = g.plot.height + 'px';
+        d.style.display = '';
+      };
+      if (window.electronAPI && window.electronAPI.onTimingInfo) {
+        window.electronAPI.onTimingInfo(function(data) {
+          updatePh(data && typeof data.time === 'number' ? data.time : -1);
+        });
+      }
+    })();
+  `).catch(function() {});
 }
 
 function openPopout(name, lang) {
@@ -37,13 +177,17 @@ function openPopout(name, lang) {
   }
   const isEn = lang === 'en';
   const conf = {
-    metadata: { width: 340, height: 540, title: isEn ? 'Metadata' : 'メタデータ' },
-    timing:   { width: 300, height: 230, title: isEn ? 'Real-time' : 'リアルタイム表示' },
+    metadata: { width: 360, height: 820, title: isEn ? 'Metadata' : 'メタデータ' },
+    timing:   { width: 230, height: 200, title: isEn ? 'Real-time' : 'リアルタイム表示' },
   }[name];
+
+  // 画面の作業領域からはみ出さないよう高さをクランプ
+  const waHeight = screen.getPrimaryDisplay().workAreaSize.height;
+  const popHeight = Math.min(conf.height, Math.max(240, waHeight - 40));
 
   const pop = new BrowserWindow({
     width: conf.width,
-    height: conf.height,
+    height: popHeight,
     title: conf.title,
     backgroundColor: '#1e1e1e',
     webPreferences: {
@@ -617,6 +761,26 @@ function createWindow() {
         z-index: 6;
         box-shadow: 0 0 4px rgba(255,90,90,0.7);
       }
+
+      /* グラフの分離ボタン（各グラフ右上） */
+      .etb-chart-detach {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 24px;
+        height: 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        background: rgba(38,38,46,0.85);
+        border: 1px solid #4a4a58;
+        border-radius: 5px;
+        color: #b8b8c6;
+        cursor: pointer;
+        z-index: 7;
+      }
+      .etb-chart-detach:hover { background: #3a3a48; color: #fff; }
     `);
 
     // ─────────────────────────────────────────────
@@ -973,6 +1137,33 @@ function createWindow() {
           });
         }
 
+        /* 各グラフの右上に分離ボタンを設置（別ウィンドウで独立表示） */
+        [
+          { wrap: 'kiaiCompareChartWrap',       chart: 'kiaiCompareChart' },
+          { wrap: 'volumeCompareChartWrap',     chart: 'volumeCompareChart' },
+          { wrap: 'spreadDensityChartWrap',     chart: 'spreadDensityChart' },
+          { wrap: 'spreadRestChartWrap',        chart: 'spreadRestChart' },
+          { wrap: 'spreadScrollChartWrap',      chart: 'spreadScrollChart' },
+          { wrap: 'spreadScrollDeltaChartWrap', chart: 'spreadScrollDeltaChart' },
+          { wrap: 'offsetWaveformChartWrap',    chart: 'offsetWaveformCanvas' }
+        ].forEach(function(item) {
+          var wrap = document.getElementById(item.wrap);
+          if (!wrap) return;
+          if (window.getComputedStyle(wrap).position === 'static') wrap.style.position = 'relative';
+          var btn = document.createElement('button');
+          btn.className = 'etb-chart-detach';
+          btn.title = '別ウィンドウに分離';
+          btn.innerHTML = svgDetach;
+          btn.addEventListener('click', function(ev) {
+            ev.stopPropagation();
+            var isEn = document.getElementById('langEn') && document.getElementById('langEn').classList.contains('active');
+            if (window.electronAPI && window.electronAPI.detachChart) {
+              window.electronAPI.detachChart(item.chart, isEn ? 'en' : 'ja');
+            }
+          });
+          wrap.appendChild(btn);
+        });
+
         /* タイミングパネルの言語対応ラベル */
         var updateTimingLabels = function() {
           var vbpmLabel = document.getElementById('osu-t-vbpm-label');
@@ -1289,6 +1480,10 @@ function createWindow() {
       if (popoutWindows[n] && !popoutWindows[n].isDestroyed()) popoutWindows[n].destroy();
       popoutWindows[n] = null;
     });
+    Object.keys(chartPopouts).forEach(function(id) {
+      if (chartPopouts[id] && !chartPopouts[id].isDestroyed()) chartPopouts[id].destroy();
+      delete chartPopouts[id];
+    });
     mainWin = null;
   });
 
@@ -1312,6 +1507,9 @@ app.whenReady().then(() => {
     if (name === 'metadata') popoutMetaChecked = Array.isArray(checked) ? checked : [];
     openPopout(name, lang);
   });
+
+  // グラフを別ウィンドウに分離
+  ipcMain.on('detach-chart', (e, chartId, lang) => openChartPopout(chartId, lang));
 
   // 分離窓での Tags チェック状態の変化を保持（復帰時にメインへ反映するため）
   ipcMain.on('popout-checked-changed', (e, arr) => {
