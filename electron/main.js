@@ -214,6 +214,7 @@ function openPopout(name, lang) {
     height: popHeight,
     title: conf.title,
     backgroundColor: '#1e1e1e',
+    alwaysOnTop: name === 'timing',  // リアルタイム表示窓は最前面に固定
     webPreferences: {
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
@@ -221,6 +222,8 @@ function openPopout(name, lang) {
     icon: path.join(root, 'images', 'icon.ico'),
   });
   pop.setMenu(null);
+  // 全画面アプリ(osu! 等)の上にも重ねたいので最前面レベルを少し上げる
+  if (name === 'timing') pop.setAlwaysOnTop(true, 'screen-saver');
   popoutWindows[name] = pop;
 
   const url = 'file:///' + path.join(__dirname, 'popout.html').replace(/\\/g, '/')
