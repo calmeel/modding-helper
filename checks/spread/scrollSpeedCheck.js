@@ -54,9 +54,9 @@ function analyzeSpreadScrollSpeed(text, difficulty = null) {
 
   const redLines = parseSpreadRedLines(text);
   const greenLines = parseSpreadGreenLines(text);
-  const notes = parseSpreadCircleNotes(text);
+  const objects = parseSpreadScrollObjects(text);
 
-  if (!redLines.length || !notes.length) {
+  if (!redLines.length || !objects.length) {
     return {
       sliderMultiplier,
       samples: [],
@@ -69,8 +69,8 @@ function analyzeSpreadScrollSpeed(text, difficulty = null) {
     };
   }
 
-  const samples = notes.map(note => {
-    const time = note.time;
+  const samples = objects.map(object => {
+    const time = object.time;
     const red = getCurrentSpreadTimingPoint(redLines, time);
     const green = getCurrentSpreadInheritedTimingPoint(
       greenLines,
@@ -98,7 +98,9 @@ function analyzeSpreadScrollSpeed(text, difficulty = null) {
       sliderMultiplier,
       pxPerBeat,
       pxPerSecond,
-      isFinisher: note.isFinisher
+      objectType: object.objectType,
+      hitObjectIndex: object.index,
+      isFinisher: object.isFinisher
     };
   }).filter(sample =>
     Number.isFinite(sample.pxPerSecond)
@@ -158,7 +160,9 @@ function analyzeSpreadScrollSpeed(text, difficulty = null) {
       beforeSv: prev.sv,
       afterSv: cur.sv,
       beforeBpm: prev.bpm,
-      afterBpm: cur.bpm
+      afterBpm: cur.bpm,
+      fromObjectType: prev.objectType,
+      toObjectType: cur.objectType
     });
   }
 

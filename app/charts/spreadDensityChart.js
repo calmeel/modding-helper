@@ -556,7 +556,10 @@ function getSpreadDensityEndTime(results) {
     0,
     ...results.map(result => {
       const measures = result.density?.measures ?? [];
-      return measures[measures.length - 1]?.end ?? 0;
+      return Math.max(
+        result.audioDurationMs ?? 0,
+        measures[measures.length - 1]?.end ?? 0
+      );
     })
   );
 }

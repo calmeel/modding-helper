@@ -83,6 +83,7 @@ async function analyzeOszFile(file) {
     .filter(entry => !entry.dir && entry.name.toLowerCase().endsWith(".osu"));
   const audioBlobCache = new Map();
   const audioBytesCache = new Map();
+  const audioDurationCache = new Map();
   const bgImageTypeCache = new Map();
 
   for (const entry of osuFiles) {
@@ -132,12 +133,18 @@ async function analyzeOszFile(file) {
     const audioEntry = findOszAudioEntry(zip, entry.name, audioFileName);
     let audioBlob = null;
     let audioBytes = null;
+    let audioDurationMs = 0;
 
     if (audioEntry) {
       if (!audioBlobCache.has(audioEntry.name)) {
         audioBlobCache.set(audioEntry.name, await audioEntry.async("blob"));
       }
       audioBlob = audioBlobCache.get(audioEntry.name);
+
+      if (!audioDurationCache.has(audioEntry.name)) {
+        audioDurationCache.set(audioEntry.name, await getAudioDurationMsFromBlob(audioBlob));
+      }
+      audioDurationMs = audioDurationCache.get(audioEntry.name) ?? 0;
 
       if (/\.mp3$/i.test(audioEntry.name)) {
         if (!audioBytesCache.has(audioEntry.name)) {
@@ -153,11 +160,12 @@ async function analyzeOszFile(file) {
       mode,
       audioFileName,
       audioEntryName: audioEntry?.name ?? "",
-      audioBlob
+      audioBlob,
+      audioDurationMs
     });
 
     kiaiResults.push({
-      ...runKiaiAnalyze(text, entry.name),
+      ...runKiaiAnalyze(text, entry.name, { audioDurationMs }),
       mode
     });
 
@@ -169,7 +177,8 @@ async function analyzeOszFile(file) {
     svVolumeSources.push({
       text,
       fileName: entry.name,
-      mode
+      mode,
+      audioDurationMs
     });
 
     redGreenMatchResults.push({
@@ -241,6 +250,7 @@ async function analyzeOszFile(file) {
 
     spreadResults.push({
       ...runSpreadCheck(text, entry.name),
+      audioDurationMs,
       mode
     });
 
@@ -329,12 +339,13 @@ async function processFile(file) {
           mode,
           audioFileName: parseOffsetAudioFilename(text),
           audioEntryName: "",
-          audioBlob: null
+          audioBlob: null,
+          audioDurationMs: 0
         }
       ],
       kiaiCompare: [
         {
-          ...runKiaiAnalyze(text, file.name),
+          ...runKiaiAnalyze(text, file.name, { audioDurationMs: 0 }),
           mode
         }
       ],
@@ -345,10 +356,10 @@ async function processFile(file) {
         }
       ],
       svVolumeSources: [
-        { text, fileName: file.name, mode }
+        { text, fileName: file.name, mode, audioDurationMs: 0 }
       ],
       volumeCompareSources: [
-        { text, fileName: file.name, mode }
+        { text, fileName: file.name, mode, audioDurationMs: 0 }
       ],
       redGreenMatch: [
         {
@@ -421,6 +432,7 @@ async function processFile(file) {
       spread: [
         {
           ...runSpreadCheck(text, file.name),
+          audioDurationMs: 0,
           mode
         }
       ],
@@ -488,6 +500,34 @@ async function attachBgImageTypesFromOsz(result, zip, osuEntryName, cache) {
       bg.actualImageType
     );
   }
+}
+
+async function getAudioDurationMsFromBlob(audioBlob) {
+  if (!audioBlob) return 0;
+  return getAudioDurationMsFromElement(audioBlob);
+}
+
+function getAudioDurationMsFromElement(audioBlob) {
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(audioBlob);
+    const audio = new Audio();
+    let settled = false;
+
+    const cleanup = value => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeoutId);
+      URL.revokeObjectURL(url);
+      resolve(Number.isFinite(value) && value > 0 ? Math.floor(value * 1000) : 0);
+    };
+
+    const timeoutId = setTimeout(() => cleanup(0), 1200);
+
+    audio.preload = "metadata";
+    audio.addEventListener("loadedmetadata", () => cleanup(audio.duration), { once: true });
+    audio.addEventListener("error", () => cleanup(0), { once: true });
+    audio.src = url;
+  });
 }
 
 function findOszImageEntry(zip, osuEntryName, imageFileName) {

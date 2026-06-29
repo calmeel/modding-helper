@@ -335,7 +335,10 @@ function drawSpreadRestMomentSeries(
 function getSpreadRestMomentBpmSections(result, options) {
   const restMoments = result.restMoments;
   const timingPoints = restMoments?.timingPoints ?? [];
-  const endTime = restMoments?.endTime ?? 0;
+  const endTime = Math.max(
+    restMoments?.endTime ?? 0,
+    result.audioDurationMs ?? 0
+  );
   const sections = [];
 
   for (let i = 0; i < timingPoints.length; i++) {
@@ -401,7 +404,9 @@ function getSpreadRestMomentNiceMaximum(value) {
 function getSpreadRestMomentChartEndTime(results) {
   return Math.max(
     0,
-    ...results.map(result => result.restMoments?.endTime ?? 0)
+    ...results.map(result =>
+      Math.max(result.restMoments?.endTime ?? 0, result.audioDurationMs ?? 0)
+    )
   );
 }
 

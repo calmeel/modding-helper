@@ -2225,6 +2225,7 @@ this check uses <code>effective scroll speed, <span style="color:#ffd86b; font-w
 <pre><code>effective scroll speed = 175 × SliderMultiplier × SV × BPM / 60</code></pre>
 
 Effective scroll speed represents how many pixels notes move across the screen per second.<br>
+This check targets normal notes as well as the start positions of sliders and spinners.<br>
 The unit used is <code>px/s</code> (pixels per second).<br>
 It can also be converted to <code>visual BPM</code>, assuming <code>SM 1.4</code> and <code>SV x1.0</code>.<br><br>
 
@@ -2236,20 +2237,20 @@ It can also be converted to <code>visual BPM</code>, assuming <code>SM 1.4</code
 
 <figure class="doc-graph-example">
   <img src="images/spread-scroll-delta-graph-example-en.png" alt="Scroll speed change graph example for Kantan, Futsuu, Muzukashii, Oni, and Inner Oni">
-  <figcaption>Scroll speed change graph example. Each note-to-note scroll speed change is displayed as a point.</figcaption>
+  <figcaption>Scroll speed change graph example. Each speed change between adjacent notes, sliders, and spinners is displayed as a point.</figcaption>
 </figure>
 <br>
 There are two graphs. Both graphs use virtual SR colors based on the difficulty order to color lines and points.<br>
 These colors do not represent calculated Star Ratings.<br><br>
 
-The first graph, the scroll speed graph, displays the effective scroll speed at each note as a step line.<br>
+The first graph, the scroll speed graph, displays the effective scroll speed at each note, slider, and spinner start position as a step line.<br>
 The vertical axis can be switched between <code>px/s</code> and <code>visual BPM</code>.<br>
 Hovering over the graph shows the scroll speed, BPM, SV, and SliderMultiplier at that time.<br><br>
 
-The second graph, the scroll speed change graph, displays each note-to-note speed change as a point.<br>
+The second graph, the scroll speed change graph, displays each speed change between adjacent notes, sliders, and spinners as a point.<br>
 The value is <code>speed after - speed before</code>, and the vertical axis can be switched between <code>Δ px/s</code> and <code>Δ visual BPM</code>.<br>
 Accelerations appear above the zero line and decelerations below it. Thin connecting lines are visual guides for following the progression.<br>
-Hovering near a point shows the before/after speeds, change amount, ratio, and note interval.<br><br>
+Hovering near a point shows the before/after speeds, change amount, ratio, and interval between the adjacent objects.<br><br>
 
 Both graphs can be dragged to zoom into a time range, and clicking a graph opens that timestamp in osu!editor.<br>
 Enabling <code>Show detailed hover information</code> displays more information than the simple hover view.<br><br>
@@ -2274,14 +2275,14 @@ The main displayed values are:
   <li><code>Delta</code>: The difference between the maximum and minimum speed</li>
   <li><code>Ratio</code>: Maximum speed / minimum speed</li>
   <li><code>SV range</code>: The SV range used in the diff</li>
-  <li><code>Rapid scroll speed changes</code>: Locations where scroll speed changes sharply between adjacent notes</li>
+  <li><code>Rapid scroll speed changes</code>: Locations where scroll speed changes sharply between adjacent notes, sliders, and spinners</li>
   <li><code>Scroll speed progression</code>: Locations where scroll speed progression is unnatural relative to difficulty order</li>
   <li><code>Scroll change consistency</code>: Locations where scroll speed changes around the same time are strongly inconsistent between difficulties</li>
 </ul>
 
 <p>
-Only scroll speeds applied to sections containing actual notes are considered.<br>
-SV changes in empty sections are ignored to avoid false positives caused by decorative SV effects.
+Only scroll speeds applied to sections containing actual notes, sliders, or spinners are considered.<br>
+SV changes in sections without notes, sliders, or spinners are ignored to avoid false positives caused by decorative SV effects.
 </p>
 </div>
 
@@ -2293,7 +2294,7 @@ Detects locations where lower difficulties contain sudden scroll speed changes.
 <ul>
   <li><code>eSV Difference</code>: <code>eSV after - eSV before</code></li>
   <li><code>eSV Ratio</code>: <code>eSV after / eSV before</code></li>
-  <li><code>Note Interval</code>: Time difference between the notes before and after the change</li>
+  <li><code>Note Interval</code>: Time difference between the notes, sliders, or spinners before and after the change</li>
 </ul>
 
 <div class="ratio-table-wrap">
@@ -2353,7 +2354,7 @@ All three conditions above must be satisfied for the result to be displayed as a
 
   Therefore, this check only treats the result as a Warning when both the eSV Difference and the eSV Ratio conditions are satisfied.<br><br>
 
-  Note Interval is used to determine how abruptly the scroll speed changes.<br>
+  The interval between notes, sliders, or spinners is used to determine how abruptly the scroll speed changes.<br>
   For example, even with the same speed difference, a gradual change over several seconds will not be treated as a Warning.<br><br>
 </div>
 
@@ -2384,7 +2385,7 @@ Reference:
   and 160 px/s for Muzukashii.<br><br>
 
   For maxGapMs, the threshold is shortened as the difficulty level increases,
-  because note intervals generally become shorter in higher difficulties.
+  because object intervals generally become shorter in higher difficulties.
   This tool uses a gradual sequence of
   Kantan = 1500 ms,
   Futsuu = 1250 ms,
@@ -2429,7 +2430,7 @@ On the other hand, the following patterns are displayed as review targets becaus
 </ul>
 
 <div class="note-subtext">
-Because note placement and timing may not perfectly match between difficulties, scroll speed changes occurring within <code>±10 ms</code> are treated as changes occurring at the same timing.
+Because note, slider, and spinner placement/timing may not perfectly match between difficulties, scroll speed changes occurring within <code>±10 ms</code> are treated as changes occurring at the same timing.
 </div>
 
 <br>
@@ -2445,7 +2446,7 @@ Reference:
 <div class="section section-detect">
 <span class="label label-detect">■ Detection 2: Scroll Change Consistency</span><br>
 
-For each difficulty, this check calculates effective scroll speed (eSV) changes between adjacent notes and compares them across difficulties.<br><br>
+For each difficulty, this check calculates effective scroll speed (eSV) changes between adjacent notes, sliders, and spinners and compares them across difficulties.<br><br>
 
 This feature helps identify:
 
@@ -2457,12 +2458,12 @@ This feature helps identify:
 The displayed values are:
 
 <ul>
-  <li><code>Δ px/s</code>: Amount of eSV change between adjacent notes (<code>eSV after - eSV before</code>)</li>
+  <li><code>Δ px/s</code>: Amount of eSV change between adjacent notes, sliders, and spinners (<code>eSV after - eSV before</code>)</li>
 
   <li><code>Speed Multiplier</code>: eSV values before and after the change, along with the ratio.<br>
   Example: <code>420 → 735 (x1.75)</code></li>
 
-  <li><code>Note Interval</code>: Time difference between the two notes where the eSV change occurs</li>
+  <li><code>Note Interval</code>: Time difference between the two adjacent notes, sliders, or spinners where the eSV change occurs</li>
 </ul>
 
 For example, if a lower difficulty contains a large acceleration such as <code>420 → 735</code>, while a higher difficulty has only a small change at a similar timing, it will be displayed as a review target.<br><br>
@@ -2475,7 +2476,7 @@ Likewise, if one difficulty accelerates while another decelerates at a similar t
 
 Detects patterns where a lower difficulty contains stronger local scroll speed changes than a higher difficulty.<br><br>
 
-This check compares effective scroll speed changes (Δ px/s) between adjacent notes across difficulties.<br>
+This check compares effective scroll speed changes (Δ px/s) between adjacent notes, sliders, and spinners across difficulties.<br>
 If the eSV change magnitude in a lower difficulty is significantly larger than in a higher difficulty, it will be displayed as a review target.
 
 <div class="ratio-table-wrap">
@@ -2530,7 +2531,7 @@ If the eSV change magnitude in a lower difficulty is significantly larger than i
 
 Detects patterns where the scroll speed change direction behaves inconsistently between difficulties at similar timings.<br><br>
 
-This check compares eSV changes (Δ px/s) occurring between adjacent notes across difficulties.<br>
+This check compares eSV changes (Δ px/s) occurring between adjacent notes, sliders, and spinners across difficulties.<br>
 If one difficulty accelerates while another decelerates at a similar timing, it will be displayed as a review target.
 
 <div class="ratio-table-wrap">
@@ -2599,7 +2600,7 @@ Displayed results should therefore be treated as confirmation targets rather tha
   <span class="label label-detect">■ Detection 3: Scroll speed may be too fast</span><br>
 
   If the scroll speed is too fast on lower difficulties, beginner players may have difficulty reading notes properly.<br>
-  This check calculates the effective scroll speed at note positions for each difficulty,
+  This check calculates the effective scroll speed at note, slider, and spinner start positions for each difficulty,
   and checks whether the top <code>90% px/s</code> exceeds the recommended range for that difficulty.<br><br>
 
   This check uses <code>90% px/s</code> instead of the absolute maximum value.<br>

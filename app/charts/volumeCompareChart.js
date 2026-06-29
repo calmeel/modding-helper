@@ -37,7 +37,7 @@ function renderVolumeCompareChart(result, dom, t) {
   const canRender =
     result &&
     result.series?.length >= 1 &&
-    result.endTime > 0;
+    getVolumeCompareChartEndTime(result) > 0;
 
   if (!canRender) {
     if (dom.volumeCompareChartWrap) dom.volumeCompareChartWrap.hidden = true;
@@ -53,18 +53,19 @@ function renderVolumeCompareChart(result, dom, t) {
   }
 
   const sortedSeries = sortResultsForDisplay(result.series);
+  const chartEndTime = getVolumeCompareChartEndTime(result);
   const signature =
     sortedSeries.map(series => series.fileName).join("|") +
-    `::${result.endTime}`;
+    `::${chartEndTime}`;
 
   if (signature !== state.signature) {
     state.signature = signature;
     state.hiddenFiles.clear();
     state.viewStart = 0;
-    state.viewEnd = result.endTime;
+    state.viewEnd = chartEndTime;
     state.hoverTime = null;
   } else {
-    state.viewEnd = Math.min(state.viewEnd || result.endTime, result.endTime);
+    state.viewEnd = Math.min(state.viewEnd || chartEndTime, chartEndTime);
   }
 
   if (dom.volumeCompareChartEmpty) dom.volumeCompareChartEmpty.hidden = true;
@@ -114,7 +115,7 @@ function initializeVolumeCompareChart() {
       if (!result) return;
 
       state.viewStart = 0;
-      state.viewEnd = result.endTime;
+      state.viewEnd = getVolumeCompareChartEndTime(result);
       state.hoverTime = null;
       hideVolumeCompareTooltip();
       drawVolumeCompareChart();
@@ -278,6 +279,15 @@ function getVolumeCompareRelativeLuminance(rgb) {
   return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
 }
 
+function getVolumeCompareChartEndTime(result) {
+  return Math.max(
+    0,
+    result?.displayEndTime ?? 0,
+    result?.audioDurationMs ?? 0,
+    result?.endTime ?? 0
+  );
+}
+
 function drawVolumeCompareChart() {
   const state = volumeCompareChartState;
   const canvas = state.dom?.volumeCompareChart;
@@ -315,7 +325,8 @@ function drawVolumeCompareChart() {
   plot.height = Math.max(1, plot.bottom - plot.top);
 
   const viewStart = Math.max(0, state.viewStart);
-  const viewEnd = Math.max(viewStart + 1, state.viewEnd || result.endTime);
+  const chartEndTime = getVolumeCompareChartEndTime(result);
+  const viewEnd = Math.max(viewStart + 1, state.viewEnd || chartEndTime);
   const sortedSeries = sortResultsForDisplay(result.series);
   const assignments = getVolumeCompareVirtualSrAssignments(sortedSeries);
   const visibleAssignments = assignments.filter(
@@ -665,7 +676,10 @@ function handleVolumeComparePointerUp(event) {
     const startTime = volumeCompareXToTime(state.dragStartX, plot);
     const endTime = volumeCompareXToTime(point.x, plot);
     state.viewStart = Math.max(0, Math.min(startTime, endTime));
-    state.viewEnd = Math.min(state.result.endTime, Math.max(startTime, endTime));
+    state.viewEnd = Math.min(
+      getVolumeCompareChartEndTime(state.result),
+      Math.max(startTime, endTime)
+    );
   } else {
     const time = volumeCompareXToTime(point.x, plot);
     window.location.href = `osu://edit/${msToTimestamp(Math.round(time))}`;

@@ -11,7 +11,7 @@ function analyzeSpreadNoteDensity(text) {
   }
 
   const firstTime = Math.min(...noteTimes);
-  const lastTime = Math.max(...noteTimes);
+  const lastTime = Math.max(...noteTimes, getLastHitObjectEndTime(text));
   const measures = createSpreadDensityMeasures(redLines, firstTime, lastTime);
 
   for (const time of noteTimes) {

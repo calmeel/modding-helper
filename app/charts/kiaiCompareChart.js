@@ -21,7 +21,7 @@ function renderKiaiCompareChart(results, dom, t) {
   initializeKiaiCompareChart();
 
   const sortedResults = results ? sortResultsForDisplay(results) : [];
-  const endTime = Math.max(0, ...sortedResults.map(result => result.endTime ?? 0));
+  const endTime = getKiaiCompareResultDisplayEndTime(sortedResults);
   const canRender = sortedResults.length > 0 && endTime > 0;
 
   if (!canRender) {
@@ -474,10 +474,15 @@ function kiaiCompareXToTime(x, plot) {
 }
 
 function getKiaiCompareEndTime() {
+  return getKiaiCompareResultDisplayEndTime(kiaiCompareChartState.results ?? []);
+}
+
+function getKiaiCompareResultDisplayEndTime(results) {
   return Math.max(
     0,
-    ...(kiaiCompareChartState.results ?? [])
-      .map(result => result.endTime ?? 0)
+    ...(results ?? []).map(result =>
+      result.displayEndTime ?? result.audioDurationMs ?? result.endTime ?? 0
+    )
   );
 }
 

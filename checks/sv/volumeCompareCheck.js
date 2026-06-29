@@ -24,10 +24,15 @@ function runVolumeCompareCheck(sources, options = {}) {
     fileName: source.fileName,
     mode: source.mode,
     timingPoints: parseTimingPointsDetailed(source.text),
-    endTime: getLastHitObjectTime(source.text),
+    endTime: getLastHitObjectEndTime(source.text),
+    audioDurationMs: normalizeVolumeCompareAudioDurationMs(source.audioDurationMs),
     breakIntervals: parseVolumeCompareBreakIntervals(source.text)
   }));
   const overallEndTime = Math.max(0, ...parsed.map(item => item.endTime));
+  const displayEndTime = Math.max(
+    overallEndTime,
+    ...parsed.map(item => item.audioDurationMs)
+  );
 
   const boundaries = collectVolumeCompareBoundaries(parsed);
   const intervals = [];
@@ -82,11 +87,14 @@ function runVolumeCompareCheck(sources, options = {}) {
       fileName: item.fileName,
       mode: item.mode,
       endTime: item.endTime,
-      points: buildVolumeCompareSeries(item.timingPoints, overallEndTime),
-      kiaiIntervals: buildKiaiIntervals(item.timingPoints, item.endTime),
+      displayEndTime,
+      audioDurationMs: item.audioDurationMs,
+      points: buildVolumeCompareSeries(item.timingPoints, displayEndTime),
+      kiaiIntervals: buildKiaiIntervals(item.timingPoints, Math.max(item.endTime, item.audioDurationMs)),
       breakIntervals: item.breakIntervals
     })),
     endTime: overallEndTime,
+    displayEndTime,
     options: {
       thresholdOnly,
       thresholdPercent,
@@ -95,6 +103,10 @@ function runVolumeCompareCheck(sources, options = {}) {
     },
     needTwoDiffs: parsed.length < 2
   };
+}
+
+function normalizeVolumeCompareAudioDurationMs(value) {
+  return Number.isFinite(value) && value > 0 ? value : 0;
 }
 
 function filterVolumeCompareSectionsByOptions(intervals, options = {}) {

@@ -1,6 +1,8 @@
-function runKiaiAnalyze(text, fileName) {
+function runKiaiAnalyze(text, fileName, options = {}) {
   const timingPoints = parseAllTimingPoints(text);
-  const endTime = getLastHitObjectTime(text);
+  const endTime = getLastHitObjectEndTime(text);
+  const audioDurationMs = normalizeChartAudioDurationMs(options.audioDurationMs);
+  const displayEndTime = Math.max(endTime, audioDurationMs);
 
   const intervals = buildKiaiIntervals(timingPoints, endTime);
   const totalDuration = intervals.reduce((sum, item) => sum + (item.end - item.start), 0);
@@ -11,10 +13,16 @@ function runKiaiAnalyze(text, fileName) {
   return {
     fileName,
     endTime,
+    displayEndTime,
+    audioDurationMs,
     intervals,
     totalDuration,
     hasImplicitKiaiEnd
   };
+}
+
+function normalizeChartAudioDurationMs(value) {
+  return Number.isFinite(value) && value > 0 ? value : 0;
 }
 
 function buildKiaiIntervals(timingPoints, endTime) {
