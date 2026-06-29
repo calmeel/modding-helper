@@ -38,6 +38,9 @@ function buildOffsetWaveformBarlines(text) {
       ? nextRed.time
       : Math.max(lastHitObjectTime, red.time) + measureLength;
 
+    // ハズレ値の beatLength で小節線が無限生成されフリーズするのを防ぐ
+    if ((sectionEnd - red.time) / measureLength > 200000) continue;
+
     for (
       let rawTime = red.time;
       rawTime < sectionEnd - 1e-6;

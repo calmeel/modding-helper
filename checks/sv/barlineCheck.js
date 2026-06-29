@@ -110,6 +110,9 @@ function detectBarlineIssues(
       ? nextSection.time
       : Math.max(lastHitObjectTime, section.time) + measureLength;
 
+    // ハズレ値の beatLength（例: 1E-308）で小節線が無限生成されフリーズするのを防ぐ
+    if ((sectionEnd - section.time) / measureLength > 200000) continue;
+
     for (
       let rawBarlineTime = section.time;
       rawBarlineTime < sectionEnd - BARLINE_SCROLL_SPEED_EPSILON;
