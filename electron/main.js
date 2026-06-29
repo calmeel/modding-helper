@@ -80,6 +80,7 @@ function createWindow() {
     width,
     height,
     frame: false,
+    show: false,            // 注入完了までは非表示にして Web UI のちらつきを防ぐ
     backgroundColor: '#1e1e1e',
     title: `osu!taiko Modding Helper v${version}`,
     webPreferences: {
@@ -118,6 +119,9 @@ function createWindow() {
   );
 
   win.loadFile(path.join(root, 'index.html'));
+
+  // 安全策: 注入が万一失敗してもウィンドウが出るよう一定時間後に必ず表示
+  setTimeout(() => { if (!win.isDestroyed() && !win.isVisible()) win.show(); }, 4000);
 
   win.webContents.on('did-finish-load', () => {
     // ─────────────────────────────────────────────
@@ -1233,9 +1237,11 @@ function createWindow() {
         })();
       })();
     `).then(function() {
+      if (!win.isDestroyed()) win.show();  // 変換完了後に表示（ちらつき防止）
       osuWatcher.setDeliver(broadcastOsuData);
       osuWatcher.start(win);
     }).catch(function() {
+      if (!win.isDestroyed()) win.show();
       osuWatcher.setDeliver(broadcastOsuData);
       osuWatcher.start(win);
     });
