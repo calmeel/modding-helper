@@ -56,6 +56,7 @@ function openChartPopout(chartId, lang) {
     width: 900,
     height: 480,
     title: isEn ? conf.en : conf.ja,
+    show: false,            // 注入(chrome 非表示)完了までは見せない（Web UI のちらつき防止）
     backgroundColor: '#1e1e1e',
     webPreferences: {
       contextIsolation: true,
@@ -69,12 +70,18 @@ function openChartPopout(chartId, lang) {
   // リンク類は外部ブラウザで開く（メインと同様）
   pop.webContents.on('new-window', (e, url) => { e.preventDefault(); shell.openExternal(url); });
 
+  // 安全策: 注入が失敗してもウィンドウが出るよう一定時間後に必ず表示
+  setTimeout(() => { if (!pop.isDestroyed() && !pop.isVisible()) pop.show(); }, 4000);
+
   const url = 'file:///' + path.join(root, 'index.html').replace(/\\/g, '/') + '?popoutChart=' + chartId;
   pop.loadURL(url);
 
   pop.webContents.on('did-finish-load', () => {
     if (pop.isDestroyed()) return;
-    injectChartPopout(pop, chartId);
+    // 注入(CSS で chrome 非表示・対象グラフ全画面化)が終わってから表示する
+    injectChartPopout(pop, chartId).then(() => {
+      if (!pop.isDestroyed() && !pop.isVisible()) pop.show();
+    });
     // 現在の譜面・時刻を即時反映
     pop.webContents.send('osu-map-info', lastMapInfo);
     pop.webContents.send('osu-timing-info', lastTimingInfo);
@@ -102,7 +109,7 @@ function injectChartPopout(pop, chartId) {
     .etb-chart-marker-label { position:absolute; left:10px; top:0; transform:translateY(-50%); font-size:11px; font-weight:700; color:#fff; background:rgba(0,0,0,0.66); padding:1px 6px; border-radius:4px; white-space:nowrap; }
   `);
 
-  pop.webContents.executeJavaScript(`
+  return pop.webContents.executeJavaScript(`
     (function() {
       var chartId = ${JSON.stringify(chartId)};
       var tabMap = ${JSON.stringify(CHART_TAB_MAP)};
@@ -193,6 +200,7 @@ function injectChartPopout(pop, chartId) {
   `).catch(function() {});
 }
 
+// injectChartPopout は CSS 注入 + JS 注入を行い、JS 注入完了の Promise を返す
 function openPopout(name, lang) {
   if (name !== 'metadata' && name !== 'timing') return;
   if (popoutWindows[name] && !popoutWindows[name].isDestroyed()) {
