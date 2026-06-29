@@ -181,7 +181,7 @@ public static class OsuMem {
 #   譜面パス(GetBeatmap)はキャッシュミス時にメモリ全スキャンが走り得る上、
 #   譜面切替時しか変化しないので低頻度(250ms)に分離する。
 $POLL_MS     = 16
-$BEATMAP_MS  = 250
+$BEATMAP_MS  = 100
 
 $lastBeatmapPath    = ""
 $lastStatus         = ""

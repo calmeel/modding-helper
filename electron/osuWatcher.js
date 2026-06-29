@@ -2,7 +2,9 @@ const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const PS1_PATH = path.join(__dirname, 'osuMemory.ps1');
+// powershell.exe は asar 内ファイルを読めないため、パッケージ版では asarUnpack で
+// 展開された app.asar.unpacked 側のパスを使う（開発時は 'app.asar' を含まないので無変換）。
+const PS1_PATH = path.join(__dirname, 'osuMemory.ps1').replace('app.asar', 'app.asar.unpacked');
 
 let psProcess = null;
 let win_ = null;

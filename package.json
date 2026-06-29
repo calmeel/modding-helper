@@ -1,6 +1,6 @@
 {
   "name": "modding-helper",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "osu!taiko modding support tool",
   "main": "electron/main.js",
   "repository": "https://github.com/calmeel/modding-helper",
@@ -25,9 +25,9 @@
       "artifactName": "ModdingHelper-Setup-${version}.${ext}"
     },
     "nsis": {
-      "oneClick": true,
+      "oneClick": false,
       "perMachine": false,
-      "allowToChangeInstallationDirectory": false,
+      "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
     },
@@ -42,6 +42,9 @@
       "**/*",
       "!.git/**",
       "!node_modules/.cache/**"
+    ],
+    "asarUnpack": [
+      "electron/osuMemory.ps1"
     ],
     "extraFiles": [],
     "directories": {
