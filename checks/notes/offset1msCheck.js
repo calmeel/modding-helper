@@ -252,10 +252,11 @@ function findNearestSnapDiff(time, redTime, beatLength, beatSnaps) {
     const snapLength = beatLength / beatSnap;
     const snapIndex = Math.round((time - redTime) / snapLength);
     const nearestSnap = redTime + snapIndex * snapLength;
+    const snapped = Math.trunc(nearestSnap);
+    const diff = snapped - time;
     const rawDiff = nearestSnap - time;
-    const diff = Math.round(rawDiff);
 
-    if (!best || Math.abs(rawDiff) < Math.abs(best.rawDiff)) {
+    if (!best || Math.abs(diff) < Math.abs(best.diff)) {
       best = {
         diff,
         rawDiff,

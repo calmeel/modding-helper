@@ -839,7 +839,7 @@ are displayed as warnings, while
 with offsets of ±2 ms or more are displayed as errors.<br><br>
 
 <div class="note-subtext">
-Snap estimation at the 1 ms level is calculated using <code>beatLength</code>, and the difference from the nearest target snap is rounded to milliseconds.
+Snap estimation at the 1 ms level is calculated using <code>beatLength</code>. The nearest target snap time is truncated to an integer millisecond in a way that closely matches the osu! editor, then the difference is displayed.
 This allows the tool to estimate snap positions very similarly to the osu! editor.<br><br>
 
 In addition to spinner tails, slider tail offset detection is also supported.<br>
