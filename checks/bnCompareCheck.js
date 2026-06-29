@@ -736,6 +736,10 @@ function createBnTimelineMeasures(timingPoints, firstTime, lastTime) {
     const sectionStart = tp.time;
     const sectionEnd = nextTp ? nextTp.time : lastTime + measureLength;
 
+    // ハズレ値の beatLength で小節が無限生成されフリーズするのを防ぐ
+    if (!Number.isFinite(measureLength) || measureLength <= 0 ||
+        (sectionEnd - sectionStart) / measureLength > 200000) continue;
+
     let start = sectionStart;
 
     while (start <= sectionEnd && start <= lastTime) {

@@ -102,6 +102,9 @@ function buildUnappliedSvBarlineTimes(text) {
       ? nextSection.time
       : Math.max(lastHitObjectTime, section.time) + measureLength;
 
+    // ハズレ値の beatLength で小節線が無限生成されフリーズするのを防ぐ
+    if ((sectionEnd - section.time) / measureLength > 200000) continue;
+
     for (
       let rawBarlineTime = section.time;
       rawBarlineTime < sectionEnd - 1e-6;

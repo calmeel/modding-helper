@@ -564,6 +564,8 @@ function createWindow() {
         display: block;
         background: #111;
         border-radius: 6px;
+        /* BG を 25% 暗くする（dim 0.25 = 表示輝度 75%）。値を変えると暗さを調整可 */
+        filter: brightness(0.75);
       }
 
       #osu-map-meta {
