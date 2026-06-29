@@ -41,7 +41,9 @@
   #osu-timing-panel { padding: 4px 6px; }
   .osu-timing-row { display: flex; align-items: baseline; justify-content: space-between; padding: 4px 0; }
   .osu-timing-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; flex-shrink: 0; }
-  .osu-timing-value { font-family: "Consolas","Courier New",monospace; font-size: 14px; color: #cfcfcf; text-align: right; margin-left: 8px; }
+  .osu-timing-value { font-family: "Consolas","Courier New",monospace; font-size: 14px; color: #cfcfcf; text-align: right; margin-left: 8px; cursor: pointer; user-select: none; border-radius: 3px; transition: color .15s, background .15s; }
+  .osu-timing-value:hover { background: rgba(255,255,255,0.06); }
+  .osu-timing-value.etb-copied { color: #6ee79a !important; background: rgba(74,222,128,0.16); }
   #osu-t-timing { font-size: 17px; color: #fff; letter-spacing: 0.02em; }
 </style>
 </head>
@@ -189,6 +191,22 @@
         if (window.electronAPI && window.electronAPI.onTimingInfo) {
           window.electronAPI.onTimingInfo(renderTiming);
         }
+
+        /* 値をダブルクリックでクリップボードにコピー */
+        ['osu-t-timing', 'osu-t-bpm', 'osu-t-sv', 'osu-t-vbpm', 'osu-t-vol'].forEach(function (id) {
+          var el = document.getElementById(id);
+          if (!el) return;
+          el.title = isEn ? 'Double-click to copy' : 'ダブルクリックでコピー';
+          el.addEventListener('dblclick', function () {
+            var txt = (el.textContent || '').trim();
+            if (!txt || txt === '---' || txt === '--:--:---') return;
+            if (window.electronAPI && window.electronAPI.copyText) {
+              window.electronAPI.copyText(txt);
+              el.classList.add('etb-copied');
+              setTimeout(function () { el.classList.remove('etb-copied'); }, 450);
+            }
+          });
+        });
       }
     })();
   </script>

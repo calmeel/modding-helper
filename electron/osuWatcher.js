@@ -110,6 +110,7 @@ function sendMapInfo(filePath) {
       artistUnicode: meta.ArtistUnicode || '',
       source:        meta.Source        || '',
       tags:          meta.Tags          || '',
+      diffFileName:  path.basename(filePath),  // 現在 osu! で開いている .osu 名（グラフのマーカー用）
       bgDataUrl,
     });
   } catch (_) {}
