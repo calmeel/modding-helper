@@ -1,4 +1,5 @@
 const sharp = require('sharp');
+const pngToIco = require('png-to-ico').default;
 const fs = require('fs');
 const path = require('path');
 
@@ -20,46 +21,22 @@ const makeSvg = (size) => {
 </svg>`;
 };
 
-function buildIco(pngBuffers) {
-  const count = pngBuffers.length;
-  const headerSize = 6;
-  const entrySize = 16;
-  const dataOffset = headerSize + entrySize * count;
-
-  const header = Buffer.alloc(headerSize);
-  header.writeUInt16LE(0, 0);
-  header.writeUInt16LE(1, 2);
-  header.writeUInt16LE(count, 4);
-
-  let offset = dataOffset;
-  const entries = pngBuffers.map(buf => {
-    const entry = Buffer.alloc(entrySize);
-    entry.writeUInt8(0, 0);
-    entry.writeUInt8(0, 1);
-    entry.writeUInt8(0, 2);
-    entry.writeUInt8(0, 3);
-    entry.writeUInt16LE(1, 4);
-    entry.writeUInt16LE(32, 6);
-    entry.writeUInt32LE(buf.length, 8);
-    entry.writeUInt32LE(offset, 12);
-    offset += buf.length;
-    return entry;
-  });
-
-  return Buffer.concat([header, ...entries, ...pngBuffers]);
-}
-
 async function generate() {
   await sharp(Buffer.from(makeSvg(256))).png().toFile(path.join(imagesDir, 'icon.png'));
   console.log('icon.png を生成しました');
 
-  const sizes = [16, 32, 48, 256];
+  // 各サイズの PNG をベクター(SVG)から個別にレンダリングし、
+  // png-to-ico で「サイズ情報が正しい」マルチ解像度 ICO を作る。
+  // （手書きの ICO 生成だとディレクトリの幅/高さを誤って 256 固定にしてしまい、
+  //   Windows が小さい画像を引き伸ばしてぼやける原因になっていた）
+  const sizes = [16, 24, 32, 48, 64, 128, 256];
   const pngBuffers = await Promise.all(
     sizes.map(size => sharp(Buffer.from(makeSvg(size))).png().toBuffer())
   );
 
-  fs.writeFileSync(path.join(imagesDir, 'icon.ico'), buildIco(pngBuffers));
-  console.log('icon.ico を生成しました');
+  const ico = await pngToIco(pngBuffers);
+  fs.writeFileSync(path.join(imagesDir, 'icon.ico'), ico);
+  console.log('icon.ico を生成しました（' + sizes.join(', ') + ' px）');
 }
 
 generate().catch(console.error);
