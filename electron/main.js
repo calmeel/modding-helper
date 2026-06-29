@@ -221,6 +221,10 @@ function openPopout(name, lang) {
   const pop = new BrowserWindow({
     width: conf.width,
     height: popHeight,
+    // リアルタイム表示窓: 最小サイズを現在サイズに固定し、高さは現在値で上限固定（横のみ拡張可）
+    minWidth:  name === 'timing' ? conf.width  : undefined,
+    minHeight: name === 'timing' ? popHeight    : undefined,
+    maxHeight: name === 'timing' ? popHeight    : undefined,
     title: conf.title,
     backgroundColor: '#1e1e1e',
     alwaysOnTop: name === 'timing',  // リアルタイム表示窓は最前面に固定
@@ -339,6 +343,18 @@ function createWindow() {
       code {
         font-family: "Consolas", "Meiryo", "Yu Gothic UI", monospace !important;
       }
+
+      /* アップデートのダウンロード進捗バー */
+      #etb-update-toast {
+        position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+        z-index: 99999; background: #23232c; border: 1px solid #3d3d48;
+        border-radius: 8px; padding: 9px 14px; min-width: 250px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.5); display: none;
+        -webkit-app-region: no-drag;
+      }
+      .etb-update-text { font-size: 12px; color: #cfcfe0; margin-bottom: 6px; text-align: center; }
+      .etb-update-track { height: 6px; background: #15151a; border-radius: 3px; overflow: hidden; }
+      #etb-update-fill { height: 100%; width: 0%; background: #5b9bd5; transition: width 0.15s; }
 
       .app {
         height: 100vh !important;
@@ -1464,6 +1480,22 @@ function createWindow() {
             document.getElementById('etb-max').innerHTML = svgMax;
           });
 
+          /* アップデートのダウンロード進捗バー */
+          if (window.electronAPI.onUpdateProgress) {
+            var upToast = document.createElement('div');
+            upToast.id = 'etb-update-toast';
+            upToast.innerHTML =
+              '<div class="etb-update-text">アップデートをダウンロード中 <span id="etb-update-pct">0</span>%</div>' +
+              '<div class="etb-update-track"><div id="etb-update-fill"></div></div>';
+            document.body.appendChild(upToast);
+            window.electronAPI.onUpdateProgress(function(pct) {
+              if (pct < 0 || pct >= 100) { upToast.style.display = 'none'; return; }
+              upToast.style.display = '';
+              document.getElementById('etb-update-pct').textContent = pct;
+              document.getElementById('etb-update-fill').style.width = pct + '%';
+            });
+          }
+
           /* メタデータ行をパネルに描画（osu! / file 両モードで共用） */
           var renderMapPanel = function(data) {
             var bg   = document.getElementById('osu-map-bg');
@@ -1641,13 +1673,34 @@ function createWindow() {
 // 起動時に最新版を確認し、あれば「アップデートしますか?」ダイアログ → DL → 再起動で適用。
 function setupAutoUpdate() {
   if (!app.isPackaged) return;  // 開発時(electron .)は更新しない
-  autoUpdater.autoDownload = false;          // ダイアログで承諾を得てから DL する
+  autoUpdater.autoDownload = false;              // ダイアログで承諾を得てから DL する
   autoUpdater.autoInstallOnAppQuit = false;
+  autoUpdater.disableDifferentialDownload = true; // 差分DLの不具合を避け、確実なフルDLにする
 
   let dialogOpen = false;
+  let updating = false;
+
+  const sendProgress = (pct) => {
+    if (!mainWin || mainWin.isDestroyed()) return;
+    mainWin.setProgressBar(pct >= 0 && pct < 100 ? pct / 100 : -1);  // タスクバー進捗
+    try { mainWin.webContents.send('update-progress', pct); } catch (_) {}  // アプリ内進捗バー
+  };
+
+  const onUpdateError = (err) => {
+    console.error('[updater]', err && err.message ? err.message : err);
+    if (!updating) return;  // ユーザーが更新を開始していない時は黙る
+    updating = false;
+    sendProgress(-1);
+    dialog.showMessageBox(mainWin && !mainWin.isDestroyed() ? mainWin : null, {
+      type: 'error', title: 'アップデート', noLink: true, buttons: ['OK'],
+      message: 'アップデートに失敗しました。',
+      detail: (err && err.message ? err.message : String(err)) +
+        '\n\nお手数ですが、最新版を手動でインストールしてください。',
+    }).catch(() => {});
+  };
 
   autoUpdater.on('update-available', (info) => {
-    if (dialogOpen) return;
+    if (dialogOpen || updating) return;
     dialogOpen = true;
     dialog.showMessageBox(mainWin && !mainWin.isDestroyed() ? mainWin : null, {
       type: 'info',
@@ -1660,11 +1713,19 @@ function setupAutoUpdate() {
       noLink: true,
     }).then((res) => {
       dialogOpen = false;
-      if (res.response === 0) autoUpdater.downloadUpdate().catch(() => {});
+      if (res.response === 0) {
+        updating = true;
+        sendProgress(0);  // ダウンロード開始を即時表示
+        autoUpdater.downloadUpdate().catch(onUpdateError);
+      }
     }).catch(() => { dialogOpen = false; });
   });
 
+  autoUpdater.on('download-progress', (p) => { sendProgress(Math.round(p.percent)); });
+
   autoUpdater.on('update-downloaded', (info) => {
+    updating = false;
+    sendProgress(-1);
     dialog.showMessageBox(mainWin && !mainWin.isDestroyed() ? mainWin : null, {
       type: 'info',
       title: 'アップデート',
@@ -1681,8 +1742,7 @@ function setupAutoUpdate() {
     }).catch(() => {});
   });
 
-  // 失敗してもアプリは通常通り使えるよう、エラーは握りつぶす（ログのみ）
-  autoUpdater.on('error', (err) => { console.error('[updater]', err && err.message ? err.message : err); });
+  autoUpdater.on('error', onUpdateError);
 
   // メイン窓が表示された後に確認（UI 表示前にダイアログが出ないよう少し遅延）
   setTimeout(() => { autoUpdater.checkForUpdates().catch(() => {}); }, 4000);

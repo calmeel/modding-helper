@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getCurrentMapset: (knownFolder) => ipcRenderer.invoke('osu-get-current-mapset', knownFolder),
   detachPanel:      (name, lang, checked) => ipcRenderer.send('detach-panel', name, lang, checked),
   detachChart:      (chartId, lang) => ipcRenderer.send('detach-chart', chartId, lang),
+  onUpdateProgress: (cb) => ipcRenderer.on('update-progress', (_, pct) => cb(pct)),
   onPanelRedocked:  (cb)         => ipcRenderer.on('panel-redocked', (_, name, checked) => cb(name, checked)),
   sendMapMetaToPopout: (data)    => ipcRenderer.send('popout-map-meta', data),
   sendPopoutChecked: (arr)       => ipcRenderer.send('popout-checked-changed', arr),
