@@ -825,7 +825,7 @@ Mapset Verifier や AiMod では ±1 ms のズレは表示されません（unra
 <code><span style="color:#ff6b6b; font-weight:bold;">unsnapped のオブジェクト</span></code> がある場合（±2 ms 以上のズレ）はエラーとして検出します。<br><br>
 
 <div class="note-subtext">
-1 ms単位での snap 推定は、<code>beatLength</code> を用いて計算し、最も近い対象 snap との差分を ms 単位に丸めて表示します。
+1 ms単位での snap 推定は、<code>beatLength</code> を用いて計算し、最も近い対象 snap の時刻を osu!editor に近い形で整数 ms に切り捨ててから差分を表示します。
 これにより、osu!editor とほぼ同じ位置の snap を推定できます。<br><br>
 
 終点については、スピナー終点に加えてスライダー終点のズレ検出にも対応しています。<br>
