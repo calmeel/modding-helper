@@ -730,6 +730,12 @@ function createWindow() {
       }
       #electron-col-tabs .tab-group-title { font-size: 11px !important; }
 
+      /* 「ツール」グループは最下部に全幅で隔離（上に余白を空けて区切る） */
+      #electron-col-tabs .tab-group.etb-tool-group {
+        grid-column: 1 / -1 !important;
+        margin-top: 16px !important;
+      }
+
       /* 設定モード: 移設したチェック対象選択をカードに馴染ませる */
       #etb-card-loadsettings .osu-source-settings {
         border: none !important;
@@ -1277,6 +1283,13 @@ function createWindow() {
           });
           wrap.appendChild(btn);
         });
+
+        /* 「ツール」グループ（音声波形・タイムライン・BN評価）を最下部に隔離 */
+        var toolAnchor = document.querySelector('#electron-col-tabs .tab-button[data-tab="bnCompare"]');
+        if (toolAnchor) {
+          var toolGroup = toolAnchor.closest('.tab-group');
+          if (toolGroup) toolGroup.classList.add('etb-tool-group');
+        }
 
         /* リアルタイム表示の値をダブルクリックでクリップボードにコピー */
         ['osu-t-timing', 'osu-t-bpm', 'osu-t-sv', 'osu-t-vbpm', 'osu-t-vol'].forEach(function(id) {
