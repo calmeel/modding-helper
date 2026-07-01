@@ -774,6 +774,24 @@ document.addEventListener("DOMContentLoaded", () => {
       state.clapWhistle = result.clapWhistle;
       state.offsetSources = result.offsetSources;
       state.timelineSources = result.offsetSources;
+      // スプレッド表示(exe)用に全難易度のテキストを公開
+      window.__loadedDiffs = result.offsetSources;
+      // スプレッド表示(exe)の音楽再生用に、先頭難易度の音源を Blob URL で公開
+      try {
+        if (window.__loadedAudioUrl) {
+          URL.revokeObjectURL(window.__loadedAudioUrl);
+          window.__loadedAudioUrl = null;
+        }
+        const wfs = (result.offsetWaveformSources || []).find(s => s && s.audioBlob);
+        if (wfs && wfs.audioBlob) {
+          window.__loadedAudioUrl = URL.createObjectURL(wfs.audioBlob);
+          window.__loadedAudio = { url: window.__loadedAudioUrl, durationMs: wfs.audioDurationMs || 0 };
+        } else {
+          window.__loadedAudio = null;
+        }
+      } catch (e) {
+        window.__loadedAudio = null;
+      }
       state.offset = result.offset;
       state.timeline = null;
       state.doubleSvSources = result.doubleSvSources;
@@ -797,6 +815,8 @@ document.addEventListener("DOMContentLoaded", () => {
       state.spread.results = result.spread;
       state.spread.diffOrder = createSpreadDiffOrder(result.spread);
       state.spread.manualCategories = {};
+      // スプレッド表示(exe)用に難易度順（易→難）を公開。表示側で逆順=難→易に並べる
+      window.__loadedDiffOrder = state.spread.diffOrder;
       state.offsetWaveformSources = result.offsetWaveformSources;
       state.contentPermission = result.contentPermission;
 

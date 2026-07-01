@@ -12,6 +12,68 @@ const docsPath = path.join(root, 'docs', 'docs.html');
 
 let mainWin = null;
 
+// スプレッド表示の効果音: 指定フォルダの音源を base64 データURLで読み込む。
+//   期待するファイル名（拡張子は wav/ogg/mp3 のいずれか。無い物は省略可）:
+//     don / kat（必須）, don-big / kat-big（任意: 大音符。無ければ don/kat を大きめに鳴らす）
+//   osu!taiko 標準スキン名（taiko-normal-hitnormal 等）も認識する。
+// renderer は file://・asar の直接 fetch が制限されるため、メインで fs 読み込みして注入する。
+function loadTaikoSoundMapFrom(dir) {
+  const exts = ['.wav', '.ogg', '.mp3'];
+  const mime = { '.wav': 'audio/wav', '.ogg': 'audio/ogg', '.mp3': 'audio/mpeg' };
+  const bases = {
+    don:    ['don',     'taiko-normal-hitnormal'],
+    kat:    ['kat',     'taiko-normal-hitclap', 'taiko-normal-hitwhistle'],
+    donBig: ['don-big', 'taiko-normal-hitfinish'],
+    katBig: ['kat-big', 'taiko-normal-hitwhistle']
+  };
+  const map = {};
+  for (const key of Object.keys(bases)) {
+    let found = false;
+    for (const base of bases[key]) {
+      for (const ext of exts) {
+        const p = path.join(dir, base + ext);
+        try {
+          if (fs.existsSync(p)) {
+            map[key] = 'data:' + mime[ext] + ';base64,' + fs.readFileSync(p).toString('base64');
+            found = true;
+            break;
+          }
+        } catch (_) { /* 読めなければスキップ */ }
+      }
+      if (found) break;
+    }
+  }
+  return map;
+}
+
+// sounds/ 配下のセット一覧を返す。
+//   サブフォルダがあれば各フォルダ=1セット（フォルダ名=ラベル）。
+//   サブフォルダが無ければ sounds/ 直下を単一セット 'default' とする。
+// 戻り値: [{ id, label, sounds: {don,kat,donBig,katBig} }, ...]
+function loadTaikoSoundSets() {
+  const dir = path.join(root, 'sounds');
+  const sets = [];
+  let subdirs = [];
+  try {
+    subdirs = fs.readdirSync(dir, { withFileTypes: true })
+      .filter(e => e.isDirectory())
+      .map(e => e.name)
+      .sort((a, b) => a.localeCompare(b));
+  } catch (_) { subdirs = []; }
+
+  if (subdirs.length) {
+    for (const name of subdirs) {
+      const sounds = loadTaikoSoundMapFrom(path.join(dir, name));
+      if (sounds.don || sounds.kat) sets.push({ id: name, label: name, sounds });
+    }
+  }
+  if (!sets.length) {
+    const sounds = loadTaikoSoundMapFrom(dir);
+    if (sounds.don || sounds.kat) sets.push({ id: 'default', label: 'Default', sounds });
+  }
+  return sets;
+}
+
 // 分離ポップアウト（メタデータ / リアルタイム）と最新データのキャッシュ
 const popoutWindows = { metadata: null, timing: null };
 const chartPopouts = {};  // chartId -> BrowserWindow（グラフ分離窓）
@@ -314,6 +376,12 @@ function createWindow() {
   setTimeout(() => { if (!win.isDestroyed() && !win.isVisible()) win.show(); }, 4000);
 
   win.webContents.on('did-finish-load', () => {
+    // スプレッド表示の効果音源セット（sounds/<セット>/ にあれば）を注入。無ければ合成音にフォールバック
+    try {
+      win.webContents.executeJavaScript(
+        'window.__taikoSoundSets = ' + JSON.stringify(loadTaikoSoundSets()) + ';'
+      ).catch(() => {});
+    } catch (_) {}
     // ─────────────────────────────────────────────
     // CSS 注入
     // ─────────────────────────────────────────────
@@ -755,6 +823,75 @@ function createWindow() {
         margin-top: 16px !important;
       }
 
+      /* 「再生」グループ（スプレッド表示・exe限定）も全幅で隔離 */
+      #electron-col-tabs .tab-group.etb-play-group {
+        grid-column: 1 / -1 !important;
+        margin-top: 10px !important;
+      }
+      #electron-col-tabs .tab-group.etb-play-group .tab-button { width: 100% !important; }
+
+      /* スプレッド表示パネルはカード本体いっぱいに広げる（縦: ツールバー + canvas） */
+      #electron-col-output #tab-spreadPlay { padding: 0 !important; }
+      #electron-col-output #tab-spreadPlay.active {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+      }
+      #etb-spread-canvas {
+        display: block;
+        width: 100%;
+        flex: 1 1 auto;
+        min-height: 200px;
+        background: #1a1a1f;
+        cursor: grab;
+      }
+      .etb-spread-toolbar {
+        display: flex; align-items: center; gap: 14px;
+        flex: 0 0 auto;
+        padding: 6px 10px;
+        border-bottom: 1px solid #2a2a33;
+        font-size: 12px; color: #cfcfcf;
+      }
+      .etb-spread-toolbar .etb-spread-snaplabel,
+      .etb-spread-toolbar .etb-spread-sfx { display: inline-flex; align-items: center; gap: 6px; }
+      .etb-spread-toolbar .etb-spread-sfx { cursor: pointer; user-select: none; }
+      .etb-spread-toolbar .etb-spread-sfx input { cursor: pointer; }
+
+      /* 設定画面の「効果音の種類」 */
+      .etb-sfx-settings { margin-top: 12px; padding-top: 10px; border-top: 1px solid #2a2a33; }
+      .etb-sfx-settings-title { font-size: 12px; color: #9fb0c0; margin-bottom: 6px; }
+      .etb-sfx-settings .etb-sfx-opt {
+        display: flex; align-items: center; gap: 7px;
+        font-size: 13px; color: #ddd; padding: 4px 2px; cursor: pointer;
+      }
+      .etb-sfx-settings .etb-sfx-opt input { cursor: pointer; flex-shrink: 0; }
+      .etb-sfx-settings .etb-sfx-none { font-size: 12px; color: #777; }
+      .etb-sfx-settings .etb-sfx-vol {
+        display: flex; align-items: center; gap: 8px; margin-top: 8px;
+      }
+      .etb-sfx-settings .etb-sfx-vol-label { font-size: 13px; color: #ddd; flex-shrink: 0; }
+      .etb-sfx-settings .etb-sfx-vol-range { flex: 1 1 auto; min-width: 60px; cursor: pointer; }
+      .etb-sfx-settings .etb-sfx-vol-num {
+        width: 56px; flex-shrink: 0;
+        background: #2a2a33; color: #eee;
+        border: 1px solid #3a3a45; border-radius: 4px; padding: 2px 4px; font-size: 12px;
+      }
+      .etb-spread-toolbar select {
+        background: #2a2a33; color: #eee;
+        border: 1px solid #3a3a45; border-radius: 4px;
+        padding: 2px 4px; font-size: 12px; cursor: pointer;
+      }
+      .etb-spread-zoom { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; }
+      .etb-spread-zoom button {
+        width: 24px; height: 22px; line-height: 1; font-size: 14px;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #2a2a33; color: #eee;
+        border: 1px solid #3a3a45; border-radius: 4px; cursor: pointer;
+        padding: 0;
+      }
+      .etb-spread-zoom button:hover { background: #34343f; }
+      #etb-spread-zoomlabel { min-width: 44px; text-align: center; font-variant-numeric: tabular-nums; }
+
       /* 設定モード: 移設したチェック対象選択をカードに馴染ませる */
       #etb-card-loadsettings .osu-source-settings {
         border: none !important;
@@ -1035,6 +1172,494 @@ function createWindow() {
         var tabVisEl = document.querySelector('.tab-visibility-settings');
         if (tabVisEl) tabVisEl.style.display = 'none';
 
+        /* ── スプレッド表示タブ（exe 限定）──
+           全難易度のノーツを等速(SV無視)で右→左に流し、osu! 再生に同期する。 */
+        if (window.drawTaikoSpread && window.parseTaikoNotes) {
+          var spGroup = document.createElement('div');
+          spGroup.className = 'tab-group etb-play-group';
+          spGroup.innerHTML = '<div class="tab-group-title" id="etb-title-play">再生</div>';
+          var spBtn = document.createElement('button');
+          spBtn.className = 'tab-button';
+          spBtn.setAttribute('data-tab', 'spreadPlay');
+          spBtn.id = 'etb-tab-spread';
+          spBtn.textContent = 'スプレッド表示';
+          spGroup.appendChild(spBtn);
+          tabButtons.appendChild(spGroup);
+
+          var spPanel = document.createElement('section');
+          spPanel.className = 'tab-panel';
+          spPanel.id = 'tab-spreadPlay';
+
+          /* ツールバー: スナップ選択 + ズーム(+/-) */
+          var spBar = document.createElement('div');
+          spBar.className = 'etb-spread-toolbar';
+          spBar.innerHTML =
+            '<label class="etb-spread-snaplabel"><span id="etb-spread-snap-text">スナップ</span> ' +
+            '<select id="etb-spread-snap">' +
+            '<option value="1">1/1</option><option value="2">1/2</option>' +
+            '<option value="3">1/3</option><option value="4" selected>1/4</option>' +
+            '<option value="6">1/6</option><option value="8">1/8</option>' +
+            '<option value="12">1/12</option><option value="16">1/16</option>' +
+            '</select></label>' +
+            '<label class="etb-spread-sfx"><input type="checkbox" id="etb-spread-sfx-cb"> ' +
+            '<span id="etb-spread-sfx-text">効果音</span></label>' +
+            '<span class="etb-spread-zoom">' +
+            '<button type="button" id="etb-spread-zoomout">−</button>' +
+            '<span id="etb-spread-zoomlabel">100%</span>' +
+            '<button type="button" id="etb-spread-zoomin">＋</button>' +
+            '</span>';
+          spPanel.appendChild(spBar);
+
+          var spCanvas = document.createElement('canvas');
+          spCanvas.id = 'etb-spread-canvas';
+          spPanel.appendChild(spCanvas);
+          outBody.appendChild(spPanel);
+
+          /* 表示状態: スナップ分割・ズーム(pxPerMs) */
+          var spSnap = 4;
+          var SP_BASE_PX = 0.32, SP_ZOOM_MIN = 0.06, SP_ZOOM_MAX = 2.2;
+          var spPxPerMs = SP_BASE_PX;
+          var updateSpZoomLabel = function () {
+            var l = document.getElementById('etb-spread-zoomlabel');
+            if (l) l.textContent = Math.round(spPxPerMs / SP_BASE_PX * 100) + '%';
+          };
+          var setSpZoom = function (v) {
+            spPxPerMs = Math.max(SP_ZOOM_MIN, Math.min(SP_ZOOM_MAX, v));
+            updateSpZoomLabel();
+          };
+          var spSnapSel = spBar.querySelector('#etb-spread-snap');
+          if (spSnapSel) spSnapSel.addEventListener('change', function () {
+            var v = parseInt(spSnapSel.value, 10); if (v > 0) spSnap = v;
+          });
+          var spZoomIn  = spBar.querySelector('#etb-spread-zoomin');
+          var spZoomOut = spBar.querySelector('#etb-spread-zoomout');
+          if (spZoomIn)  spZoomIn.addEventListener('click',  function () { setSpZoom(spPxPerMs * 1.25); });
+          if (spZoomOut) spZoomOut.addEventListener('click', function () { setSpZoom(spPxPerMs / 1.25); });
+          updateSpZoomLabel();
+          /* スプレッド表示中のキーボード +/- でもズーム */
+          document.addEventListener('keydown', function (e) {
+            if (!spPanel.classList.contains('active')) return;
+            var t = e.target;
+            if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) return;
+            if (e.key === '+' || e.key === '=') { setSpZoom(spPxPerMs * 1.25); e.preventDefault(); }
+            else if (e.key === '-' || e.key === '_') { setSpZoom(spPxPerMs / 1.25); e.preventDefault(); }
+          });
+
+          /* 効果音（ドン/カツ）: ON のとき、選択レーンのノーツを再生に合わせて鳴らす */
+          var spHitSounds = false;   // 効果音 ON/OFF
+          var spSynth = null;        // Web Audio シンセ/サンプルキット
+          var spSoundLane = 0;       // 効果音を鳴らすレーン（0=最上=最難）。クリックで変更
+
+          /* 効果音セット（sounds/<セット>/）の選択。設定画面のラジオで切替、localStorage に保存 */
+          var spSfxSets = Array.isArray(window.__taikoSoundSets) ? window.__taikoSoundSets : [];
+          var spSfxSetId = null;
+          try { spSfxSetId = localStorage.getItem('moddingHelperSfxSet'); } catch (e) {}
+          /* 効果音の音量（0..1）。設定画面で 0〜100 入力。 */
+          var spSfxVolume01 = 0.8;
+          try {
+            var sv0 = parseInt(localStorage.getItem('moddingHelperSfxVolume'), 10);
+            if (Number.isFinite(sv0)) spSfxVolume01 = Math.max(0, Math.min(100, sv0)) / 100;
+          } catch (e) {}
+          /* 曲の音量（0..1）。設定画面で 0〜100 入力。spAudio.volume に反映。 */
+          var spMusicVolume01 = 1.0;
+          try {
+            var mv0 = parseInt(localStorage.getItem('moddingHelperMusicVolume'), 10);
+            if (Number.isFinite(mv0)) spMusicVolume01 = Math.max(0, Math.min(100, mv0)) / 100;
+          } catch (e) {}
+          var getSelectedSfxSet = function () {
+            if (!spSfxSets.length) return null;
+            for (var i = 0; i < spSfxSets.length; i++) if (spSfxSets[i].id === spSfxSetId) return spSfxSets[i];
+            return spSfxSets[0];
+          };
+          /* 選択中のセットで効果音キットを作り直す（合成音フォールバック付き） */
+          var buildSfxKit = function () {
+            if (spSynth && spSynth.ctx && spSynth.ctx.close) { try { spSynth.ctx.close(); } catch (e) {} }
+            spSynth = null;
+            var set = getSelectedSfxSet();
+            var sm = set && set.sounds;
+            if (sm && (sm.don || sm.kat) && window.createTaikoSampleKit) {
+              spSynth = window.createTaikoSampleKit(sm);
+            }
+            if (!spSynth && window.createTaikoHitSynth) {
+              spSynth = window.createTaikoHitSynth(); // 音源が無ければ合成音
+            }
+            if (spSynth) {
+              if (spSynth.setVolume) spSynth.setVolume(spSfxVolume01);
+              spSynth.resume();
+            }
+          };
+          /* 設定画面から呼ばれる: セット選択を変更 */
+          var setSfxSet = function (id) {
+            spSfxSetId = id;
+            try { localStorage.setItem('moddingHelperSfxSet', id); } catch (e) {}
+            if (spHitSounds) buildSfxKit(); // 再生中でも即差し替え
+            spSfxLastSong = null; spSfxSchedTo = null; // 新キットで予約し直す
+          };
+          window.__spreadSetSfxSet = setSfxSet; // 設定 UI から利用
+
+          /* 設定画面（譜面読み込み設定カード）に「効果音の種類」ラジオを追加 */
+          if (typeof loadSettingsBody !== 'undefined' && loadSettingsBody) {
+            var sfxSection = document.createElement('div');
+            sfxSection.className = 'etb-sfx-settings';
+            var sfxTitle = document.createElement('div');
+            sfxTitle.className = 'etb-sfx-settings-title';
+            sfxTitle.id = 'etb-sfx-settings-title';
+            sfxTitle.textContent = '効果音の種類';
+            sfxSection.appendChild(sfxTitle);
+            if (spSfxSets.length) {
+              var selId = (getSelectedSfxSet() || {}).id;
+              spSfxSets.forEach(function (set) {
+                var lb = document.createElement('label');
+                lb.className = 'etb-sfx-opt';
+                var rb = document.createElement('input');
+                rb.type = 'radio'; rb.name = 'etb-sfx-set'; rb.value = set.id;
+                if (set.id === selId) rb.checked = true;
+                rb.addEventListener('change', function () { if (rb.checked) setSfxSet(set.id); });
+                lb.appendChild(rb);
+                lb.appendChild(document.createTextNode(' ' + set.label));
+                sfxSection.appendChild(lb);
+              });
+            } else {
+              var sfxNone = document.createElement('div');
+              sfxNone.className = 'etb-sfx-none'; sfxNone.id = 'etb-sfx-none';
+              sfxNone.textContent = '（sounds/ に音源フォルダがありません。合成音を使用）';
+              sfxSection.appendChild(sfxNone);
+            }
+
+            /* 音量（0〜100）: スライダー + 数値入力（同期） */
+            var volRow = document.createElement('div');
+            volRow.className = 'etb-sfx-vol';
+            var volLabel = document.createElement('span');
+            volLabel.id = 'etb-sfx-vol-label'; volLabel.className = 'etb-sfx-vol-label';
+            volLabel.textContent = '効果音の音量';
+            var volRange = document.createElement('input');
+            volRange.type = 'range'; volRange.min = '0'; volRange.max = '100'; volRange.step = '1';
+            volRange.className = 'etb-sfx-vol-range';
+            var volNum = document.createElement('input');
+            volNum.type = 'number'; volNum.min = '0'; volNum.max = '100'; volNum.step = '1';
+            volNum.id = 'etb-sfx-vol-input'; volNum.className = 'etb-sfx-vol-num';
+            var applyVol = function (v, from) {
+              v = Math.max(0, Math.min(100, Math.round(v)));
+              spSfxVolume01 = v / 100;
+              try { localStorage.setItem('moddingHelperSfxVolume', String(v)); } catch (e) {}
+              if (spSynth && spSynth.setVolume) spSynth.setVolume(spSfxVolume01);
+              if (from !== 'range') volRange.value = String(v);
+              if (from !== 'num') volNum.value = String(v);
+            };
+            var initVol = Math.round(spSfxVolume01 * 100);
+            volRange.value = String(initVol); volNum.value = String(initVol);
+            volRange.addEventListener('input', function () { applyVol(parseInt(volRange.value, 10) || 0, 'range'); });
+            volNum.addEventListener('input', function () {
+              var v = parseInt(volNum.value, 10); if (Number.isFinite(v)) applyVol(v, 'num');
+            });
+            volRow.appendChild(volLabel);
+            volRow.appendChild(volRange);
+            volRow.appendChild(volNum);
+            sfxSection.appendChild(volRow);
+
+            /* 曲の音量（0〜100）: スライダー + 数値入力（同期） */
+            var mVolRow = document.createElement('div');
+            mVolRow.className = 'etb-sfx-vol';
+            var mVolLabel = document.createElement('span');
+            mVolLabel.id = 'etb-music-vol-label'; mVolLabel.className = 'etb-sfx-vol-label';
+            mVolLabel.textContent = '曲の音量';
+            var mVolRange = document.createElement('input');
+            mVolRange.type = 'range'; mVolRange.min = '0'; mVolRange.max = '100'; mVolRange.step = '1';
+            mVolRange.className = 'etb-sfx-vol-range';
+            var mVolNum = document.createElement('input');
+            mVolNum.type = 'number'; mVolNum.min = '0'; mVolNum.max = '100'; mVolNum.step = '1';
+            mVolNum.id = 'etb-music-vol-input'; mVolNum.className = 'etb-sfx-vol-num';
+            var applyMusicVol = function (v, from) {
+              v = Math.max(0, Math.min(100, Math.round(v)));
+              spMusicVolume01 = v / 100;
+              try { localStorage.setItem('moddingHelperMusicVolume', String(v)); } catch (e) {}
+              if (typeof spAudio !== 'undefined' && spAudio) spAudio.volume = spMusicVolume01;
+              if (from !== 'range') mVolRange.value = String(v);
+              if (from !== 'num') mVolNum.value = String(v);
+            };
+            var initMVol = Math.round(spMusicVolume01 * 100);
+            mVolRange.value = String(initMVol); mVolNum.value = String(initMVol);
+            mVolRange.addEventListener('input', function () { applyMusicVol(parseInt(mVolRange.value, 10) || 0, 'range'); });
+            mVolNum.addEventListener('input', function () {
+              var v = parseInt(mVolNum.value, 10); if (Number.isFinite(v)) applyMusicVol(v, 'num');
+            });
+            mVolRow.appendChild(mVolLabel);
+            mVolRow.appendChild(mVolRange);
+            mVolRow.appendChild(mVolNum);
+            sfxSection.appendChild(mVolRow);
+
+            loadSettingsBody.appendChild(sfxSection);
+          }
+
+          var spSfxCb = spBar.querySelector('#etb-spread-sfx-cb');
+          if (spSfxCb) spSfxCb.addEventListener('change', function () {
+            spHitSounds = spSfxCb.checked;
+            if (spHitSounds && !spSynth) buildSfxKit();
+            if (spHitSounds && spSynth) spSynth.resume(); // ユーザー操作なので AudioContext を起動
+            spSfxLastSong = null; spSfxSchedTo = null; // 有効化直後に過去分を鳴らさない
+          });
+
+          /* 難易度キャッシュ（__loadedDiffs が差し替わった時だけ再解析） */
+          var spCacheRef = null, spCacheDiffs = [];
+          var spreadTimeRange = null; // 手動シークのクランプ用 [min, max]
+          var getSpreadDiffs = function () {
+            var raw = window.__loadedDiffs;
+            if (raw === spCacheRef) return spCacheDiffs;
+            spCacheRef = raw;
+            spCacheDiffs = (raw || []).map(function (d) {
+              var name = (typeof parseMetadataValue === 'function' && d.text
+                && parseMetadataValue(d.text, 'Version')) || d.fileName || '';
+              return {
+                name: name,
+                fileName: d.fileName || '',
+                notes: window.parseTaikoNotes(d.text),
+                red: window.parseTaikoRedTiming ? window.parseTaikoRedTiming(d.text) : []
+              };
+            });
+            /* 難易度順（易→難）の逆順 = 難→易 に並べ替え（上のレーンほど難しい）。
+               順序に無い難易度は末尾へ。安定ソートで元の相対順を保持。 */
+            var order = window.__loadedDiffOrder;
+            if (order && order.length) {
+              var rank = Object.create(null);
+              for (var oi = 0; oi < order.length; oi++) rank[order[oi]] = oi;
+              spCacheDiffs.sort(function (a, b) {
+                var ra = a.fileName in rank ? rank[a.fileName] : -1;
+                var rb = b.fileName in rank ? rank[b.fileName] : -1;
+                return rb - ra; // 降順: rank大(難しい)を先頭、未知(-1)は末尾
+              });
+            }
+            /* 全難易度の時間範囲（ノーツの最初〜最後）を求めてクランプ範囲にする */
+            var minT = Infinity, maxT = -Infinity;
+            spCacheDiffs.forEach(function (d) {
+              var ns = d.notes;
+              if (ns && ns.length) {
+                if (ns[0].time < minT) minT = ns[0].time;
+                var last = ns[ns.length - 1];
+                var e = last.endTime != null ? last.endTime : last.time;
+                if (e > maxT) maxT = e;
+              }
+            });
+            spreadTimeRange = minT <= maxT ? [minT - 2000, maxT + 2000] : null;
+            return spCacheDiffs;
+          };
+
+          /* ── 手動シーク（osu! には同期しない） ── */
+          var setSpreadManual = function (t) {
+            if (!Number.isFinite(t)) return;
+            if (spreadTimeRange) t = Math.max(spreadTimeRange[0], Math.min(spreadTimeRange[1], t));
+            spreadManualTime = t;
+          };
+          /* グリッド用の参照赤線（最初に見つかった非空のもの） */
+          var spreadRefRed = function (diffs) {
+            for (var i = 0; i < diffs.length; i++) {
+              if (diffs[i].red && diffs[i].red.length) return diffs[i].red;
+            }
+            return null;
+          };
+          /* スナップ1目盛り分ステップ（ホイール用）。グリッドに吸着して dir 方向へ */
+          var spreadSnapStep = function (red, t, snap, dir) {
+            if (!red || !red.length) return t + dir * 100;
+            var seg = red[0];
+            for (var i = 0; i < red.length; i++) { if (red[i].time <= t) seg = red[i]; else break; }
+            var tick = seg.beatLength / snap;
+            if (!(tick > 0)) return t + dir * 100;
+            var k = Math.round((t - seg.time) / tick);
+            return seg.time + (k + dir) * tick;
+          };
+
+          /* マウス操作:
+             - ドラッグ = スクラブ（右=戻る / 左=進む。開始時に音楽停止）
+             - 動かさずクリック = そのレーンを効果音の対象に選択
+             閾値を超えて初めてドラッグ扱いにする。 */
+          var SP_DRAG_THRESH = 5;
+          var spPendingDown = false, spDownX = 0, spDownY = 0, spDragLastX = 0;
+          spCanvas.addEventListener('mousedown', function (e) {
+            if (e.button !== 0) return;
+            spPendingDown = true;
+            spDownX = e.clientX; spDownY = e.clientY; spDragLastX = e.clientX;
+            e.preventDefault();
+          });
+          window.addEventListener('mousemove', function (e) {
+            if (!spPendingDown && !spreadDragging) return;
+            if (!spreadDragging) {
+              if (Math.abs(e.clientX - spDownX) + Math.abs(e.clientY - spDownY) < SP_DRAG_THRESH) return;
+              spreadDragging = true;
+              if (spAudio && !spAudio.paused) spAudio.pause(); // スクラブ開始で音楽停止
+              var base0 = getSpreadTime(); if (base0 == null) base0 = 0;
+              setSpreadManual(base0);
+              spDragLastX = e.clientX;
+              spCanvas.style.cursor = 'grabbing';
+            }
+            var dx = e.clientX - spDragLastX;
+            spDragLastX = e.clientX;
+            var base = spreadManualTime != null ? spreadManualTime : (spreadLastTime || 0);
+            setSpreadManual(base - dx / spPxPerMs);
+          });
+          window.addEventListener('mouseup', function (e) {
+            if (spreadDragging) { spreadDragging = false; spCanvas.style.cursor = ''; spPendingDown = false; return; }
+            if (!spPendingDown) return;
+            spPendingDown = false;
+            /* 動かさずクリック → クリックしたレーンを効果音の対象に選択 */
+            var geom = spCanvas.__spreadGeom;
+            if (!geom || !geom.n) return;
+            var rect = spCanvas.getBoundingClientRect();
+            var relY = e.clientY - rect.top;
+            if (e.clientX < rect.left || e.clientX > rect.right || relY < 0 || relY > rect.height) return;
+            var idx = Math.floor((relY - geom.topPad) / geom.laneH);
+            spSoundLane = Math.max(0, Math.min(geom.n - 1, idx));
+          });
+
+          /* ホイール: 通常=スナップ単位でシーク / Ctrl+ホイール=ズーム */
+          spCanvas.addEventListener('wheel', function (e) {
+            if (e.ctrlKey) {
+              setSpZoom(spPxPerMs * (e.deltaY < 0 ? 1.15 : 1 / 1.15));
+              e.preventDefault();
+              return;
+            }
+            if (spAudio && !spAudio.paused) spAudio.pause(); // ホイールでシークしたら音楽は止める
+            var base = getSpreadTime(); if (base == null) base = 0;
+            var red = spreadRefRed(getSpreadDiffs());
+            var dir = e.deltaY > 0 ? 1 : -1; // 下回し=進む
+            setSpreadManual(spreadSnapStep(red, base, spSnap, dir));
+            e.preventDefault();
+          }, { passive: false });
+
+          /* ダブルクリックで追従に復帰 */
+          spCanvas.addEventListener('dblclick', function (e) {
+            spreadManualTime = null;
+            e.preventDefault();
+          });
+
+          /* ── 音楽付き再生（スペースキー。osu! には同期しない） ── */
+          var spAudio = new Audio();
+          spAudio.preload = 'auto';
+          spAudio.volume = spMusicVolume01; // 設定した曲の音量を反映
+          var spAudioSrcRef = null;
+          var syncSpreadAudioSrc = function () {
+            var a = window.__loadedAudio;
+            var url = a && a.url ? a.url : null;
+            if (url === spAudioSrcRef) return;
+            spAudioSrcRef = url;
+            spreadAudioPlaying = false;
+            try { spAudio.pause(); } catch (e) {}
+            if (url) spAudio.src = url; else spAudio.removeAttribute('src');
+          };
+          spAudio.addEventListener('play',  function () { spreadAudioPlaying = true; });
+          spAudio.addEventListener('pause', function () { spreadAudioPlaying = false; });
+          spAudio.addEventListener('ended', function () { spreadAudioPlaying = false; });
+
+          var toggleSpreadPlay = function () {
+            syncSpreadAudioSrc();
+            if (!spAudioSrcRef) return; // 音源が無い
+            if (spAudio.paused) {
+              var base = getSpreadTime(); if (base == null) base = 0;
+              var durMs = (spAudio.duration && isFinite(spAudio.duration)) ? spAudio.duration * 1000 : Infinity;
+              var startMs = Math.max(0, Math.min(base, durMs - 1));
+              try { spAudio.currentTime = startMs / 1000; } catch (e) {}
+              spAudio.play().catch(function () {});
+            } else {
+              spAudio.pause();
+              spreadManualTime = spAudio.currentTime * 1000; // 停止位置で固定
+            }
+          };
+
+          /* スペースキーで再生/一時停止（スプレッド表示中・入力欄以外） */
+          document.addEventListener('keydown', function (e) {
+            if (!spPanel.classList.contains('active')) return;
+            if (e.code !== 'Space' && e.key !== ' ') return;
+            var t = e.target;
+            if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+            e.preventDefault();
+            toggleSpreadPlay();
+          });
+
+          /* 効果音を Web Audio クロックに「先読みスケジュール」して鳴らす。
+             描画ループ(約16ms)で通過検出→即再生 だと検出遅れぶん遅延するため、
+             少し先(SP_SFX_LOOKAHEAD_MS)までのノーツを正確な発音時刻で予約する。 */
+          var SP_SFX_LOOKAHEAD_MS = 120;
+          var SP_SFX_OFFSET_MS = 0;   // 微調整用（+で遅らせ / -で早める）
+          var spSfxLastSong = null;   // 前フレームの曲時刻（シーク検出用）
+          var spSfxSchedTo = null;    // ここまでの曲時刻を予約済み
+          var scheduleSpreadHitSounds = function (diffs, playing) {
+            if (!spHitSounds || !spSynth || !spSynth.ctx || !playing) {
+              spSfxLastSong = null; spSfxSchedTo = null; return;
+            }
+            var songNow = spAudio.currentTime * 1000;
+            var ctxNow  = spSynth.ctx.currentTime;
+            /* シーク/巻き戻し/大ジャンプ → 予約位置をリセット（過去を鳴らさない） */
+            if (spSfxLastSong == null || songNow < spSfxLastSong - 5 || songNow - spSfxLastSong > 300) {
+              spSfxSchedTo = songNow;
+            }
+            spSfxLastSong = songNow;
+            var from = Math.max(spSfxSchedTo == null ? songNow : spSfxSchedTo, songNow);
+            var horizon = songNow + SP_SFX_LOOKAHEAD_MS;
+            var diff = diffs[Math.min(spSoundLane, diffs.length - 1)];
+            if (diff && diff.notes) {
+              var notes = diff.notes;
+              for (var k = 0; k < notes.length; k++) {
+                var nt = notes[k].time;
+                if (nt <= from) continue;
+                if (nt > horizon) break; // ソート済み → 以降は先
+                var when = ctxNow + (nt - songNow + SP_SFX_OFFSET_MS) / 1000;
+                var kind = notes[k].kind;
+                if (kind === 'don') spSynth.don(notes[k].big, when);
+                else if (kind === 'kat') spSynth.kat(notes[k].big, when);
+                /* 連打(drumroll)・風船(denden)は鳴らさない */
+              }
+            }
+            spSfxSchedTo = horizon;
+          };
+
+          var spRaf = null;
+          var spLoop = function () {
+            if (!spPanel.classList.contains('active')) { spRaf = null; return; }
+            /* 音源を最新譜面に合わせて先読みしておく（スペース押下時に即再生できるよう） */
+            syncSpreadAudioSrc();
+            /* 自前の音楽再生中はその位置で譜面を流す */
+            if (spreadAudioPlaying && !spAudio.paused) {
+              spreadManualTime = spAudio.currentTime * 1000;
+            }
+            var diffs = getSpreadDiffs();
+            var curTime = getSpreadTime();
+            /* 効果音（音楽再生中のみ、先読みスケジュール） */
+            scheduleSpreadHitSounds(diffs, spreadAudioPlaying && !spAudio.paused);
+            var isEn = false;
+            try {
+              var le = document.getElementById('langEn');
+              isEn = !!(le && le.classList.contains('active'));
+            } catch (e) {}
+            window.drawTaikoSpread(spCanvas, diffs, curTime, {
+              pxPerMs: spPxPerMs,
+              snap: spSnap,
+              soundLane: spHitSounds ? Math.min(spSoundLane, diffs.length - 1) : -1,
+              emptyText: isEn ? 'No beatmap loaded' : '譜面が読み込まれていません',
+              idleText:  isEn ? 'Play in osu! to scroll' : 'osu! を再生すると流れます'
+            });
+            spRaf = requestAnimationFrame(spLoop);
+          };
+
+          /* setupTabs は init 時の NodeList にしか紐付かない（このタブは含まれない）ので、
+             ボタン群コンテナへ委譲リスナを張り、自前で表示切替する。 */
+          tabButtons.addEventListener('click', function (e) {
+            var btn = e.target.closest ? e.target.closest('.tab-button') : null;
+            if (!btn) return;
+            if (btn === spBtn) {
+              var bs = document.querySelectorAll('.tab-button');
+              for (var i = 0; i < bs.length; i++) bs[i].classList.remove('active');
+              var ps = document.querySelectorAll('.tab-panel');
+              for (var j = 0; j < ps.length; j++) ps[j].classList.remove('active');
+              spBtn.classList.add('active');
+              spPanel.classList.add('active');
+              if (!spRaf) spRaf = requestAnimationFrame(spLoop);
+            } else {
+              /* 他タブへ移動 → スプレッドを確実に閉じる（ループは active 判定で止まる） */
+              spBtn.classList.remove('active');
+              spPanel.classList.remove('active');
+              if (spAudio && !spAudio.paused) spAudio.pause(); // 音楽も止める
+            }
+          });
+        }
+
         /* Electron 既定: 保存設定がまだ無い初回のみ、web では既定 OFF の
            「音声波形・タイムライン・BN評価」を ON にする。
            （localStorage は web と exe で別管理。既存ユーザーの保存設定は尊重） */
@@ -1061,6 +1686,20 @@ function createWindow() {
         try {
           if (localStorage.getItem('moddingHelperCheckSource') === 'osu') panelMode = 'osu';
         } catch (e) {}
+
+        /* スプレッド表示の時刻ソース:
+           - 通常は osu! の最新再生位置(spreadLastTime)に追従。
+             前方予測は入れない（一時停止時に追い越して戻る現象を避けるため）。
+           - ユーザーがスプレッド表示をドラッグ/ホイールでシークすると手動モード
+             (spreadManualTime)になり、その位置を表示。
+           - osu! の時刻が動いたら（再生/シーク）追従に復帰。ただしドラッグ中は維持。 */
+        var spreadLastTime = null;
+        var spreadManualTime = null;
+        var spreadDragging = false;
+        var spreadAudioPlaying = false; // modding-helper 内で音楽再生中か
+        var getSpreadTime = function () {
+          return spreadManualTime != null ? spreadManualTime : spreadLastTime;
+        };
 
         /* 設定モード: ⚙設定 で ON/OFF。
            ON のとき 左カードを「譜面読み込み設定」、中央カードを「チェックリストの設定」に切替 */
@@ -1350,6 +1989,16 @@ function createWindow() {
               settingsMode ? 'チェックリストの設定' : 'チェックリスト',
               settingsMode ? 'Check list settings'  : 'Check list');
           set('etb-title-results',      'チェック結果',       'Check results');
+          set('etb-title-play',         '再生',              'Playback');
+          set('etb-tab-spread',         'スプレッド表示',     'Spread');
+          set('etb-spread-snap-text',   'スナップ',          'Snap');
+          set('etb-spread-sfx-text',    '効果音',            'Hit sounds');
+          set('etb-sfx-settings-title', '効果音の種類',      'Hit sound set');
+          set('etb-sfx-vol-label',      '効果音の音量',      'Hit sound vol.');
+          set('etb-music-vol-label',    '曲の音量',          'Music vol.');
+          set('etb-sfx-none',
+              '（sounds/ に音源フォルダがありません。合成音を使用）',
+              '(No sound folders in sounds/. Using synth.)');
         };
         updatePanelTitles();
 
@@ -1544,6 +2193,16 @@ function createWindow() {
 
           /* ── osu! タイミング情報 IPC（osu モードのみ反映） ── */
           window.electronAPI.onTimingInfo(function(data) {
+            /* スプレッド表示用の再生時刻を更新（モードに依らず常時）。
+               osu! の時刻が届いた＝再生/シークしたので、ドラッグ中でなければ
+               手動シークを解除して追従に戻す。 */
+            if (data && typeof data.time === 'number' && data.time >= 0) {
+              spreadLastTime = data.time;
+              /* ドラッグ中・自前の音楽再生中は手動位置を維持 */
+              if (!spreadDragging && !spreadAudioPlaying) spreadManualTime = null;
+            } else {
+              spreadLastTime = null;
+            }
             if (panelMode !== 'osu') return;
             /* グラフ上の再生ヘッドを更新（時刻が無ければ -1 で非表示） */
             updatePlayheads(data && typeof data.time === 'number' ? data.time : -1);
