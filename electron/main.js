@@ -24,6 +24,28 @@ const docsPath = path.join(root, 'docs', 'docs.html');
 
 let mainWin = null;
 
+// osu! 連動時、現在の譜面フォルダを監視して .osu 更新を検知する。
+// osu! エディタで保存すると同フォルダの .osu が書き換わる → renderer に再読み込みを促す。
+let mapsetWatcher = null;
+let watchedMapsetFolder = null;
+let mapsetWatchTimer = null;
+function watchMapsetFolder(folder, wc) {
+  if (folder === watchedMapsetFolder) return; // 既に同フォルダを監視中
+  if (mapsetWatcher) { try { mapsetWatcher.close(); } catch (_) {} mapsetWatcher = null; }
+  watchedMapsetFolder = folder;
+  if (!folder) return;
+  try {
+    mapsetWatcher = fs.watch(folder, { persistent: false }, (evt, filename) => {
+      // .osu の変更だけに反応（filename 不明時も一応反応）。連続イベントはデバウンス。
+      if (filename && !/\.osu$/i.test(String(filename))) return;
+      clearTimeout(mapsetWatchTimer);
+      mapsetWatchTimer = setTimeout(() => {
+        if (wc && !wc.isDestroyed()) wc.send('osu-mapset-changed');
+      }, 350);
+    });
+  } catch (_) { mapsetWatcher = null; watchedMapsetFolder = null; }
+}
+
 // スプレッド表示の効果音: 指定フォルダの音源を base64 データURLで読み込む。
 //   期待するファイル名（拡張子は wav/ogg/mp3 のいずれか。無い物は省略可）:
 //     don / kat（必須）, don-big / kat-big（任意: 大音符。無ければ don/kat を大きめに鳴らす）
@@ -2396,6 +2418,7 @@ function createWindow() {
   win.on('page-title-updated', function(e) { e.preventDefault(); });
   win.on('closed', function() {
     osuWatcher.stop();
+    if (mapsetWatcher) { try { mapsetWatcher.close(); } catch (_) {} mapsetWatcher = null; watchedMapsetFolder = null; }
     // メインを閉じたら分離ウィンドウも閉じる
     ['metadata', 'timing'].forEach(function(n) {
       if (popoutWindows[n] && !popoutWindows[n].isDestroyed()) popoutWindows[n].destroy();
@@ -2528,9 +2551,11 @@ app.whenReady().then(() => {
   // knownFolder と同じフォルダなら再構築せず { unchanged:true } を返す。
   ipcMain.handle('osu-get-current-mapset', async (event, knownFolder) => {
     const osuPath = osuWatcher.getCurrentOsuPath();
-    if (!osuPath) return null;
+    if (!osuPath) { watchMapsetFolder(null); return null; }
 
     const folder = path.dirname(osuPath);
+    // このフォルダの .osu 更新を監視（保存で自動反映）
+    watchMapsetFolder(folder, event.sender);
     if (knownFolder && folder === knownFolder) {
       return { unchanged: true, folder };
     }

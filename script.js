@@ -1044,6 +1044,13 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    // 同じ譜面の .osu が更新（osu! エディタで保存）されたら強制再読み込み
+    if (typeof window.electronAPI.onMapsetChanged === "function") {
+      window.electronAPI.onMapsetChanged(() => {
+        if (osuSourceMode === "osu") loadFromOsu(true);
+      });
+    }
+
     applyOsuSourceMode(saved);
     if (saved === "osu") loadFromOsu(true);
   }

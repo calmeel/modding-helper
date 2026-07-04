@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onOsuMapInfo:  (cb) => ipcRenderer.on('osu-map-info',    (_, data) => cb(data)),
   onTimingInfo:  (cb) => ipcRenderer.on('osu-timing-info', (_, data) => cb(data)),
   getCurrentMapset: (knownFolder) => ipcRenderer.invoke('osu-get-current-mapset', knownFolder),
+  onMapsetChanged:  (cb) => ipcRenderer.on('osu-mapset-changed', () => cb()),
   detachPanel:      (name, lang, checked) => ipcRenderer.send('detach-panel', name, lang, checked),
   detachChart:      (chartId, lang) => ipcRenderer.send('detach-chart', chartId, lang),
   onUpdateProgress: (cb) => ipcRenderer.on('update-progress', (_, pct) => cb(pct)),
