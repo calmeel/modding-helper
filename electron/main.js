@@ -1469,14 +1469,19 @@ function createWindow() {
             return null;
           };
           /* スナップ1目盛り分ステップ（ホイール用）。グリッドに吸着して dir 方向へ */
-          var spreadSnapStep = function (red, t, snap, dir) {
-            if (!red || !red.length) return t + dir * 100;
+          /* ホイール加速: ゆっくり回すと1目盛り、速く連続で回すと段々多く進む */
+          var SP_WHEEL_MAX = 6;   // 加速時の最大目盛り/ノッチ
+          var SP_WHEEL_GAP = 90;  // この間隔(ms)以内の連続回転で加速
+          var spWheelLast = 0, spWheelAccel = 1;
+          var spreadSnapStep = function (red, t, snap, dir, steps) {
+            steps = steps || 1; // 1ノッチで動くスナップ目盛り数
+            if (!red || !red.length) return t + dir * steps * 100;
             var seg = red[0];
             for (var i = 0; i < red.length; i++) { if (red[i].time <= t) seg = red[i]; else break; }
             var tick = seg.beatLength / snap;
-            if (!(tick > 0)) return t + dir * 100;
+            if (!(tick > 0)) return t + dir * steps * 100;
             var k = Math.round((t - seg.time) / tick);
-            return seg.time + (k + dir) * tick;
+            return seg.time + (k + dir * steps) * tick;
           };
 
           /* マウス操作:
@@ -1529,10 +1534,15 @@ function createWindow() {
               return;
             }
             if (spAudio && !spAudio.paused) spAudio.pause(); // ホイールでシークしたら音楽は止める
+            /* 連続で速く回すほど1ノッチの移動目盛りを増やす（単発はきっちり1目盛り） */
+            var now = performance.now();
+            if (now - spWheelLast < SP_WHEEL_GAP) spWheelAccel = Math.min(spWheelAccel + 1, SP_WHEEL_MAX);
+            else spWheelAccel = 1;
+            spWheelLast = now;
             var base = getSpreadTime(); if (base == null) base = 0;
             var red = spreadRefRed(getSpreadDiffs());
             var dir = e.deltaY > 0 ? 1 : -1; // 下回し=進む
-            setSpreadManual(spreadSnapStep(red, base, spSnap, dir));
+            setSpreadManual(spreadSnapStep(red, base, spSnap, dir, spWheelAccel));
             e.preventDefault();
           }, { passive: false });
 

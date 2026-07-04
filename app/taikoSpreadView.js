@@ -217,18 +217,35 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
     const pastMs   = (judgmentX - playX0) / pxPerMs;
     const marginMs = 40 / pxPerMs;
 
+    const futCut  = futureMs + marginMs;
+    const pastCut = -pastMs - marginMs;
     for (let i = 0; i < n; i++) {
-      const notes = diffs[i].notes;
+      const diff = diffs[i];
+      const notes = diff.notes;
       const yMid = topPad + i * laneH + laneH / 2;
+      // 連打(尾)の最長長さをキャッシュ。過去側 break の安全マージンに使う
+      // （head が画面外でも尾が見えている連打を消さないため）。
+      if (diff._maxRollMs == null) {
+        let m = 0;
+        for (let q = 0; q < notes.length; q++) {
+          const e = notes[q].endTime;
+          if (e != null) { const d = e - notes[q].time; if (d > m) m = d; }
+        }
+        diff._maxRollMs = m;
+      }
       // 連打/風船を先に、円を後に（円が上に重なる）。
       // 各パス内は時刻の降順で描画し、時間的に先（左）のノーツが前面に来るようにする。
       for (let pass = 0; pass < 2; pass++) {
         for (let k = notes.length - 1; k >= 0; k--) {
           const note = notes[k];
-          const dt = note.time - currentTime;
-          if (dt > futureMs + marginMs) continue; // 未来側の視界外
-          if (dt < -pastMs - marginMs) break;     // これ以降は過去
+          const dt = note.time - currentTime;            // head
+          if (dt > futCut) continue;                     // head が右外 → まだ未来
+          // これ以上前は、最長連打でも視界に届かない → 打ち切り
+          if (dt < pastCut - diff._maxRollMs) break;
           const isRoll = note.kind === "drumroll" || note.kind === "denden";
+          // 可視判定: 連打は尾(endTime)で判定。head が左外でも尾が見えていれば描く
+          const endDt = isRoll ? ((note.endTime != null ? note.endTime : note.time) - currentTime) : dt;
+          if (endDt < pastCut) continue;                 // 全体が左外
           if (pass === 0 && !isRoll) continue;
           if (pass === 1 && isRoll) continue;
           const x = judgmentX + dt * pxPerMs;
