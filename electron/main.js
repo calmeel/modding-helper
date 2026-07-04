@@ -2265,10 +2265,11 @@ function createWindow() {
 
           /* ── osu! タイミング情報 IPC（osu モードのみ反映） ── */
           window.electronAPI.onTimingInfo(function(data) {
-            /* スプレッド表示用の再生時刻を更新（モードに依らず常時）。
-               osu! の時刻が届いた＝再生/シークしたので、ドラッグ中でなければ
-               手動シークを解除して追従に戻す。 */
-            if (data && typeof data.time === 'number' && data.time >= 0) {
+            /* プレビュー(スプレッド)の追従は Edit 中(data.editing)のみ許可。
+               ゲームプレイ中(status!=Edit)は追従させない＝デュアルスクリーンでの
+               先読みチート対策。※リアルタイム表示カードは下で常時更新（プレイ中OK）。
+               osu! の時刻が届いた＝再生/シークなので、ドラッグ中でなければ手動解除。 */
+            if (data && typeof data.time === 'number' && data.time >= 0 && data.editing) {
               spreadLastTime = data.time;
               /* ドラッグ中・自前の音楽再生中は手動位置を維持 */
               if (!spreadDragging && !spreadAudioPlaying) spreadManualTime = null;
