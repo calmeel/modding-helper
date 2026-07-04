@@ -1,6 +1,10 @@
 node_modules/
 dist/
 
+# ビルド成果物（電子ビルド出力・検証ビルド。GitHub/Pages に上げない）
+electron/dist/
+electron/dist-verify/
+
 # Claude Code (ローカル設定)
 .claude/
 CLAUDE.md
