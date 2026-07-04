@@ -3,6 +3,11 @@ dist/
 
 # Claude Code (ローカル設定)
 .claude/
+CLAUDE.md
+
+# リアルタイム(osu!メモリ監視)関連は非公開（GitHub に上げない）
+electron/osuMemory.ps1
+electron/osuWatcher.js
 
 # VSCode (launch.json / tasks.json / extensions.json は共有のため除外しない)
 .vscode/*

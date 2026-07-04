@@ -3,7 +3,19 @@ const path = require('path');
 const fs = require('fs');
 const JSZip = require('jszip');
 const { autoUpdater } = require('electron-updater');
-const osuWatcher = require('./osuWatcher');
+// リアルタイム(osu!メモリ監視)は非公開ファイル（GitHub には上げない方針）。
+// 欠落していても web プレビュー等は動くよう no-op スタブにフォールバックする。
+let osuWatcher;
+try {
+  osuWatcher = require('./osuWatcher');
+} catch (e) {
+  osuWatcher = {
+    setDeliver: function () {},
+    start: function () {},
+    stop: function () {},
+    getCurrentOsuPath: function () { return null; }
+  };
+}
 
 const root     = path.join(__dirname, '..');
 const { version } = require('../package.json');
