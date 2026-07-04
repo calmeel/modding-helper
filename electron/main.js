@@ -697,6 +697,12 @@ function createWindow() {
         color: #c9f5d6;
       }
       .osu-tag-chip.checked:hover { border-color: #6ee79a; }
+      /* ダブルクリックでコピーした瞬間のフラッシュ */
+      .osu-tag-chip.copied {
+        background: rgba(91,155,213,0.4) !important;
+        border-color: #5b9bd5 !important;
+        color: #fff !important;
+      }
 
       #osu-map-waiting { padding: 12px 8px; color: #555; font-size: 11px; }
 
@@ -823,16 +829,17 @@ function createWindow() {
         margin-top: 16px !important;
       }
 
-      /* 「再生」グループ（スプレッド表示・exe限定）も全幅で隔離 */
-      #electron-col-tabs .tab-group.etb-play-group {
-        grid-column: 1 / -1 !important;
-        margin-top: 10px !important;
-      }
-      #electron-col-tabs .tab-group.etb-play-group .tab-button { width: 100% !important; }
-
-      /* スプレッド表示パネルはカード本体いっぱいに広げる（縦: ツールバー + canvas） */
+      /* スプレッド表示パネル（プレビュータブ専用。通常は非表示） */
       #electron-col-output #tab-spreadPlay { padding: 0 !important; }
-      #electron-col-output #tab-spreadPlay.active {
+
+      /* ── プレビューモード: スプレッド表示を全面に、他カラム/サブタブを隠す ── */
+      #electron-layout.etb-preview #electron-col-future,
+      #electron-layout.etb-preview #electron-col-tabs { display: none !important; }
+      #electron-layout.etb-preview #electron-col-output { flex: 1 1 100% !important; }
+      #electron-layout.etb-preview #electron-col-output > .etb-card-head { display: none !important; }
+      #electron-layout.etb-preview #electron-col-output .tab-visibility-settings { display: none !important; }
+      #electron-layout.etb-preview #electron-col-output .tab-panel:not(#tab-spreadPlay) { display: none !important; }
+      #electron-layout.etb-preview #tab-spreadPlay {
         display: flex !important;
         flex-direction: column !important;
         height: 100% !important;
@@ -1175,16 +1182,9 @@ function createWindow() {
         /* ── スプレッド表示タブ（exe 限定）──
            全難易度のノーツを等速(SV無視)で右→左に流し、osu! 再生に同期する。 */
         if (window.drawTaikoSpread && window.parseTaikoNotes) {
-          var spGroup = document.createElement('div');
-          spGroup.className = 'tab-group etb-play-group';
-          spGroup.innerHTML = '<div class="tab-group-title" id="etb-title-play">再生</div>';
-          var spBtn = document.createElement('button');
-          spBtn.className = 'tab-button';
-          spBtn.setAttribute('data-tab', 'spreadPlay');
-          spBtn.id = 'etb-tab-spread';
-          spBtn.textContent = 'スプレッド表示';
-          spGroup.appendChild(spBtn);
-          tabButtons.appendChild(spGroup);
+          /* スプレッド表示は「プレビュー」トップタブ専用。サブタブではなく
+             プレビュー時のみ CSS で表示し、spPreviewOn で描画ループを回す。 */
+          var spPreviewOn = false;
 
           var spPanel = document.createElement('section');
           spPanel.className = 'tab-panel';
@@ -1238,7 +1238,7 @@ function createWindow() {
           updateSpZoomLabel();
           /* スプレッド表示中のキーボード +/- でもズーム */
           document.addEventListener('keydown', function (e) {
-            if (!spPanel.classList.contains('active')) return;
+            if (!spPreviewOn) return;
             var t = e.target;
             if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) return;
             if (e.key === '+' || e.key === '=') { setSpZoom(spPxPerMs * 1.25); e.preventDefault(); }
@@ -1565,7 +1565,7 @@ function createWindow() {
 
           /* スペースキーで再生/一時停止（スプレッド表示中・入力欄以外） */
           document.addEventListener('keydown', function (e) {
-            if (!spPanel.classList.contains('active')) return;
+            if (!spPreviewOn) return;
             if (e.code !== 'Space' && e.key !== ' ') return;
             var t = e.target;
             if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
@@ -1612,7 +1612,7 @@ function createWindow() {
 
           var spRaf = null;
           var spLoop = function () {
-            if (!spPanel.classList.contains('active')) { spRaf = null; return; }
+            if (!spPreviewOn) { spRaf = null; return; }
             /* 音源を最新譜面に合わせて先読みしておく（スペース押下時に即再生できるよう） */
             syncSpreadAudioSrc();
             /* 自前の音楽再生中はその位置で譜面を流す */
@@ -1638,26 +1638,16 @@ function createWindow() {
             spRaf = requestAnimationFrame(spLoop);
           };
 
-          /* setupTabs は init 時の NodeList にしか紐付かない（このタブは含まれない）ので、
-             ボタン群コンテナへ委譲リスナを張り、自前で表示切替する。 */
-          tabButtons.addEventListener('click', function (e) {
-            var btn = e.target.closest ? e.target.closest('.tab-button') : null;
-            if (!btn) return;
-            if (btn === spBtn) {
-              var bs = document.querySelectorAll('.tab-button');
-              for (var i = 0; i < bs.length; i++) bs[i].classList.remove('active');
-              var ps = document.querySelectorAll('.tab-panel');
-              for (var j = 0; j < ps.length; j++) ps[j].classList.remove('active');
-              spBtn.classList.add('active');
-              spPanel.classList.add('active');
+          /* 「プレビュー」トップタブから ON/OFF される。ON で描画開始、OFF で停止＋音楽停止。 */
+          var setSpreadActive = function (on) {
+            spPreviewOn = !!on;
+            if (spPreviewOn) {
               if (!spRaf) spRaf = requestAnimationFrame(spLoop);
             } else {
-              /* 他タブへ移動 → スプレッドを確実に閉じる（ループは active 判定で止まる） */
-              spBtn.classList.remove('active');
-              spPanel.classList.remove('active');
-              if (spAudio && !spAudio.paused) spAudio.pause(); // 音楽も止める
+              if (spAudio && !spAudio.paused) spAudio.pause();
             }
-          });
+          };
+          window.__setSpreadActive = setSpreadActive;
         }
 
         /* Electron 既定: 保存設定がまだ無い初回のみ、web では既定 OFF の
@@ -1701,9 +1691,10 @@ function createWindow() {
           return spreadManualTime != null ? spreadManualTime : spreadLastTime;
         };
 
-        /* 設定モード: ⚙設定 で ON/OFF。
-           ON のとき 左カードを「譜面読み込み設定」、中央カードを「チェックリストの設定」に切替 */
+        /* トップレベルの表示モード: チェック / プレビュー / 設定 の3タブ。
+           settingsMode = 設定表示, previewMode = プレビュー（スプレッド表示）, 両方 false = チェック */
         var settingsMode = false;
+        var previewMode = false;
 
         /* 分離状態: 別ウィンドウに出しているパネルは true（メイン側のカードを隠す） */
         var detachState = { metadata: false, timing: false };
@@ -1822,11 +1813,12 @@ function createWindow() {
         var applyPanelModeUi = function() {
           var isOsu = (panelMode === 'osu');
           var s = settingsMode;
+          var pv = previewMode;
           var setDisp = function(id, show) {
             var el = document.getElementById(id);
             if (el) el.style.display = show ? '' : 'none';
           };
-          /* 左カラム（設定モード中・分離中のカードは隠す） */
+          /* 左カラム（設定モード中・分離中のカードは隠す。カラム全体はプレビューで CSS が隠す） */
           setDisp('etb-card-meta',         !s && !detachState.metadata);
           setDisp('etb-card-realtime',     !s && isOsu && !detachState.timing);
           setDisp('etb-card-file',         !s && !isOsu);
@@ -1834,22 +1826,31 @@ function createWindow() {
           /* 中央カラム（チェックリスト） */
           setDisp('etb-checklist-buttons-body',  !s);
           setDisp('etb-checklist-settings-body',  s);
-          /* 右カラム（チェック結果）は設定モード中は隠す */
+          /* 右カラム（チェック結果/プレビュー）は設定モード中のみ隠す */
           setDisp('electron-col-output',  !s);
-          /* 設定モードは左右カードを 50/50・全高にするため layout にクラス付与 */
+          /* レイアウトのモードクラス（設定=50/50, プレビュー=スプレッド全面） */
           var layoutEl = document.getElementById('electron-layout');
-          if (layoutEl) layoutEl.classList.toggle('etb-settings', s);
-          /* osu! モード以外・設定モードでは再生ヘッドを隠す */
-          if (!isOsu || s) hideAllPlayheads();
+          if (layoutEl) {
+            layoutEl.classList.toggle('etb-settings', s);
+            layoutEl.classList.toggle('etb-preview', pv);
+          }
+          /* スプレッド表示の描画ループ ON/OFF */
+          if (window.__setSpreadActive) window.__setSpreadActive(pv);
+          /* osu! モード以外・設定/プレビュー中は再生ヘッドを隠す */
+          if (!isOsu || s || pv) hideAllPlayheads();
           /* チェックリストカードのタイトル切替 */
           var isEn = document.getElementById('langEn') && document.getElementById('langEn').classList.contains('active');
           var clT = document.getElementById('etb-title-checklist');
           if (clT) clT.textContent = s
             ? (isEn ? 'Check list settings' : 'チェックリストの設定')
             : (isEn ? 'Check list' : 'チェックリスト');
-          /* 設定ボタンのアクティブ表示 */
+          /* チェック/プレビュー/設定ボタンのアクティブ表示（今どこを見ているか） */
           var sBtn = document.getElementById('toggleTabSettings');
           if (sBtn) sBtn.classList.toggle('active', s);
+          var mBtn = document.getElementById('etb-tab-main');
+          if (mBtn) mBtn.classList.toggle('active', !s && !pv);
+          var pvBtn = document.getElementById('etb-tab-preview');
+          if (pvBtn) pvBtn.classList.toggle('active', pv);
         };
         var resetTimingPanel = function() {
           var ids = { 'osu-t-timing': '--:--:---', 'osu-t-bpm': '---',
@@ -1873,6 +1874,7 @@ function createWindow() {
            チップは再描画で作り直されるため #osu-map-meta にイベント委譲する */
         var metaForTags = document.getElementById('osu-map-meta');
         if (metaForTags) {
+          /* タグチップ: クリックで色トグル（確認チェック用） */
           metaForTags.addEventListener('click', function(e) {
             var chip = e.target && e.target.closest ? e.target.closest('.osu-tag-chip') : null;
             if (!chip) return;
@@ -1880,6 +1882,17 @@ function createWindow() {
             var tag = chip.textContent;
             if (chip.classList.contains('checked')) tagChecked[tag] = true;
             else delete tagChecked[tag];
+          });
+          /* タグチップ: ダブルクリックでそのタグをクリップボードへコピー */
+          metaForTags.addEventListener('dblclick', function(e) {
+            var chip = e.target && e.target.closest ? e.target.closest('.osu-tag-chip') : null;
+            if (!chip) return;
+            var txt = chip.textContent;
+            if (txt && window.electronAPI && window.electronAPI.copyText) {
+              window.electronAPI.copyText(txt);
+              chip.classList.add('copied');
+              setTimeout(function() { chip.classList.remove('copied'); }, 600);
+            }
           });
         }
 
@@ -1989,8 +2002,9 @@ function createWindow() {
               settingsMode ? 'チェックリストの設定' : 'チェックリスト',
               settingsMode ? 'Check list settings'  : 'Check list');
           set('etb-title-results',      'チェック結果',       'Check results');
-          set('etb-title-play',         '再生',              'Playback');
-          set('etb-tab-spread',         'スプレッド表示',     'Spread');
+          set('etb-tab-main',           'チェック',          'Check');
+          set('etb-tab-preview',        'プレビュー',        'Preview');
+          set('toggleTabSettings',      '設定',              'Settings');
           set('etb-spread-snap-text',   'スナップ',          'Snap');
           set('etb-spread-sfx-text',    '効果音',            'Hit sounds');
           set('etb-sfx-settings-title', '効果音の種類',      'Hit sound set');
@@ -2006,7 +2020,7 @@ function createWindow() {
         var settingsToggleBtn = document.getElementById('toggleTabSettings');
         if (settingsToggleBtn) {
           settingsToggleBtn.addEventListener('click', function() {
-            settingsMode = !settingsMode;
+            settingsMode = true; previewMode = false; // 「設定」表示へ
             applyPanelModeUi();
           });
         }
@@ -2082,9 +2096,35 @@ function createWindow() {
               }).observe(langEnBtn, { attributes: true, attributeFilter: ['class'] });
             }
 
-            /* ⚙ ボタンに「設定」テキストを追加 */
+            /* 設定ボタンのテキスト（歯車は付けない） */
             var settingsBtn = document.getElementById('toggleTabSettings');
-            if (settingsBtn) settingsBtn.textContent = '⚙ 設定';
+            if (settingsBtn) settingsBtn.textContent = '設定';
+
+            /* 「チェック」「プレビュー」ボタンを設定の前に追加し、
+               チェック/プレビュー/設定 を明示的な切替タブにする */
+            if (settingsBtn && settingsBtn.parentNode && !document.getElementById('etb-tab-main')) {
+              var mainTabBtn = document.createElement('button');
+              mainTabBtn.id = 'etb-tab-main';
+              mainTabBtn.type = 'button';
+              mainTabBtn.textContent = 'チェック';
+              settingsBtn.parentNode.insertBefore(mainTabBtn, settingsBtn);
+              mainTabBtn.addEventListener('click', function() {
+                settingsMode = false; previewMode = false; // チェック表示へ
+                applyPanelModeUi();
+              });
+
+              var previewTabBtn = document.createElement('button');
+              previewTabBtn.id = 'etb-tab-preview';
+              previewTabBtn.type = 'button';
+              previewTabBtn.textContent = 'プレビュー';
+              settingsBtn.parentNode.insertBefore(previewTabBtn, settingsBtn);
+              previewTabBtn.addEventListener('click', function() {
+                settingsMode = false; previewMode = true; // プレビュー（スプレッド表示）へ
+                applyPanelModeUi();
+              });
+
+              applyPanelModeUi(); // 追加直後に active 表示を反映
+            }
 
             /* Web と GitHub リンクを追加 */
             var svgGlobe = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
@@ -2107,6 +2147,24 @@ function createWindow() {
             githubLink.rel = 'noopener noreferrer';
             githubLink.innerHTML = svgGitHub + ' GitHub';
             navEl.appendChild(githubLink);
+
+            /* ナビの並び順を指定どおりに整える:
+               メイン/設定 | 区切り | 日本語/English | 区切り | 説明書 | 他のツール | Webツール | GitHub | 更新履歴
+               （appendChild は既存要素を移動するので、望む順に付け直すだけで並び替わる） */
+            [
+              document.getElementById('etb-tab-main'),      // チェック
+              document.getElementById('etb-tab-preview'),   // プレビュー
+              document.getElementById('toggleTabSettings'), // 設定
+              langSep,                                      // 区切り
+              document.getElementById('langJa'),            // 日本語
+              document.getElementById('langEn'),            // English
+              extSep,                                       // 区切り
+              document.getElementById('manualLink'),        // 説明書
+              document.getElementById('etb-other-tools'),   // 他のツールを見る
+              webLink,                                      // Webツール
+              githubLink,                                   // GitHub
+              document.getElementById('updateBtn')          // 更新履歴
+            ].forEach(function(el) { if (el) navEl.appendChild(el); });
           }
         } catch(e) { /* ナビゲーション処理が失敗してもウィンドウ操作は継続 */ }
 
@@ -2172,8 +2230,10 @@ function createWindow() {
                   '<span class="osu-map-value none">' + noneText + '</span>' +
                   '</div>';
               }
+              var isEnTag = document.getElementById('langEn') && document.getElementById('langEn').classList.contains('active');
+              var chipTitle = isEnTag ? 'Click: mark / Double-click: copy' : 'クリック: チェック / ダブルクリック: コピー';
               var chips = data.tags.split(' ').filter(function(t) { return t; })
-                .map(function(t) { return '<span class="osu-tag-chip">' + t + '</span>'; })
+                .map(function(t) { return '<span class="osu-tag-chip" title="' + chipTitle + '">' + t + '</span>'; })
                 .join('');
               return '<div class="osu-map-row"><span class="osu-map-label">Tags</span>' +
                 '<div id="osu-map-tags">' + chips + '</div></div>';

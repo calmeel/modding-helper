@@ -36,6 +36,7 @@
   }
   .osu-tag-chip:hover { border-color: rgba(255,255,255,0.32); color: #ddd; }
   .osu-tag-chip.checked { background: rgba(74,222,128,0.18); border-color: #4ade80; color: #c9f5d6; }
+  .osu-tag-chip.copied { background: rgba(91,155,213,0.4) !important; border-color: #5b9bd5 !important; color: #fff !important; }
   #osu-map-waiting { padding: 12px 4px; color: #555; font-size: 11px; }
 
   /* リアルタイム */
@@ -100,8 +101,9 @@
               return '<div class="osu-map-row"><span class="osu-map-label">Tags</span>' +
                 '<span class="osu-map-value none">' + noneText + '</span></div>';
             }
+            var chipTitle = isEn ? 'Click: mark / Double-click: copy' : 'クリック: チェック / ダブルクリック: コピー';
             var chips = data.tags.split(' ').filter(function (t) { return t; })
-              .map(function (t) { return '<span class="osu-tag-chip">' + t + '</span>'; }).join('');
+              .map(function (t) { return '<span class="osu-tag-chip" title="' + chipTitle + '">' + t + '</span>'; }).join('');
             return '<div class="osu-map-row"><span class="osu-map-label">Tags</span>' +
               '<div id="osu-map-tags">' + chips + '</div></div>';
           })();
@@ -146,6 +148,17 @@
           if (chip.classList.contains('checked')) checkedSet[tag] = true;
           else delete checkedSet[tag];
           reportChecked();
+        });
+        /* タグチップ: ダブルクリックでそのタグをコピー */
+        metaEl.addEventListener('dblclick', function (e) {
+          var chip = e.target && e.target.closest ? e.target.closest('.osu-tag-chip') : null;
+          if (!chip) return;
+          var txt = chip.textContent;
+          if (txt && window.electronAPI && window.electronAPI.copyText) {
+            window.electronAPI.copyText(txt);
+            chip.classList.add('copied');
+            setTimeout(function () { chip.classList.remove('copied'); }, 600);
+          }
         });
 
         if (window.electronAPI && window.electronAPI.onOsuMapInfo) {
