@@ -2,7 +2,7 @@
 //
 // メインウィンドウから切り離した小窓を開き、osu! のデータを配信する。
 // mainWin は main.js 側が持つので init({getMainWin}) で参照方法だけ受け取る。
-const { BrowserWindow, shell } = require('electron');
+const { BrowserWindow, shell, screen } = require('electron');
 const path = require('path');
 
 const root = path.join(__dirname, '..', '..');
