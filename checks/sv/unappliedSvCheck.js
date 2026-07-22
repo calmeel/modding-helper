@@ -1,5 +1,6 @@
 const UNAPPLIED_SV_MIN_OFFSET_MS = 1;
 const UNAPPLIED_SV_MAX_OFFSET_MS = 5;
+const UNAPPLIED_SV_DISPLAY_PRECISION = 1000;
 
 function runUnappliedSvCheck(text, fileName) {
   const redLines = parseSpreadRedLines(text);
@@ -54,6 +55,10 @@ function detectUnappliedSvTargetIssues(targetTimes, greenLines, greenLinesByTime
         if (seen.has(key)) continue;
         seen.add(key);
 
+        if (!hasUnappliedSvDisplayDelta(targetGreenLine, greenLine)) {
+          continue;
+        }
+
         issues.push({
           targetType,
           targetTime,
@@ -73,6 +78,20 @@ function detectUnappliedSvTargetIssues(targetTimes, greenLines, greenLinesByTime
   });
 
   return issues;
+}
+
+function hasUnappliedSvDisplayDelta(targetGreenLine, followingGreenLine) {
+  const targetSv = getUnappliedSvValue(targetGreenLine);
+  const followingSv = getUnappliedSvValue(followingGreenLine);
+
+  return Math.round(
+    (followingSv - targetSv) * UNAPPLIED_SV_DISPLAY_PRECISION
+  ) !== 0;
+}
+
+function getUnappliedSvValue(greenLine) {
+  if (!greenLine || !Number.isFinite(greenLine.sv)) return 1;
+  return greenLine.sv;
 }
 
 function getUnappliedSvCurrentGreenLine(greenLines, redLines, targetTime) {

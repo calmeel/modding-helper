@@ -1172,6 +1172,12 @@ SV線（緑線）は、その時刻以降のノーツや小節線に適用され
 出力例：<br>
 <code>02:33:864 -> 02:33:865 | +1 ms | 小節線SV x1 -> 直後SV x0.5 (SV差 -0.5) | 小節線生成位置の +1 ms 後にSV線があります。小節線にSVが適用されていない可能性があります。</code>
 </div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ 注意点</span><br>
+対象位置のSVと直後SVの <code>SV差が0</code> の場合、見た目のスクロール速度は変化しないため検出しません。<br>
+判定は表示と同じ小数第3位までの精度で行い、丸めたSV差が <code>0</code> になる微小な差も検出対象外として扱います。
+</div>
 </section>
 
 <section class="doc-tab-panel" data-doc-tab-panel="redGreenMatch">

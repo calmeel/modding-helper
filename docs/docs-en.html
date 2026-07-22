@@ -1205,6 +1205,12 @@ If such an SV line exists, the tool displays a yellow warning because the SV may
 Example output:<br>
 <code>02:33:864 -> 02:33:865 | +1 ms | Barline SV x1 -> Following SV x0.5 (SV delta -0.5) | An SV line exists +1 ms after the generated barline. The SV may not be applied to the barline.</code>
 </div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+If the <code>SV delta is 0</code> between the target position and the following SV line, no visual scroll speed change occurs, so the placement is not detected.<br>
+The check uses the same three-decimal precision as the displayed value. Very small differences that round to an SV delta of <code>0</code> are also excluded.
+</div>
 </section>
 
 <section class="doc-tab-panel" data-doc-tab-panel="redGreenMatch">
