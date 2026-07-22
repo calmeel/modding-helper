@@ -240,6 +240,8 @@
             '</span>' +
             '<label class="etb-spread-sfx"><input type="checkbox" id="etb-spread-sfx-cb"> ' +
             '<span id="etb-spread-sfx-text">効果音</span></label>' +
+            '<label class="etb-spread-sfx"><input type="checkbox" id="etb-spread-nc-cb"> ' +
+            '<span id="etb-spread-nc-text">NCシンバルの小節線を強調表示</span></label>' +
             /* 右: ビートスナップ(スクロールで変更) + 再生速度 */
             '<span class="etb-spread-right">' +
             '<span class="etb-spread-snap2" id="etb-spread-snap2" title="スライダー/スクロールで変更">' +
@@ -395,6 +397,9 @@
 
           /* 効果音（ドン/カツ）: ON のとき、選択レーンのノーツを再生に合わせて鳴らす */
           var spHitSounds = false;   // 効果音 ON/OFF
+          /* NCシンバルが鳴る小節線（major）を強調表示するか */
+          var spShowNc = false;
+          try { if (localStorage.getItem('moddingHelperPreviewNcCymbal') === '1') spShowNc = true; } catch (e) {}
           var spSynth = null;        // Web Audio シンセ/サンプルキット
           var spSoundLane = 0;       // 効果音を鳴らすレーン（0=最上=最難）。クリックで変更
 
@@ -739,6 +744,16 @@
             previewSettingsBody.appendChild(sfxSection);
           }
 
+          /* NCシンバル位置（major な小節線）の強調表示。保存して次回も維持 */
+          var spNcCb = spBar.querySelector('#etb-spread-nc-cb');
+          if (spNcCb) {
+            spNcCb.checked = spShowNc;
+            spNcCb.addEventListener('change', function () {
+              spShowNc = spNcCb.checked;
+              try { localStorage.setItem('moddingHelperPreviewNcCymbal', spShowNc ? '1' : '0'); } catch (e) {}
+            });
+          }
+
           var spSfxCb = spBar.querySelector('#etb-spread-sfx-cb');
           if (spSfxCb) spSfxCb.addEventListener('change', function () {
             spHitSounds = spSfxCb.checked;
@@ -870,11 +885,15 @@
             var dx = px < lo ? px - lo : (px > hi ? px - hi : 0); // 線分内なら水平距離0
             return dx * dx + dy * dy <= h.r * h.r;
           };
-          /* その座標にあるノーツ。描画順の後ろ＝前面から探す */
+          /* その座標にあるノーツ。描画順の後ろ＝前面から探す。
+             難易度名のラベル列（playX0 より左）はノーツの上に被せて描いていて
+             ノーツは見えていないので、そこのクリックはノーツ判定の対象外にする
+             （でないとラベルを押したのにノーツ選択に吸われる）。 */
           var spHitTest = function (px, py) {
             var geom = spCanvas.__spreadGeom;
             var hits = geom && geom.hits;
             if (!hits) return null;
+            if (geom.playX0 != null && px < geom.playX0) return null;
             for (var i = hits.length - 1; i >= 0; i--) {
               if (spHitOne(hits[i], px, py)) return hits[i];
             }
@@ -888,6 +907,8 @@
             if (!hits) return out;
             var lo = Math.min(x0, x1), hi = Math.max(x0, x1);
             var top = Math.min(y0, y1), bot = Math.max(y0, y1);
+            /* ラベル列に隠れている部分は選択対象にしない（クリック判定と同じ理由） */
+            if (geom.playX0 != null) { lo = Math.max(lo, geom.playX0); if (hi < lo) return out; }
             for (var i = 0; i < hits.length; i++) {
               var h = hits[i];
               if (diff && h.diff !== diff) continue;
@@ -1297,6 +1318,7 @@
               svMode: spSvMode, /* SVスケールは実機速度に一致するよう描画側で自動計算 */
               soundLane: spHitSounds ? Math.min(spSoundLane, diffs.length - 1) : -1,
               judgeFrac: spJudgeFrac,
+              showNcCymbal: spShowNc,
               isSelected: spSelNotes.length ? spIsSelected : null,
               marquee: spMarquee,
               emptyText: isEn ? 'No beatmap loaded' : '譜面が読み込まれていません',
@@ -1806,6 +1828,7 @@
           set('toggleTabSettings',      '設定',              'Settings');
           set('etb-spread-snap-text',   'ビートスナップ間隔',  'Beat Snap Divisor');
           set('etb-spread-sfx-text',    '効果音',            'Hit sounds');
+          set('etb-spread-nc-text',     'NCシンバルの小節線を強調表示', 'Highlight NC cymbal barlines');
           set('etb-sfx-settings-title', '効果音の種類',      'Hit sound set');
           set('etb-sfx-vol-label',      '効果音の音量',      'Hit sound vol.');
           set('etb-music-vol-label',    '曲の音量',          'Music vol.');

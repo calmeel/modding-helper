@@ -244,7 +244,11 @@ function drawOffsetWaveformChart() {
 
   const durationMs = getOffsetWaveformDurationMs();
   const cssWidth = Math.max(360, canvas.parentElement?.clientWidth ?? 0);
-  const cssHeight = 330;
+  /* 分離ウィンドウでは親要素(=ウィンドウ)の高さいっぱいに広げる。
+     web ツールでは data-chart-fill が無いので従来どおり固定高さ。 */
+  const chartWrap = canvas.parentElement;
+  const cssHeight = chartWrap && chartWrap.dataset.chartFill
+    ? Math.max(160, chartWrap.clientHeight) : 330;
   const dpr = window.devicePixelRatio || 1;
 
   canvas.style.width = `${cssWidth}px`;

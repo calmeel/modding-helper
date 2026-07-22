@@ -113,7 +113,12 @@ function drawKiaiCompareChart() {
   const hasMismatchRow = sortedResults.length >= 2;
   const rowCount = sortedResults.length + (hasMismatchRow ? 1 : 0);
   const rowHeight = 34;
-  const cssHeight = Math.max(210, 54 + rowCount * rowHeight);
+  /* 分離ウィンドウでは親要素(=ウィンドウ)の高さいっぱいに広げる。
+     web ツールでは data-chart-fill が無いので従来どおり固定高さ。 */
+  const naturalHeight = Math.max(210, 54 + rowCount * rowHeight);
+  const chartWrap = canvas.parentElement;
+  const cssHeight = chartWrap && chartWrap.dataset.chartFill
+    ? Math.max(naturalHeight, chartWrap.clientHeight) : naturalHeight;
   const cssWidth = Math.max(320, canvas.parentElement?.clientWidth ?? 0);
   const dpr = window.devicePixelRatio || 1;
 

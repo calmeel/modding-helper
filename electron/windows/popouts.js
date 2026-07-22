@@ -67,6 +67,8 @@ function openChartPopout(chartId, lang) {
   });
   pop.setMenu(null);
   chartPopouts[chartId] = pop;
+  // index.html の <title> でウィンドウ名が上書きされないようにする（グラフ名を出したい）
+  pop.on('page-title-updated', (e) => e.preventDefault());
 
   // リンク類は外部ブラウザで開く（メインと同様）
   pop.webContents.on('new-window', (e, url) => { e.preventDefault(); shell.openExternal(url); });
@@ -81,11 +83,15 @@ function openChartPopout(chartId, lang) {
     if (pop.isDestroyed()) return;
     // 注入(CSS で chrome 非表示・対象グラフ全画面化)が終わってから表示する
     injectChartPopout(pop, chartId).then(() => {
-      if (!pop.isDestroyed() && !pop.isVisible()) pop.show();
+      if (pop.isDestroyed()) return;
+      if (!pop.isVisible()) pop.show();
+      /* 現在の譜面・時刻を反映する。**必ず注入の完了後に送る**こと。
+         受け手(onOsuMapInfo / onTimingInfo)は注入したコードが登録するので、
+         先に送ると誰も受け取れず、osu! 側が動くまで
+         「再生ヘッドが出ない」「Diff との交点マーカーが出ない」状態になる。 */
+      pop.webContents.send('osu-map-info', lastMapInfo);
+      pop.webContents.send('osu-timing-info', lastTimingInfo);
     });
-    // 現在の譜面・時刻を即時反映
-    pop.webContents.send('osu-map-info', lastMapInfo);
-    pop.webContents.send('osu-timing-info', lastTimingInfo);
   });
 
   pop.on('closed', () => { chartPopouts[chartId] = null; delete chartPopouts[chartId]; });
@@ -96,14 +102,49 @@ function injectChartPopout(pop, chartId) {
   pop.webContents.insertCSS(`
     html, body { height:100%; margin:0; overflow:hidden; background:#1e1e1e; }
     body { font-family: Arial,"Meiryo","Yu Gothic UI","Hiragino Sans",sans-serif; color:#ddd; }
-    .app { height:100vh; max-width:none !important; width:100% !important; margin:0 !important; padding:10px !important; box-sizing:border-box; display:flex; flex-direction:column; overflow:hidden; }
+    .app { height:100vh; max-width:none !important; width:100% !important; margin:0 !important; padding:0 !important; box-sizing:border-box; display:flex; flex-direction:column; overflow:hidden; }
+    /* 見出しと説明文はウィンドウのタイトルバーで足りるので出さない。
+       「ズームをリセット」だけ右上に小さく浮かせて、グラフ用の高さを空ける。 */
+    .volume-compare-chart-header h3, .volume-compare-chart-header p { display:none !important; }
+    .volume-compare-chart-header {
+      position:absolute !important; top:4px; right:6px; z-index:10;
+      margin:0 !important; padding:0 !important; gap:0 !important; width:auto !important;
+    }
+    .volume-compare-chart-header .doc-btn {
+      font-size:11px !important; padding:2px 8px !important; opacity:0.55; transition:opacity 0.15s;
+    }
+    .volume-compare-chart-header .doc-btn:hover { opacity:1; }
+    /* スクロール速度系だけは見出し行に操作用チェックボックスが入っているので、
+       右上に浮かせると下の警告トグル行と重なる。ここだけ通常の行として並べる。 */
+    #spreadScrollChartSection .volume-compare-chart-header {
+      position:static !important; width:auto !important;
+      margin:0 0 4px !important; padding:0 !important; gap:12px !important;
+      justify-content:flex-end;
+    }
+    #spreadScrollChartSection .volume-compare-chart-header .doc-btn { opacity:1; }
+    /* グラフを囲む枠・背景・余白（＝グラフの周りの1色）を消してウィンドウに密着させる */
+    .tab-panel.active > section, .tab-panel.active .spread-subtab-panel > section {
+      margin:0 !important; padding:0 !important; border:none !important;
+      border-radius:0 !important; background:transparent !important;
+    }
+    /* グラフの入れ物をウィンドウの高さいっぱいに広げる（高さが確定値になるので、
+       グラフ側が clientHeight を読んでキャンバス高さを決められる）。
+       ※ ここで display に !important を使ってはいけない。使うと
+          「非アクティブなサブタブ」や「注入側が隠した他セクション(インライン display:none)」
+          まで表示されてしまい、複数タブの内容が重なって出る。
+          セクション自体の flex 化は isolateChart() が対象要素だけに行う。 */
+    .volume-compare-chart-wrap, .kiai-compare-chart-wrap, .offset-waveform-chart-wrap,
+    .spread-density-chart-wrap, .spread-rest-chart-wrap, .spread-scroll-chart-wrap {
+      border-top:none !important; min-height:0 !important; flex:1 1 auto !important;
+    }
     h1, p[data-i18n="subtitle"], .top-links, .drop-area, .tab-visibility-settings { display:none !important; }
     .tabs .tab-buttons, .spread-subtab-button { display:none !important; }
     .tabs { position:static !important; margin:0 !important; flex:1; min-height:0; display:flex; flex-direction:column; }
     .tab-panel { display:none; }
     .tab-panel.active { display:flex !important; flex-direction:column; flex:1; min-height:0; overflow:auto; }
     .spread-subtab-panel { display:none; }
-    .spread-subtab-panel.active { display:block; }
+    /* アクティブなサブタブだけ縦フレックスにして高さを下へ渡す（!important は付けない） */
+    .spread-subtab-panel.active { display:flex; flex-direction:column; flex:1 1 auto; min-height:0; }
     .etb-popout-playhead { position:absolute; width:2px; background:#ff5a5a; pointer-events:none; z-index:6; box-shadow:0 0 4px rgba(255,90,90,0.7); }
     .etb-chart-marker { position:absolute; pointer-events:none; z-index:8; }
     .etb-chart-marker-dot { position:absolute; left:0; top:0; width:12px; height:12px; border-radius:50%; border:2px solid #fff; box-sizing:border-box; transform:translate(-50%,-50%); box-shadow:0 0 5px rgba(0,0,0,0.6); }
@@ -138,9 +179,50 @@ function injectChartPopout(pop, chartId) {
           Array.prototype.slice.call(parent.children).forEach(function(sib) {
             if (sib !== node) sib.style.display = 'none';
           });
+          /* グラフまで高さを伝えるため、経路上の要素を縦フレックスにする。
+             ここを CSS セレクタでやると他のサブタブまで表示してしまうので、
+             このグラフの祖先だけにインラインで当てる（サブタブ用 div が
+             block のままだと、そこで高さの伝達が止まって縦が変わらない）。 */
+          parent.style.display = 'flex';
+          parent.style.flexDirection = 'column';
+          parent.style.minHeight = '0';
           if (parent.classList && parent.classList.contains('tab-panel')) break;
+          parent.style.flex = '1 1 auto';
           node = parent;
         }
+        /* グラフを囲む枠・背景・余白を消す（クラス名がグラフごとに違うので実要素に直接指定）。
+           position:relative は右上に浮かせた「ズームをリセット」の基準にもなる。 */
+        section.style.margin = '0';
+        section.style.padding = '0';
+        section.style.border = 'none';
+        section.style.borderRadius = '0';
+        section.style.background = 'transparent';
+        section.style.position = 'relative';
+        /* このセクションだけ縦フレックスにして、グラフの入れ物へ高さを渡す。
+           CSS セレクタでまとめてやると他のセクションまで表示してしまうので個別に。 */
+        section.style.display = 'flex';
+        section.style.flexDirection = 'column';
+        section.style.flex = '1 1 auto';
+        section.style.minHeight = '0';
+        /* 1つの section に複数のグラフが入っている場合（スクロール速度とその変化量）は、
+           自分以外のグラフを隠す。隠さないと1つの窓に両方出てしまう。 */
+        Array.prototype.slice.call(section.querySelectorAll('[class*="chart-wrap"]'))
+          .forEach(function(w) { if (!w.contains(cv)) w.style.display = 'none'; });
+        var deltaHead = section.querySelector('.spread-scroll-delta-header');
+        if (deltaHead) {
+          if (chartId === 'spreadScrollDeltaChart') {
+            /* 自分のグラフの見出し・説明はウィンドウのタイトルで足りるので中身だけ隠す */
+            Array.prototype.slice.call(deltaHead.children)
+              .forEach(function(c) { c.style.display = 'none'; });
+          } else {
+            deltaHead.style.display = 'none';   // 相手のグラフの見出しごと隠す
+          }
+        }
+
+        /* この印がある時だけ、グラフ側がキャンバス高さを親要素に合わせる
+           （web ツールでは付かないので従来どおり固定高さ） */
+        var wrap = cv.parentElement;
+        if (wrap) wrap.dataset.chartFill = '1';
       };
       isolateChart();
       setTimeout(isolateChart, 400);
@@ -166,7 +248,9 @@ function injectChartPopout(pop, chartId) {
         var cv = ensureEls();
         if (!cv || !phEl) return;
         var g = cv.__playheadGeom;
-        if (ms < 0 || !g || !g.plot || cv.offsetParent === null) { phEl.style.display = 'none'; if (mkEl) mkEl.style.display = 'none'; return; }
+        /* 描画時と幅が違うジオメトリ＝古い。間違った位置に出さないよう隠す */
+        var stale = g && g.__cw != null && g.__cw !== cv.clientWidth;
+        if (ms < 0 || !g || !g.plot || cv.offsetParent === null || stale) { phEl.style.display = 'none'; if (mkEl) mkEl.style.display = 'none'; return; }
         var span = g.viewEnd - g.viewStart;
         if (span <= 0) { phEl.style.display = 'none'; if (mkEl) mkEl.style.display = 'none'; return; }
         var frac = (ms - g.viewStart) / span;
@@ -187,14 +271,45 @@ function injectChartPopout(pop, chartId) {
           } else { mkEl.style.display = 'none'; }
         } else if (mkEl) { mkEl.style.display = 'none'; }
       };
+      /* グラフが描き直されたら再生ヘッドも置き直す。
+         各グラフは描画の最後に canvas.__playheadGeom を代入するので、その代入をフックする。
+         これが無いと osu! から次の時刻が届くまでバーが古い位置のまま／出ないままになる
+         （分離窓は表示直後に一度描き直されるので、事実上ずっと出なかった）。 */
+      var lastMs = -1, rafPending = false;
+      var hookGeom = function() {
+        var cv = document.getElementById(chartId);
+        if (!cv || cv.__etbGeomHooked) return;
+        cv.__etbGeomHooked = true;
+        var stored = cv.__playheadGeom || null;
+        Object.defineProperty(cv, '__playheadGeom', {
+          configurable: true,
+          get: function() { return stored; },
+          set: function(v) {
+            stored = v;
+            if (v) { v.__cw = cv.clientWidth; v.__ch = cv.clientHeight; }
+            if (!rafPending) {
+              rafPending = true;
+              requestAnimationFrame(function() { rafPending = false; updatePh(lastMs); });
+            }
+          }
+        });
+      };
+      hookGeom();
+      setTimeout(hookGeom, 400);
+      setTimeout(hookGeom, 1200);
+
       if (window.electronAPI && window.electronAPI.onTimingInfo) {
         window.electronAPI.onTimingInfo(function(data) {
-          updatePh(data && typeof data.time === 'number' ? data.time : -1);
+          lastMs = (data && typeof data.time === 'number') ? data.time : -1;
+          updatePh(lastMs);
         });
       }
       if (window.electronAPI && window.electronAPI.onOsuMapInfo) {
         window.electronAPI.onOsuMapInfo(function(data) {
           currentDiffFile = data && data.diffFileName ? data.diffFileName : null;
+          /* 対象 Diff が変わったら交点マーカーを描き直す。
+             osu! が一時停止中は次の時刻が来ないので、ここで更新しないと出ないまま。 */
+          updatePh(lastMs);
         });
       }
     })();

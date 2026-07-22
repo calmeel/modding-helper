@@ -210,6 +210,9 @@ function applyTaikoNoteVelocities(notes, red, green, sliderMultiplier) {
 
 // 小節線を生成して速度も付与する。赤線の meter ごとに1本、
 // 緑線の「小節線を省略」(effects bit3=8) の時刻はスキップする。
+// NCシンバルが鳴る間隔（小節数）。meter に関係なく4小節ごと。
+const NC_CYMBAL_MEASURES = 4;
+
 function buildTaikoBarlines(red, green, sliderMultiplier, endTime, omitTimes) {
   const bars = [];
   if (!red || !red.length) return bars;
@@ -224,8 +227,13 @@ function buildTaikoBarlines(red, green, sliderMultiplier, endTime, omitTimes) {
     const segEnd = i + 1 < red.length ? red[i + 1].time : endTime;
     if (!(segEnd > r.time)) continue;
     if ((segEnd - r.time) / measure > 20000) continue; // 異常値でのフリーズ防止
-    for (let t = r.time; t < segEnd; t += measure) {
-      if (!omit[Math.round(t)]) bars.push({ time: t });
+    /* major = NCシンバルが鳴る小節線。**meter に関係なく 4小節ごと**（3/4 でも4小節ごと）。
+       小節番号は赤線ごとに 0 から数え直すので、各赤線の最初の小節線は必ず major。
+       ※ lazer の汎用 BarLineGenerator は `currentBeat % TimeSignature.Numerator == 0` と
+         書かれているが、実際の osu! の挙動は meter を問わず4小節ごと。実機に合わせている。 */
+    let barIndex = 0;
+    for (let t = r.time; t < segEnd; t += measure, barIndex++) {
+      if (!omit[Math.round(t)]) bars.push({ time: t, major: barIndex % NC_CYMBAL_MEASURES === 0 });
     }
   }
   bars.sort((a, b) => a.time - b.time);
@@ -388,6 +396,7 @@ const TAIKO_COLORS = {
   rollTick: "rgba(80,52,0,0.85)", // 連打のティック（黄の上で見えるよう暗い色）
   denden: "rgba(205,205,212,0.9)", // 風船/スピナー(denden): 薄いグレー（TaikoEditor風）
   dendenText: "#2b2b34",          // 風船に出す必要打数（薄い本体の上なので暗い色）
+  ncBar: "rgba(120,220,255,0.95)", // NCシンバルが鳴る小節線（major）
   selRing: "rgba(255,105,215,0.95)", // 選択中のノーツの縁（osu!エディタ風のピンク）
   selGlow: "rgba(255,60,200,0.95)",  // その外側のモヤ
   /* 休憩時間(break)の帯。TaikoEditor の ObjectView.java の2段階（breakColor /
@@ -502,6 +511,7 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
   const snap = Number.isFinite(opts.snap) && opts.snap > 0 ? opts.snap : 4;
   const soundLane = Number.isFinite(opts.soundLane) ? opts.soundLane : -1; // 効果音を鳴らすレーン
   const isSelected = typeof opts.isSelected === "function" ? opts.isSelected : null; // 選択中判定
+  const showNcCymbal = !!opts.showNcCymbal;   // NCシンバル位置(major小節線)の強調
   const hits = [];                            // クリック判定用に描いたノーツの位置を溜める
   const svMode  = !!opts.svMode;              // true = ゲーム画面表示（SV/BPM適用）
   /* osu!px → 画面px の換算。判定点→右端の到達時間が実機と一致するように、
@@ -578,6 +588,25 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
       let refRed = null;
       for (let i = 0; i < n; i++) { if (diffs[i].red && diffs[i].red.length) { refRed = diffs[i].red; break; } }
       drawTaikoGrid(ctx, refRed, currentTime, judgmentX, pxPerMs, playX0, playX1, topPad, gridY1, snap);
+      /* NCシンバルが鳴る小節線（major）を強調。等速表示では全難易度で同じ時間軸なので
+         最初に見つかった小節線リストを使い、全レーンを貫く1本として描く。 */
+      if (showNcCymbal) {
+        let refBars = null;
+        for (let i = 0; i < n; i++) {
+          if (diffs[i].barlines && diffs[i].barlines.length) { refBars = diffs[i].barlines; break; }
+        }
+        if (refBars) {
+          ctx.strokeStyle = TAIKO_COLORS.ncBar;
+          ctx.lineWidth = 2;
+          for (let b = 0; b < refBars.length; b++) {
+            if (!refBars[b].major) continue;
+            const bx = judgmentX + (refBars[b].time - currentTime) * pxPerMs;
+            if (bx < playX0 - 2 || bx > playX1 + 2) continue;
+            const px = Math.round(bx) + 0.5;
+            ctx.beginPath(); ctx.moveTo(px, topPad); ctx.lineTo(px, gridY1); ctx.stroke();
+          }
+        }
+      }
     }
 
     const futureMs = (playX1 - judgmentX) / pxPerMs;
@@ -603,13 +632,15 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
       /* ゲーム画面表示: 小節線（ノーツと同じSV速度で流れる） */
       if (svMode && diff.barlines && diff.barlines.length) {
         const yTop = topPad + i * laneH;
-        ctx.strokeStyle = "rgba(255,255,255,0.28)";
-        ctx.lineWidth = 1;
         for (let b = 0; b < diff.barlines.length; b++) {
           const bar = diff.barlines[b];
           const bv = (bar.vel != null && Number.isFinite(bar.vel) && bar.vel > 0) ? bar.vel : 0.3;
           const bx = judgmentX + (bar.time - currentTime) * bv * svScale;
           if (bx < playX0 - 4 || bx > playX1 + 4) continue;
+          /* NCシンバルが鳴る小節線は太く色を変えて強調 */
+          const major = showNcCymbal && bar.major;
+          ctx.strokeStyle = major ? TAIKO_COLORS.ncBar : "rgba(255,255,255,0.28)";
+          ctx.lineWidth = major ? 2 : 1;
           const px = Math.round(bx) + 0.5;
           ctx.beginPath(); ctx.moveTo(px, yTop); ctx.lineTo(px, yTop + laneH); ctx.stroke();
         }
@@ -792,8 +823,10 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
     ctx.strokeRect(Math.round(mx) + 0.5, Math.round(my) + 0.5, Math.round(mw), Math.round(mh));
   }
 
-  // クリック判定用のジオメトリを保存（レーン選択・ノーツ選択の両方で使う）
-  canvas.__spreadGeom = { topPad: topPad, laneH: laneH, n: n, hits: hits };
+  /* クリック判定用のジオメトリを保存（レーン選択・ノーツ選択の両方で使う）。
+     playX0 = プレイフィールドの左端。ここより左は難易度名のラベル列で、
+     ノーツの上に被せて描いている＝見えていないので、ノーツ判定から除外させる。 */
+  canvas.__spreadGeom = { topPad: topPad, laneH: laneH, n: n, hits: hits, playX0: playX0 };
 }
 
 // 太鼓の効果音（ドン/カツ）を Web Audio で合成する。音源ファイル不要。
