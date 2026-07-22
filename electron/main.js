@@ -6,6 +6,7 @@ const { loadTaikoSoundSets } = require('./services/sounds');
 const mapsetWatcher = require('./osu/mapsetWatcher');
 const popouts = require('./windows/popouts');
 const updater = require('./services/updater');
+const windowState = require('./services/windowState');
 // リアルタイム(osu!メモリ監視)は非公開ファイル（GitHub には上げない方針）。
 // 欠落していても web プレビュー等は動くよう no-op スタブにフォールバックする。
 let osuWatcher;
@@ -16,6 +17,7 @@ try {
     setDeliver: function () {},
     start: function () {},
     stop: function () {},
+    resendMapInfo: function () {},
     getCurrentOsuPath: function () { return null; }
   };
 }
@@ -48,14 +50,35 @@ function buildInjectJs() {
 
 let mainWin = null;
 
+// 「標準的なデスクトップのウィンドウサイズ」。最大化を解いてこの大きさで中央に置く。
+// 固定はせずユーザーが後から自由にリサイズできる（サイズを与えるだけ）。
+const STD_WIN_W = 1280, STD_WIN_H = 800;
+function applyStandardSize(win) {
+  if (!win || win.isDestroyed()) return;
+  const wa = screen.getPrimaryDisplay().workArea;   // タスクバーを除いた領域
+  const w = Math.max(560, Math.min(STD_WIN_W, wa.width  - 40));
+  const h = Math.max(400, Math.min(STD_WIN_H, wa.height - 40));
+  if (win.isMaximized()) win.unmaximize();
+  win.setBounds({
+    x: wa.x + Math.round((wa.width  - w) / 2),
+    y: wa.y + Math.round((wa.height - h) / 2),
+    width: w, height: h,
+  });
+}
+
 
 
 function createWindow() {
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+  // 前回終了時の位置・サイズ・最大化状態を復元する。
+  // 表示モード（ワイド/コンパクト）はレンダラー側の設定なので、
+  // ここで大きさを覚えていないと「コンパクトで終了→次回は全画面」とちぐはぐになる。
+  const st = windowState.getInitialState();
 
   const win = new BrowserWindow({
-    width,
-    height,
+    x: st.x,
+    y: st.y,
+    width: st.width,
+    height: st.height,
     // これ以上狭めるとタイトルバーのタブがウィンドウ操作ボタンを押し出すため下限を設ける
     minWidth: 560,
     minHeight: 400,
@@ -69,6 +92,10 @@ function createWindow() {
     },
     icon: path.join(root, 'images', 'icon.ico'),
   });
+
+  // 監視を先に張ってから最大化する（順序が逆だと最初の maximize を取りこぼす）
+  windowState.track(win);
+  if (st.maximized) win.maximize();
 
   // 最大化 / 元に戻す → レンダラーに通知
   win.on('maximize',   () => win.webContents.send('win-maximized'));
@@ -149,9 +176,21 @@ app.whenReady().then(() => {
   updater.setupAutoUpdate();
 
   ipcMain.on('win-minimize',  () => { if (mainWin) mainWin.minimize(); });
+  /* 最大化の解除は「標準のデスクトップサイズ」に落とす。
+     起動時は作業領域いっぱいで開くため、素の unmaximize() では戻り先が定まらない。 */
   ipcMain.on('win-maximize',  () => {
     if (!mainWin) return;
-    mainWin.isMaximized() ? mainWin.unmaximize() : mainWin.maximize();
+    const wa = screen.getPrimaryDisplay().workArea;
+    const b = mainWin.getBounds();
+    const isFull = mainWin.isMaximized() ||
+      (b.width >= wa.width - 8 && b.height >= wa.height - 8);
+    if (isFull) applyStandardSize(mainWin); else mainWin.maximize();
+  });
+  // 表示モードを「コンパクト」にした時など、レンダラーから標準サイズを要求する
+  ipcMain.on('win-standard-size', () => applyStandardSize(mainWin));
+  // 「ワイド」にした時。トグルではなく必ず作業領域いっぱいにする
+  ipcMain.on('win-maximize-full', () => {
+    if (mainWin && !mainWin.isDestroyed() && !mainWin.isMaximized()) mainWin.maximize();
   });
   ipcMain.on('win-close',     () => { if (mainWin) mainWin.close(); });
   ipcMain.on('win-open-docs', () => { shell.openExternal('file:///' + docsPath.replace(/\\/g, '/')); });
@@ -164,6 +203,10 @@ app.whenReady().then(() => {
 
   // グラフを別ウィンドウに分離
   ipcMain.on('detach-chart', (e, chartId, lang) => popouts.openChartPopout(chartId, lang));
+
+  /* 「osu! で開いている譜面」へ切り替えた直後など、レンダラーから現在の譜面情報を要求する。
+     監視は譜面が変わった時しか送らないので、これが無いと切替時に空のままになる。 */
+  ipcMain.on('osu-request-map-info', () => osuWatcher.resendMapInfo());
 
   // 分離窓での Tags チェック状態の変化を保持（復帰時にメインへ反映するため）
   ipcMain.on('popout-checked-changed', (e, arr) => {

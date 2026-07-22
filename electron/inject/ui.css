@@ -185,15 +185,78 @@
       #etb-close:hover        { background: #c42b1c; color: #fff; }
 
       /* ── 3カラムレイアウト（カード型パネル） ── */
+      /* レイアウトは縦積み（上=コンパクトバー / 下=3カラム）。
+         カラムの並びと余白は #etb-cols 側が持つ。 */
       #electron-layout {
         display: flex !important;
+        flex-direction: column !important;
         flex: 1 !important;
         overflow: hidden !important;
         min-height: 0 !important;
-        gap: 8px !important;
-        padding: 8px !important;
+        gap: 0 !important;
+        padding: 0 !important;
         background: #19191e !important;
         box-sizing: border-box !important;
+      }
+      #etb-cols {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        gap: 8px;
+        padding: 8px;
+        box-sizing: border-box;
+      }
+
+      /* ── コンパクトモード ──
+         左カラム（メタデータ/リアルタイム/譜面ファイル）を出さず、
+         チェックリストとチェック結果を画面いっぱいに使う。 */
+      #etb-compact-bar { display: none; }
+      /* 設定画面は左カラムに置いてあるので、コンパクトでも必ず出す
+         （消すと表示モードを戻せなくなる） */
+      #electron-layout.etb-compact:not(.etb-settings) #electron-col-future { display: none !important; }
+      #electron-layout.etb-compact:not(.etb-settings):not(.etb-preview) #etb-compact-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 5px 12px 0;
+        min-height: 0;
+        flex: 0 0 auto;
+      }
+      #etb-compact-meta {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 12px;
+        color: #cfcfe0;
+        letter-spacing: 0.01em;
+      }
+      #etb-compact-meta.etb-compact-meta-empty { color: #6a6a78; }
+      #etb-compact-drop { flex: 0 0 auto; display: flex; align-items: center; }
+      /* バーに入ったドロップエリアは1行に収まる小さい見た目にする */
+      #etb-compact-drop .drop-area {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        margin: 0 !important;
+        padding: 3px 9px !important;
+        border: 1px dashed #4a4a58 !important;
+        border-radius: 6px !important;
+        background: #22222a !important;
+        min-height: 0 !important;
+      }
+      #etb-compact-drop .drop-area p { display: none !important; }
+      #etb-compact-drop .drop-area .file-picker {
+        display: flex !important; align-items: center !important; gap: 6px !important; margin: 0 !important;
+      }
+      #etb-compact-drop .drop-area .file-button {
+        padding: 2px 9px !important; font-size: 11px !important; margin: 0 !important; white-space: nowrap !important;
+      }
+      #etb-compact-drop .drop-area .file-name {
+        font-size: 11px !important; max-width: 190px !important; overflow: hidden !important;
+        text-overflow: ellipsis !important; white-space: nowrap !important;
       }
 
       /* カード共通スタイル */
@@ -268,10 +331,13 @@
       #electron-layout.etb-settings #electron-col-future { flex: 1 1 0 !important; }
       #electron-layout.etb-settings #electron-col-tabs   { flex: 1 1 0 !important; }
       /* 左カラムの2カードは内容の高さで上から積む */
+      #electron-layout.etb-settings #etb-card-viewsettings,
       #electron-layout.etb-settings #etb-card-loadsettings,
       #electron-layout.etb-settings #etb-card-previewsettings { flex: 0 0 auto !important; }
       /* プレビュー設定カード: 先頭セクションだけ区切り線を出さない（2つ目以降は区切る） */
-      #etb-card-previewsettings .etb-card-body > .etb-sfx-settings:first-child { margin-top: 0 !important; padding-top: 0 !important; border-top: none !important; }
+      /* 設定カードの先頭セクションは区切り線と上余白を出さない（2つ目以降だけ区切る）。
+         カードを問わず効かせる（表示モードのように1セクションだけのカードもあるため）。 */
+      .etb-card-body > .etb-sfx-settings:first-child { margin-top: 0 !important; padding-top: 0 !important; border-top: none !important; }
 
       /* ── osu! マップパネル ── */
       #osu-map-panel {
@@ -469,6 +535,38 @@
       #electron-col-tabs .tab-group.etb-tool-group {
         grid-column: 1 / -1 !important;
         margin-top: 16px !important;
+      }
+
+      /* ── コンパクト: チェックリストを1画面に収める ──
+         「ツール」グループを隠し、余白・文字・ボタン高さを一段詰める。 */
+      #electron-layout.etb-compact #electron-col-tabs .tab-group.etb-tool-group {
+        display: none !important;
+      }
+      #electron-layout.etb-compact #electron-col-tabs > .etb-card-body {
+        padding: 9px 5px 4px !important;
+      }
+      #electron-layout.etb-compact #electron-col-tabs .tab-buttons {
+        grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)) !important;
+        column-gap: 4px !important;
+        row-gap: 11px !important;
+      }
+      #electron-layout.etb-compact #electron-col-tabs .tab-group {
+        gap: 3px !important;
+        padding: 11px 6px 5px !important;
+        border-radius: 9px !important;
+      }
+      #electron-layout.etb-compact #electron-col-tabs .tab-group-title {
+        font-size: 10px !important;
+        line-height: 15px !important;
+        top: -8px !important;
+        left: 10px !important;
+        padding: 0 6px !important;
+      }
+      #electron-layout.etb-compact #electron-col-tabs .tab-button {
+        font-size: 10.5px !important;
+        padding: 2px 4px !important;
+        min-height: 21px !important;
+        line-height: 1.15 !important;
       }
 
       /* スプレッド表示パネル（プレビュータブ専用。通常は非表示） */
@@ -675,6 +773,42 @@
         overflow-y: auto;
         padding: 10px;
       }
+      /* コンパクトでは結果の文字を少し小さくして一覧性を上げる。
+         結果テキストはこのカード本文からフォントサイズを継承しており、
+         見出しも em 指定なので、ここ1か所で全体が比例して縮む。
+         グラフはキャンバス描画なので影響を受けない。 */
+      #electron-layout.etb-compact #electron-col-output > .etb-card-body { font-size: 0.9em; }
+      /* グラフ節の見出し・説明・ボタンは px 直指定で継承しないので個別に約9割へ。
+         見出し17→15 / 説明12→11 / ボタン13→12。ヘッダーは6グラフとも同じクラス。
+         キャンバス内の軸ラベルは JS が 12px で描くため、縮小後の本文とほぼ同じ大きさ。 */
+      #electron-layout.etb-compact #electron-col-output .volume-compare-chart-header h3 { font-size: 15px; }
+      #electron-layout.etb-compact #electron-col-output .volume-compare-chart-header p  { font-size: 11px; }
+      #electron-layout.etb-compact #electron-col-output .doc-btn { font-size: 12px; }
+      /* フォームコントロールは既定でフォントを継承しないので明示的に合わせる
+         （SVチェックの閾値プルダウンなど） */
+      #electron-layout.etb-compact #electron-col-output .tab-panel select,
+      #electron-layout.etb-compact #electron-col-output .tab-panel input[type="text"],
+      #electron-layout.etb-compact #electron-col-output .tab-panel input[type="number"] { font-size: inherit; }
+      /* 波形グラフの凡例（px 直指定） */
+      #electron-layout.etb-compact #electron-col-output .offset-waveform-legend { font-size: 12px; }
+
+      /* ── コンパクト: 設定画面の文字もチェック結果に合わせて一段小さく ──
+         各項目は px 直指定なので、継承する箱と px 指定の要素を分けて約9割にする。
+         オプションの <span> はラベルから継承するのでラベル側だけ指定すれば足りる。 */
+      #electron-layout.etb-compact.etb-settings .etb-card-body { font-size: 0.9em; }
+      #electron-layout.etb-compact.etb-settings .etb-card-title { font-size: 10px !important; }
+      #electron-layout.etb-compact.etb-settings .etb-sfx-settings-title,
+      #electron-layout.etb-compact.etb-settings .osu-source-title,
+      #electron-layout.etb-compact.etb-settings .etb-sfx-none,
+      #electron-layout.etb-compact.etb-settings #etb-checklist-settings-body label,
+      #electron-layout.etb-compact.etb-settings #etb-checklist-settings-body span { font-size: 11px !important; }
+      #electron-layout.etb-compact.etb-settings .etb-sfx-opt,
+      #electron-layout.etb-compact.etb-settings .osu-source-option,
+      #electron-layout.etb-compact.etb-settings .etb-sfx-vol-label { font-size: 11.5px !important; }
+      #electron-layout.etb-compact.etb-settings .doc-btn { font-size: 12px !important; }
+      /* フォームコントロールはフォントを継承しないので明示する（音量の数値入力など） */
+      #electron-layout.etb-compact.etb-settings input,
+      #electron-layout.etb-compact.etb-settings select { font-size: inherit; }
 
       /* Clap/Whistle の #output だけ箱型（黒背景）なので、他の出力 pre と
          同じくカード背景に同化させる */

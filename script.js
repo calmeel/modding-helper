@@ -880,6 +880,7 @@ document.addEventListener("DOMContentLoaded", () => {
       artistUnicode: parseMetadataValue(text, "ArtistUnicode"),
       title:         parseMetadataValue(text, "Title"),
       titleUnicode:  parseMetadataValue(text, "TitleUnicode"),
+      creator:       parseMetadataValue(text, "Creator"),
       source:        parseMetadataValue(text, "Source"),
       tags:          parseMetadataValue(text, "Tags"),
       bgDataUrl:     bgDataUrl || null

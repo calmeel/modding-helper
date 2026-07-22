@@ -9,6 +9,17 @@
         var tabButtons = tabsSec.querySelector('.tab-buttons');
         var tabPanels  = Array.from(tabsSec.querySelectorAll('.tab-panel'));
 
+        /* ── 表示モード（ワイド / コンパクト） ──
+           コンパクト: 左カラム（メタデータ/リアルタイム/譜面ファイル）を出さず、
+           チェックリストとチェック結果を画面いっぱいに広げる。代わりに上部の細いバーへ
+           「Artist - Title (Creator)」を出し、file モードではドロップエリアもそこへ移す。
+           ※ 設定ラジオの初期チェック(opt.mode === viewMode)より前で読む必要があるため、
+             var の巻き上げ任せにせずここで確定させる。 */
+        var viewMode = 'wide';
+        try {
+          if (localStorage.getItem('moddingHelperViewMode') === 'compact') viewMode = 'compact';
+        } catch (e) {}
+
         /* ── SVG アイコン定義 ── */
         var svgBook = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>';
         var svgMin  = '<svg viewBox="0 0 12 12" width="11" height="11" fill="currentColor"><rect x="0" y="5.25" width="12" height="1.5" rx="0.5"/></svg>';
@@ -77,6 +88,17 @@
         fileCard.appendChild(fileBody);
         futureCol.appendChild(fileCard);
 
+        /* 表示モード設定カード（設定モード時のみ表示。ワイド/コンパクトの切替） */
+        var viewSettingsCard = document.createElement('div');
+        viewSettingsCard.className = 'etb-card';
+        viewSettingsCard.id = 'etb-card-viewsettings';
+        viewSettingsCard.style.display = 'none';
+        viewSettingsCard.innerHTML = '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-viewsettings">表示モード</span></div>';
+        var viewSettingsBody = document.createElement('div');
+        viewSettingsBody.className = 'etb-card-body';
+        viewSettingsCard.appendChild(viewSettingsBody);
+        futureCol.appendChild(viewSettingsCard);
+
         /* 譜面読み込み設定カード（設定モード時のみ表示。チェック対象選択を内包） */
         var loadSettingsCard = document.createElement('div');
         loadSettingsCard.className = 'etb-card';
@@ -133,9 +155,25 @@
         outputCol.appendChild(outHead);
         outputCol.appendChild(outBody);
 
-        layout.appendChild(futureCol);
-        layout.appendChild(tabsCol);
-        layout.appendChild(outputCol);
+        /* コンパクトモード用の細い情報バー（カードの上に1行）。
+           「Artist - Title (Creator)」を表示し、file モードではドロップエリアも入る。
+           ワイドモードでは CSS で非表示。 */
+        var compactBar = document.createElement('div');
+        compactBar.id = 'etb-compact-bar';
+        compactBar.innerHTML =
+          '<span id="etb-compact-meta"></span>' +
+          '<span id="etb-compact-drop" style="display:none"></span>';
+
+        /* 3カラムは row 用のラッパーに入れる（バーを上に積むため layout は column）。
+           既存 CSS は #electron-layout の子孫セレクタなのでラッパーを挟んでも効く。 */
+        var colsWrap = document.createElement('div');
+        colsWrap.id = 'etb-cols';
+        colsWrap.appendChild(futureCol);
+        colsWrap.appendChild(tabsCol);
+        colsWrap.appendChild(outputCol);
+
+        layout.appendChild(compactBar);
+        layout.appendChild(colsWrap);
 
         /* ── DOM に挿入 ── */
         appEl.insertBefore(titlebar, appEl.firstChild);
@@ -249,6 +287,15 @@
           try { var pr = parseFloat(localStorage.getItem('moddingHelperPreviewRate')); if (pr === 0.25 || pr === 0.5 || pr === 0.75 || pr === 1) spPlaybackRate = pr; } catch (e) {}
           /* Test: ゲーム画面表示（SV/BPM/SliderMultiplier を反映した実機同等のスクロール） */
           var spSvMode = false;
+          /* 判定ラインの位置（プレイフィールド幅に対する割合）。
+             左寄せの 0.2 は osu!taiko 実機の受け口位置（165/901.7≒0.18）に近い値。 */
+          var SP_JUDGE_CENTER = 0.5, SP_JUDGE_LEFT = 0.2;
+          var spJudgeFrac = SP_JUDGE_CENTER;
+          try {
+            var jf = parseFloat(localStorage.getItem('moddingHelperPreviewJudgeFrac'));
+            if (jf === SP_JUDGE_LEFT || jf === SP_JUDGE_CENTER) spJudgeFrac = jf;
+          } catch (e) {}
+
           /* Diff順: true=難→易(上が難しい / 既定), false=易→難(上が易しい) */
           var spDiffDesc = true;
           try { if (localStorage.getItem('moddingHelperPreviewDiffDesc') === '0') spDiffDesc = false; } catch (e) {}
@@ -461,6 +508,72 @@
               diffOrderSection.appendChild(lb);
             });
             previewSettingsBody.appendChild(diffOrderSection);
+
+            /* 表示モード（ワイド / コンパクト）の切替。カードは別だがここでまとめて組む */
+            if (typeof viewSettingsBody !== 'undefined' && viewSettingsBody) {
+              var viewModeSection = document.createElement('div');
+              viewModeSection.className = 'etb-sfx-settings';
+              [
+                { mode: 'wide',    id: 'etb-viewmode-wide',    ja: 'ワイド' },
+                { mode: 'compact', id: 'etb-viewmode-compact', ja: 'コンパクト' }
+              ].forEach(function (opt) {
+                var lb = document.createElement('label');
+                lb.className = 'etb-sfx-opt';
+                var rb = document.createElement('input');
+                rb.type = 'radio'; rb.name = 'etb-viewmode';
+                if (opt.mode === viewMode) rb.checked = true;
+                rb.addEventListener('change', function () {
+                  if (!rb.checked) return;
+                  viewMode = opt.mode;
+                  try { localStorage.setItem('moddingHelperViewMode', viewMode); } catch (e) {}
+                  applyViewModeUi();
+                  /* ウィンドウサイズもモードに合わせる。
+                     コンパクト → 標準のデスクトップサイズ / ワイド → 画面いっぱい。
+                     どちらも固定ではないので、以後は自由にリサイズできる。 */
+                  var api = window.electronAPI;
+                  if (viewMode === 'compact') { if (api && api.standardSize) api.standardSize(); }
+                  else if (api && api.maximizeFull) api.maximizeFull();
+                });
+                var txt = document.createElement('span');
+                txt.id = opt.id; txt.textContent = opt.ja;
+                lb.appendChild(rb);
+                lb.appendChild(document.createTextNode(' '));
+                lb.appendChild(txt);
+                viewModeSection.appendChild(lb);
+              });
+              viewSettingsBody.appendChild(viewModeSection);
+            }
+
+            /* 判定ラインの位置（中央 / 左寄せ）の切替 */
+            var judgePosSection = document.createElement('div');
+            judgePosSection.className = 'etb-sfx-settings';
+            var jpTitle = document.createElement('div');
+            jpTitle.className = 'etb-sfx-settings-title';
+            jpTitle.id = 'etb-judgepos-title';
+            jpTitle.textContent = '判定ラインの位置';
+            judgePosSection.appendChild(jpTitle);
+            [
+              { frac: SP_JUDGE_CENTER, id: 'etb-judgepos-center', ja: '中央' },
+              { frac: SP_JUDGE_LEFT,   id: 'etb-judgepos-left',   ja: '左寄せ（先を長く見る）' }
+            ].forEach(function (opt) {
+              var lb = document.createElement('label');
+              lb.className = 'etb-sfx-opt';
+              var rb = document.createElement('input');
+              rb.type = 'radio'; rb.name = 'etb-judgepos';
+              if (opt.frac === spJudgeFrac) rb.checked = true;
+              rb.addEventListener('change', function () {
+                if (!rb.checked) return;
+                spJudgeFrac = opt.frac;
+                try { localStorage.setItem('moddingHelperPreviewJudgeFrac', String(spJudgeFrac)); } catch (e) {}
+              });
+              var txt = document.createElement('span');
+              txt.id = opt.id; txt.textContent = opt.ja;
+              lb.appendChild(rb);
+              lb.appendChild(document.createTextNode(' '));
+              lb.appendChild(txt);
+              judgePosSection.appendChild(lb);
+            });
+            previewSettingsBody.appendChild(judgePosSection);
 
             /* Diff の表示/非表示（読み込み中の譜面に応じて動的生成） */
             var diffVisSection = document.createElement('div');
@@ -1183,6 +1296,7 @@
               snap: spSnap,
               svMode: spSvMode, /* SVスケールは実機速度に一致するよう描画側で自動計算 */
               soundLane: spHitSounds ? Math.min(spSoundLane, diffs.length - 1) : -1,
+              judgeFrac: spJudgeFrac,
               isSelected: spSelNotes.length ? spIsSelected : null,
               marquee: spMarquee,
               emptyText: isEn ? 'No beatmap loaded' : '譜面が読み込まれていません',
@@ -1301,45 +1415,82 @@
           return m;
         };
         var lastPlayheadMs = -1;  // 直近の再生位置（タブ切替時の再描画用に保持）
-        var updatePlayheads = function(ms) {
-          lastPlayheadMs = ms;
-          for (var i = 0; i < playheadChartIds.length; i++) {
-            var id = playheadChartIds[i];
-            var cv = document.getElementById(id);
-            var d  = getPlayheadEl(id);
-            var mk = getMarkerEl(id);
-            if (!cv || !d) continue;
-            var g = cv.__playheadGeom;
-            if (ms < 0 || !g || !g.plot || cv.offsetParent === null) {
-              d.style.display = 'none'; if (mk) mk.style.display = 'none'; continue;
-            }
-            var span = g.viewEnd - g.viewStart;
-            if (span <= 0) { d.style.display = 'none'; if (mk) mk.style.display = 'none'; continue; }
-            var frac = (ms - g.viewStart) / span;
-            if (frac < 0 || frac > 1) { d.style.display = 'none'; if (mk) mk.style.display = 'none'; continue; }
-            var x = cv.offsetLeft + g.plot.left + frac * g.plot.width;
-            d.style.left   = x + 'px';
-            d.style.top    = (cv.offsetTop + g.plot.top) + 'px';
-            d.style.height = g.plot.height + 'px';
-            d.style.display = '';
-            /* 現 Diff との交点マーカー（チャートが __markerAt を提供する場合のみ） */
-            if (mk && typeof cv.__markerAt === 'function') {
-              var info = cv.__markerAt(ms, currentDiffFile);
-              if (info && typeof info.y === 'number') {
-                mk.style.left = x + 'px';
-                mk.style.top  = (cv.offsetTop + info.y) + 'px';
-                var dot = mk.firstChild, lab = mk.lastChild;
-                if (dot) dot.style.background = info.color || '#fff';
-                if (lab) lab.textContent = info.label != null ? info.label : '';
-                mk.style.display = '';
-              } else {
-                mk.style.display = 'none';
-              }
-            } else if (mk) {
+        /* グラフ1つぶんの再生ヘッド配置。
+           非表示タブで描かれたジオメトリは幅が違う（＝古い）ので、その時は出さない。
+           古い幅のまま置くと、タブ切替直後に間違った位置にバーが見えてしまう。 */
+        var positionPlayhead = function(id, ms) {
+          var cv = document.getElementById(id);
+          var d  = getPlayheadEl(id);
+          var mk = getMarkerEl(id);
+          if (!cv || !d) return;
+          var g = cv.__playheadGeom;
+          var stale = g && g.__cw != null && g.__cw !== cv.clientWidth;
+          if (ms < 0 || !g || !g.plot || cv.offsetParent === null || stale) {
+            d.style.display = 'none'; if (mk) mk.style.display = 'none'; return;
+          }
+          var span = g.viewEnd - g.viewStart;
+          if (span <= 0) { d.style.display = 'none'; if (mk) mk.style.display = 'none'; return; }
+          var frac = (ms - g.viewStart) / span;
+          if (frac < 0 || frac > 1) { d.style.display = 'none'; if (mk) mk.style.display = 'none'; return; }
+          var x = cv.offsetLeft + g.plot.left + frac * g.plot.width;
+          d.style.left   = x + 'px';
+          d.style.top    = (cv.offsetTop + g.plot.top) + 'px';
+          d.style.height = g.plot.height + 'px';
+          d.style.display = '';
+          /* 現 Diff との交点マーカー（チャートが __markerAt を提供する場合のみ） */
+          if (mk && typeof cv.__markerAt === 'function') {
+            var info = cv.__markerAt(ms, currentDiffFile);
+            if (info && typeof info.y === 'number') {
+              mk.style.left = x + 'px';
+              mk.style.top  = (cv.offsetTop + info.y) + 'px';
+              var dot = mk.firstChild, lab = mk.lastChild;
+              if (dot) dot.style.background = info.color || '#fff';
+              if (lab) lab.textContent = info.label != null ? info.label : '';
+              mk.style.display = '';
+            } else {
               mk.style.display = 'none';
             }
+          } else if (mk) {
+            mk.style.display = 'none';
           }
         };
+        var updatePlayheads = function(ms) {
+          lastPlayheadMs = ms;
+          for (var i = 0; i < playheadChartIds.length; i++) positionPlayhead(playheadChartIds[i], ms);
+        };
+
+        /* ── グラフ再描画への追従 ──
+           各グラフは ResizeObserver で「表示された瞬間」に描き直す。その時に
+           canvas.__playheadGeom が書き換わるので、代入をフックして即座にバーを置き直す。
+           これが無いと、描き直された後もバーが古い位置に残り、次のタイマー(200ms)や
+           osu! からの次の時刻が届くまで直らない＝切替時にワンテンポ遅れて飛ぶ。 */
+        var geomDirty = {}, geomRaf = null;
+        var flushGeomDirty = function() {
+          geomRaf = null;
+          var ids = Object.keys(geomDirty);
+          geomDirty = {};
+          if (panelMode !== 'osu' || settingsMode || previewMode) return;
+          for (var i = 0; i < ids.length; i++) positionPlayhead(ids[i], lastPlayheadMs);
+        };
+        var hookChartGeom = function(id) {
+          var cv = document.getElementById(id);
+          if (!cv || cv.__etbGeomHooked) return;
+          cv.__etbGeomHooked = true;
+          var stored = cv.__playheadGeom || null;
+          Object.defineProperty(cv, '__playheadGeom', {
+            configurable: true,
+            get: function() { return stored; },
+            set: function(v) {
+              stored = v;
+              /* 描画時のキャンバス寸法を控える。表示切替でサイズが変わると
+                 現在値と食い違うので「古いジオメトリ」と判定できる。 */
+              if (v) { v.__cw = cv.clientWidth; v.__ch = cv.clientHeight; }
+              geomDirty[id] = true;
+              if (!geomRaf) geomRaf = requestAnimationFrame(flushGeomDirty);
+            }
+          });
+        };
+        for (var hi = 0; hi < playheadChartIds.length; hi++) hookChartGeom(playheadChartIds[hi]);
         var hideAllPlayheads = function() {
           for (var k in playheadEls) { if (playheadEls[k]) playheadEls[k].style.display = 'none'; }
           for (var k2 in markerEls) { if (markerEls[k2]) markerEls[k2].style.display = 'none'; }
@@ -1350,10 +1501,24 @@
           if (panelMode !== 'osu' || settingsMode || previewMode) return;
           updatePlayheads(lastPlayheadMs);
         };
+        /* 保険: 少し経ってもジオメトリが古いまま＝グラフが描き直されていない場合、
+           resize を投げて再描画パスを起こす（グラフ側は resize で描き直す）。
+           通常は表示された時点で ResizeObserver が発火するのでここは通らない。 */
+        var nudgeStaleCharts = function() {
+          if (panelMode !== 'osu' || settingsMode || previewMode) return;
+          for (var i = 0; i < playheadChartIds.length; i++) {
+            var cv = document.getElementById(playheadChartIds[i]);
+            var g = cv && cv.__playheadGeom;
+            if (cv && g && g.__cw != null && g.__cw !== cv.clientWidth && cv.offsetParent !== null) {
+              window.dispatchEvent(new Event('resize'));
+              return;
+            }
+          }
+        };
         /* 表示切替直後はレイアウト確定/チャート再描画を待つ必要があるため複数回試す */
         var schedulePlayheadRefresh = function() {
           requestAnimationFrame(refreshPlayheads);
-          setTimeout(refreshPlayheads, 200);
+          setTimeout(function() { refreshPlayheads(); nudgeStaleCharts(); }, 200);
         };
         /* タブ・サブタブ・ズームリセットのクリックで再生ヘッドを再適用 */
         document.addEventListener('click', function(e) {
@@ -1390,6 +1555,41 @@
         /* カード表示の切替（panelMode と settingsMode を反映）:
            通常時   左→リアルタイム/譜面ファイル, 中央→チェックリスト
            設定時   左→譜面読み込み設定,          中央→チェックリストの設定 */
+        /* 表示モードの実装。値 viewMode 自体はもっと前で読み込んでいる
+           （設定ラジオの初期チェックがこれより前で組まれるため）。 */
+        var lastMapMeta = null;   // 直近に描画したメタデータ（バーの表示に使う）
+        var updateCompactMeta = function() {
+          var el = document.getElementById('etb-compact-meta');
+          if (!el) return;
+          var d = lastMapMeta;
+          var artist = d && (d.artist || d.artistUnicode) || '';
+          var title  = d && (d.title  || d.titleUnicode)  || '';
+          var creator = d && d.creator || '';
+          var txt = '';
+          if (artist || title) {
+            txt = (artist ? artist + ' - ' : '') + title;
+            if (creator) txt += ' (' + creator + ')';
+          }
+          var isEn = document.getElementById('langEn') && document.getElementById('langEn').classList.contains('active');
+          el.textContent = txt || (isEn ? 'No beatmap loaded' : '譜面が読み込まれていません');
+          el.classList.toggle('etb-compact-meta-empty', !txt);
+        };
+        var applyViewModeUi = function() {
+          var layoutEl = document.getElementById('electron-layout');
+          if (layoutEl) layoutEl.classList.toggle('etb-compact', viewMode === 'compact');
+          /* ドロップエリアは1つしか無いので、置き場所ごと移動する
+             （複製するとイベントの張り直しが要るため） */
+          var slot = document.getElementById('etb-compact-drop');
+          if (slot && dropArea) {
+            var wantInBar = (viewMode === 'compact' && panelMode !== 'osu');
+            if (wantInBar) { if (dropArea.parentElement !== slot) slot.appendChild(dropArea); }
+            else if (dropArea.parentElement !== fileBody) fileBody.appendChild(dropArea);
+            slot.style.display = wantInBar ? '' : 'none';
+          }
+          updateCompactMeta();
+          schedulePlayheadRefresh(); // 幅が変わるのでグラフの再生ヘッドを置き直す
+        };
+
         var applyPanelModeUi = function() {
           var isOsu = (panelMode === 'osu');
           var s = settingsMode;
@@ -1402,8 +1602,10 @@
           setDisp('etb-card-meta',         !s && !detachState.metadata);
           setDisp('etb-card-realtime',     !s && isOsu && !detachState.timing);
           setDisp('etb-card-file',         !s && !isOsu);
+          setDisp('etb-card-viewsettings',  s);
           setDisp('etb-card-loadsettings',  s);
           setDisp('etb-card-previewsettings', s);
+          applyViewModeUi();   // モード切替でドロップエリアの置き場所が変わる
           /* 設定を開いたら Diff表示チェックリストを現在の譜面で作り直す */
           if (s && window.__spreadRebuildDiffList) window.__spreadRebuildDiffList();
           /* 中央カラム（チェックリスト） */
@@ -1445,6 +1647,7 @@
           });
         };
         var clearMetaToWaiting = function() {
+          lastMapMeta = null; updateCompactMeta();
           var meta = document.getElementById('osu-map-meta');
           if (meta) { meta.innerHTML = '<div id="osu-map-waiting"></div>'; updateWaitingText(); }
           var bgw = document.getElementById('osu-map-bg-wrap');
@@ -1586,6 +1789,12 @@
           set('etb-difforder-title',    'Diff順',            'Diff order');
           set('etb-difforder-desc',     '難→易（上が難しい）', 'Hard→Easy (top=hardest)');
           set('etb-difforder-asc',      '易→難（上が易しい）', 'Easy→Hard (top=easiest)');
+          set('etb-title-viewsettings',  '表示モード',          'Display mode');
+          set('etb-viewmode-wide',     'ワイド',   'Wide');
+          set('etb-viewmode-compact',  'コンパクト', 'Compact');
+          set('etb-judgepos-title',     '判定ラインの位置',    'Judgement line');
+          set('etb-judgepos-center',    '中央',              'Center');
+          set('etb-judgepos-left',      '左寄せ', 'Left');
           set('etb-diffvis-title',      '表示するDiff',       'Shown diffs');
           set('etb-diffvis-none',       '（譜面が読み込まれていません）', '(No beatmap loaded)');
           set('etb-title-checklist',
@@ -1778,6 +1987,8 @@
             var bg   = document.getElementById('osu-map-bg');
             var meta = document.getElementById('osu-map-meta');
             if (!meta) return;
+            lastMapMeta = data;   // コンパクトバー用に保持
+            updateCompactMeta();
             if (!data) { clearMetaToWaiting(); return; }
             if (bg) bg.src = data.bgDataUrl || '';
             document.getElementById('osu-map-bg-wrap').style.display = data.bgDataUrl ? '' : 'none';
@@ -1823,9 +2034,10 @@
 
           /* ── osu! タイミング情報 IPC（osu モードのみ反映） ── */
           window.electronAPI.onTimingInfo(function(data) {
-            /* プレビュー(スプレッド)の追従は Edit 中(data.editing)のみ許可。
-               ゲームプレイ中(status!=Edit)は追従させない＝デュアルスクリーンでの
-               先読みチート対策。※リアルタイム表示カードは下で常時更新（プレイ中OK）。
+            /* プレビュー(スプレッド)の追従は data.editing のときのみ許可。
+               editing = Edit 画面 または エディタのテストプレイ（osuWatcher.js が判定）。
+               本番のゲームプレイ中は追従させない＝デュアルスクリーンでの先読みチート対策。
+               ※リアルタイム表示カードは下で常時更新（プレイ中OK）。
                osu! の時刻が届いた＝再生/シークなので、ドラッグ中でなければ手動解除。 */
             if (data && typeof data.time === 'number' && data.time >= 0 && data.editing) {
               spreadLastTime = data.time;
@@ -1880,6 +2092,12 @@
               applyPanelModeUi();
               resetTimingPanel();
               clearMetaToWaiting();
+              /* osu! モードに切り替えた時は、既に開いている譜面の情報を要求する。
+                 監視側は譜面が変わった時しか送らないので、これが無いと
+                 osu! 側で何か操作するまで空欄のままになる。 */
+              if (panelMode === 'osu' && window.electronAPI && window.electronAPI.requestMapInfo) {
+                window.electronAPI.requestMapInfo();
+              }
             },
             renderFileMeta: function(data) {
               if (panelMode !== 'file') return;

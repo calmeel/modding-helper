@@ -18,6 +18,7 @@ function parseTaikoNotes(text) {
   const sliderMult = typeof parseHitObjectEndSliderMultiplier === "function"
     ? parseHitObjectEndSliderMultiplier(text) : 1.4;
   const tickRate = parseTaikoDifficultyValue(text, "SliderTickRate", 1);
+  const overallDiff = parseTaikoDifficultyValue(text, "OverallDifficulty", 5);
 
   const notes = [];
   for (const line of objects) {
@@ -35,7 +36,9 @@ function parseTaikoNotes(text) {
     if (type & 8) {                 // スピナー → 風船
       let endTime = parseInt(parts[5], 10);
       if (!Number.isFinite(endTime)) endTime = time;
-      notes.push({ time, endTime, kind: "denden", nc });
+      // 風船は必要打数（OD と長さで決まる）を持たせて画面に出す
+      notes.push({ time, endTime, kind: "denden", nc,
+                   requiredHits: taikoSwellRequiredHits(endTime - time, overallDiff) });
     } else if (type & 2) {          // スライダー → 連打
       let endTime = time;
       if (typeof calculateHitObjectSliderEndTime === "function") {
@@ -69,6 +72,26 @@ function parseTaikoDifficultyValue(text, key, fallback) {
     }
   }
   return fallback;
+}
+
+// osu! の DifficultyRange。難易度値[0,10]を [min, mid, max] の範囲へ写す。
+//   出典: osu.Game/Beatmaps/IBeatmapDifficultyInfo.cs
+//   OD>5 は mid→max、OD<5 は mid→min へ線形（OD=5 でちょうど mid）。
+function taikoDifficultyRange(difficulty, min, mid, max) {
+  if (difficulty > 5) return mid + (max - mid) * (difficulty - 5) / 5;
+  if (difficulty < 5) return mid + (mid - min) * (difficulty - 5) / 5;
+  return mid;
+}
+
+// 風船(スピナー/Swell)に必要な打数。
+//   1秒あたりの必要打数 = DifficultyRange(OD, 3, 5, 7.5) × 1.65
+//     （1.65 は「太鼓の風船は osu! のスピナーより簡単だから」の補正係数）
+//   必要打数 = (int)max(1, 長さ秒 × 1秒あたりの必要打数)   ※小数は切り捨て
+//   出典: osu.Game.Rulesets.Taiko/Beatmaps/TaikoBeatmapConverter.cs
+function taikoSwellRequiredHits(durationMs, overallDifficulty) {
+  const od = Number.isFinite(overallDifficulty) ? overallDifficulty : 5;
+  const perSecond = taikoDifficultyRange(od, 3, 5, 7.5) * 1.65;
+  return Math.trunc(Math.max(1, (durationMs / 1000) * perSecond));
 }
 
 // 連打(drumroll)のティック間隔[ms]。osu!taiko の規則に合わせる:
@@ -364,6 +387,7 @@ const TAIKO_COLORS = {
   roll: "rgba(245,180,0,0.92)",   // 連打(drumroll): 黄
   rollTick: "rgba(80,52,0,0.85)", // 連打のティック（黄の上で見えるよう暗い色）
   denden: "rgba(205,205,212,0.9)", // 風船/スピナー(denden): 薄いグレー（TaikoEditor風）
+  dendenText: "#2b2b34",          // 風船に出す必要打数（薄い本体の上なので暗い色）
   selRing: "rgba(255,105,215,0.95)", // 選択中のノーツの縁（osu!エディタ風のピンク）
   selGlow: "rgba(255,60,200,0.95)",  // その外側のモヤ
   /* 休憩時間(break)の帯。TaikoEditor の ObjectView.java の2段階（breakColor /
@@ -469,7 +493,11 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
   const labelW = 112;                 // 左の難易度名カラム
   const playX0 = labelW;
   const playX1 = cssW;
-  const judgmentX = playX0 + (playX1 - playX0) / 2; // 判定ライン＝中央
+  /* 判定ラインの位置（プレイフィールド幅に対する割合）。既定 0.5＝中央。
+     左に寄せると過去側が狭く未来側が広くなり、先の譜面を長く見渡せる。 */
+  const judgeFrac = Number.isFinite(opts.judgeFrac)
+    ? Math.max(0.05, Math.min(0.95, opts.judgeFrac)) : 0.5;
+  const judgmentX = playX0 + (playX1 - playX0) * judgeFrac;
   const pxPerMs = opts.pxPerMs || 0.32;
   const snap = Number.isFinite(opts.snap) && opts.snap > 0 ? opts.snap : 4;
   const soundLane = Number.isFinite(opts.soundLane) ? opts.soundLane : -1; // 効果音を鳴らすレーン
@@ -477,8 +505,11 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
   const hits = [];                            // クリック判定用に描いたノーツの位置を溜める
   const svMode  = !!opts.svMode;              // true = ゲーム画面表示（SV/BPM適用）
   /* osu!px → 画面px の換算。判定点→右端の到達時間が実機と一致するように、
-     「このビューの接近距離 ÷ osu!のプレイフィールド長」で縮尺を決める（ズーム非依存）。 */
-  const svScale = (playX1 - judgmentX) / OSU_TAIKO_PLAYFIELD_PX;
+     「このビューの接近距離 ÷ osu!のプレイフィールド長」で縮尺を決める（ズーム非依存）。
+     基準は「判定ライン中央」時の接近距離で固定する。判定ラインを左に寄せても
+     ノーツの大きさとスクロール速度（px/ms）が変わらないようにするため
+     （左寄せでは接近距離が伸びるぶん、ノーツが見え始めてからの時間が長くなる）。 */
+  const svScale = ((playX1 - playX0) / 2) / OSU_TAIKO_PLAYFIELD_PX;
 
   const n = diffs.length;
   if (n === 0) {
@@ -678,6 +709,22 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
               ctx.arc(cx, yMid, r, 0, Math.PI * 2);
               ctx.fill(); ctx.stroke();
             }
+            /* 風船は必要打数を本体の中央に出す。
+               長い風船で端が画面外でも読めるよう、表示位置は画面内に寄せる。 */
+            if (isDen && note.requiredHits > 0) {
+              const left = Math.min(x, x2), right = Math.max(x, x2);
+              const inL = Math.max(left + r, playX0 + 4);
+              const inR = Math.min(right - r, playX1 - 4);
+              if (inR > inL - 1) {
+                const tx = (inL + inR) / 2;
+                ctx.save();
+                ctx.font = "bold " + Math.max(9, Math.round(r * 1.05)) + "px sans-serif";
+                ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                ctx.fillStyle = TAIKO_COLORS.dendenText;
+                ctx.fillText(String(note.requiredHits), tx, yMid + 0.5);
+                ctx.restore();
+              }
+            }
           } else {
             ctx.beginPath();
             ctx.fillStyle = note.kind === "kat" ? TAIKO_COLORS.kat : TAIKO_COLORS.don;
@@ -843,6 +890,7 @@ if (typeof window !== "undefined") {
   window.parseTaikoNotes = parseTaikoNotes;
   window.assignTaikoComboNumbers = assignTaikoComboNumbers;
   window.taikoDrumRollTickTimes = taikoDrumRollTickTimes;
+  window.taikoSwellRequiredHits = taikoSwellRequiredHits;
   window.resolveTaikoBreakRegions = resolveTaikoBreakRegions;
   window.parseTaikoRedTiming = parseTaikoRedTiming;
   window.parseTaikoTimelineMarks = parseTaikoTimelineMarks;
