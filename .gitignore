@@ -10,8 +10,8 @@ electron/dist-verify/
 CLAUDE.md
 
 # リアルタイム(osu!メモリ監視)関連は非公開（GitHub に上げない）
-electron/osuMemory.ps1
-electron/osuWatcher.js
+electron/osu/osuMemory.ps1
+electron/osu/osuWatcher.js
 
 # VSCode (launch.json / tasks.json / extensions.json は共有のため除外しない)
 .vscode/*

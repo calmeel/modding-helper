@@ -44,7 +44,7 @@
       "!node_modules/.cache/**"
     ],
     "asarUnpack": [
-      "electron/osuMemory.ps1"
+      "electron/osu/osuMemory.ps1"
     ],
     "extraFiles": [],
     "directories": {
