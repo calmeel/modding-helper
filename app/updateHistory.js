@@ -245,10 +245,12 @@ const updateHistoryEntries = [
     type: "update",
     items: {
       en: [
-        "Supports both osu!stable and osu!lazer regarding the 1ms offset."
+        "Supports both osu!stable and osu!lazer regarding the 1ms offset.",
+        "Fixed a detection bug in the Barline tab."
       ],
       ja: [
-        "1ms ズレについて、osu!stable/osu!lazer 両方に対応"
+        "1ms ズレについて、osu!stable/osu!lazer 両方に対応",
+        "「小節線」タブの検出バグを修正"
       ]
     }
   },

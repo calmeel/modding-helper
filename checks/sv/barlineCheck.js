@@ -151,14 +151,16 @@ function detectBarlineIssues(
           );
         }
 
-        addBeforeBarlineIntentionalDetachedIssue(
-          intentionalDetachedBarlines,
-          redLines,
-          greenLines,
-          noteTimes,
-          sliderMultiplier,
-          barlineTime
-        );
+        if (!omittedBarlineRedLine) {
+          addBeforeBarlineIntentionalDetachedIssue(
+            intentionalDetachedBarlines,
+            redLines,
+            greenLines,
+            noteTimes,
+            sliderMultiplier,
+            barlineTime
+          );
+        }
 
         if (omittedRedLine && noteTimes.has(redLineTime)) {
           addDetachedBarlineIssue(

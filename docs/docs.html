@@ -959,7 +959,9 @@ AiMod は同時刻の重複 SV は検出できますが、1 ms ズレの二重 S
 小節線生成位置の見た目のスクロール速度と、<code>T + 1 ms</code> のノーツ位置の見た目のスクロール速度を比較し、値が一致しない場合に演出の可能性がある小節線の分離として Warning 表示します。<br><br>
 また、<code>T - 1 ms</code> にノーツがある場合も、小節線生成位置 <code>T</code> の見た目のスクロール速度と、<code>T - 1 ms</code> のノーツ位置の見た目のスクロール速度を比較します。<br>
 値が一致しない場合は、同じく演出の可能性がある小節線の分離として Warning 表示します。<br><br>
-<code>T + 1 ms</code> に赤線がある場合は従来通り、速度差があれば「意図しない小節線の分離」として Error 表示します。
+<code>T + 1 ms</code> に赤線がある場合は従来通り、速度差があれば「意図しない小節線の分離」として Error 表示します。<br><br>
+ただし、<code>T</code> にノーツと小節線があり、<code>T + 1 ms</code> に <code>omit first barline</code> 有効の赤線がある場合、<code>T + 1 ms</code> の先頭小節線は描画されません。
+この配置では小節線とノーツはどちらも <code>T</code> にあり分離していないため、演出の可能性がある小節線の分離として検出しません。
 </div>
 
 <div class="section section-detect">
@@ -1001,6 +1003,13 @@ AiMod は同時刻の重複 SV は検出できますが、1 ms ズレの二重 S
     </tr>
     <tr>
       <td>通常の小節線生成位置</td>
+      <td><code>omit first barline</code> 有効の赤線</td>
+      <td><code>T</code></td>
+      <td>検出しない</td>
+      <td>検出しない</td>
+    </tr>
+    <tr>
+      <td>通常の小節線生成位置</td>
       <td>赤線なし / SV線あり</td>
       <td><code>T + 1 ms</code></td>
       <td>検出しない</td>
@@ -1033,6 +1042,8 @@ AiMod は同時刻の重複 SV は検出できますが、1 ms ズレの二重 S
 <br>
 最後のケースでは、<code>T + 1 ms</code> の赤線から見える小節線の速度と、<code>T</code> に置かれたノーツの速度を比較します。<br>
 そのため、2重小節線としては扱わず、見た目のスクロール速度が一致しない場合のみ小節線の分離として検出します。<br>
+一方、通常の小節線とノーツが <code>T</code> にあり、<code>T + 1 ms</code> の赤線で <code>omit first barline</code> が有効なケースでは、<code>T + 1 ms</code> に比較対象となる小節線が描画されません。<br>
+この場合、<code>T</code> の小節線とノーツは分離していないため検出しません。<br>
 また、<code>T + 1 ms</code> の赤線自体が <code>omit first barline</code> 有効であっても、同じ <code>T + 1 ms</code> にノーツがある場合は、<code>T</code> の小節線と <code>T + 1 ms</code> のノーツの速度差を確認します。<br>
 <code>T - 1 ms</code> にノーツがある場合は、<code>T</code> の小節線と <code>T - 1 ms</code> のノーツの速度差を確認します。
 </div>
