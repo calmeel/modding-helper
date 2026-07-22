@@ -5,7 +5,8 @@
 const path = require('path');
 const fs = require('fs');
 
-const root = path.join(__dirname, '..', '..');
+// 音源は exe 専用アセットなので electron/sounds/ に置いている（web ツールは合成音）
+const SOUNDS_DIR = path.join(__dirname, '..', 'sounds');
 
 // 指定フォルダから 1 セット分の音源を読む。
 //   期待するファイル名（拡張子は wav/ogg/mp3 のいずれか。無い物は省略可）:
@@ -45,7 +46,7 @@ function loadTaikoSoundMapFrom(dir) {
 //   サブフォルダが無ければ sounds/ 直下を単一セット 'default' とする。
 // 戻り値: [{ id, label, sounds: {don,kat,donBig,katBig} }, ...]
 function loadTaikoSoundSets() {
-  const dir = path.join(root, 'sounds');
+  const dir = SOUNDS_DIR;
   const sets = [];
   let subdirs = [];
   try {
