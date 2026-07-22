@@ -240,6 +240,18 @@ const updateHistoryEntries = [
       ]
     }
   },
+  {
+    date: "2026/07/23",
+    type: "update",
+    items: {
+      en: [
+        "Supports both osu!stable and osu!lazer regarding the 1ms offset."
+      ],
+      ja: [
+        "1ms ズレについて、osu!stable/osu!lazer 両方に対応"
+      ]
+    }
+  },
 ];
 
 const updateHistoryTypeLabels = {

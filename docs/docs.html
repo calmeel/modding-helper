@@ -831,18 +831,36 @@ Mapset Verifier や AiMod では ±1 ms のズレは表示されません（unra
 <code><span style="color:#ff6b6b; font-weight:bold;">unsnapped のオブジェクト</span></code> がある場合（±2 ms 以上のズレ）はエラーとして検出します。<br><br>
 
 <div class="note-subtext">
-1 ms単位での snap 推定は、<code>beatLength</code> を用いて計算し、最も近い対象 snap の時刻を osu!editor に近い形で整数 ms に切り捨ててから差分を表示します。
-これにより、osu!editor とほぼ同じ位置の snap を推定できます。<br><br>
-
 終点については、スピナー終点に加えてスライダー終点のズレ検出にも対応しています。<br>
 スライダー終点は、<code>pixelLength</code>・<code>SliderMultiplier</code>・SV・BPM をもとに近似計算し、四捨五入しています。<br>
 一部の譜面では実際の editor 上の終点時刻と完全一致しない可能性があります。<br><br>
-
 基準として扱う snap は、<code>1/1</code>, <code>1/2</code>, <code>1/3</code>, <code>1/4</code>, <code>1/6</code>, <code>1/8</code>, <code>1/12</code>, <code>1/16</code> です。<br>
 この対象 snap に乗っていないオブジェクトを unsnapped として検出します。<br><br>
-
 なお、<code>1/5</code>, <code>1/7</code>, <code>1/9</code> snap は、チェックボックスを有効にした場合のみ検出されます。
 </div>
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ 検出内容（osu!stable と osu!lazer の違い）</span><br>
+1 ms単位での snap 推定では、<code>osu!lazer</code> 相当と <code>osu!stable</code> 相当の2通りのグリッド位置を計算します。<br><br>
+
+<strong>osu!stable / osu!lazer のグリッド計算式の違い</strong><br>
+赤線の時刻を <code>redTime</code>、snap分割数を <code>beatSnap</code> とすると、snap間隔は
+<code>snapLength = beatLength / beatSnap</code> です。<br>
+<code>osu!lazer</code> 相当の位置は、snap番号を使って
+<code>gridTime = redTime + snapIndex * snapLength</code>
+のように直接計算します。<br>
+一方、<code>osu!stable</code> のeditorは、赤線位置から
+<code>gridTime += snapLength</code>
+を繰り返してグリッドを生成します。<br><br>
+
+直接乗算では浮動小数点の丸めが主に最後の計算で発生しますが、反復加算では加算ごとの微小な誤差が蓄積します。
+そのため、同じ <code>beatLength</code> とsnap番号でも、整数 ms へ切り捨てた結果がstableとlazerで1 ms異なる場合があります。<br><br>
+
+本ツールは両方の計算結果を確認し、両方でsnapされていれば正常として扱います。
+片方だけでsnapされている場合は、<code>osu!stable のグリッドにのみsnap</code> または
+<code>osu!lazer のグリッドにのみsnap</code> としてwarningを表示し、もう一方のグリッドとの差も併記します。
+どちらのグリッドにもsnapされていない場合は、近い方のグリッドとの差に基づいて通常のwarning / error判定を行います。<br><br>
 </div>
 
 <div class="section section-warning">

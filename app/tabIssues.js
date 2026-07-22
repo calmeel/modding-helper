@@ -99,13 +99,11 @@ function getOffsetIssueLevel(results) {
 
   for (const result of results) {
     for (const item of result.results ?? []) {
-      const diff = Math.abs(item.diff);
-
-      if (item.level === TAB_LEVEL_ERROR || diff >= 2) {
+      if (item.level === TAB_LEVEL_ERROR) {
         return TAB_LEVEL_ERROR;
       }
 
-      if (diff === 1) {
+      if (item.level === TAB_LEVEL_WARN) {
         hasWarn = true;
       }
     }

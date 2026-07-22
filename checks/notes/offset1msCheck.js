@@ -11,6 +11,7 @@ function runOffset1msCheck(text, fileName, options = {}) {
   const beatSnaps = getBeatSnapCandidates(options.includeAdvancedSnaps);
   const timingPoints = parseTimingPoints(text);
   const hitObjects = parseHitObjects(text);
+  const stableSnapCache = new Map();
 
   const svLines = parseInheritedTimingPoints(text);
   const sliderMultiplier = parseOffsetSliderMultiplier(text);
@@ -23,7 +24,8 @@ function runOffset1msCheck(text, fileName, options = {}) {
       timingPoints,
       svLines,
       sliderMultiplier,
-      beatSnaps
+      beatSnaps,
+      stableSnapCache
     );
 
     for (const item of items) {
@@ -34,7 +36,8 @@ function runOffset1msCheck(text, fileName, options = {}) {
         item.time,
         currentTp.time,
         currentTp.beatLength,
-        beatSnaps
+        beatSnaps,
+        stableSnapCache
       );
 
       if (!best) continue;
@@ -46,7 +49,10 @@ function runOffset1msCheck(text, fileName, options = {}) {
         snap: best.snap,
         target: item.target,
         objectType: item.objectType,
-        level: getOffsetIssueLevelFromDiff(best.diff)
+        level: best.compatibility
+          ? "warn"
+          : getOffsetIssueLevelFromDiff(best.diff),
+        compatibility: best.compatibility
       });
     }
   }
@@ -61,7 +67,14 @@ function getOffsetIssueLevelFromDiff(diff) {
   return Math.abs(diff) === 1 ? "warn" : "error";
 }
 
-function getOffsetCheckTimesFromHitObject(line, timingPoints, svLines, sliderMultiplier, beatSnaps) {
+function getOffsetCheckTimesFromHitObject(
+  line,
+  timingPoints,
+  svLines,
+  sliderMultiplier,
+  beatSnaps,
+  stableSnapCache
+) {
   const parts = line.split(",");
   if (parts.length < 4) return [];
 
@@ -86,7 +99,8 @@ function getOffsetCheckTimesFromHitObject(line, timingPoints, svLines, sliderMul
       timingPoints,
       svLines,
       sliderMultiplier,
-      beatSnaps
+      beatSnaps,
+      stableSnapCache
     );
 
     if (sliderTailTime !== null) {
@@ -127,7 +141,15 @@ function isOffsetSliderType(type) {
   return (type & 2) !== 0;
 }
 
-function estimateOffsetSliderTailTime(parts, startTime, timingPoints, svLines, sliderMultiplier, beatSnaps) {
+function estimateOffsetSliderTailTime(
+  parts,
+  startTime,
+  timingPoints,
+  svLines,
+  sliderMultiplier,
+  beatSnaps,
+  stableSnapCache
+) {
   // osu! slider object:
   // x,y,time,type,hitSound,curveType|points,slides,length,...
   if (parts.length < 8) return null;
@@ -153,7 +175,8 @@ function estimateOffsetSliderTailTime(parts, startTime, timingPoints, svLines, s
   const anchoredStartTime = getOffsetSliderStartAnchorTime(
     startTime,
     currentTp,
-    beatSnaps
+    beatSnaps,
+    stableSnapCache
   );
 
   const duration =
@@ -167,19 +190,25 @@ function estimateOffsetSliderTailTime(parts, startTime, timingPoints, svLines, s
   return Math.trunc(anchoredStartTime + duration);
 }
 
-function getOffsetSliderStartAnchorTime(startTime, timingPoint, beatSnaps) {
+function getOffsetSliderStartAnchorTime(
+  startTime,
+  timingPoint,
+  beatSnaps,
+  stableSnapCache
+) {
   const snap = findNearestSnapDiff(
     startTime,
     timingPoint.time,
     timingPoint.beatLength,
-    beatSnaps
+    beatSnaps,
+    stableSnapCache
   );
 
-  if (!snap || Math.abs(snap.rawDiff) >= 1) {
+  if (!snap || Math.abs(snap.lazerRawDiff) >= 1) {
     return startTime;
   }
 
-  return startTime + snap.rawDiff;
+  return startTime + snap.lazerRawDiff;
 }
 
 function getOffsetCurrentSv(svLines, time, redTime = -Infinity) {
@@ -245,25 +274,124 @@ function findCurrentTimingPoint(timingPoints, time) {
   return null;
 }
 
-function findNearestSnapDiff(time, redTime, beatLength, beatSnaps) {
-  let best = null;
+function findNearestSnapDiff(
+  time,
+  redTime,
+  beatLength,
+  beatSnaps,
+  stableSnapCache = new Map()
+) {
+  let lazerBest = null;
+  let stableBest = null;
 
   for (const beatSnap of beatSnaps) {
     const snapLength = beatLength / beatSnap;
     const snapIndex = Math.round((time - redTime) / snapLength);
-    const nearestSnap = redTime + snapIndex * snapLength;
-    const snapped = Math.trunc(nearestSnap);
-    const diff = snapped - time;
-    const rawDiff = nearestSnap - time;
+    const lazerTime = redTime + snapIndex * snapLength;
+    const lazerCandidate = createOffsetSnapCandidate(time, lazerTime, beatSnap);
 
-    if (!best || Math.abs(diff) < Math.abs(best.diff)) {
-      best = {
-        diff,
-        rawDiff,
-        snap: beatSnap
-      };
+    if (isBetterOffsetSnapCandidate(lazerCandidate, lazerBest)) {
+      lazerBest = lazerCandidate;
+    }
+
+    for (const stableIndex of [snapIndex, snapIndex - 1, snapIndex + 1]) {
+      if (stableIndex < 0) continue;
+
+      const stableTime = getStableOffsetSnapTime(
+        redTime,
+        beatLength,
+        beatSnap,
+        stableIndex,
+        stableSnapCache
+      );
+      const stableCandidate = createOffsetSnapCandidate(time, stableTime, beatSnap);
+
+      if (isBetterOffsetSnapCandidate(stableCandidate, stableBest)) {
+        stableBest = stableCandidate;
+      }
     }
   }
 
-  return best;
+  if (!lazerBest || !stableBest) return lazerBest || stableBest;
+
+  const lazerMatches = lazerBest.diff === 0;
+  const stableMatches = stableBest.diff === 0;
+
+  if (lazerMatches && stableMatches) {
+    return {
+      ...lazerBest,
+      lazerRawDiff: lazerBest.rawDiff,
+      compatibility: null
+    };
+  }
+
+  if (stableMatches) {
+    return {
+      ...stableBest,
+      diff: lazerBest.diff,
+      lazerRawDiff: lazerBest.rawDiff,
+      compatibility: "stableOnly"
+    };
+  }
+
+  if (lazerMatches) {
+    return {
+      ...lazerBest,
+      diff: stableBest.diff,
+      lazerRawDiff: lazerBest.rawDiff,
+      compatibility: "lazerOnly"
+    };
+  }
+
+  const best = isBetterOffsetSnapCandidate(stableBest, lazerBest)
+    ? stableBest
+    : lazerBest;
+
+  return {
+    ...best,
+    lazerRawDiff: lazerBest.rawDiff,
+    compatibility: null
+  };
+}
+
+function createOffsetSnapCandidate(time, snapTime, beatSnap) {
+  return {
+    diff: Math.trunc(snapTime) - time,
+    rawDiff: snapTime - time,
+    snap: beatSnap
+  };
+}
+
+function isBetterOffsetSnapCandidate(candidate, current) {
+  if (!current) return true;
+
+  const candidateDiff = Math.abs(candidate.diff);
+  const currentDiff = Math.abs(current.diff);
+
+  return candidateDiff < currentDiff;
+}
+
+function getStableOffsetSnapTime(
+  redTime,
+  beatLength,
+  beatSnap,
+  snapIndex,
+  stableSnapCache
+) {
+  const key = `${redTime}:${beatLength}:${beatSnap}`;
+  let entry = stableSnapCache.get(key);
+
+  if (!entry) {
+    entry = {
+      snapLength: beatLength / beatSnap,
+      times: [redTime]
+    };
+    stableSnapCache.set(key, entry);
+  }
+
+  while (entry.times.length <= snapIndex) {
+    entry.times.push(entry.times[entry.times.length - 1] + entry.snapLength);
+  }
+
+  return entry.times[snapIndex];
 }

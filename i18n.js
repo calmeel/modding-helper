@@ -60,6 +60,8 @@ const i18n = {
     offsetObjectSlider: "Slider",
     offsetObjectSpinner: "Spinner",
     offsetUnsnappedBy: "unsnapped by",
+    offsetStableOnly: "snaps only to the osu!stable grid (osu!lazer: {diff})",
+    offsetLazerOnly: "snaps only to the osu!lazer grid (osu!stable: {diff})",
     noOffset: "No unsnapped objects found.",
 
     noDoubleSv: "No double SV found.",
@@ -585,6 +587,8 @@ const i18n = {
     offsetObjectSlider: "Slider",
     offsetObjectSpinner: "Spinner",
     offsetUnsnappedBy: "が snap からずれています:",
+    offsetStableOnly: "osu!stable のグリッドにのみsnapしています（osu!lazer: {diff}）",
+    offsetLazerOnly: "osu!lazer のグリッドにのみsnapしています（osu!stable: {diff}）",
     noOffset: "スナップされていないオブジェクトは見つかりませんでした。",
     
     noDoubleSv: "Double SVは見つかりませんでした。",

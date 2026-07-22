@@ -162,11 +162,21 @@ function formatShiftResult(result, t) {
         : item.target === "spinnerTail"
           ? ` | ${t("spinnerTail")}`
           : "";
+    const compatibilityText = item.compatibility
+      ? t(
+          item.compatibility === "stableOnly"
+            ? "offsetStableOnly"
+            : "offsetLazerOnly"
+        ).replace("{diff}", `${sign}${item.diff} ms`)
+      : null;
 
     lines.push(
       `<span class="${className}">${formatTimestampLink(item.time)} | ` +
-      `${escapeHtml(objectText)}${targetText} ${escapeHtml(t("offsetUnsnappedBy"))} ` +
-      `${sign}${item.diff} ms  [1/${item.snap} ${escapeHtml(t("snap"))}]</span>`
+      `${escapeHtml(objectText)}${targetText} ` +
+      `${compatibilityText
+        ? escapeHtml(compatibilityText)
+        : `${escapeHtml(t("offsetUnsnappedBy"))} ${sign}${item.diff} ms`} ` +
+      `[1/${item.snap} ${escapeHtml(t("snap"))}]</span>`
     );
   }
 
