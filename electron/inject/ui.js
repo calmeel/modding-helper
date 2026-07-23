@@ -1538,11 +1538,12 @@
         }
 
         /* Electron 既定: 保存設定がまだ無い初回のみ、web では既定 OFF の
-           「音声波形・BN評価」を ON にする（タイムラインは exe では非表示なので対象外）。
+           「音声波形」を ON にする（タイムラインは exe では非表示なので対象外。
+           BN評価は既定 OFF にしたいので含めない）。
            （localStorage は web と exe で別管理。既存ユーザーの保存設定は尊重） */
         try {
           if (!localStorage.getItem('moddingHelperVisibleTabs')) {
-            var defaultOnTabs = ['offsetWaveform', 'bnCompare'];
+            var defaultOnTabs = ['offsetWaveform'];
             var dispatchTarget = null;
             defaultOnTabs.forEach(function(tab) {
               var cb = document.querySelector('.tab-visibility-toggle[data-target-tab="' + tab + '"]');
