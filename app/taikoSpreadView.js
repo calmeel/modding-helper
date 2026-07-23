@@ -744,10 +744,16 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
                長い風船で端が画面外でも読めるよう、表示位置は画面内に寄せる。 */
             if (isDen && note.requiredHits > 0) {
               const left = Math.min(x, x2), right = Math.max(x, x2);
-              const inL = Math.max(left + r, playX0 + 4);
-              const inR = Math.min(right - r, playX1 - 4);
-              if (inR > inL - 1) {
-                const tx = (inL + inR) / 2;
+              /* 端の円に重ならないよう本体の内側に置きたいが、短い風船では
+                 内側の余地が無い。その時は素直に中央へ置く
+                 （内側だけで判定すると短い風船で数字が出なくなる）。 */
+              const inL = left + r, inR = right - r;
+              let tx = inR > inL ? (inL + inR) / 2 : (left + right) / 2;
+              /* 長い風船で端が画面外でも読めるよう、見えている範囲に寄せる */
+              const visL = Math.max(left, playX0 + 3);
+              const visR = Math.min(right, playX1 - 3);
+              if (visR >= visL) {
+                tx = Math.max(visL, Math.min(visR, tx));
                 ctx.save();
                 ctx.font = "bold " + Math.max(9, Math.round(r * 1.05)) + "px sans-serif";
                 ctx.textAlign = "center"; ctx.textBaseline = "middle";
