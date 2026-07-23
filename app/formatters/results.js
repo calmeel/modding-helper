@@ -911,16 +911,16 @@ function formatRedGreenMatchResult(result, t) {
     lines.push(`${formatTimestampLink(item.time)}`);
 
     if (item.volumeMismatch) {
-      lines.push(`  ${t("volumeMismatch")} | ${t("red")} ${item.redVolume}% / ${t("green")} ${item.greenVolume}%`);
+      lines.push(`<span class="result-warn">  ${t("volumeMismatch")} | ${t("red")} ${item.redVolume}% / ${t("green")} ${item.greenVolume}%</span>`);
     }
 
     if (item.kiaiMismatch) {
-      lines.push(`  ${t("kiaiMismatch")} | red ${formatKiaiState(item.redKiai)} / green ${formatKiaiState(item.greenKiai)}`);
+      lines.push(`<span class="result-warn">  ${t("kiaiMismatch")} | red ${formatKiaiState(item.redKiai)} / green ${formatKiaiState(item.greenKiai)}</span>`);
     }
 
     if (item.sampleSetMismatch) {
       lines.push(
-        `  ${t("sampleSetMismatch")} | ${t("red")} ${item.redSampleSet} (${getSampleSetName(item.redSampleSet)}) / ${t("green")} ${item.greenSampleSet} (${getSampleSetName(item.greenSampleSet)})`
+        `<span class="result-warn">  ${t("sampleSetMismatch")} | ${t("red")} ${item.redSampleSet} (${getSampleSetName(item.redSampleSet)}) / ${t("green")} ${item.greenSampleSet} (${getSampleSetName(item.greenSampleSet)})</span>`
       );
     }
 

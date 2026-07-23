@@ -692,7 +692,7 @@ function formatTagSpacingGroupResult(group, t) {
         ? t("tagMultipleSpaces")
         : t("tagFullWidthSpace");
 
-    lines.push(`<span class="result-error">${escapeHtml(label)}: ${escapeHtml(t("detected"))}</span>`);
+    lines.push(`<span class="result-warn">${escapeHtml(label)}: ${escapeHtml(t("detected"))}</span>`);
     lines.push(`  <code>${escapeHtml(item.context)}</code>`);
     lines.push("");
   }

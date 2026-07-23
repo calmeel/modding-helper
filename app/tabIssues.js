@@ -227,7 +227,7 @@ function getRedGreenMatchIssueLevel(results) {
   const hasMismatch =
     results?.some(result => result.results?.length > 0) ?? false;
 
-  return hasMismatch ? TAB_LEVEL_ERROR : TAB_LEVEL_NONE;
+  return hasMismatch ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
 }
 
 function getSampleSetIssueLevel(results) {
@@ -288,10 +288,12 @@ function getTagIssueLevel(results) {
     return TAB_LEVEL_ERROR;
   }
 
-  const hasSpacingIssues =
-    results.some(result => result.results?.length > 0);
+  const hasMissingTags =
+    results.some(result =>
+      result.results?.some(issue => issue.type === "missing")
+    );
 
-  if (hasSpacingIssues) {
+  if (hasMissingTags) {
     return TAB_LEVEL_ERROR;
   }
 
@@ -300,6 +302,15 @@ function getTagIssueLevel(results) {
 
   if (hasSpellingSuggestions) {
     return TAB_LEVEL_ERROR;
+  }
+
+  const hasSpacingIssues =
+    results.some(result =>
+      result.results?.some(issue => issue.type !== "missing")
+    );
+
+  if (hasSpacingIssues) {
+    return TAB_LEVEL_WARN;
   }
 
   const hasDuplicateTags =

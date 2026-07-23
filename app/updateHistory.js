@@ -248,11 +248,13 @@ const updateHistoryEntries = [
         "Supports both osu!stable and osu!lazer regarding the 1ms offset.",
         "Fixed a detection bug in the Barline tab.",
         "Corrected the detection contents of the Unapplied SV tab.",
+        "Adjust warning/error criteria"
       ],
       ja: [
         "1ms ズレについて、osu!stable/osu!lazer 両方に対応",
         "「小節線」タブの検出バグを修正",
         "「SV未適応」タブの検出内容を修正",
+        "警告/エラー判定を調整"
       ]
     }
   },
