@@ -88,7 +88,7 @@ function formatByModeIfHybrid(results, formatter, t) {
   if (!hasMultipleModes(results)) {
     return sortResultsForDisplay(results)
       .map(result => formatter(result, t))
-      .join("\n\n==============================\n\n");
+      .join("\n\n");
   }
 
   const lines = [];
@@ -100,7 +100,7 @@ function formatByModeIfHybrid(results, formatter, t) {
     lines.push(
       sortResultsForDisplay(group)
         .map(result => formatter(result, t))
-        .join("\n\n==============================\n\n")
+        .join("\n\n")
     );
 
     lines.push("");

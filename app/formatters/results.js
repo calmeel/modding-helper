@@ -10,18 +10,13 @@ function formatMultipleResults(results, t, showClap, showWhistle) {
 
     lines.push(formatClapWhistleSummaryTable(sortedResults, t));
     lines.push("");
-    lines.push("==============================");
-    lines.push("");
+    lines.push(formatSeparator());
 
     lines.push(
       sortedResults
         .map(result => formatResult(result, t, showClap, showWhistle))
-        .join("\n\n==============================\n\n")
+        .join("\n\n")
     );
-
-    lines.push("");
-    lines.push("=".repeat(60));
-    lines.push("");
 
     return lines.join("\n");
   }
@@ -37,18 +32,13 @@ function formatMultipleResults(results, t, showClap, showWhistle) {
 
     lines.push(formatClapWhistleSummaryTable(sortedGroup, t));
     lines.push("");
-    lines.push("==============================");
-    lines.push("");
+    lines.push(formatSeparator());
 
     lines.push(
       sortedGroup
         .map(result => formatResult(result, t, showClap, showWhistle))
-        .join("\n\n==============================\n\n")
+        .join("\n\n")
     );
-
-    lines.push("");
-    lines.push("==============================");
-    lines.push("");
   }
 
   return lines.join("\n").trimEnd();
@@ -1021,8 +1011,7 @@ function formatMultipleSliderSettingsResults(results, t) {
   const issueResults = sortedResults.filter(result => result.issues.length > 0);
 
   lines.push("");
-  lines.push("==============================");
-  lines.push("");
+  lines.push(formatSeparator());
 
   if (!issueResults.length) {
     lines.push(t("noSliderSettingsIssues"));
@@ -1035,7 +1024,7 @@ function formatMultipleSliderSettingsResults(results, t) {
   lines.push(
     issueResults
       .map(result => formatSliderSettingsIssueDetail(result, t))
-      .join("\n\n==============================\n\n")
+      .join("\n\n")
   );
 
   return lines.join("\n").trimEnd();
@@ -1166,8 +1155,7 @@ function formatMultipleEarlyNoteResults(results, t) {
   );
 
   lines.push("");
-  lines.push("==============================");
-  lines.push("");
+  lines.push(formatSeparator());
 
   if (!issueResults.length) {
     lines.push(t("noEarlyNoteIssues"));
@@ -1180,7 +1168,7 @@ function formatMultipleEarlyNoteResults(results, t) {
   lines.push(
     issueResults
       .map(result => formatEarlyNoteIssueDetail(result, t))
-      .join("\n\n==============================\n\n")
+      .join("\n\n")
   );
 
   return lines.join("\n").trimEnd();
@@ -1353,5 +1341,3 @@ function formatEarlyNoteIssueDetail(result, t) {
 
   return lines.join("\n");
 }
-
-/** Tagチェック */

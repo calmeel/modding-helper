@@ -256,7 +256,7 @@ function formatSpreadFinishersTable(results, t, diffOrder = null) {
     sortedResults
   ));
 
-  return sections.filter(Boolean).join("\n\n==============================\n\n");
+  return sections.filter(Boolean).join("\n\n");
 }
 
 function formatSpreadRestMomentsResult(results, t, diffOrder = null, manualCategories = {}) {
