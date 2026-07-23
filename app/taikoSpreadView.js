@@ -393,7 +393,7 @@ const TAIKO_COLORS = {
   don: "#f24b4b",
   kat: "#5b9bd5",
   roll: "rgba(245,180,0,0.92)",   // 連打(drumroll): 黄
-  rollTick: "rgba(80,52,0,0.85)", // 連打のティック（黄の上で見えるよう暗い色）
+  rollTick: "rgba(140,95,0,0.55)", // 連打のティック（黄と同系のやや暗い琥珀。茶色すぎると浮く）
   denden: "rgba(205,205,212,0.9)", // 風船/スピナー(denden): 薄いグレー（TaikoEditor風）
   dendenText: "#2b2b34",          // 風船に出す必要打数（薄い本体の上なので暗い色）
   ncBar: "rgba(120,220,255,0.95)", // NCシンバルが鳴る小節線（major）
@@ -654,125 +654,121 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
         ctx.arc(judgmentX, yMid, radius, 0, Math.PI * 2);
         ctx.strokeStyle = "rgba(255,255,255,0.25)"; ctx.lineWidth = 1; ctx.stroke();
       }
-      // 連打/風船を先に、円を後に（円が上に重なる）。
-      // 各パス内は時刻の降順で描画し、時間的に先（左）のノーツが前面に来るようにする。
-      for (let pass = 0; pass < 2; pass++) {
-        for (let k = notes.length - 1; k >= 0; k--) {
-          const note = notes[k];
-          const dt = note.time - currentTime;            // head
-          const isRoll = note.kind === "drumroll" || note.kind === "denden";
-          const endT = note.endTime != null ? note.endTime : note.time;
-          let x, x2;
-          if (svMode) {
-            /* ゲーム画面表示: ノーツごとの速度(SV/BPM/SliderMultiplier)で位置を決める。
-               SV により画面上の順序が入れ替わり得るので、時間による打ち切りはせず
-               各ノーツの x 範囲で可視判定する。 */
-            const vel = (note.vel != null && Number.isFinite(note.vel) && note.vel > 0) ? note.vel : 0.3;
-            x  = judgmentX + dt * vel * svScale;
-            x2 = judgmentX + (endT - currentTime) * vel * svScale;
-            const lo = Math.min(x, x2), hi = Math.max(x, x2);
-            if (hi < playX0 - 60 || lo > playX1 + 60) continue;
-          } else {
-            if (dt > futCut) continue;                   // head が右外 → まだ未来
-            // これ以上前は、最長連打でも視界に届かない → 打ち切り
-            if (dt < pastCut - diff._maxRollMs) break;
-            // 可視判定: 連打は尾(endTime)で判定。head が左外でも尾が見えていれば描く
-            const endDt = isRoll ? (endT - currentTime) : dt;
-            if (endDt < pastCut) continue;               // 全体が左外
-            x  = judgmentX + dt * pxPerMs;
-            x2 = judgmentX + (endT - currentTime) * pxPerMs;
-          }
-          if (pass === 0 && !isRoll) continue;
-          if (pass === 1 && isRoll) continue;
-
-          const isDen = note.kind === "denden";
-          const r = (isRoll && isDen) ? radius : (note.big ? bigR : radius);
-          const selected = isSelected ? !!isSelected(note) : false;
-
-          /* 選択中はピンクのモヤ（osu!エディタの選択表示に合わせる）。
-             ノーツ本体より先に描いて、はみ出した分だけが縁に残るようにする。 */
-          if (selected) {
-            ctx.save();
-            ctx.shadowColor = TAIKO_COLORS.selGlow;
-            ctx.shadowBlur = Math.max(10, r * 0.9);
-            ctx.strokeStyle = TAIKO_COLORS.selRing;
-            ctx.lineWidth = 3;
-            for (let g = 0; g < 2; g++) {   // 2度描いて濃くする
-              if (isRoll) { taikoCapsule(ctx, x, x2, yMid, r + 2); ctx.stroke(); }
-              else { ctx.beginPath(); ctx.arc(x, yMid, r + 2, 0, Math.PI * 2); ctx.stroke(); }
-            }
-            ctx.restore();
-          }
-
-          if (isRoll) {
-            ctx.fillStyle = isDen ? TAIKO_COLORS.denden : TAIKO_COLORS.roll; // スピナーは薄いグレー
-            taikoCapsule(ctx, x, x2, yMid, r); ctx.fill();
-            if (isDen) {
-              ctx.strokeStyle = "rgba(255,255,255,0.7)"; ctx.lineWidth = 1.5;
-              taikoCapsule(ctx, x, x2, yMid, r); ctx.stroke();
-            }
-            /* 連打のティック（風船には無い）。時刻→位置は head/tail の線形補間で求めるので
-               等速表示でも SV 適用表示でも同じコードで正しい位置になる。 */
-            if (!isDen && note.tickSpacing > 0) {
-              const dur = endT - note.time;
-              if (dur > 0) {
-                const times = taikoDrumRollTickTimes(note);
-                const tickR = Math.max(1.2, r * 0.2);
-                ctx.fillStyle = TAIKO_COLORS.rollTick;
-                for (let ti = 0; ti < times.length; ti++) {
-                  const tx = x + ((times[ti] - note.time) / dur) * (x2 - x);
-                  if (tx < playX0 - tickR || tx > playX1 + tickR) continue;
-                  ctx.beginPath();
-                  ctx.arc(tx, yMid, tickR, 0, Math.PI * 2);
-                  ctx.fill();
-                }
-              }
-            }
-            /* 始点・終点の円（TaikoEditor 風）。本体とティックの上に重ねて、
-               どこが頭でどこが尾かひと目で分かるようにする。 */
-            ctx.fillStyle = isDen ? TAIKO_COLORS.denden : TAIKO_COLORS.roll;
-            ctx.strokeStyle = "rgba(255,255,255,0.9)";
-            ctx.lineWidth = 2;
-            for (let cap = 0; cap < 2; cap++) {
-              const cx = cap === 0 ? x : x2;
-              if (cx < playX0 - r || cx > playX1 + r) continue;
-              ctx.beginPath();
-              ctx.arc(cx, yMid, r, 0, Math.PI * 2);
-              ctx.fill(); ctx.stroke();
-            }
-            /* 風船は必要打数を本体の中央に出す。
-               長い風船で端が画面外でも読めるよう、表示位置は画面内に寄せる。 */
-            if (isDen && note.requiredHits > 0) {
-              const left = Math.min(x, x2), right = Math.max(x, x2);
-              /* 端の円に重ならないよう本体の内側に置きたいが、短い風船では
-                 内側の余地が無い。その時は素直に中央へ置く
-                 （内側だけで判定すると短い風船で数字が出なくなる）。 */
-              const inL = left + r, inR = right - r;
-              let tx = inR > inL ? (inL + inR) / 2 : (left + right) / 2;
-              /* 長い風船で端が画面外でも読めるよう、見えている範囲に寄せる */
-              const visL = Math.max(left, playX0 + 3);
-              const visR = Math.min(right, playX1 - 3);
-              if (visR >= visL) {
-                tx = Math.max(visL, Math.min(visR, tx));
-                ctx.save();
-                ctx.font = "bold " + Math.max(9, Math.round(r * 1.05)) + "px sans-serif";
-                ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.fillStyle = TAIKO_COLORS.dendenText;
-                ctx.fillText(String(note.requiredHits), tx, yMid + 0.5);
-                ctx.restore();
-              }
-            }
-          } else {
-            ctx.beginPath();
-            ctx.fillStyle = note.kind === "kat" ? TAIKO_COLORS.kat : TAIKO_COLORS.don;
-            ctx.arc(x, yMid, r, 0, Math.PI * 2); ctx.fill();
-            ctx.lineWidth = 2; ctx.strokeStyle = "rgba(255,255,255,0.9)"; ctx.stroke();
-          }
-          /* クリック判定用に、実際に描いた位置と大きさを残す
-             （描画順のまま push するので、後ろの要素ほど前面） */
-          hits.push({ note: note, diff: diff, lane: i,
-                      x: x, x2: isRoll ? x2 : x, y: yMid, r: r });
+      /* 時刻の降順で描く＝時間的に先（判定ラインに近い側）のノーツが後から塗られて前面に来る。
+         osu! と同じく「早いオブジェクトが遅いオブジェクトを隠す」。
+         連打と円で描画パスを分けると、時刻に関係なく円が前面になってしまうので分けない。 */
+      for (let k = notes.length - 1; k >= 0; k--) {
+        const note = notes[k];
+        const dt = note.time - currentTime;            // head
+        const isRoll = note.kind === "drumroll" || note.kind === "denden";
+        const endT = note.endTime != null ? note.endTime : note.time;
+        let x, x2;
+        if (svMode) {
+          /* ゲーム画面表示: ノーツごとの速度(SV/BPM/SliderMultiplier)で位置を決める。
+             SV により画面上の順序が入れ替わり得るので、時間による打ち切りはせず
+             各ノーツの x 範囲で可視判定する。 */
+          const vel = (note.vel != null && Number.isFinite(note.vel) && note.vel > 0) ? note.vel : 0.3;
+          x  = judgmentX + dt * vel * svScale;
+          x2 = judgmentX + (endT - currentTime) * vel * svScale;
+          const lo = Math.min(x, x2), hi = Math.max(x, x2);
+          if (hi < playX0 - 60 || lo > playX1 + 60) continue;
+        } else {
+          if (dt > futCut) continue;                   // head が右外 → まだ未来
+          // これ以上前は、最長連打でも視界に届かない → 打ち切り
+          if (dt < pastCut - diff._maxRollMs) break;
+          // 可視判定: 連打は尾(endTime)で判定。head が左外でも尾が見えていれば描く
+          const endDt = isRoll ? (endT - currentTime) : dt;
+          if (endDt < pastCut) continue;               // 全体が左外
+          x  = judgmentX + dt * pxPerMs;
+          x2 = judgmentX + (endT - currentTime) * pxPerMs;
         }
+        const isDen = note.kind === "denden";
+        const r = (isRoll && isDen) ? radius : (note.big ? bigR : radius);
+        const selected = isSelected ? !!isSelected(note) : false;
+
+        /* 選択中はピンクのモヤ（osu!エディタの選択表示に合わせる）。
+           ノーツ本体より先に描いて、はみ出した分だけが縁に残るようにする。 */
+        if (selected) {
+          ctx.save();
+          ctx.shadowColor = TAIKO_COLORS.selGlow;
+          ctx.shadowBlur = Math.max(10, r * 0.9);
+          ctx.strokeStyle = TAIKO_COLORS.selRing;
+          ctx.lineWidth = 3;
+          for (let g = 0; g < 2; g++) {   // 2度描いて濃くする
+            if (isRoll) { taikoCapsule(ctx, x, x2, yMid, r + 2); ctx.stroke(); }
+            else { ctx.beginPath(); ctx.arc(x, yMid, r + 2, 0, Math.PI * 2); ctx.stroke(); }
+          }
+          ctx.restore();
+        }
+
+        if (isRoll) {
+          ctx.fillStyle = isDen ? TAIKO_COLORS.denden : TAIKO_COLORS.roll; // スピナーは薄いグレー
+          taikoCapsule(ctx, x, x2, yMid, r); ctx.fill();
+          if (isDen) {
+            ctx.strokeStyle = "rgba(255,255,255,0.7)"; ctx.lineWidth = 1.5;
+            taikoCapsule(ctx, x, x2, yMid, r); ctx.stroke();
+          }
+          /* 連打のティック（風船には無い）。時刻→位置は head/tail の線形補間で求めるので
+             等速表示でも SV 適用表示でも同じコードで正しい位置になる。 */
+          if (!isDen && note.tickSpacing > 0) {
+            const dur = endT - note.time;
+            if (dur > 0) {
+              const times = taikoDrumRollTickTimes(note);
+              const tickR = Math.max(1.2, r * 0.2);
+              ctx.fillStyle = TAIKO_COLORS.rollTick;
+              for (let ti = 0; ti < times.length; ti++) {
+                const tx = x + ((times[ti] - note.time) / dur) * (x2 - x);
+                if (tx < playX0 - tickR || tx > playX1 + tickR) continue;
+                ctx.beginPath();
+                ctx.arc(tx, yMid, tickR, 0, Math.PI * 2);
+                ctx.fill();
+              }
+            }
+          }
+          /* 始点・終点の円（TaikoEditor 風）。本体とティックの上に重ねて、
+             どこが頭でどこが尾かひと目で分かるようにする。 */
+          ctx.fillStyle = isDen ? TAIKO_COLORS.denden : TAIKO_COLORS.roll;
+          ctx.strokeStyle = "rgba(255,255,255,0.9)";
+          ctx.lineWidth = 2;
+          for (let cap = 0; cap < 2; cap++) {
+            const cx = cap === 0 ? x : x2;
+            if (cx < playX0 - r || cx > playX1 + r) continue;
+            ctx.beginPath();
+            ctx.arc(cx, yMid, r, 0, Math.PI * 2);
+            ctx.fill(); ctx.stroke();
+          }
+          /* 風船は必要打数を本体の中央に出す。
+             長い風船で端が画面外でも読めるよう、表示位置は画面内に寄せる。 */
+          if (isDen && note.requiredHits > 0) {
+            const left = Math.min(x, x2), right = Math.max(x, x2);
+            /* 端の円に重ならないよう本体の内側に置きたいが、短い風船では
+               内側の余地が無い。その時は素直に中央へ置く
+               （内側だけで判定すると短い風船で数字が出なくなる）。 */
+            const inL = left + r, inR = right - r;
+            let tx = inR > inL ? (inL + inR) / 2 : (left + right) / 2;
+            /* 長い風船で端が画面外でも読めるよう、見えている範囲に寄せる */
+            const visL = Math.max(left, playX0 + 3);
+            const visR = Math.min(right, playX1 - 3);
+            if (visR >= visL) {
+              tx = Math.max(visL, Math.min(visR, tx));
+              ctx.save();
+              ctx.font = "bold " + Math.max(9, Math.round(r * 1.05)) + "px sans-serif";
+              ctx.textAlign = "center"; ctx.textBaseline = "middle";
+              ctx.fillStyle = TAIKO_COLORS.dendenText;
+              ctx.fillText(String(note.requiredHits), tx, yMid + 0.5);
+              ctx.restore();
+            }
+          }
+        } else {
+          ctx.beginPath();
+          ctx.fillStyle = note.kind === "kat" ? TAIKO_COLORS.kat : TAIKO_COLORS.don;
+          ctx.arc(x, yMid, r, 0, Math.PI * 2); ctx.fill();
+          ctx.lineWidth = 2; ctx.strokeStyle = "rgba(255,255,255,0.9)"; ctx.stroke();
+        }
+        /* クリック判定用に、実際に描いた位置と大きさを残す
+           （描画順のまま push するので、後ろの要素ほど前面） */
+        hits.push({ note: note, diff: diff, lane: i,
+                    x: x, x2: isRoll ? x2 : x, y: yMid, r: r });
       }
     }
   }

@@ -416,7 +416,7 @@
           /* 効果音オフセット(ms)。+で遅らせ / -で早める。設定画面で調整・永続化。
              音楽側の出力バッファぶん効果音が早く聞こえるのを打ち消す。
              既定 35 は実際に聴き合わせて決めた値。 */
-          var spSfxOffsetMs = 35;
+          var spSfxOffsetMs = 30;
           try {
             var so0 = parseInt(localStorage.getItem('moddingHelperSfxOffset'), 10);
             if (Number.isFinite(so0)) spSfxOffsetMs = Math.max(-200, Math.min(200, so0));
@@ -435,20 +435,15 @@
           /* 音楽と効果音で共有する AudioContext。
              別々のクロックだと長い曲で徐々にズレるため、音楽(<audio>)も同じ ctx に通して
              時計と出力レイテンシを完全に共通化する。ctx は作り直さず使い回す。 */
-          var spSharedCtx = null, spMediaRouted = false;
+          var spSharedCtx = null;
           var ensureSpreadAudioCtx = function () {
             if (!spSharedCtx) {
               var Ctx = window.AudioContext || window.webkitAudioContext;
               if (!Ctx) return null;
               try { spSharedCtx = new Ctx(); } catch (e) { spSharedCtx = null; return null; }
             }
-            /* 音楽を ctx 経由に（1要素につき1回だけ可能）。失敗しても直接再生のまま継続 */
-            if (!spMediaRouted && typeof spAudio !== 'undefined' && spAudio) {
-              try {
-                spSharedCtx.createMediaElementSource(spAudio).connect(spSharedCtx.destination);
-                spMediaRouted = true;
-              } catch (e) { spMediaRouted = true; /* 既にルート済み等。以後試さない */ }
-            }
+            /* 曲は spAudio（デコード済み PCM）がこの ctx に直接つなぐので、
+               <audio> をルーティングする必要はない。 */
             if (spSharedCtx.state === 'suspended') { try { spSharedCtx.resume(); } catch (e) {} }
             return spSharedCtx;
           };
@@ -1051,10 +1046,178 @@
             e.preventDefault();
           });
 
-          /* ── 音楽付き再生（スペースキー。osu! には同期しない） ── */
-          var spAudio = new Audio();
-          spAudio.preload = 'auto';
-          spAudio.volume = spMusicVolume01;   // 設定した曲の音量を反映
+          /* ── 音楽付き再生（スペースキー。osu! には同期しない） ──
+             `<audio>` ではなく「デコード済み PCM を AudioContext で鳴らす」方式にしている。
+             理由: `<audio>` の currentTime は MP3 だとファイル位置からの推定になり、
+             VBR やエンコーダ遅延があると後半ほど実際の出音とズレる（曲の終盤でズレる原因）。
+             デコード後の PCM をオーディオデバイスのクロックで再生し、位置もそのクロックから
+             求めれば原理的にズレない。osu!/TaikoEditor と同じ考え方。
+             効果音と同じ ctx を使うので、両者の時計と出力レイテンシも完全に共通。
+             既存コードをそのまま使えるよう `<audio>` 風の見た目を持たせている。 */
+          var spAudio = (function () {
+            var buffer = null, src = null, gain = null;
+            var startCtx = 0, startOffset = 0;   // 再生開始時の ctx 時刻 / 曲位置（秒）
+            var playing = false, pausedAt = 0;   // 停止中の曲位置（秒）
+            var rate = 1, vol = 1, loadToken = 0;
+            var pendingPlay = false;   // デコード完了前に再生を押された
+            var listeners = { playing: [], pause: [], ended: [] };
+            var emit = function (n) {
+              for (var i = 0; i < listeners[n].length; i++) { try { listeners[n][i](); } catch (e) {} }
+            };
+            /* ── ピッチを保ったまま速度を変える（タイムストレッチ）──
+               playbackRate を下げるとピッチも下がってしまうので、速度変更時は
+               「元の音を等倍で鳴らした短い粒(grain)を、少しずつ位置をずらしながら
+               重ねて並べる」方式で伸ばす。粒はどれも等倍再生なのでピッチは変わらない。
+               重なり50%の三角フェードで足すと振幅が一定になり、継ぎ目が目立たない。
+               再生位置はこの仕組みとは独立に ctx クロックから求めるので、
+               25%再生でも位置は正確なまま。 */
+            var GRAIN_SEC = 0.12;            // 1粒の長さ（元音の取り出し長）
+            var GRAIN_HOP_OUT = GRAIN_SEC / 2; // 出力側の間隔＝50%重ね
+            var STRETCH_LOOKAHEAD = 0.45;    // 何秒先まで予約しておくか
+            var grainTimer = null, grainNodes = [];
+            var nextOutTime = 0, nextInPos = 0;
+            var clearGrains = function () {
+              if (grainTimer) { clearInterval(grainTimer); grainTimer = null; }
+              for (var i = 0; i < grainNodes.length; i++) {
+                try { grainNodes[i].onended = null; grainNodes[i].stop(); } catch (e) {}
+              }
+              grainNodes = [];
+            };
+            var pumpGrains = function (ctx) {
+              var hopIn = GRAIN_HOP_OUT * rate;   // 元音を進める量（rate<1 なら少しずつ）
+              while (nextOutTime < ctx.currentTime + STRETCH_LOOKAHEAD) {
+                if (nextInPos >= buffer.duration) {   // 曲の終わり
+                  clearGrains();
+                  playing = false; pausedAt = buffer.duration; emit('ended');
+                  return;
+                }
+                var g = ctx.createGain();
+                var t0 = Math.max(nextOutTime, ctx.currentTime);
+                /* 三角フェード（前半で上げ、後半で下げる）。隣の粒と足して常に 1 になる */
+                g.gain.setValueAtTime(0, t0);
+                g.gain.linearRampToValueAtTime(1, t0 + GRAIN_HOP_OUT);
+                g.gain.linearRampToValueAtTime(0, t0 + GRAIN_SEC);
+                g.connect(gain);
+                var s = ctx.createBufferSource();
+                s.buffer = buffer;
+                s.connect(g);
+                s.start(t0, Math.min(nextInPos, buffer.duration),
+                        Math.min(GRAIN_SEC, buffer.duration - nextInPos));
+                grainNodes.push(s);
+                s.onended = (function (node) {
+                  return function () {
+                    var i = grainNodes.indexOf(node);
+                    if (i >= 0) grainNodes.splice(i, 1);
+                  };
+                })(s);
+                nextOutTime += GRAIN_HOP_OUT;
+                nextInPos += hopIn;
+              }
+            };
+            var startStretch = function (ctx) {
+              clearGrains();
+              nextOutTime = ctx.currentTime;
+              nextInPos = startOffset;
+              pumpGrains(ctx);
+              grainTimer = setInterval(function () {
+                if (!playing) { clearGrains(); return; }
+                pumpGrains(ctx);
+              }, 100);
+            };
+
+            var stopSrc = function () {
+              clearGrains();
+              if (!src) return;
+              try { src.onended = null; src.stop(); } catch (e) {}
+              src = null;
+            };
+            var api = {
+              seeking: false,
+              get readyState() { return buffer ? 4 : 0; },   // デコード完了までは 0
+              get duration() { return buffer ? buffer.duration : NaN; },
+              get paused() { return !playing; },
+              get currentTime() {
+                if (!playing) return pausedAt;
+                var ctx = ensureSpreadAudioCtx();
+                if (!ctx) return pausedAt;
+                return startOffset + (ctx.currentTime - startCtx) * rate;
+              },
+              set currentTime(v) {
+                v = Math.max(0, Number(v) || 0);
+                if (playing) { var was = true; api.pause(); pausedAt = v; if (was) api.play(); }
+                else pausedAt = v;
+              },
+              get volume() { return vol; },
+              set volume(v) {
+                vol = Math.max(0, Math.min(1, Number(v)));
+                if (gain) gain.gain.value = vol;
+              },
+              get playbackRate() { return rate; },
+              set playbackRate(v) {
+                var next = Number(v) > 0 ? Number(v) : 1;
+                if (next === rate) return;
+                var pos = api.currentTime;
+                rate = next;
+                if (playing) { api.pause(); pausedAt = pos; api.play(); }
+              },
+              addEventListener: function (name, fn) {
+                if (listeners[name]) listeners[name].push(fn);
+              },
+              /* 音源を読み込んでデコードする（url=null で解放） */
+              setSrc: function (url) {
+                var token = ++loadToken;
+                stopSrc(); playing = false; pausedAt = 0; buffer = null; pendingPlay = false;
+                if (!url) return;
+                var ctx = ensureSpreadAudioCtx();
+                if (!ctx) return;
+                fetch(url)
+                  .then(function (r) { return r.arrayBuffer(); })
+                  .then(function (ab) { return ctx.decodeAudioData(ab); })
+                  .then(function (b) {
+                    if (token !== loadToken) return;
+                    buffer = b;
+                    /* デコード前に再生を押されていたら、ここで開始する */
+                    if (pendingPlay) { pendingPlay = false; api.play(); }
+                  })
+                  .catch(function () { /* デコード失敗時は再生されないだけ */ });
+              },
+              play: function () {
+                var ctx = ensureSpreadAudioCtx();
+                if (!ctx || playing) return Promise.resolve();
+                if (!buffer) { pendingPlay = true; return Promise.resolve(); }  // デコード待ち
+                stopSrc();
+                if (!gain) { gain = ctx.createGain(); gain.connect(ctx.destination); }
+                gain.gain.value = vol;
+                startOffset = Math.max(0, Math.min(pausedAt, buffer.duration));
+                startCtx = ctx.currentTime;
+                playing = true;
+                if (rate === 1) {
+                  /* 等速はそのまま流す（加工なし＝音質最良） */
+                  src = ctx.createBufferSource();
+                  src.buffer = buffer;
+                  src.connect(gain);
+                  src.onended = function () {   // 自然終了のみ（stop 時は解除済み）
+                    playing = false; pausedAt = buffer ? buffer.duration : 0; emit('ended');
+                  };
+                  src.start(0, startOffset);
+                } else {
+                  startStretch(ctx);            // 速度変更時はピッチを保つ伸縮再生
+                }
+                emit('playing');
+                return Promise.resolve();
+              },
+              pause: function () {
+                pendingPlay = false;
+                if (!playing) return;
+                pausedAt = api.currentTime;
+                playing = false;
+                stopSrc();
+                emit('pause');
+              },
+            };
+            return api;
+          })();
+          spAudio.volume = spMusicVolume01;      // 設定した曲の音量を反映
           spAudio.playbackRate = spPlaybackRate; // 設定した再生速度を反映
           var spAudioSrcRef = null;
           var syncSpreadAudioSrc = function () {
@@ -1063,8 +1226,7 @@
             if (url === spAudioSrcRef) return;
             spAudioSrcRef = url;
             spreadAudioPlaying = false;
-            try { spAudio.pause(); } catch (e) {}
-            if (url) spAudio.src = url; else spAudio.removeAttribute('src');
+            spAudio.setSrc(url);
           };
           /* 'play' は play() を呼んだ時点で発火し、まだ実際に音が出ていないことがある。
              実際に再生が始まる 'playing' を使う（開始直後に効果音が先走るのを防ぐ）。 */
@@ -1076,8 +1238,8 @@
             syncSpreadAudioSrc();
             if (!spAudioSrcRef) return; // 音源が無い
             if (spAudio.paused) {
-              /* 音楽を ctx 経由にしている場合、suspended だと無音になるので必ず起こす */
-              if (spSharedCtx) ensureSpreadAudioCtx();
+              /* suspended だと無音になるので必ず起こす（ユーザー操作起点なので許可される） */
+              ensureSpreadAudioCtx();
               var base = getSpreadTime(); if (base == null) base = 0;
               var durMs = (spAudio.duration && isFinite(spAudio.duration)) ? spAudio.duration * 1000 : Infinity;
               var startMs = Math.max(0, Math.min(base, durMs - 1));
@@ -1244,6 +1406,17 @@
           /* 効果音を Web Audio クロックに「先読みスケジュール」して鳴らす。
              描画ループ(約16ms)で通過検出→即再生 だと検出遅れぶん遅延するため、
              少し先(SP_SFX_LOOKAHEAD_MS)までのノーツを正確な発音時刻で予約する。 */
+          /* 速度を落とした時の追加補正[ms]。
+             タイムストレッチは1つの打点を複数の粒に分けて重ねるため、曲の打点が
+             本来より早く聴こえる（25%では1打点が約8粒に現れる）。その分だけ
+             効果音も前倒しする必要があり、ズレ量は速度が遅いほど大きい。
+             値は実際に聴いて合わせた実測値。基準(100%)は「効果音オフセット」設定側で調整する。 */
+          var SP_SFX_RATE_ADJUST = { '1': 0, '0.75': -20, '0.5': -50, '0.25': -80 };
+          var spSfxRateAdjust = function (r) {
+            var v = SP_SFX_RATE_ADJUST[String(r)];
+            return typeof v === 'number' ? v : 0;
+          };
+
           var SP_SFX_LOOKAHEAD_MS = 120;
           var SP_SFX_SETTLE_MS = 200;  // 再生開始直後、出音が安定するまで予約を見送る時間
           var spSfxPlayFrom = null;    // この再生セッションの開始曲位置
@@ -1278,15 +1451,40 @@
             var diff = diffs[Math.min(spSoundLane, diffs.length - 1)];
             if (diff && diff.notes) {
               var notes = diff.notes;
+              /* 曲時間 → 実時間。オフセットは実時間の定数なので割らない
+                 （割ると 25% 再生で4倍に効いてしまう）。
+                 さらに速度ごとの補正を足す（下の SP_SFX_RATE_ADJUST を参照）。 */
+              var offMs = spSfxOffsetMs + spSfxRateAdjust(rate);
+              var realWhen = function (songMs) {
+                return ctxNow + (songMs - songNow) / 1000 / rate + offMs / 1000;
+              };
               for (var k = 0; k < notes.length; k++) {
-                var nt = notes[k].time;
-                if (nt <= from) continue;
+                var note = notes[k];
+                var nt = note.time;
                 if (nt > horizon) break; // ソート済み → 以降は先
-                var when = ctxNow + (nt - songNow + spSfxOffsetMs) / 1000 / rate;
-                var kind = notes[k].kind;
-                if (kind === 'don') spSynth.don(notes[k].big, when);
-                else if (kind === 'kat') spSynth.kat(notes[k].big, when);
-                /* 連打(drumroll)・風船(denden)は鳴らさない */
+                if (note.kind === 'drumroll') {
+                  /* 連打はティックごとに鳴らす（通常＝小ドン / Finisher＝大ドン）。
+                     開始が過去でもティックが窓に入ることがあるので、
+                     開始時刻ではなく終端で打ち切る。 */
+                  var end = note.endTime != null ? note.endTime : nt;
+                  var spacing = note.tickSpacing || 0;
+                  if (end + spacing <= from) continue;
+                  if (!note._tickTimes && window.taikoDrumRollTickTimes) {
+                    note._tickTimes = window.taikoDrumRollTickTimes(note); // 1回だけ計算
+                  }
+                  var ticks = note._tickTimes || [];
+                  for (var ti = 0; ti < ticks.length; ti++) {
+                    var tt = ticks[ti];
+                    if (tt <= from) continue;
+                    if (tt > horizon) break;
+                    spSynth.don(note.big, realWhen(tt));
+                  }
+                  continue;
+                }
+                if (nt <= from) continue;
+                if (note.kind === 'don') spSynth.don(note.big, realWhen(nt));
+                else if (note.kind === 'kat') spSynth.kat(note.big, realWhen(nt));
+                /* 風船(denden)は鳴らさない */
               }
             }
             spSfxSchedTo = horizon;
