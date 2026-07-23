@@ -6,8 +6,11 @@
   "repository": "https://github.com/calmeel/modding-helper",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder --win nsis",
-    "publish": "electron-builder --win nsis --publish always"
+    "build:sr": "powershell -NoProfile -ExecutionPolicy Bypass -File electron/sr-calculator/build-all.ps1",
+    "build:sr:current": "powershell -NoProfile -ExecutionPolicy Bypass -File electron/sr-calculator/build.ps1",
+    "build:electron": "electron-builder --win nsis",
+    "build": "npm run build:sr && npm run build:electron",
+    "publish": "npm run build:sr && electron-builder --win nsis --publish always"
   },
   "build": {
     "appId": "com.vanity8.modding-helper",
@@ -44,8 +47,16 @@
       "!node_modules/.cache/**",
       "!electron/dist/**",
       "!electron/dist-verify/**",
+      "!electron/resources/sr-calculator/**",
       "!.claude/**",
       "!.vscode/**"
+    ],
+    "extraResources": [
+      {
+        "from": "electron/resources/sr-calculator",
+        "to": "sr-calculator",
+        "filter": ["**/*"]
+      }
     ],
     "asarUnpack": [
       "electron/osu/osuMemory.ps1"

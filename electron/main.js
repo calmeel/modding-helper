@@ -7,6 +7,7 @@ const mapsetWatcher = require('./osu/mapsetWatcher');
 const popouts = require('./windows/popouts');
 const updater = require('./services/updater');
 const windowState = require('./services/windowState');
+const { createSrCalculatorService } = require('./services/srCalculator');
 // リアルタイム(osu!メモリ監視)は非公開ファイル（GitHub には上げない方針）。
 // 欠落していても web プレビュー等は動くよう no-op スタブにフォールバックする。
 let osuWatcher;
@@ -24,6 +25,7 @@ try {
 
 const root     = path.join(__dirname, '..');
 const { version } = require('../package.json');
+const srCalculator = createSrCalculatorService({ app, root });
 const iconUrl  = 'file:///' + path.join(root, 'images', 'icon.png').replace(/\\/g, '/');
 const docsPath = path.join(root, 'docs', 'docs.html');
 
@@ -175,6 +177,10 @@ app.whenReady().then(() => {
   mainWin = createWindow();
   updater.setupAutoUpdate();
 
+  ipcMain.handle('sr-calculate', (event, payload) =>
+    srCalculator.calculate(payload));
+  ipcMain.on('sr-cancel', () => srCalculator.cancel());
+
   ipcMain.on('win-minimize',  () => { if (mainWin) mainWin.minimize(); });
   /* 最大化の解除は「標準のデスクトップサイズ」に落とす。
      起動時は作業領域いっぱいで開くため、素の unmaximize() では戻り先が定まらない。 */
@@ -256,4 +262,5 @@ app.whenReady().then(() => {
   });
 });
 
+app.on('before-quit', () => srCalculator.dispose());
 app.on('window-all-closed', () => app.quit());

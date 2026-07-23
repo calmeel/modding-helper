@@ -18,3 +18,12 @@ electron/osu/osuWatcher.js
 !.vscode/launch.json
 !.vscode/tasks.json
 !.vscode/extensions.json
+
+# アイコン設定
+desktop.ini
+
+# Self-contained SR calculator build output
+electron/resources/sr-calculator/
+
+electron/sr-calculator/bin
+electron/sr-calculator/obj

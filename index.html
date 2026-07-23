@@ -162,6 +162,11 @@
           <span data-i18n="tabOffsetWaveform">Audio waveform</span>
         </label>
 
+        <label data-electron-only>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="srCalculator" checked>
+          <span data-i18n="tabSrCalculator">SR Calculator</span>
+        </label>
+
         <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="timeline">
           <span data-i18n="tabTimeline">Timeline</span>
@@ -235,6 +240,7 @@
         <div class="tab-group">
           <div class="tab-group-title" data-i18n="tabGroupTools">Tools</div>
           <button class="tab-button timeline-tab-button" data-tab="offsetWaveform" data-i18n="tabOffsetWaveform">Audio waveform</button>
+          <button class="tab-button sr-calculator-tab-button" data-tab="srCalculator" data-i18n="tabSrCalculator" data-electron-only>SR Calculator</button>
           <button class="tab-button timeline-tab-button hidden-tab" data-tab="timeline" data-i18n="tabTimeline">Timeline</button>
           <button class="tab-button bn-tab-button hidden-tab" data-tab="bnCompare" data-i18n="tabBnCompare">BN Compare</button>
         </div>
@@ -751,6 +757,49 @@
         </section>
       </section>
 
+      <section class="tab-panel" id="tab-srCalculator" data-electron-only>
+        <div class="sr-calculator-panel">
+          <h3 data-i18n="srCalculatorTitle">osu!taiko SR Calculator</h3>
+          <p class="sr-calculator-help" data-i18n="srCalculatorHelp">Calculates osu!taiko star rating for each difficulty using the selected bundled ruleset and mods.</p>
+          <label class="sr-calculator-ruleset">
+            <span data-i18n="srCalculatorRuleset">Ruleset period</span>
+            <select id="srCalculatorRuleset">
+              <option value="current">2026/07/11 ~</option>
+              <option value="livePP2510">2025/10/08 ~</option>
+              <option value="livePP2503">2025/03/08 ~</option>
+              <option value="livePP2410After">2024/11/05 ~</option>
+              <option value="livePP2410Before">2024/10/30 ~</option>
+              <option value="livePP2208">2022/09/28 ~</option>
+              <option value="livePP2021">2021/01/16 ~</option>
+              <option value="livePP2020">2020/09/16 ~</option>
+              <option value="legacy2014" disabled>2014/03/01 ~ (TBD)</option>
+            </select>
+          </label>
+          <fieldset class="sr-calculator-mods">
+            <legend data-i18n="srCalculatorMods">Mods</legend>
+            <label>
+              <input type="checkbox" class="sr-calculator-mod" value="EZ"> EZ
+            </label>
+            <label>
+              <input type="checkbox" class="sr-calculator-mod" value="HT"> HT
+            </label>
+            <label>
+              <input type="checkbox" class="sr-calculator-mod" value="HR"> HR
+            </label>
+            <label>
+              <input type="checkbox" class="sr-calculator-mod" value="DT"> DT / NC
+            </label>
+            <label>
+              <input type="checkbox" class="sr-calculator-mod" value="HD"> HD
+            </label>
+            <label>
+              <input type="checkbox" class="sr-calculator-mod" value="FL"> FL
+            </label>
+          </fieldset>
+          <div id="srCalculatorOutput" class="sr-calculator-output" data-i18n="srCalculatorNoFile">No file loaded.</div>
+        </div>
+      </section>
+
       <section class="tab-panel hidden-tab" id="tab-timeline">
         <div class="options">
           <button id="timelineRunButton" class="doc-btn" type="button" data-i18n="timelineRun">
@@ -917,6 +966,7 @@
   <script src="app/renderers.js"></script>
   <script src="app/bnCompareRenderers.js"></script>
   <script src="app/bnCompareUi.js"></script>
+  <script src="app/tools/srCalculator.js"></script>
   <script src="app/tabIssues.js"></script>
   <script src="script.js"></script>
 </body>

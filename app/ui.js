@@ -430,7 +430,8 @@ function updateHiddenTabGroups() {
   for (const group of document.querySelectorAll(".tab-group")) {
     const buttons = group.querySelectorAll(".tab-button");
     const hasVisibleButton = [...buttons].some(button =>
-      !button.classList.contains("hidden-tab")
+      !button.classList.contains("hidden-tab") &&
+      !button.hasAttribute("data-electron-only")
     );
 
     group.classList.toggle("hidden-tab-group", !hasVisibleButton);
@@ -440,11 +441,17 @@ function updateHiddenTabGroups() {
 function ensureVisibleActiveTab() {
   const activeButton = document.querySelector(".tab-button.active");
 
-  if (activeButton && !activeButton.classList.contains("hidden-tab")) {
+  if (
+    activeButton &&
+    !activeButton.classList.contains("hidden-tab") &&
+    !activeButton.hasAttribute("data-electron-only")
+  ) {
     return;
   }
 
-  const firstVisibleButton = document.querySelector(".tab-button:not(.hidden-tab)");
+  const firstVisibleButton = document.querySelector(
+    ".tab-button:not(.hidden-tab):not([data-electron-only])"
+  );
 
   if (firstVisibleButton) {
     firstVisibleButton.click();
