@@ -11,7 +11,6 @@ function formatMultipleTagResults(results, t) {
   lines.push(formatTagTokenView(sortedResults, t));
   lines.push("");
   lines.push(formatSeparator());
-  lines.push("");
 
   lines.push(formatSectionTitle(t("tagConsistencyCheck")));
   lines.push("");
@@ -44,7 +43,6 @@ function formatMultipleTagResults(results, t) {
 
   lines.push("");
   lines.push(formatSeparator());
-  lines.push("");
   lines.push(formatSectionTitle(t("tagSpacingCheck")));
   lines.push("");
 
@@ -62,7 +60,6 @@ function formatMultipleTagResults(results, t) {
 
   lines.push("");
   lines.push(formatSeparator());
-  lines.push("");
   lines.push(formatSectionTitle(t("tagDuplicateCheck")));
   lines.push("");
 
@@ -81,7 +78,6 @@ function formatMultipleTagResults(results, t) {
 
   lines.push("");
   lines.push(formatSeparator());
-  lines.push("");
   lines.push(formatSectionTitle(t("tagMetadataDuplicateCheck")));
   lines.push("");
 
@@ -99,7 +95,6 @@ function formatMultipleTagResults(results, t) {
 
   lines.push("");
   lines.push(formatSeparator());
-  lines.push("");
   lines.push(formatSectionTitle(t("tagSpellingCheck")));
   lines.push("");
 
@@ -118,7 +113,6 @@ function formatMultipleTagResults(results, t) {
 
   lines.push("");
   lines.push(formatSeparator());
-  lines.push("");
   lines.push(formatSectionTitle(t("tagRelatedCheck")));
   lines.push("");
 
@@ -137,7 +131,6 @@ function formatMultipleTagResults(results, t) {
 
   lines.push("");
   lines.push(formatSeparator());
-  lines.push("");
   lines.push(formatSectionTitle(t("tagMetadataRelatedCheck")));
   lines.push("");
 
@@ -155,7 +148,6 @@ function formatMultipleTagResults(results, t) {
 
   lines.push("");
   lines.push(formatSeparator());
-  lines.push("");
   lines.push(formatSectionTitle(t("tagSourceRelatedCheck")));
   lines.push("");
 
@@ -243,9 +235,6 @@ function formatMultipleArtistResults(results, t) {
   ]));
   lines.push("");
   lines.push(formatSeparator());
-  lines.push("");
-
-
   lines.push(formatSectionTitle(t("artistConsistencyCheck")));
   lines.push("");
 
@@ -279,7 +268,6 @@ function formatMultipleArtistResults(results, t) {
 
   lines.push("");
   lines.push(formatSeparator());
-  lines.push("");
   lines.push(formatSectionTitle(t("metadataSymbolRomanisationCheck")));
   lines.push("");
 
@@ -309,7 +297,6 @@ function formatMultipleArtistResults(results, t) {
 
   lines.push("");
   lines.push(formatSeparator());
-  lines.push("");
   lines.push(formatSectionTitle(t("artistSpacingCheck")));
   lines.push("");
 
@@ -334,7 +321,6 @@ function formatMultipleArtistResults(results, t) {
 
   lines.push("");
   lines.push(formatSeparator());
-  lines.push("");
   lines.push(formatSectionTitle(t("artistFormattingCheck")));
   lines.push("");
 
@@ -422,8 +408,6 @@ function formatMultipleTitleResults(results, t) {
   ]));
   lines.push("");
   lines.push(formatSeparator());
-  lines.push("");
-
   lines.push(formatSectionTitle(t("titleConsistencyCheck")));
   lines.push("");
 
@@ -457,7 +441,6 @@ function formatMultipleTitleResults(results, t) {
 
   lines.push("");
   lines.push(formatSeparator());
-  lines.push("");
   lines.push(formatSectionTitle(t("metadataSymbolRomanisationCheck")));
   lines.push("");
 
@@ -495,7 +478,6 @@ function formatMultipleTitleResults(results, t) {
 
   lines.push("");
   lines.push(formatSeparator());
-  lines.push("");
   lines.push(formatSectionTitle(t("titleSpacingCheck")));
   lines.push("");
 
@@ -520,7 +502,6 @@ function formatMultipleTitleResults(results, t) {
 
   lines.push("");
   lines.push(formatSeparator());
-  lines.push("");
   lines.push(formatSectionTitle(t("titleMarkerCheck")));
   lines.push("");
 
@@ -1058,8 +1039,6 @@ function formatMultipleSourceResults(results, t) {
   ]));
   lines.push("");
   lines.push(formatSeparator());
-  lines.push("");
-
   lines.push(formatSectionTitle(t("sourceConsistencyCheck")));
   lines.push("");
 
@@ -1084,7 +1063,6 @@ function formatMultipleSourceResults(results, t) {
 
   lines.push("");
   lines.push(formatSeparator());
-  lines.push("");
   lines.push(formatSectionTitle(t("sourceCheckTitle")));
   lines.push("");
 
@@ -1355,7 +1333,6 @@ function formatMultipleContentPermissionResults(results, t) {
     }
 
     lines.push(formatSeparator());
-    lines.push("");
   }
 
   return lines.join("\n").trimEnd();

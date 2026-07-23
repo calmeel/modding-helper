@@ -198,6 +198,7 @@ function formatPreviewPointResult(results, t) {
 
   if (!validResults.length) {
     lines.push("");
+    lines.push(formatSeparator());
     lines.push(formatSectionTitle(t("previewPointSnapTitle")));
     lines.push(t("previewPointNotFound"));
     appendPreviewPointAudioSection(lines, audioWarnings, t);
@@ -217,6 +218,7 @@ function formatPreviewPointResult(results, t) {
   }
 
   lines.push("");
+  lines.push(formatSeparator());
   lines.push(formatSectionTitle(t("previewPointSnapTitle")));
 
   for (const group of groupPreviewPointSnapResults(validResults)) {
@@ -236,6 +238,7 @@ function formatPreviewPointResult(results, t) {
 
 function appendPreviewPointAudioSection(lines, audioWarnings, t) {
   lines.push("");
+  lines.push(formatSeparator());
   lines.push(formatSectionTitle(t("previewPointAudioTitle")));
 
   if (!audioWarnings.length) {

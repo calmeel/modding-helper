@@ -284,7 +284,6 @@ function formatBarlineResultGroup(results, t) {
   }
 
   lines.push(formatSeparator());
-  lines.push("");
   lines.push(formatSectionTitle(t("barlineNegativeStartBug")));
 
   for (const result of results) {
@@ -294,7 +293,6 @@ function formatBarlineResultGroup(results, t) {
   }
 
   lines.push(formatSeparator());
-  lines.push("");
   lines.push(formatSectionTitle(t("barlineDetachedBarline")));
 
   for (const result of results) {
@@ -304,7 +302,6 @@ function formatBarlineResultGroup(results, t) {
   }
 
   lines.push(formatSeparator());
-  lines.push("");
   lines.push(formatSectionTitle(t("barlineIntentionalDetachedBarline")));
 
   for (const result of results) {
@@ -392,6 +389,7 @@ function formatMultipleUnappliedSvResults(results, t) {
   ));
 
   lines.push("");
+  lines.push(formatSeparator());
   lines.push(formatSectionTitle(t("unappliedSvBarlineTitle")));
   lines.push(...formatUnappliedSvResultsByDiff(
     sortedResults,
