@@ -481,6 +481,10 @@ const i18n = {
     contentPermissionPermissionRequired: "Permission required content",
 
     tabSrCalculator: "SR Calculator",
+    tabSpectrogram: "Spectrogram",
+    spectrogramGraphTitle: "Spectrogram",
+    spectrogramGraphHelp: "Shows how the audio's frequency content changes over time. A flat cutoff near the top means the high frequencies were removed (a sign of a low-quality re-encode).",
+    spectrogramNoAudio: "Load a beatmap with audio to view its spectrogram.",
     srCalculatorTitle: "osu!taiko SR Calculator",
     srCalculatorHelp: "Calculates the osu!taiko star rating for each difficulty using the selected bundled ruleset and mods.",
     srCalculatorRuleset: "Ruleset period",
@@ -1028,6 +1032,10 @@ const i18n = {
     contentPermissionPermissionRequired: "許可が必要なコンテンツ",
 
     tabSrCalculator: "SR計算",
+    tabSpectrogram: "スペクトログラム",
+    spectrogramGraphTitle: "スペクトログラム",
+    spectrogramGraphHelp: "音声の周波数成分が時間とともにどう変化するかを表示します。上の方が平らに切れている場合、高音がカットされています（低品質な再エンコードのサインです）。",
+    spectrogramNoAudio: "音源付きの譜面を読み込むとスペクトログラムを表示します。",
     srCalculatorTitle: "osu!taiko SR\u8a08\u7b97",
     srCalculatorHelp: "\u9078\u629e\u3057\u305f\u540c\u68b1\u30eb\u30fc\u30eb\u30bb\u30c3\u30c8\u3068Mod\u3092\u4f7f\u7528\u3057\u3001\u5404 Diff \u306e osu!taiko Star Rating \u3092\u8a08\u7b97\u3057\u307e\u3059\u3002",
     srCalculatorRuleset: "\u30eb\u30fc\u30eb\u30bb\u30c3\u30c8\u671f\u9593",

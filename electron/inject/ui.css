@@ -760,6 +760,11 @@
         background: #353535 !important;
       }
 
+      /* スペクトログラム: キャンバスを入れ物いっぱいに広げる（描画側が clientHeight を見る）。
+         入れ物 .volume-compare-chart-wrap は既定 340px、分離窓/ワイドでは flex で伸びる。 */
+      #spectrogramChartWrap { min-height: 300px !important; }
+      #spectrogramCanvas { display: block; width: 100%; height: 100%; }
+
       /* ── 出力列（チェック結果カード） ── */
       #electron-col-output {
         flex: 5 !important;

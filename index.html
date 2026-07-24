@@ -163,6 +163,11 @@
         </label>
 
         <label data-electron-only>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="spectrogram" checked>
+          <span data-i18n="tabSpectrogram">Spectrogram</span>
+        </label>
+
+        <label data-electron-only>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="srCalculator" checked>
           <span data-i18n="tabSrCalculator">SR Calculator</span>
         </label>
@@ -240,6 +245,7 @@
         <div class="tab-group">
           <div class="tab-group-title" data-i18n="tabGroupTools">Tools</div>
           <button class="tab-button timeline-tab-button" data-tab="offsetWaveform" data-i18n="tabOffsetWaveform">Audio waveform</button>
+          <button class="tab-button spectrogram-tab-button" data-tab="spectrogram" data-i18n="tabSpectrogram" data-electron-only>Spectrogram</button>
           <button class="tab-button sr-calculator-tab-button" data-tab="srCalculator" data-i18n="tabSrCalculator" data-electron-only>SR Calculator</button>
           <button class="tab-button timeline-tab-button hidden-tab" data-tab="timeline" data-i18n="tabTimeline">Timeline</button>
           <button class="tab-button bn-tab-button hidden-tab" data-tab="bnCompare" data-i18n="tabBnCompare">BN Compare</button>
@@ -717,6 +723,24 @@
         </div>
       </section>
 
+      <section class="tab-panel" id="tab-spectrogram" data-electron-only>
+        <section class="volume-compare-chart-section" id="spectrogramChartSection">
+          <div class="volume-compare-chart-header">
+            <div>
+              <h3 data-i18n="spectrogramGraphTitle">Spectrogram</h3>
+            </div>
+          </div>
+
+          <div class="volume-compare-chart-wrap spectrogram-chart-wrap" id="spectrogramChartWrap" hidden>
+            <canvas id="spectrogramCanvas"></canvas>
+          </div>
+
+          <div class="volume-compare-chart-empty" id="spectrogramEmpty" data-i18n="spectrogramNoAudio">
+            Load a beatmap with audio to view its spectrogram.
+          </div>
+        </section>
+      </section>
+
       <section class="tab-panel" id="tab-offsetWaveform">
         <section class="offset-waveform-chart-section" id="offsetWaveformChartSection">
           <div class="volume-compare-chart-header">
@@ -967,6 +991,7 @@
   <script src="app/bnCompareRenderers.js"></script>
   <script src="app/bnCompareUi.js"></script>
   <script src="app/tools/srCalculator.js"></script>
+  <script src="app/spectrogram.js"></script>
   <script src="app/tabIssues.js"></script>
   <script src="script.js"></script>
 </body>
