@@ -133,16 +133,40 @@ function formatMultipleShiftResults(results, t) {
 
 function formatShiftResult(result, t) {
   const lines = [];
+  const wheelResults = result.wheelResults || [];
 
   lines.push(`${getDifficultyName(result.fileName)}`);
   lines.push("");
 
-  if (!result.results.length) {
+  if (!result.results.length && !wheelResults.length) {
     lines.push(t("noOffset"));
     return lines.join("\n");
   }
 
-  for (const item of result.results) {
+  if (!wheelResults.length) {
+    lines.push(...formatShiftItems(result.results, t));
+    return lines.join("\n");
+  }
+
+  lines.push(`【${t("offsetResnapHeading")}】`);
+
+  if (!result.results.length) {
+    lines.push(t("noOffsetResnap"));
+  } else {
+    lines.push(...formatShiftItems(result.results, t));
+  }
+
+  lines.push("");
+  lines.push(`【${t("offsetWheelHeading")}】`);
+  lines.push(...formatShiftItems(wheelResults, t));
+
+  return lines.join("\n");
+}
+
+function formatShiftItems(items, t) {
+  const lines = [];
+
+  for (const item of items) {
     const sign = item.diff > 0 ? "+" : "";
     const className = item.level === "warn" ? "result-warn" : "result-error";
     const objectText = getOffsetObjectTypeLabel(item, t);
@@ -152,12 +176,14 @@ function formatShiftResult(result, t) {
         : item.target === "spinnerTail"
           ? ` | ${t("spinnerTail")}`
           : "";
-    const compatibilityText = item.compatibility
-      ? t(
-          item.compatibility === "stableOnly"
-            ? "offsetStableOnly"
-            : "offsetLazerOnly"
-        ).replace("{diff}", `${sign}${item.diff} ms`)
+    const compatibilityKey = {
+      stableOnly: "offsetStableOnly",
+      lazerOnly: "offsetLazerOnly",
+      stableWheelOnly: "offsetStableWheelOnly",
+      lazerWheelOnly: "offsetLazerWheelOnly"
+    }[item.compatibility];
+    const compatibilityText = compatibilityKey
+      ? t(compatibilityKey).replace("{diff}", `${sign}${item.diff} ms`)
       : null;
 
     lines.push(
@@ -170,7 +196,7 @@ function formatShiftResult(result, t) {
     );
   }
 
-  return lines.join("\n");
+  return lines;
 }
 
 function getOffsetObjectTypeLabel(item, t) {

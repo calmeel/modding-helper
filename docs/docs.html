@@ -842,25 +842,13 @@ Mapset Verifier や AiMod では ±1 ms のズレは表示されません（unra
 
 <div class="section section-detect">
 <span class="label label-detect">■ 検出内容（osu!stable と osu!lazer の違い）</span><br>
-1 ms単位での snap 推定では、<code>osu!lazer</code> 相当と <code>osu!stable</code> 相当の2通りのグリッド位置を計算します。<br><br>
+本ツールでは、<code>再スナップ判定</code>と<code>osu!stable ビートスナップ時刻判定</code>を分離して表示します。<br>
+タイムライングリッド描画、再スナップ、ビートスナップ時刻は別々の計算処理であり、同じ整数msになるとは限りません。<br><br>
 
-<strong>osu!stable / osu!lazer のグリッド計算式の違い</strong><br>
-赤線の時刻を <code>redTime</code>、snap分割数を <code>beatSnap</code> とすると、snap間隔は
-<code>snapLength = beatLength / beatSnap</code> です。<br>
-<code>osu!lazer</code> 相当の位置は、snap番号を使って
-<code>gridTime = redTime + snapIndex * snapLength</code>
-のように直接計算します。<br>
-一方、<code>osu!stable</code> のeditorは、赤線位置から
-<code>gridTime += snapLength</code>
-を繰り返してグリッドを生成します。<br><br>
-
-直接乗算では浮動小数点の丸めが主に最後の計算で発生しますが、反復加算では加算ごとの微小な誤差が蓄積します。
-そのため、同じ <code>beatLength</code> とsnap番号でも、整数 ms へ切り捨てた結果がstableとlazerで1 ms異なる場合があります。<br><br>
-
-本ツールは両方の計算結果を確認し、両方でsnapされていれば正常として扱います。
-片方だけでsnapされている場合は、<code>osu!stable のグリッドにのみsnap</code> または
-<code>osu!lazer のグリッドにのみsnap</code> としてwarningを表示し、もう一方のグリッドとの差も併記します。
-どちらのグリッドにもsnapされていない場合は、近い方のグリッドとの差に基づいて通常のwarning / error判定を行います。<br><br>
+各処理の計算式、丸め方、osu!stable / osu!lazer間で1 ms差が生じる理由については、次の技術資料を参照してください。<br>
+<a href="snapTiming.html" target="_blank" rel="noopener noreferrer">
+  osu!stable / osu!lazer snap時刻の計算
+</a><br><br>
 </div>
 
 <div class="section section-warning">

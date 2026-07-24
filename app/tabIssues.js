@@ -98,7 +98,12 @@ function getOffsetIssueLevel(results) {
   let hasWarn = false;
 
   for (const result of results) {
-    for (const item of result.results ?? []) {
+    const items = [
+      ...(result.results ?? []),
+      ...(result.wheelResults ?? [])
+    ];
+
+    for (const item of items) {
       if (item.level === TAB_LEVEL_ERROR) {
         return TAB_LEVEL_ERROR;
       }

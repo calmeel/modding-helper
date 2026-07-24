@@ -11,12 +11,12 @@ function runOffset1msCheck(text, fileName, options = {}) {
   const beatSnaps = getBeatSnapCandidates(options.includeAdvancedSnaps);
   const timingPoints = parseTimingPoints(text);
   const hitObjects = parseHitObjects(text);
-  const stableSnapCache = new Map();
 
   const svLines = parseInheritedTimingPoints(text);
   const sliderMultiplier = parseOffsetSliderMultiplier(text);
 
   const results = [];
+  const wheelResults = [];
 
   for (const line of hitObjects) {
     const items = getOffsetCheckTimesFromHitObject(
@@ -24,8 +24,7 @@ function runOffset1msCheck(text, fileName, options = {}) {
       timingPoints,
       svLines,
       sliderMultiplier,
-      beatSnaps,
-      stableSnapCache
+      beatSnaps
     );
 
     for (const item of items) {
@@ -36,30 +35,47 @@ function runOffset1msCheck(text, fileName, options = {}) {
         item.time,
         currentTp.time,
         currentTp.beatLength,
-        beatSnaps,
-        stableSnapCache
+        beatSnaps
       );
 
-      if (!best) continue;
-      if (best.diff === 0) continue;
+      if (best && best.diff !== 0) {
+        results.push({
+          time: item.time,
+          diff: best.diff,
+          snap: best.snap,
+          target: item.target,
+          objectType: item.objectType,
+          level: best.compatibility
+            ? "warn"
+            : getOffsetIssueLevelFromDiff(best.diff),
+          compatibility: best.compatibility
+        });
+      }
 
-      results.push({
-        time: item.time,
-        diff: best.diff,
-        snap: best.snap,
-        target: item.target,
-        objectType: item.objectType,
-        level: best.compatibility
-          ? "warn"
-          : getOffsetIssueLevelFromDiff(best.diff),
-        compatibility: best.compatibility
-      });
+      const wheelDifference = findStableWheelSeekDifference(
+        item.time,
+        timingPoints,
+        beatSnaps
+      );
+
+      if (wheelDifference) {
+        wheelResults.push({
+          time: item.time,
+          diff: wheelDifference.diff,
+          snap: wheelDifference.snap,
+          target: item.target,
+          objectType: item.objectType,
+          level: "warn",
+          compatibility: wheelDifference.compatibility
+        });
+      }
     }
   }
 
   return {
     fileName,
-    results
+    results,
+    wheelResults
   };
 }
 
@@ -72,8 +88,7 @@ function getOffsetCheckTimesFromHitObject(
   timingPoints,
   svLines,
   sliderMultiplier,
-  beatSnaps,
-  stableSnapCache
+  beatSnaps
 ) {
   const parts = line.split(",");
   if (parts.length < 4) return [];
@@ -99,8 +114,7 @@ function getOffsetCheckTimesFromHitObject(
       timingPoints,
       svLines,
       sliderMultiplier,
-      beatSnaps,
-      stableSnapCache
+      beatSnaps
     );
 
     if (sliderTailTime !== null) {
@@ -147,8 +161,7 @@ function estimateOffsetSliderTailTime(
   timingPoints,
   svLines,
   sliderMultiplier,
-  beatSnaps,
-  stableSnapCache
+  beatSnaps
 ) {
   // osu! slider object:
   // x,y,time,type,hitSound,curveType|points,slides,length,...
@@ -175,8 +188,7 @@ function estimateOffsetSliderTailTime(
   const anchoredStartTime = getOffsetSliderStartAnchorTime(
     startTime,
     currentTp,
-    beatSnaps,
-    stableSnapCache
+    beatSnaps
   );
 
   const duration =
@@ -193,15 +205,13 @@ function estimateOffsetSliderTailTime(
 function getOffsetSliderStartAnchorTime(
   startTime,
   timingPoint,
-  beatSnaps,
-  stableSnapCache
+  beatSnaps
 ) {
   const snap = findNearestSnapDiff(
     startTime,
     timingPoint.time,
     timingPoint.beatLength,
-    beatSnaps,
-    stableSnapCache
+    beatSnaps
   );
 
   if (!snap || Math.abs(snap.lazerRawDiff) >= 1) {
@@ -271,44 +281,44 @@ function findCurrentTimingPoint(timingPoints, time) {
     }
   }
 
-  return null;
+  // Both editors extend the first red timing point backwards when snapping
+  // objects before it. osu!lazer's TimingPointAt() likewise falls back to
+  // TimingPoints[0] instead of treating the range as having no timing.
+  return timingPoints[0] ?? null;
 }
 
 function findNearestSnapDiff(
   time,
   redTime,
   beatLength,
-  beatSnaps,
-  stableSnapCache = new Map()
+  beatSnaps
 ) {
   let lazerBest = null;
   let stableBest = null;
 
   for (const beatSnap of beatSnaps) {
-    const snapLength = beatLength / beatSnap;
-    const snapIndex = Math.round((time - redTime) / snapLength);
-    const lazerTime = redTime + snapIndex * snapLength;
+    const lazerTime = getLazerOffsetSnapTime(
+      time,
+      redTime,
+      beatLength,
+      beatSnap
+    );
     const lazerCandidate = createOffsetSnapCandidate(time, lazerTime, beatSnap);
 
     if (isBetterOffsetSnapCandidate(lazerCandidate, lazerBest)) {
       lazerBest = lazerCandidate;
     }
 
-    for (const stableIndex of [snapIndex, snapIndex - 1, snapIndex + 1]) {
-      if (stableIndex < 0) continue;
+    const stableTime = getStableResnapInteger(
+      time,
+      redTime,
+      beatLength,
+      beatSnap
+    );
+    const stableCandidate = createOffsetSnapCandidate(time, stableTime, beatSnap);
 
-      const stableTime = getStableOffsetSnapTime(
-        redTime,
-        beatLength,
-        beatSnap,
-        stableIndex,
-        stableSnapCache
-      );
-      const stableCandidate = createOffsetSnapCandidate(time, stableTime, beatSnap);
-
-      if (isBetterOffsetSnapCandidate(stableCandidate, stableBest)) {
-        stableBest = stableCandidate;
-      }
+    if (isBetterOffsetSnapCandidate(stableCandidate, stableBest)) {
+      stableBest = stableCandidate;
     }
   }
 
@@ -354,6 +364,64 @@ function findNearestSnapDiff(
   };
 }
 
+function findStableWheelSeekDifference(
+  time,
+  timingPoints,
+  beatSnaps
+) {
+  const currentTp = findCurrentTimingPoint(timingPoints, time);
+  if (!currentTp) return null;
+
+  let lazerBest = null;
+
+  for (const beatSnap of beatSnaps) {
+    const lazerTime = getLazerOffsetSnapTime(
+      time,
+      currentTp.time,
+      currentTp.beatLength,
+      beatSnap
+    );
+    const lazerCandidate = createOffsetSnapCandidate(time, lazerTime, beatSnap);
+
+    if (isBetterOffsetSnapCandidate(lazerCandidate, lazerBest)) {
+      lazerBest = lazerCandidate;
+    }
+  }
+
+  if (!lazerBest) return null;
+
+  // Compare the same divisor that represents the nearest lazer snap.
+  // Searching stable independently across denser divisors would allow, for
+  // example, a 1/12 candidate to hide a real difference at a 1/4 position.
+  const stableTime = getStableWheelSeekInteger(
+    time,
+    time,
+    timingPoints,
+    lazerBest.snap
+  );
+  const stableCandidate = createOffsetSnapCandidate(
+    time,
+    stableTime,
+    lazerBest.snap
+  );
+  const lazerMatches = lazerBest.diff === 0;
+  const stableMatches = stableCandidate.diff === 0;
+
+  if (lazerMatches === stableMatches) return null;
+
+  return stableMatches
+    ? {
+        ...stableCandidate,
+        diff: lazerBest.diff,
+        compatibility: "stableWheelOnly"
+      }
+    : {
+        ...lazerBest,
+        diff: stableCandidate.diff,
+        compatibility: "lazerWheelOnly"
+      };
+}
+
 function createOffsetSnapCandidate(time, snapTime, beatSnap) {
   return {
     diff: Math.trunc(snapTime) - time,
@@ -371,27 +439,127 @@ function isBetterOffsetSnapCandidate(candidate, current) {
   return candidateDiff < currentDiff;
 }
 
-function getStableOffsetSnapTime(
-  redTime,
-  beatLength,
-  beatSnap,
-  snapIndex,
-  stableSnapCache
+function getStableWheelSeekInteger(
+  targetTime,
+  referenceTime,
+  timingPoints,
+  beatSnap
 ) {
-  const key = `${redTime}:${beatLength}:${beatSnap}`;
-  let entry = stableSnapCache.get(key);
+  // osu!stable method 06003484. The editor uses the reference time to
+  // select the active red timing point, constructs two integer candidates
+  // with conv.i4, and then chooses the nearer one (the upper one on a tie).
+  if (!timingPoints.length) return Math.trunc(targetTime);
 
-  if (!entry) {
-    entry = {
-      snapLength: beatLength / beatSnap,
-      times: [redTime]
-    };
-    stableSnapCache.set(key, entry);
+  const timingPointIndex = findStableWheelTimingPointIndex(
+    timingPoints,
+    referenceTime
+  );
+  const timingPoint = timingPoints[timingPointIndex];
+  const timingOffset = getStableWheelTimingOffset(
+    timingPoint,
+    timingPointIndex
+  );
+  const snapLength = timingPoint.beatLength / beatSnap;
+  const relative = targetTime - timingOffset;
+  const baseIndex = relative < 0
+    ? Math.trunc(relative / snapLength) - 1
+    : Math.trunc(relative / snapLength);
+  const lower = Math.trunc(baseIndex * snapLength + timingOffset);
+  const upper = Math.trunc((baseIndex + 1) * snapLength + timingOffset);
+
+  // When seeking from a different reference time, stable avoids returning
+  // that same integer candidate. For wheel-position detection both times
+  // are equal, but this branch is retained to reproduce the method itself.
+  if (referenceTime !== targetTime) {
+    if (lower === referenceTime) return upper;
+    if (upper === referenceTime) return lower;
   }
 
-  while (entry.times.length <= snapIndex) {
-    entry.times.push(entry.times[entry.times.length - 1] + entry.snapLength);
+  return targetTime - lower < upper - targetTime ? lower : upper;
+}
+
+function findStableWheelTimingPointIndex(timingPoints, referenceTime) {
+  let currentIndex = 0;
+
+  for (let i = 0; i < timingPoints.length; i++) {
+    if (timingPoints[i].time <= referenceTime) {
+      currentIndex = i;
+    }
   }
 
-  return entry.times[snapIndex];
+  return currentIndex;
+}
+
+function getStableWheelTimingOffset(timingPoint, timingPointIndex) {
+  let timingOffset = timingPoint.time;
+
+  // Method 06001BE1 extends only the first positive red timing point
+  // backwards by repeated beat-length subtraction.
+  if (timingPointIndex === 0 && timingPoint.beatLength > 0) {
+    while (timingOffset > 0) {
+      timingOffset -= timingPoint.beatLength;
+    }
+  }
+
+  return timingOffset;
+}
+
+function getStableResnapInteger(
+  objectTime,
+  timingOffset,
+  beatLength,
+  beatSnap
+) {
+  // osu!stable method 0600347E:
+  //   relative = objectTime - timingOffset
+  //   ratio = relative / (beatLength / beatSnap)
+  //   result = timingOffset
+  //          + Math.Round(ratio) * (beatLength / beatSnap)
+  // Its caller (0600347D) immediately applies conv.i4 to the returned
+  // float64. Keep the two beat-length divisions separate, as in the IL.
+  const relative = objectTime - timingOffset;
+  const ratioSnapLength = beatLength / beatSnap;
+  const ratio = relative / ratioSnapLength;
+  const snapIndex = roundOffsetToEven(ratio);
+  const resultSnapLength = beatLength / beatSnap;
+  const result = timingOffset + snapIndex * resultSnapLength;
+
+  return Math.trunc(result);
+}
+
+function getLazerOffsetSnapTime(
+  objectTime,
+  timingOffset,
+  beatLength,
+  beatSnap
+) {
+  // ControlPointInfo.getClosestPositiveSnappedTime():
+  // lazer rounds the beat index away from zero and keeps the snapped time
+  // as a double.
+  const snapLength = beatLength / beatSnap;
+  const beats = (Math.max(objectTime, 0) - timingOffset) / snapLength;
+  const snapIndex = roundOffsetAwayFromZero(beats);
+  const result = timingOffset + snapIndex * snapLength;
+
+  return result >= 0 ? result : result + snapLength;
+}
+
+function roundOffsetToEven(value) {
+  if (!Number.isFinite(value)) return value;
+
+  const lower = Math.floor(value);
+  const fraction = value - lower;
+
+  if (fraction < 0.5) return lower;
+  if (fraction > 0.5) return lower + 1;
+
+  return lower % 2 === 0 ? lower : lower + 1;
+}
+
+function roundOffsetAwayFromZero(value) {
+  if (!Number.isFinite(value)) return value;
+
+  return value < 0
+    ? -Math.floor(-value + 0.5)
+    : Math.floor(value + 0.5);
 }

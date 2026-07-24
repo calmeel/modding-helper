@@ -857,24 +857,13 @@ Objects that are not on this target grid are detected as unsnapped.<br><br>
 
 <div class="section section-detect">
 <span class="label label-detect">■ Detection Content (Differences between osu!stable and osu!lazer)</span><br>
-For snap estimation at the 1 ms level, the tool calculates both an <code>osu!lazer</code>-equivalent grid position and an <code>osu!stable</code>-equivalent grid position.<br><br>
+The tool displays the <code>resnap check</code> separately from the <code>osu!stable beat-snap time check</code>.<br>
+Timeline-grid rendering, resnap, and beat-snap time use separate calculations and do not necessarily produce the same integer millisecond.<br><br>
 
-<strong>Difference between the osu!stable and osu!lazer grid calculations</strong><br>
-If the red timing point is <code>redTime</code> and the snap divisor is <code>beatSnap</code>, the snap interval is
-<code>snapLength = beatLength / beatSnap</code>.<br>
-The <code>osu!lazer</code>-equivalent position is calculated directly from the snap index as
-<code>gridTime = redTime + snapIndex * snapLength</code>.<br>
-In contrast, the <code>osu!stable</code> editor generates its grid from the red timing point by repeatedly applying
-<code>gridTime += snapLength</code>.<br><br>
-
-With direct multiplication, floating-point rounding mainly occurs in the final calculation. With repeated addition, a very small rounding error can accumulate on every step.
-As a result, even with the same <code>beatLength</code> and snap index, truncating the result to an integer millisecond can produce a 1 ms difference between stable and lazer.<br><br>
-
-This tool checks both calculated positions. An object is treated as correctly snapped when it matches both grids.
-If it matches only one, the tool displays a warning stating that it
-<code>snaps only to the osu!stable grid</code> or
-<code>snaps only to the osu!lazer grid</code>, together with its offset from the other grid.
-If it matches neither grid, the normal warning / error level is determined from the offset to the nearer grid.<br><br>
+For the formulas, rounding modes, and reasons that osu!stable and osu!lazer can differ by 1 ms, see the technical reference:<br>
+<a href="snapTiming.en.html" target="_blank" rel="noopener noreferrer">
+  osu!stable / osu!lazer Snap-Time Calculations
+</a><br><br>
 </div>
 
 <div class="section section-warning">

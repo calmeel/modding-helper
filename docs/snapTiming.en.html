@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>osu!stable / osu!lazer Snap-Time Calculations</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111;
+      --panel: #181818;
+      --panel-strong: #202020;
+      --border: #2a2a2a;
+      --border-strong: #333;
+      --text: #eee;
+      --text-soft: #ccc;
+      --muted: #aaa;
+      --blue: #9fdcff;
+      --yellow: #ffd580;
+      --green: #9ff2b2;
+      --red: #ffb3b3;
+      --purple: #c9b6ff;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: sans-serif;
+      font-size: 14px;
+      line-height: 1.65;
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px 64px;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    h1 {
+      color: var(--blue);
+      border-bottom: 2px solid var(--border-strong);
+      padding-bottom: 10px;
+      margin-bottom: 22px;
+      line-height: 1.3;
+    }
+
+    h2 {
+      margin-top: 48px;
+      color: var(--blue);
+      border-bottom: 1px solid var(--border-strong);
+      padding-bottom: 6px;
+      line-height: 1.4;
+    }
+
+    h3 {
+      margin-top: 30px;
+      color: var(--yellow);
+      line-height: 1.4;
+    }
+
+    p, li { color: var(--text-soft); }
+    a { color: var(--blue); }
+
+    code {
+      background: #222;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #f2f2f2;
+    }
+
+    pre {
+      margin: 14px 0 0;
+      padding: 14px 16px;
+      overflow-x: auto;
+      background: #0d0d0d;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: #e9f6ff;
+      line-height: 1.55;
+    }
+
+    pre code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    th {
+      background: var(--panel-strong);
+      color: var(--blue);
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-strong);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    tr:hover { background: #1d1d1d; }
+
+    .doc-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .doc-parent-link {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .doc-parent-link a,
+    .language-link {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    .doc-parent-link a:hover,
+    .language-link:hover { text-decoration: underline; }
+
+    .language-link {
+      padding: 5px 9px;
+      border: 1px solid var(--border-strong);
+      border-radius: 999px;
+      font-size: 12px;
+    }
+
+    .lead {
+      max-width: 900px;
+      font-size: 15px;
+    }
+
+    .section {
+      margin-top: 20px;
+      padding: 16px 18px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--blue);
+      border-radius: 6px;
+    }
+
+    .section-yellow { border-left-color: var(--yellow); }
+    .section-green { border-left-color: var(--green); }
+    .section-red { border-left-color: var(--red); }
+
+    .summary-grid,
+    .source-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .summary-card,
+    .source-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px 16px;
+    }
+
+    .summary-label,
+    .source-label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .summary-value {
+      margin-top: 5px;
+      color: #fff;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .summary-description {
+      margin-top: 7px;
+      color: var(--text-soft);
+      font-size: 13px;
+    }
+
+    .source-title {
+      margin-top: 4px;
+      color: var(--yellow);
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 12px;
+    }
+
+    .toc {
+      margin-top: 24px;
+      padding: 16px 18px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+
+    .toc strong { color: var(--yellow); }
+
+    .toc ol {
+      columns: 2;
+      column-gap: 36px;
+      margin-bottom: 0;
+      padding-left: 22px;
+    }
+
+    .toc li {
+      break-inside: avoid;
+      margin: 5px 0;
+    }
+
+    .toc a { text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+
+    .tag {
+      display: inline-block;
+      margin-right: 6px;
+      padding: 2px 7px;
+      border: 1px solid var(--border-strong);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 11px;
+      vertical-align: 1px;
+    }
+
+    .important { color: var(--yellow); font-weight: bold; }
+    .good { color: var(--green); font-weight: bold; }
+    .difference { color: var(--red); font-weight: bold; }
+    .muted { color: var(--muted); }
+    .formula-title { color: var(--purple); font-weight: bold; }
+
+    .example-result {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .example-result div {
+      padding: 10px 12px;
+      background: #121212;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+    }
+
+    .example-result span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .example-result strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 17px;
+    }
+
+    .notes {
+      margin-top: 34px;
+      padding: 14px 16px;
+      background: var(--panel);
+      border-left: 4px solid var(--yellow);
+    }
+
+    .notes-title {
+      color: var(--yellow);
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    @media (max-width: 720px) {
+      body {
+        margin-top: 24px;
+        padding-inline: 14px;
+      }
+
+      .toc ol { columns: 1; }
+      th, td { padding: 9px 10px; }
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>osu!stable / osu!lazer Snap-Time Calculations</h1>
+
+<div class="doc-header">
+  <div class="doc-parent-link">
+    This page is a technical supplement to the
+    <a href="docs-en.html">Modding Helper documentation</a>.
+  </div>
+  <a class="language-link" href="snapTiming.html" lang="ja">日本語</a>
+</div>
+
+<p class="lead">
+  What the osu! editor presents as a “snap position” actually involves three separate values:
+  the <strong>timeline-grid rendering time</strong>,
+  the <strong>resnap time</strong>, and
+  the <strong>beat-snap time</strong>.
+  They share timing points and beat divisors, but do not necessarily use the same origin, operation order, rounding mode, or integer conversion.
+</p>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="summary-label">Time 1</div>
+    <div class="summary-value">Timeline-grid rendering</div>
+    <div class="summary-description">A visual coordinate used to draw beat and bar lines. It does not decide an integer hit-object timestamp.</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-label">Time 2</div>
+    <div class="summary-value">Resnap</div>
+    <div class="summary-description">The destination used by “Snap all notes to current snap divisor”.</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-label">Time 3</div>
+    <div class="summary-value">Beat-snap time</div>
+    <div class="summary-description">The editor clock position reached when moving to the previous or next beat with the mouse wheel or arrow keys.</div>
+  </div>
+</div>
+
+<nav class="toc" aria-label="Contents">
+  <strong>Contents</strong>
+  <ol>
+    <li><a href="#three-times">The three times</a></li>
+    <li><a href="#sources">Analysis sources</a></li>
+    <li><a href="#stable">osu!stable calculations</a></li>
+    <li><a href="#lazer">osu!lazer calculations</a></li>
+    <li><a href="#stable-internal-difference">1 ms differences inside stable</a></li>
+    <li><a href="#lazer-internal-match">Why lazer usually agrees internally</a></li>
+    <li><a href="#wheel-client-difference">Stable/lazer beat-snap differences</a></li>
+    <li><a href="#resnap-client-difference">Stable/lazer resnap differences</a></li>
+  </ol>
+</nav>
+
+<h2 id="three-times">1. A “snap position” involves three different times</h2>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Purpose</th>
+        <th>Does it decide an integer time?</th>
+        <th>Viewport / direction dependent?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Timeline-grid rendering</strong></td>
+        <td>Draw beat and bar lines</td>
+        <td>No; it remains a rendering coordinate</td>
+        <td>The visible range affects generation</td>
+      </tr>
+      <tr>
+        <td><strong>Resnap</strong></td>
+        <td>Move object starts and ends to the selected divisor</td>
+        <td>Stable converts to an integer; lazer stores a double internally</td>
+        <td>Selects the closest snap to the old object time</td>
+      </tr>
+      <tr>
+        <td><strong>Beat-snap time</strong></td>
+        <td>Move the editor clock to the previous or next snap</td>
+        <td>Stable constructs integer candidates; lazer retains doubles</td>
+        <td>Depends on scroll direction and timing-point boundaries</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section section-yellow">
+  <strong>Important:</strong>
+  A grid line visually overlapping an object, resnap moving to an integer time, and beat-snap navigation with the mouse wheel or arrow keys displaying that same integer are three separate observations.
+</div>
+
+<h2 id="sources">2. Analysis methods and sources</h2>
+
+<div class="source-grid">
+  <div class="source-card">
+    <div class="source-label">osu!stable</div>
+    <div class="source-title">Reverse engineering osu!.exe</div>
+    <p>
+      osu!stable is not open source, so the editor paths were followed in disassembled IL.
+      The resnap analysis centres on method <code>0600347E</code> and its caller; the beat-snap navigation analysis centres on <code>06003484</code>.
+      The positions of <code>float64</code> operations, <code>Math.Round</code>, and <code>conv.i4</code> were included.
+    </p>
+    <p class="muted">Method IDs and obfuscated names are specific to the analysed build.</p>
+  </div>
+
+  <div class="source-card">
+    <div class="source-label">osu!lazer</div>
+    <div class="source-title">Official GitHub source</div>
+    <p>The following links are pinned to the commit used during this analysis.</p>
+    <ul>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/Compose/Components/Timeline/TimelineTickDisplay.cs" target="_blank" rel="noopener noreferrer">TimelineTickDisplay.cs</a> — grid rendering</li>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Beatmaps/ControlPoints/ControlPointInfo.cs" target="_blank" rel="noopener noreferrer">ControlPointInfo.cs</a> — closest snapped time</li>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorBeatmap.cs" target="_blank" rel="noopener noreferrer">EditorBeatmap.cs</a> — resnap all objects</li>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorClock.cs" target="_blank" rel="noopener noreferrer">EditorClock.cs</a> — beat-snap navigation</li>
+    </ul>
+  </div>
+</div>
+
+<div class="notes">
+  <div class="notes-title">Notation</div>
+  <code>redTime</code> is the red timing-point time, <code>beatLength</code> its beat length,
+  <code>beatSnap</code> the selected divisor, and <code>objectTime</code> the input time.<br>
+  <code>snapLength = beatLength / beatSnap</code>. <code>trunc</code> removes the fractional portion towards zero.
+</div>
+
+<h2 id="stable">3. The three osu!stable calculations</h2>
+
+<h3><span class="tag">stable 1</span>Timeline-grid rendering time</h3>
+
+<p>
+  Stable finds a beat position before the left edge of the visible range, then repeatedly adds <code>snapLength</code> while drawing lines.
+  The positions remain floating-point rendering values rather than integer note timestamps.
+</p>
+
+<pre><code>gridTime = beat position before the viewport's left edge
+
+while (gridTime &lt; viewportRight):
+    draw a line at gridTime
+    gridTime += beatLength / beatSnap</code></pre>
+
+<p>
+  There is no integer-millisecond rounding rule here. The relevant numerical effects are repeated-addition error and conversion to screen coordinates.
+  The viewport-dependent origin also makes this unsuitable as the definition of resnap time.
+</p>
+
+<h3><span class="tag">stable 2</span>Resnap time</h3>
+
+<pre><code>relative = objectTime - redTime
+ratio = relative / (beatLength / beatSnap)
+snapIndex = Math.Round(ratio)
+snapTime = redTime + snapIndex * (beatLength / beatSnap)
+integerTime = conv.i4(snapTime)</code></pre>
+
+<ul>
+  <li><code>Math.Round(double)</code> uses midpoint-to-even rounding.</li>
+  <li>The snap-length division occurs separately in the ratio and final-time expressions.</li>
+  <li>The helper returns <code>float64</code>; its caller immediately applies <code>conv.i4</code>.</li>
+  <li>For normal timestamp ranges, <code>conv.i4</code> truncates towards zero.</li>
+</ul>
+
+<h3><span class="tag">stable 3</span>Beat-snap time</h3>
+
+<p>
+  Beat-snap navigation uses a separate method. If the first red timing point is positive, stable repeatedly subtracts its full beat length until an origin at or before zero is reached.
+</p>
+
+<pre><code>retTiming = activeRedTime
+
+if (activeRed is the first red point &amp;&amp; beatLength &gt; 0):
+    while (retTiming &gt; 0):
+        retTiming -= beatLength
+
+snapLength = beatLength / beatSnap
+relative = targetTime - retTiming
+
+baseIndex =
+    relative &lt; 0
+        ? trunc(relative / snapLength) - 1
+        : trunc(relative / snapLength)
+
+lower = conv.i4(retTiming + baseIndex * snapLength)
+upper = conv.i4(retTiming + (baseIndex + 1) * snapLength)
+
+seekTime = the closer integer candidate
+ties select upper</code></pre>
+
+<p>
+  The candidates are integerised <strong>before</strong> one is selected. The origin and conversion order therefore differ from stable resnap.
+</p>
+
+<h2 id="lazer">4. The three osu!lazer calculations</h2>
+
+<h3><span class="tag">lazer 1</span>Timeline-grid rendering time</h3>
+
+<p>
+  Lazer repeatedly adds the snap length from each timing point until the next timing point.
+  The loop variable is a <code>double</code>; it is cast to <code>float</code> for the visual X position.
+</p>
+
+<pre><code>for each timingPoint:
+    until = next timing point or track end
+
+    for (double t = timingPoint.Time;
+         t &lt; until;
+         t += timingPoint.BeatLength / beatDivisor):
+        float xPosition = (float)t
+        draw tick</code></pre>
+
+<p>
+  This path does not call <code>GetClosestSnappedTime()</code>.
+  See <a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/Compose/Components/Timeline/TimelineTickDisplay.cs" target="_blank" rel="noopener noreferrer">TimelineTickDisplay.cs</a>.
+</p>
+
+<h3><span class="tag">lazer 2</span>Resnap time</h3>
+
+<pre><code>snapLength = timingPoint.BeatLength / beatDivisor
+beats = (Math.Max(objectTime, 0) - timingPoint.Time) / snapLength
+snapIndex = Math.Round(beats, MidpointRounding.AwayFromZero)
+snapTime = timingPoint.Time + snapIndex * snapLength
+
+if (snapTime &lt; 0):
+    snapTime += snapLength
+
+return snapTime  // double</code></pre>
+
+<ul>
+  <li>Midpoints are rounded away from zero.</li>
+  <li>The function returns a <code>double</code> without integer conversion.</li>
+  <li>Without a reference time, an immediately following timing point may be selected if it is closer.</li>
+  <li>Long-object end snapping uses the new start as its reference time.</li>
+</ul>
+
+<p>
+  See <a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Beatmaps/ControlPoints/ControlPointInfo.cs" target="_blank" rel="noopener noreferrer">ControlPointInfo.cs</a>
+  and <a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorBeatmap.cs" target="_blank" rel="noopener noreferrer">EditorBeatmap.cs</a>.
+</p>
+
+<h3><span class="tag">lazer 3</span>Beat-snap time</h3>
+
+<p>
+  Lazer does not directly call the resnap helper for beat-snap navigation.
+  It uses <code>Floor</code> when moving forward and <code>Ceiling</code> when moving backward.
+  Once the directional snap index is selected, however, it builds the timestamp with the same origin and multiplication used by resnap.
+</p>
+
+<pre><code>seekAmount = timingPoint.BeatLength / beatDivisor
+temporaryTime = currentTime + direction * seekAmount
+relative = temporaryTime - timingPoint.Time
+
+snapIndex =
+    direction &gt; 0
+        ? Floor(relative / seekAmount)
+        : Ceiling(relative / seekAmount)
+
+seekTime = timingPoint.Time + snapIndex * seekAmount</code></pre>
+
+<p>
+  The result remains a <code>double</code>. Additional branches prevent a no-op seek within a 0.5 ms tolerance and constrain movement at timing-point boundaries.
+  See <a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorClock.cs" target="_blank" rel="noopener noreferrer">EditorClock.cs</a>.
+</p>
+
+<h2 id="stable-internal-difference">5. Stable resnap and beat-snap times can differ by 1 ms</h2>
+
+<p>
+  Stable uses a different origin and integer-conversion order in the two operations.
+  A mathematically integral snap can therefore become an exact integer in resnap but an integer-minus-epsilon in the beat-snap navigation path.
+</p>
+
+<div class="section section-red">
+  <span class="formula-title">USAO - Glitch in My System (polytone Edit) [Charlotte&apos;s Inner Oni]</span>
+  <p>
+    Test beatmap:
+    <a href="https://osu.ppy.sh/beatmapsets/2553764#taiko/5677222" target="_blank" rel="noopener noreferrer">USAO - Glitch in My System (polytone Edit) [Charlotte&apos;s Inner Oni]</a>
+  </p>
+  <pre><code>redTime = 1038
+beatLength = 297.029702970297
+
+stable beat-snap retTiming:
+1038
+→ 740.970297029703
+→ 443.940594059406
+→ 146.910891089109
+→ -150.11881188118804</code></pre>
+</div>
+
+<h3>00:53:538 / 1/4 snap</h3>
+
+<pre><code>stable resnap:
+    snapTime = 53538
+    conv.i4 = 53538
+
+stable beat-snap:
+    rawCandidate = 53537.99999999999
+    conv.i4 = 53537</code></pre>
+
+<div class="example-result">
+  <div><span>Stable resnap</span><strong class="good">53538</strong></div>
+  <div><span>Stable beat-snap</span><strong class="difference">53537</strong></div>
+  <div><span>Difference</span><strong class="difference">-1 ms</strong></div>
+</div>
+
+<h3>00:34:787 / 1/8 snap</h3>
+
+<pre><code>stable resnap = 34788
+stable beat-snap rawCandidate = 34787.99999999999
+stable beat-snap after conv.i4 = 34787</code></pre>
+
+<p>
+  An object at <code>34787</code> therefore matches the beat-snap time, but “resnap all notes” moves it to <code>34788</code>.
+</p>
+
+<h2 id="lazer-internal-match">6. Lazer resnap and beat-snap times usually agree</h2>
+
+<p>
+  The two methods choose an index differently—nearest for resnap, directional for beat-snap navigation—but use the same timestamp construction:
+</p>
+
+<pre><code>timingPoint.Time + snapIndex * (beatLength / beatDivisor)</code></pre>
+
+<div class="section section-green">
+  <ul>
+    <li>They use the same timing-point origin.</li>
+    <li>They use the same snap length.</li>
+    <li>They use the same origin-plus-index-times-length expression.</li>
+    <li>Neither integerises intermediate candidates.</li>
+  </ul>
+</div>
+
+<p>
+  When both operations refer to the same snap index, they therefore produce the same <code>double</code> time.
+  Control flow can still differ around negative times, directional movement, and timing-point boundaries.
+</p>
+
+<h2 id="wheel-client-difference">7. Stable and lazer beat-snap times can differ by 1 ms</h2>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Point of comparison</th>
+        <th>osu!stable</th>
+        <th>osu!lazer</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>First positive red point</td>
+        <td>Extends backwards to a non-positive <code>retTiming</code></td>
+        <td>Uses the timing-point time directly</td>
+      </tr>
+      <tr>
+        <td>Candidate construction</td>
+        <td>Builds two candidates from <code>retTiming</code></td>
+        <td>Builds a directional snap directly from the timing point</td>
+      </tr>
+      <tr>
+        <td>Integer conversion</td>
+        <td>Applies <code>conv.i4</code> before selecting a candidate</td>
+        <td>Seeks using a <code>double</code></td>
+      </tr>
+      <tr>
+        <td>Effect of <code>N - ε</code></td>
+        <td>Becomes <code>N - 1</code></td>
+        <td>Remains a double close to <code>N</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Map time</th>
+        <th>Snap</th>
+        <th>Stable beat-snap</th>
+        <th>Lazer snap / normal beat-snap position</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>00:34:787</code></td>
+        <td>1/8</td>
+        <td>34787</td>
+        <td>34788</td>
+        <td class="difference">Stable only</td>
+      </tr>
+      <tr>
+        <td><code>00:53:538</code></td>
+        <td>1/4</td>
+        <td>53537</td>
+        <td>53538</td>
+        <td class="difference">Lazer only</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+  Modding Helper&apos;s stable beat-snap time section compares these stable integer candidates with lazer&apos;s normal snap time.
+  Lazer has extra directional and boundary behaviour, but its candidate times in an ordinary timing section belong to the same snap set as lazer resnap.
+</p>
+
+<h2 id="resnap-client-difference">8. Stable and lazer resnap can also diverge</h2>
+
+<p>The core “select a nearby index, then multiply from the red point” structure is shared, but the implementations are not identical.</p>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Operation</th>
+        <th>osu!stable</th>
+        <th>osu!lazer</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Ratio</td>
+        <td><code>(objectTime - redTime) / snapLength</code></td>
+        <td><code>(Max(objectTime, 0) - redTime) / snapLength</code></td>
+      </tr>
+      <tr>
+        <td>Midpoint rounding</td>
+        <td>ToEven</td>
+        <td>AwayFromZero</td>
+      </tr>
+      <tr>
+        <td>Final result</td>
+        <td>Immediate caller conversion with <code>conv.i4</code></td>
+        <td>Retained as a <code>double</code></td>
+      </tr>
+      <tr>
+        <td>Negative result</td>
+        <td>No equivalent positive-time correction</td>
+        <td>Adds one snap length when negative</td>
+      </tr>
+      <tr>
+        <td>Following timing point</td>
+        <td>The analysed formula uses the current red point</td>
+        <td>May choose the following timing point when it is closer</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<pre><code>ratio = 10.5
+
+stable:
+    Math.Round(10.5) = 10  // midpoint to even
+
+lazer:
+    Math.Round(10.5, AwayFromZero) = 11</code></pre>
+
+<p>
+  This index difference only appears when the ratio is exactly halfway.
+  It normally creates a full-snap difference rather than a 1 ms difference.
+  Extreme snap lengths, negative times, timing-point boundaries, or final integer conversion can nevertheless make the displayed integer difference 1 ms.
+</p>
+
+<div class="section">
+  <strong>For ordinary positive times:</strong>
+  when the ratio is not a midpoint, both rounding modes choose the same index.
+  Stable and lazer resnap therefore agree in most normal cases.
+  For example, both resnap <code>00:34:787</code> in Charlotte&apos;s Inner Oni to <code>34788</code>.
+</div>
+
+<div class="notes">
+  <div class="notes-title">Summary</div>
+  The three values are separate methods even though they describe the same snap concept.<br>
+  Stable&apos;s early integer conversion during beat-snap navigation creates common 1 ms differences from stable resnap and lazer.<br>
+  Lazer&apos;s resnap and beat-snap navigation paths construct double timestamps from the same origin and multiplication, so the same snap index usually gives the same time.<br>
+  Stable and lazer resnap also differ in rounding and boundary handling, but those differences affect a narrower set of ordinary positive timestamps.
+</div>
+
+</body>
+</html>

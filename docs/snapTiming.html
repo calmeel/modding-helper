@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>osu!stable / osu!lazer snap時刻の計算</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111;
+      --panel: #181818;
+      --panel-strong: #202020;
+      --border: #2a2a2a;
+      --border-strong: #333;
+      --text: #eee;
+      --text-soft: #ccc;
+      --muted: #aaa;
+      --blue: #9fdcff;
+      --yellow: #ffd580;
+      --green: #9ff2b2;
+      --red: #ffb3b3;
+      --purple: #c9b6ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: sans-serif;
+      font-size: 14px;
+      line-height: 1.65;
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px 64px;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    h1 {
+      color: var(--blue);
+      border-bottom: 2px solid var(--border-strong);
+      padding-bottom: 10px;
+      margin-bottom: 22px;
+      line-height: 1.3;
+    }
+
+    h2 {
+      margin-top: 48px;
+      color: var(--blue);
+      border-bottom: 1px solid var(--border-strong);
+      padding-bottom: 6px;
+      line-height: 1.4;
+    }
+
+    h3 {
+      margin-top: 30px;
+      color: var(--yellow);
+      line-height: 1.4;
+    }
+
+    p,
+    li {
+      color: var(--text-soft);
+    }
+
+    a {
+      color: var(--blue);
+    }
+
+    code {
+      background: #222;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #f2f2f2;
+    }
+
+    pre {
+      margin: 14px 0 0;
+      padding: 14px 16px;
+      overflow-x: auto;
+      background: #0d0d0d;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: #e9f6ff;
+      line-height: 1.55;
+    }
+
+    pre code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    th {
+      background: var(--panel-strong);
+      color: var(--blue);
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-strong);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    tr:hover {
+      background: #1d1d1d;
+    }
+
+    .doc-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .doc-parent-link {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .doc-parent-link a,
+    .language-link {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    .doc-parent-link a:hover,
+    .language-link:hover {
+      text-decoration: underline;
+    }
+
+    .language-link {
+      padding: 5px 9px;
+      border: 1px solid var(--border-strong);
+      border-radius: 999px;
+      font-size: 12px;
+    }
+
+    .lead {
+      max-width: 900px;
+      font-size: 15px;
+    }
+
+    .section {
+      margin-top: 20px;
+      padding: 16px 18px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--blue);
+      border-radius: 6px;
+    }
+
+    .section-yellow {
+      border-left-color: var(--yellow);
+    }
+
+    .section-green {
+      border-left-color: var(--green);
+    }
+
+    .section-red {
+      border-left-color: var(--red);
+    }
+
+    .summary-grid,
+    .source-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .summary-card,
+    .source-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px 16px;
+    }
+
+    .summary-label,
+    .source-label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .summary-value {
+      margin-top: 5px;
+      color: #fff;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .summary-description {
+      margin-top: 7px;
+      color: var(--text-soft);
+      font-size: 13px;
+    }
+
+    .source-title {
+      margin-top: 4px;
+      color: var(--yellow);
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 12px;
+    }
+
+    .toc {
+      margin-top: 24px;
+      padding: 16px 18px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+
+    .toc strong {
+      color: var(--yellow);
+    }
+
+    .toc ol {
+      columns: 2;
+      column-gap: 36px;
+      margin-bottom: 0;
+      padding-left: 22px;
+    }
+
+    .toc li {
+      break-inside: avoid;
+      margin: 5px 0;
+    }
+
+    .toc a {
+      text-decoration: none;
+    }
+
+    .toc a:hover {
+      text-decoration: underline;
+    }
+
+    .tag {
+      display: inline-block;
+      margin-right: 6px;
+      padding: 2px 7px;
+      border: 1px solid var(--border-strong);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 11px;
+      vertical-align: 1px;
+    }
+
+    .stable {
+      color: var(--yellow);
+    }
+
+    .lazer {
+      color: var(--blue);
+    }
+
+    .important {
+      color: var(--yellow);
+      font-weight: bold;
+    }
+
+    .good {
+      color: var(--green);
+      font-weight: bold;
+    }
+
+    .difference {
+      color: var(--red);
+      font-weight: bold;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .formula-title {
+      color: var(--purple);
+      font-weight: bold;
+    }
+
+    .example-result {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .example-result div {
+      padding: 10px 12px;
+      background: #121212;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+    }
+
+    .example-result span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .example-result strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 17px;
+    }
+
+    .notes {
+      margin-top: 34px;
+      padding: 14px 16px;
+      background: var(--panel);
+      border-left: 4px solid var(--yellow);
+    }
+
+    .notes-title {
+      color: var(--yellow);
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    @media (max-width: 720px) {
+      body {
+        margin-top: 24px;
+        padding-inline: 14px;
+      }
+
+      .toc ol {
+        columns: 1;
+      }
+
+      th,
+      td {
+        padding: 9px 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>osu!stable / osu!lazer snap時刻の計算</h1>
+
+<div class="doc-header">
+  <div class="doc-parent-link">
+    このページは
+    <a href="docs.html">Modding Helper 説明書</a>
+    の技術資料です。
+  </div>
+  <a class="language-link" href="snapTiming.en.html" lang="en">English</a>
+</div>
+
+<p class="lead">
+  osu!editorで「snap位置」と呼ばれるものには、実際には
+  <strong>タイムライングリッド描画時刻</strong>、
+  <strong>再スナップ時刻</strong>、
+  <strong>ビートスナップ時刻</strong>
+  という別々の時刻があります。
+  同じ赤線とbeat snap divisorを基準にしていても、計算開始点、snap番号の選び方、浮動小数点演算の順序、整数化の位置が異なるため、常に同じ整数msになるとは限りません。
+</p>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="summary-label">時刻 1</div>
+    <div class="summary-value">タイムライングリッド描画</div>
+    <div class="summary-description">画面にbeat線を置くための描画座標です。整数のノーツ時刻を決める処理ではありません。</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-label">時刻 2</div>
+    <div class="summary-value">再スナップ</div>
+    <div class="summary-description">「すべてのノーツを再スナップする」が、ノーツを移動させる先の時刻です。</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-label">時刻 3</div>
+    <div class="summary-value">ビートスナップ時刻</div>
+    <div class="summary-description">マウスホイールや左右キーで前後のbeatへ移動したとき、editorの現在位置になる時刻です。</div>
+  </div>
+</div>
+
+<nav class="toc" aria-label="目次">
+  <strong>目次</strong>
+  <ol>
+    <li><a href="#three-times">3種類の時刻</a></li>
+    <li><a href="#sources">解析方法と情報源</a></li>
+    <li><a href="#stable">osu!stableの計算</a></li>
+    <li><a href="#lazer">osu!lazerの計算</a></li>
+    <li><a href="#stable-internal-difference">stable内部での1ms差</a></li>
+    <li><a href="#lazer-internal-match">lazer内部で一致しやすい理由</a></li>
+    <li><a href="#wheel-client-difference">stable / lazerビートスナップ間の1ms差</a></li>
+    <li><a href="#resnap-client-difference">stable / lazer再スナップ間の差</a></li>
+  </ol>
+</nav>
+
+<h2 id="three-times">1. 「snap位置」には3種類の時刻がある</h2>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>時刻</th>
+        <th>用途</th>
+        <th>整数時刻を決めるか</th>
+        <th>表示範囲・操作方向の影響</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>タイムライングリッド描画時刻</strong></td>
+        <td>画面上にbeat線・小節線を描く</td>
+        <td>決めない。描画座標として保持する</td>
+        <td>表示範囲の影響を受ける</td>
+      </tr>
+      <tr>
+        <td><strong>再スナップ時刻</strong></td>
+        <td>ノーツ開始・終了時刻を選択中のdivisorへ移動する</td>
+        <td>stableは最終的に整数化。lazerは内部ではdouble</td>
+        <td>元ノーツ時刻から最も近いsnapを選ぶ</td>
+      </tr>
+      <tr>
+        <td><strong>ビートスナップ時刻</strong></td>
+        <td>現在位置を前または後のsnapへ移動する</td>
+        <td>stableは整数候補を作る。lazerはdoubleのまま</td>
+        <td>前進・後退の方向とtiming point境界の影響を受ける</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section section-yellow">
+  <strong>重要：</strong>
+  グリッド線がノーツと視覚的に重なっていること、再スナップでその整数時刻へ移動すること、マウスホイールや左右キーによる移動で同じ整数時刻が表示されることは、別々の事実です。
+  どれか1つを観察しただけでは、残り2つの計算結果まで同じとは断定できません。
+</div>
+
+<h2 id="sources">2. 解析方法と情報源</h2>
+
+<div class="source-grid">
+  <div class="source-card">
+    <div class="source-label">osu!stable</div>
+    <div class="source-title">osu!.exeのリバースエンジニアリング</div>
+    <p>
+      osu!stableはソースコードが公開されていないため、osu!.exeを逆アセンブルしたILからeditorの処理を追跡しました。
+      再スナップではメソッドID <code>0600347E</code>と呼び出し元、ビートスナップ移動では<code>06003484</code>を中心に、<code>float64</code>、<code>Math.Round</code>、<code>conv.i4</code>の位置まで確認しています。
+    </p>
+    <p class="muted">
+      メソッドIDと難読化名は解析対象build固有です。将来のstable buildや別buildで同じ番号になる保証はありません。
+    </p>
+  </div>
+
+  <div class="source-card">
+    <div class="source-label">osu!lazer</div>
+    <div class="source-title">GitHub上の公式ソースコード</div>
+    <p>
+      osu!lazerは公開リポジトリ<code>ppy/osu</code>のソースコードから確認しました。
+      このページのリンクは、調査時点の同一commitへ固定しています。
+    </p>
+    <ul>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/Compose/Components/Timeline/TimelineTickDisplay.cs" target="_blank" rel="noopener noreferrer">TimelineTickDisplay.cs</a> — グリッド描画</li>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Beatmaps/ControlPoints/ControlPointInfo.cs" target="_blank" rel="noopener noreferrer">ControlPointInfo.cs</a> — 最寄りsnap時刻</li>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorBeatmap.cs" target="_blank" rel="noopener noreferrer">EditorBeatmap.cs</a> — 全ノーツ再スナップ</li>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorClock.cs" target="_blank" rel="noopener noreferrer">EditorClock.cs</a> — ビートスナップ移動</li>
+    </ul>
+  </div>
+</div>
+
+<div class="notes">
+  <div class="notes-title">表記</div>
+  以下では、赤線またはtiming pointの時刻を<code>redTime</code>、beat lengthを<code>beatLength</code>、選択中の分割数を<code>beatSnap</code>、元時刻を<code>objectTime</code>とします。<br>
+  <code>snapLength = beatLength / beatSnap</code>です。<code>trunc</code>は0方向への小数切り捨てを表します。
+</div>
+
+<h2 id="stable">3. osu!stableにおける3種類の計算</h2>
+
+<h3><span class="tag">stable 1</span>タイムライングリッド描画時刻</h3>
+
+<p>
+  stableのタイムライングリッドは、表示範囲の左端より前にあるbeat位置を描画開始点として求め、そこから<code>snapLength</code>を繰り返し加算して線を生成します。
+  グリッド位置は浮動小数のまま描画へ渡され、ノーツ時刻のような整数msへは変換されません。
+</p>
+
+<pre><code>gridTime = 画面左端より前にあるbeat位置
+
+while (gridTime &lt; 画面右端):
+    gridTimeに線を描画
+    gridTime += beatLength / beatSnap</code></pre>
+
+<p>
+  したがって、丸め規則は「整数msへの四捨五入」ではありません。
+  主な誤差要因は、繰り返し加算による微小な浮動小数点誤差と、その値を画面座標へ変換するときの精度です。
+  また、開始点が表示範囲に依存するため、再スナップ時刻を求める処理の基準にはできません。
+</p>
+
+<h3><span class="tag">stable 2</span>再スナップ時刻</h3>
+
+<p>
+  「タイミング」→「すべてのノーツを再スナップする」では、元ノーツ時刻に最も近いsnap番号を求め、その番号から時刻を直接計算します。
+</p>
+
+<pre><code>relative = objectTime - redTime
+ratio = relative / (beatLength / beatSnap)
+snapIndex = Math.Round(ratio)
+snapTime = redTime + snapIndex * (beatLength / beatSnap)
+integerTime = conv.i4(snapTime)</code></pre>
+
+<ul>
+  <li><code>Math.Round(double)</code>は<strong>中央の値を偶数側へ丸める</strong>（ToEven / banker&apos;s rounding）。</li>
+  <li><code>beatLength / beatSnap</code>は、ratio算出時と最終時刻算出時に別々に実行される。</li>
+  <li>計算結果は一度<code>float64</code>で返り、呼び出し元が直後に<code>conv.i4</code>する。</li>
+  <li><code>conv.i4</code>は通常範囲の時刻では小数部分を0方向へ切り捨てる。</li>
+</ul>
+
+<p>
+  例として<code>snapTime = 53538.999...</code>なら<code>53538</code>、
+  <code>snapTime = 53537.999...</code>なら<code>53537</code>になります。
+</p>
+
+<h3><span class="tag">stable 3</span>ビートスナップ時刻</h3>
+
+<p>
+  ビートスナップ移動は再スナップとは別メソッドです。
+  特に、最初の赤線が正時刻にある場合は、beat lengthを繰り返し減算して0以下まで延長した<code>retTiming</code>を計算開始点にします。
+  2本目以降の赤線では、その赤線時刻が基準になります。
+</p>
+
+<pre><code>retTiming = activeRedTime
+
+if (activeRedが最初の赤線 &amp;&amp; beatLength &gt; 0):
+    while (retTiming &gt; 0):
+        retTiming -= beatLength
+
+snapLength = beatLength / beatSnap
+relative = targetTime - retTiming
+
+baseIndex =
+    relative &lt; 0
+        ? trunc(relative / snapLength) - 1
+        : trunc(relative / snapLength)
+
+lower = conv.i4(retTiming + baseIndex * snapLength)
+upper = conv.i4(retTiming + (baseIndex + 1) * snapLength)
+
+seekTime = targetTimeに近い方
+同距離ならupper</code></pre>
+
+<ul>
+  <li>前後候補を<strong>それぞれ整数化してから</strong>近い方を選ぶ。</li>
+  <li>シーク元と候補が同じ時刻の場合は、操作方向へ進むための回避処理がある。</li>
+  <li>再スナップとは計算開始点も整数化位置も異なる。</li>
+</ul>
+
+<h2 id="lazer">4. osu!lazerにおける3種類の計算</h2>
+
+<h3><span class="tag">lazer 1</span>タイムライングリッド描画時刻</h3>
+
+<p>
+  lazerのタイムラインも、各timing pointから次のtiming pointまで<code>snapLength</code>を繰り返し加算してtickを生成します。
+  ループ変数<code>t</code>は<code>double</code>で、描画用のX位置へ渡すときに<code>float</code>へ変換されます。
+</p>
+
+<pre><code>for each timingPoint:
+    until = 次のtimingPoint.Time または曲の終端
+
+    for (double t = timingPoint.Time;
+         t &lt; until;
+         t += timingPoint.BeatLength / beatDivisor):
+        float xPosition = (float)t
+        tickを描画</code></pre>
+
+<p>
+  これは再スナップ用の<code>GetClosestSnappedTime()</code>を呼ぶ処理ではありません。
+  詳細は
+  <a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/Compose/Components/Timeline/TimelineTickDisplay.cs" target="_blank" rel="noopener noreferrer">TimelineTickDisplay.cs</a>
+  の<code>createTicks()</code>で確認できます。
+</p>
+
+<h3><span class="tag">lazer 2</span>再スナップ時刻</h3>
+
+<p>
+  lazerの全ノーツ再スナップは<code>EditorBeatmap.SnapAllHitObjectsToCurrentDivisor()</code>から<code>SnapTime()</code>を呼び、
+  最終的に<code>ControlPointInfo.GetClosestSnappedTime()</code>を使用します。
+</p>
+
+<pre><code>snapLength = timingPoint.BeatLength / beatDivisor
+beats = (Math.Max(objectTime, 0) - timingPoint.Time) / snapLength
+snapIndex = Math.Round(beats, MidpointRounding.AwayFromZero)
+snapTime = timingPoint.Time + snapIndex * snapLength
+
+if (snapTime &lt; 0):
+    snapTime += snapLength
+
+return snapTime  // double</code></pre>
+
+<ul>
+  <li>中央値は<strong>0から遠い側へ丸める</strong>（AwayFromZero）。</li>
+  <li>関数は整数化せず<code>double</code>を返す。</li>
+  <li><code>referenceTime</code>が指定されていない場合、直後のtiming pointの方が近ければ、そのtiming point時刻を選ぶ。</li>
+  <li>長尺オブジェクトの終端では、開始時刻をreferenceとしてsnap時刻を求める。</li>
+</ul>
+
+<p>
+  参照：
+  <a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Beatmaps/ControlPoints/ControlPointInfo.cs" target="_blank" rel="noopener noreferrer">ControlPointInfo.cs</a>、
+  <a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorBeatmap.cs" target="_blank" rel="noopener noreferrer">EditorBeatmap.cs</a>
+</p>
+
+<h3><span class="tag">lazer 3</span>ビートスナップ時刻</h3>
+
+<p>
+  lazerのビートスナップ移動は再スナップ関数を直接呼びません。
+  前進では<code>Floor</code>、後退では<code>Ceiling</code>を使い、操作方向にあるsnap番号を選択します。
+  ただし、選んだsnap番号から時刻を作る式は再スナップと同じです。
+</p>
+
+<pre><code>seekAmount = timingPoint.BeatLength / beatDivisor
+temporaryTime = currentTime + direction * seekAmount
+relative = temporaryTime - timingPoint.Time
+
+if (direction &gt; 0):
+    snapIndex = Floor(relative / seekAmount)
+else:
+    snapIndex = Ceiling(relative / seekAmount)
+
+seekTime = timingPoint.Time + snapIndex * seekAmount</code></pre>
+
+<p>
+  計算結果は<code>double</code>のままです。
+  さらに、丸め誤差によって現在位置とほぼ同じ（許容差0.5ms）になった場合は操作方向へもう1snap進める処理、
+  timing point境界を越えないための処理があります。
+  詳細は
+  <a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorClock.cs" target="_blank" rel="noopener noreferrer">EditorClock.cs</a>
+  の<code>seek()</code>で確認できます。
+</p>
+
+<h2 id="stable-internal-difference">5. stableでは再スナップ時刻とビートスナップ時刻が1msずれることがある</h2>
+
+<p>
+  stableでは、両処理が異なる計算開始点と異なる整数化順序を使います。
+  このため、数学的には同じsnapを表すはずの小数が、一方では整数ちょうど、もう一方では整数の直前として表現されることがあります。
+</p>
+
+<div class="section section-red">
+  <span class="formula-title">USAO - Glitch in My System (polytone Edit) [Charlotte&apos;s Inner Oni] の条件</span>
+  <p>
+    検証譜面：
+    <a href="https://osu.ppy.sh/beatmapsets/2553764#taiko/5677222" target="_blank" rel="noopener noreferrer">USAO - Glitch in My System (polytone Edit) [Charlotte&apos;s Inner Oni]</a>
+  </p>
+  <pre><code>redTime = 1038
+beatLength = 297.029702970297
+
+stableビートスナップのretTiming:
+1038
+→ 740.970297029703
+→ 443.940594059406
+→ 146.910891089109
+→ -150.11881188118804</code></pre>
+</div>
+
+<h3>00:53:538 / 1/4 snap</h3>
+
+<pre><code>snapLength = 297.029702970297 / 4
+           = 74.25742574257426
+
+stable再スナップ:
+    redTimeから直接計算
+    snapTime = 53538
+    conv.i4 = 53538
+
+stableビートスナップ:
+    retTimingから候補を計算
+    rawCandidate = 53537.99999999999
+    conv.i4 = 53537</code></pre>
+
+<div class="example-result">
+  <div><span>stable再スナップ</span><strong class="good">53538</strong></div>
+  <div><span>stableビートスナップ</span><strong class="difference">53537</strong></div>
+  <div><span>差</span><strong class="difference">-1 ms</strong></div>
+</div>
+
+<h3>00:34:787 / 1/8 snap</h3>
+
+<pre><code>stable再スナップ = 34788
+stableビートスナップのrawCandidate = 34787.99999999999
+stableビートスナップのconv.i4後 = 34787</code></pre>
+
+<p>
+  この場合、譜面上の<code>34787</code>はビートスナップ時刻には一致しますが、再スナップを実行すると<code>34788</code>へ移動します。
+  これは画面表示の誤差ではなく、整数化される前の実値と整数化位置の違いです。
+</p>
+
+<h2 id="lazer-internal-match">6. lazerでは再スナップ時刻とビートスナップ時刻がほとんど一致する</h2>
+
+<p>
+  lazerでは2つのメソッドの役割は異なります。
+  再スナップは「最も近いsnap番号」、ビートスナップ移動は「操作方向のsnap番号」を選びます。
+  しかし、選択後の時刻生成はどちらも次の形です。
+</p>
+
+<pre><code>timingPoint.Time + snapIndex * (beatLength / beatDivisor)</code></pre>
+
+<div class="section section-green">
+  <ul>
+    <li>同じtiming point時刻を原点にする。</li>
+    <li>同じ<code>beatLength / beatDivisor</code>を使う。</li>
+    <li>同じ「原点 + snap番号 × snap間隔」で候補時刻を作る。</li>
+    <li>候補を途中で整数msへ切り捨てない。</li>
+  </ul>
+</div>
+
+<p>
+  したがって、同じsnap番号を指している限り、再スナップとビートスナップ移動は同じ<code>double</code>時刻になります。
+  timing point境界、負時刻、操作方向による次／前の選択などでは制御フローが異なりますが、
+  通常のtiming区間内で「そのsnap番号が何msか」を比較すると、ほとんど一致します。
+</p>
+
+<h2 id="wheel-client-difference">7. stableとlazerではビートスナップ時刻が1msずれることがある</h2>
+
+<p>
+  stableとlazerは、ビートスナップ候補の時刻を作る段階から異なります。
+</p>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>比較点</th>
+        <th>osu!stable</th>
+        <th>osu!lazer</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>最初の正時刻の赤線</td>
+        <td>beat lengthを繰り返し引いて0以下のretTimingへ延長</td>
+        <td>timing pointの時刻をそのまま原点にする</td>
+      </tr>
+      <tr>
+        <td>候補時刻</td>
+        <td>retTimingから前後2候補を作る</td>
+        <td>timing pointから方向別のsnap番号を直接計算</td>
+      </tr>
+      <tr>
+        <td>整数化</td>
+        <td>各候補へ<code>conv.i4</code>を適用してから選択</td>
+        <td>整数化せず<code>double</code>のままシーク</td>
+      </tr>
+      <tr>
+        <td>誤差の影響</td>
+        <td><code>N - ε</code>が<code>N - 1</code>へ落ちる</td>
+        <td><code>N - ε</code>でもdouble値として保持される</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+  Charlotte&apos;s Inner Oniでは、次の差が確認できます。
+</p>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>譜面時刻</th>
+        <th>snap</th>
+        <th>stableビートスナップ</th>
+        <th>lazer snap / 通常のビートスナップ位置</th>
+        <th>判定</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>00:34:787</code></td>
+        <td>1/8</td>
+        <td>34787</td>
+        <td>34788</td>
+        <td class="difference">stableのみ一致</td>
+      </tr>
+      <tr>
+        <td><code>00:53:538</code></td>
+        <td>1/4</td>
+        <td>53537</td>
+        <td>53538</td>
+        <td class="difference">lazerのみ一致</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+  Modding Helperの「osu!stable ビートスナップ時刻判定」は、このstable固有の整数候補とlazerの通常snap時刻を分離して比較しています。
+  lazerのビートスナップ移動には方向・timing point境界の追加処理がありますが、通常区間での候補時刻はlazer再スナップと同じsnap集合です。
+</p>
+
+<h2 id="resnap-client-difference">8. stableとlazerでは再スナップ時刻にも差が生まれる可能性がある</h2>
+
+<p>
+  再スナップの基本形は両方とも「最寄りのsnap番号を選び、赤線から掛け算で時刻を作る」です。
+  ただし完全に同じではありません。
+</p>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>処理</th>
+        <th>osu!stable</th>
+        <th>osu!lazer</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>ratio</td>
+        <td><code>(objectTime - redTime) / snapLength</code></td>
+        <td><code>(Max(objectTime, 0) - redTime) / snapLength</code></td>
+      </tr>
+      <tr>
+        <td>中央値の丸め</td>
+        <td><code>Math.Round</code> — ToEven</td>
+        <td><code>Math.Round(..., AwayFromZero)</code></td>
+      </tr>
+      <tr>
+        <td>最終結果</td>
+        <td><code>double</code>を返した直後に<code>conv.i4</code></td>
+        <td><code>double</code>のまま保持</td>
+      </tr>
+      <tr>
+        <td>負のsnap時刻</td>
+        <td>lazerと同じ正時刻補正はない</td>
+        <td>負ならsnapLengthを1つ加える</td>
+      </tr>
+      <tr>
+        <td>直後のtiming point</td>
+        <td>解析した再スナップ式では現在の赤線を基準にする</td>
+        <td>直後のtiming pointが近ければその時刻を選べる</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h3>ToEvenとAwayFromZero</h3>
+
+<pre><code>ratio = 10.5
+
+stable:
+    Math.Round(10.5) = 10
+    // 偶数側
+
+lazer:
+    Math.Round(10.5, AwayFromZero) = 11
+    // 0から遠い側</code></pre>
+
+<p>
+  この差は、ratioが厳密に<code>x.5</code>になった場合だけsnap番号へ影響します。
+  通常は1snap分の差になるため、一般的なBPMでは「1ms差」より大きな差になります。
+  ただし、極端に短いsnap間隔、負時刻、timing point境界、最終整数化との組み合わせでは、整数表示上の差が1msになる可能性もあります。
+</p>
+
+<div class="section">
+  <strong>通常の正時刻では：</strong>
+  ratioが中央値でなければ、ToEvenとAwayFromZeroは同じsnap番号を返します。
+  そのためstableとlazerの再スナップ時刻はほとんど一致します。
+  Charlotte&apos;s Inner Oniの<code>00:34:787</code>も、両クライアントの再スナップ先は<code>34788</code>です。
+</div>
+
+<div class="notes">
+  <div class="notes-title">まとめ</div>
+  <strong>同じsnapという概念を使っていても、3種類の時刻は別メソッドです。</strong><br>
+  stableではビートスナップ候補の早い段階で整数化するため、再スナップやlazerと1msずれる例が現れます。<br>
+  lazerでは再スナップとビートスナップ移動が同じ原点・同じ掛け算でdouble時刻を作るため、同じsnap番号ならほとんど一致します。<br>
+  stableとlazerの再スナップにも丸め規則などの差はありますが、通常の正時刻では影響する条件が限定されています。
+</div>
+
+</body>
+</html>
