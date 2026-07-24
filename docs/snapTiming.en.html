@@ -390,7 +390,7 @@
 
 <div class="section section-yellow">
   <strong>Important:</strong>
-  A grid line visually overlapping an object, resnap moving to an integer time, and beat-snap navigation with the mouse wheel or arrow keys displaying that same integer are three separate observations.
+  A grid line visually overlapping an object, resnap moving to an integer time, and the beat-snap time displayed after using the mouse wheel or arrow keys are three separate observations.
 </div>
 
 <h2 id="sources">2. Analysis methods and sources</h2>
@@ -401,7 +401,7 @@
     <div class="source-title">Reverse engineering osu!.exe</div>
     <p>
       osu!stable is not open source, so the editor paths were followed in disassembled IL.
-      The resnap analysis centres on method <code>0600347E</code> and its caller; the beat-snap navigation analysis centres on <code>06003484</code>.
+      The resnap analysis centres on method <code>0600347E</code> and its caller; the analysis of the beat-snap time calculation centres on <code>06003484</code>.
       The positions of <code>float64</code> operations, <code>Math.Round</code>, and <code>conv.i4</code> were included.
     </p>
     <p class="muted">Method IDs and obfuscated names are specific to the analysed build.</p>
@@ -415,7 +415,7 @@
       <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/Compose/Components/Timeline/TimelineTickDisplay.cs" target="_blank" rel="noopener noreferrer">TimelineTickDisplay.cs</a> — grid rendering</li>
       <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Beatmaps/ControlPoints/ControlPointInfo.cs" target="_blank" rel="noopener noreferrer">ControlPointInfo.cs</a> — closest snapped time</li>
       <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorBeatmap.cs" target="_blank" rel="noopener noreferrer">EditorBeatmap.cs</a> — resnap all objects</li>
-      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorClock.cs" target="_blank" rel="noopener noreferrer">EditorClock.cs</a> — beat-snap navigation</li>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorClock.cs" target="_blank" rel="noopener noreferrer">EditorClock.cs</a> — beat-snap time calculation</li>
     </ul>
   </div>
 </div>
@@ -542,7 +542,7 @@ return snapTime  // double</code></pre>
 <h3><span class="tag">lazer 3</span>Beat-snap time</h3>
 
 <p>
-  Lazer does not directly call the resnap helper for beat-snap navigation.
+  Lazer does not directly call the resnap helper when calculating the beat-snap time.
   It uses <code>Floor</code> when moving forward and <code>Ceiling</code> when moving backward.
   Once the directional snap index is selected, however, it builds the timestamp with the same origin and multiplication used by resnap.
 </p>
@@ -567,7 +567,7 @@ seekTime = timingPoint.Time + snapIndex * seekAmount</code></pre>
 
 <p>
   Stable uses a different origin and integer-conversion order in the two operations.
-  A mathematically integral snap can therefore become an exact integer in resnap but an integer-minus-epsilon in the beat-snap navigation path.
+  A mathematically integral snap can therefore become an exact integer in resnap but an integer-minus-epsilon in the beat-snap time calculation.
 </p>
 
 <div class="section section-red">
@@ -616,7 +616,7 @@ stable beat-snap after conv.i4 = 34787</code></pre>
 <h2 id="lazer-internal-match">6. Lazer resnap and beat-snap times usually agree</h2>
 
 <p>
-  The two methods choose an index differently—nearest for resnap, directional for beat-snap navigation—but use the same timestamp construction:
+  The two methods choose an index differently—nearest for resnap, directional for the beat-snap time calculation—but use the same timestamp construction:
 </p>
 
 <pre><code>timingPoint.Time + snapIndex * (beatLength / beatDivisor)</code></pre>
@@ -773,8 +773,8 @@ lazer:
 <div class="notes">
   <div class="notes-title">Summary</div>
   The three values are separate methods even though they describe the same snap concept.<br>
-  Stable&apos;s early integer conversion during beat-snap navigation creates common 1 ms differences from stable resnap and lazer.<br>
-  Lazer&apos;s resnap and beat-snap navigation paths construct double timestamps from the same origin and multiplication, so the same snap index usually gives the same time.<br>
+  Stable&apos;s early integer conversion during the beat-snap time calculation creates common 1 ms differences from stable resnap and lazer.<br>
+  Lazer calculates resnap and beat-snap times as <code>double</code> timestamps from the same origin and multiplication, so the same snap index usually gives the same time.<br>
   Stable and lazer resnap also differ in rounding and boundary handling, but those differences affect a narrower set of ordinary positive timestamps.
 </div>
 

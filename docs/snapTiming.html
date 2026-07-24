@@ -466,7 +466,7 @@
     <div class="source-title">osu!.exeのリバースエンジニアリング</div>
     <p>
       osu!stableはソースコードが公開されていないため、osu!.exeを逆アセンブルしたILからeditorの処理を追跡しました。
-      再スナップではメソッドID <code>0600347E</code>と呼び出し元、ビートスナップ移動では<code>06003484</code>を中心に、<code>float64</code>、<code>Math.Round</code>、<code>conv.i4</code>の位置まで確認しています。
+      再スナップではメソッドID <code>0600347E</code>と呼び出し元、ビートスナップ時刻の算出処理では<code>06003484</code>を中心に、<code>float64</code>、<code>Math.Round</code>、<code>conv.i4</code>の位置まで確認しています。
     </p>
     <p class="muted">
       メソッドIDと難読化名は解析対象build固有です。将来のstable buildや別buildで同じ番号になる保証はありません。
@@ -484,7 +484,7 @@
       <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/Compose/Components/Timeline/TimelineTickDisplay.cs" target="_blank" rel="noopener noreferrer">TimelineTickDisplay.cs</a> — グリッド描画</li>
       <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Beatmaps/ControlPoints/ControlPointInfo.cs" target="_blank" rel="noopener noreferrer">ControlPointInfo.cs</a> — 最寄りsnap時刻</li>
       <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorBeatmap.cs" target="_blank" rel="noopener noreferrer">EditorBeatmap.cs</a> — 全ノーツ再スナップ</li>
-      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorClock.cs" target="_blank" rel="noopener noreferrer">EditorClock.cs</a> — ビートスナップ移動</li>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorClock.cs" target="_blank" rel="noopener noreferrer">EditorClock.cs</a> — ビートスナップ時刻の算出</li>
     </ul>
   </div>
 </div>
@@ -543,7 +543,7 @@ integerTime = conv.i4(snapTime)</code></pre>
 <h3><span class="tag">stable 3</span>ビートスナップ時刻</h3>
 
 <p>
-  ビートスナップ移動は再スナップとは別メソッドです。
+  ビートスナップ時刻の算出処理は再スナップとは別メソッドです。
   特に、最初の赤線が正時刻にある場合は、beat lengthを繰り返し減算して0以下まで延長した<code>retTiming</code>を計算開始点にします。
   2本目以降の赤線では、その赤線時刻が基準になります。
 </p>
@@ -632,7 +632,7 @@ return snapTime  // double</code></pre>
 <h3><span class="tag">lazer 3</span>ビートスナップ時刻</h3>
 
 <p>
-  lazerのビートスナップ移動は再スナップ関数を直接呼びません。
+  lazerのビートスナップ時刻の算出処理は再スナップ関数を直接呼びません。
   前進では<code>Floor</code>、後退では<code>Ceiling</code>を使い、操作方向にあるsnap番号を選択します。
   ただし、選んだsnap番号から時刻を作る式は再スナップと同じです。
 </p>
@@ -717,7 +717,7 @@ stableビートスナップのconv.i4後 = 34787</code></pre>
 
 <p>
   lazerでは2つのメソッドの役割は異なります。
-  再スナップは「最も近いsnap番号」、ビートスナップ移動は「操作方向のsnap番号」を選びます。
+  再スナップは「最も近いsnap番号」、ビートスナップ時刻の算出処理は「操作方向のsnap番号」を選びます。
   しかし、選択後の時刻生成はどちらも次の形です。
 </p>
 
@@ -733,7 +733,7 @@ stableビートスナップのconv.i4後 = 34787</code></pre>
 </div>
 
 <p>
-  したがって、同じsnap番号を指している限り、再スナップとビートスナップ移動は同じ<code>double</code>時刻になります。
+  したがって、同じsnap番号を指している限り、再スナップ時刻とビートスナップ時刻は同じ<code>double</code>時刻になります。
   timing point境界、負時刻、操作方向による次／前の選択などでは制御フローが異なりますが、
   通常のtiming区間内で「そのsnap番号が何msか」を比較すると、ほとんど一致します。
 </p>
@@ -814,7 +814,7 @@ stableビートスナップのconv.i4後 = 34787</code></pre>
 
 <p>
   Modding Helperの「osu!stable ビートスナップ時刻判定」は、このstable固有の整数候補とlazerの通常snap時刻を分離して比較しています。
-  lazerのビートスナップ移動には方向・timing point境界の追加処理がありますが、通常区間での候補時刻はlazer再スナップと同じsnap集合です。
+  lazerのビートスナップ時刻の算出処理には方向・timing point境界の追加処理がありますが、通常区間での候補時刻はlazer再スナップと同じsnap集合です。
 </p>
 
 <h2 id="resnap-client-difference">8. stableとlazerでは再スナップ時刻にも差が生まれる可能性がある</h2>
@@ -892,7 +892,7 @@ lazer:
   <div class="notes-title">まとめ</div>
   <strong>同じsnapという概念を使っていても、3種類の時刻は別メソッドです。</strong><br>
   stableではビートスナップ候補の早い段階で整数化するため、再スナップやlazerと1msずれる例が現れます。<br>
-  lazerでは再スナップとビートスナップ移動が同じ原点・同じ掛け算でdouble時刻を作るため、同じsnap番号ならほとんど一致します。<br>
+  lazerでは再スナップ時刻とビートスナップ時刻を同じ原点・同じ掛け算から<code>double</code>として算出するため、同じsnap番号ならほとんど一致します。<br>
   stableとlazerの再スナップにも丸め規則などの差はありますが、通常の正時刻では影響する条件が限定されています。
 </div>
 
