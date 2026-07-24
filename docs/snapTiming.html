@@ -378,9 +378,9 @@
 
 <p class="lead">
   osu!editorで「snap位置」と呼ばれるものには、実際には
-  <strong>タイムライングリッド描画時刻</strong>、
   <strong>再スナップ時刻</strong>、
-  <strong>ビートスナップ時刻</strong>
+  <strong>グリッド描画時刻</strong>、
+  <strong>グリッド時刻</strong>
   という別々の時刻があります。
   同じ赤線とbeat snap divisorを基準にしていても、計算開始点、snap番号の選び方、浮動小数点演算の順序、整数化の位置が異なるため、常に同じ整数msになるとは限りません。
 </p>
@@ -388,17 +388,17 @@
 <div class="summary-grid">
   <div class="summary-card">
     <div class="summary-label">時刻 1</div>
-    <div class="summary-value">タイムライングリッド描画</div>
-    <div class="summary-description">画面にbeat線を置くための描画座標です。整数のノーツ時刻を決める処理ではありません。</div>
-  </div>
-  <div class="summary-card">
-    <div class="summary-label">時刻 2</div>
-    <div class="summary-value">再スナップ</div>
+    <div class="summary-value">再スナップ時刻</div>
     <div class="summary-description">「すべてのノーツを再スナップする」が、ノーツを移動させる先の時刻です。</div>
   </div>
   <div class="summary-card">
+    <div class="summary-label">時刻 2</div>
+    <div class="summary-value">グリッド描画時刻</div>
+    <div class="summary-description">画面にbeat線を置くための描画座標です。整数のノーツ時刻を決める処理ではありません。</div>
+  </div>
+  <div class="summary-card">
     <div class="summary-label">時刻 3</div>
-    <div class="summary-value">ビートスナップ時刻</div>
+    <div class="summary-value">グリッド時刻</div>
     <div class="summary-description">マウスホイールや左右キーで前後のbeatへ移動したとき、editorの現在位置になる時刻です。</div>
   </div>
 </div>
@@ -412,7 +412,7 @@
     <li><a href="#lazer">osu!lazerの計算</a></li>
     <li><a href="#stable-internal-difference">stable内部での1ms差</a></li>
     <li><a href="#lazer-internal-match">lazer内部で一致しやすい理由</a></li>
-    <li><a href="#wheel-client-difference">stable / lazerビートスナップ間の1ms差</a></li>
+    <li><a href="#wheel-client-difference">stable / lazerのグリッド時刻の1ms差</a></li>
     <li><a href="#resnap-client-difference">stable / lazer再スナップ間の差</a></li>
   </ol>
 </nav>
@@ -431,19 +431,19 @@
     </thead>
     <tbody>
       <tr>
-        <td><strong>タイムライングリッド描画時刻</strong></td>
-        <td>画面上にbeat線・小節線を描く</td>
-        <td>決めない。描画座標として保持する</td>
-        <td>表示範囲の影響を受ける</td>
-      </tr>
-      <tr>
         <td><strong>再スナップ時刻</strong></td>
         <td>ノーツ開始・終了時刻を選択中のdivisorへ移動する</td>
         <td>stableは最終的に整数化。lazerは内部ではdouble</td>
         <td>元ノーツ時刻から最も近いsnapを選ぶ</td>
       </tr>
       <tr>
-        <td><strong>ビートスナップ時刻</strong></td>
+        <td><strong>グリッド描画時刻</strong></td>
+        <td>画面上にbeat線・小節線を描く</td>
+        <td>決めない。描画座標として保持する</td>
+        <td>表示範囲の影響を受ける</td>
+      </tr>
+      <tr>
+        <td><strong>グリッド時刻</strong></td>
         <td>現在位置を前または後のsnapへ移動する</td>
         <td>stableは整数候補を作る。lazerはdoubleのまま</td>
         <td>前進・後退の方向とtiming point境界の影響を受ける</td>
@@ -466,7 +466,7 @@
     <div class="source-title">osu!.exeのリバースエンジニアリング</div>
     <p>
       osu!stableはソースコードが公開されていないため、osu!.exeを逆アセンブルしたILからeditorの処理を追跡しました。
-      再スナップではメソッドID <code>0600347E</code>と呼び出し元、ビートスナップ時刻の算出処理では<code>06003484</code>を中心に、<code>float64</code>、<code>Math.Round</code>、<code>conv.i4</code>の位置まで確認しています。
+      再スナップではメソッドID <code>0600347E</code>と呼び出し元、グリッド時刻の算出処理では<code>06003484</code>を中心に、<code>float64</code>、<code>Math.Round</code>、<code>conv.i4</code>の位置まで確認しています。
     </p>
     <p class="muted">
       メソッドIDと難読化名は解析対象build固有です。将来のstable buildや別buildで同じ番号になる保証はありません。
@@ -481,10 +481,10 @@
       このページのリンクは、調査時点の同一commitへ固定しています。
     </p>
     <ul>
-      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/Compose/Components/Timeline/TimelineTickDisplay.cs" target="_blank" rel="noopener noreferrer">TimelineTickDisplay.cs</a> — グリッド描画</li>
       <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Beatmaps/ControlPoints/ControlPointInfo.cs" target="_blank" rel="noopener noreferrer">ControlPointInfo.cs</a> — 最寄りsnap時刻</li>
       <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorBeatmap.cs" target="_blank" rel="noopener noreferrer">EditorBeatmap.cs</a> — 全ノーツ再スナップ</li>
-      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorClock.cs" target="_blank" rel="noopener noreferrer">EditorClock.cs</a> — ビートスナップ時刻の算出</li>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/Compose/Components/Timeline/TimelineTickDisplay.cs" target="_blank" rel="noopener noreferrer">TimelineTickDisplay.cs</a> — グリッド描画</li>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorClock.cs" target="_blank" rel="noopener noreferrer">EditorClock.cs</a> — グリッド時刻の算出</li>
     </ul>
   </div>
 </div>
@@ -497,26 +497,7 @@
 
 <h2 id="stable">3. osu!stableにおける3種類の計算</h2>
 
-<h3><span class="tag">stable 1</span>タイムライングリッド描画時刻</h3>
-
-<p>
-  stableのタイムライングリッドは、表示範囲の左端より前にあるbeat位置を描画開始点として求め、そこから<code>snapLength</code>を繰り返し加算して線を生成します。
-  グリッド位置は浮動小数のまま描画へ渡され、ノーツ時刻のような整数msへは変換されません。
-</p>
-
-<pre><code>gridTime = 画面左端より前にあるbeat位置
-
-while (gridTime &lt; 画面右端):
-    gridTimeに線を描画
-    gridTime += beatLength / beatSnap</code></pre>
-
-<p>
-  したがって、丸め規則は「整数msへの四捨五入」ではありません。
-  主な誤差要因は、繰り返し加算による微小な浮動小数点誤差と、その値を画面座標へ変換するときの精度です。
-  また、開始点が表示範囲に依存するため、再スナップ時刻を求める処理の基準にはできません。
-</p>
-
-<h3><span class="tag">stable 2</span>再スナップ時刻</h3>
+<h3><span class="tag">stable 1</span>再スナップ時刻</h3>
 
 <p>
   「タイミング」→「すべてのノーツを再スナップする」では、元ノーツ時刻に最も近いsnap番号を求め、その番号から時刻を直接計算します。
@@ -540,10 +521,29 @@ integerTime = conv.i4(snapTime)</code></pre>
   <code>snapTime = 53537.999...</code>なら<code>53537</code>になります。
 </p>
 
-<h3><span class="tag">stable 3</span>ビートスナップ時刻</h3>
+<h3><span class="tag">stable 2</span>グリッド描画時刻</h3>
 
 <p>
-  ビートスナップ時刻の算出処理は再スナップとは別メソッドです。
+  stableのタイムライングリッドは、表示範囲の左端より前にあるbeat位置を描画開始点として求め、そこから<code>snapLength</code>を繰り返し加算して線を生成します。
+  グリッド位置は浮動小数のまま描画へ渡され、ノーツ時刻のような整数msへは変換されません。
+</p>
+
+<pre><code>gridTime = 画面左端より前にあるbeat位置
+
+while (gridTime &lt; 画面右端):
+    gridTimeに線を描画
+    gridTime += beatLength / beatSnap</code></pre>
+
+<p>
+  したがって、丸め規則は「整数msへの四捨五入」ではありません。
+  主な誤差要因は、繰り返し加算による微小な浮動小数点誤差と、その値を画面座標へ変換するときの精度です。
+  また、開始点が表示範囲に依存するため、再スナップ時刻を求める処理の基準にはできません。
+</p>
+
+<h3><span class="tag">stable 3</span>グリッド時刻</h3>
+
+<p>
+  グリッド時刻の算出処理は再スナップとは別メソッドです。
   特に、最初の赤線が正時刻にある場合は、beat lengthを繰り返し減算して0以下まで延長した<code>retTiming</code>を計算開始点にします。
   2本目以降の赤線では、その赤線時刻が基準になります。
 </p>
@@ -576,30 +576,7 @@ seekTime = targetTimeに近い方
 
 <h2 id="lazer">4. osu!lazerにおける3種類の計算</h2>
 
-<h3><span class="tag">lazer 1</span>タイムライングリッド描画時刻</h3>
-
-<p>
-  lazerのタイムラインも、各timing pointから次のtiming pointまで<code>snapLength</code>を繰り返し加算してtickを生成します。
-  ループ変数<code>t</code>は<code>double</code>で、描画用のX位置へ渡すときに<code>float</code>へ変換されます。
-</p>
-
-<pre><code>for each timingPoint:
-    until = 次のtimingPoint.Time または曲の終端
-
-    for (double t = timingPoint.Time;
-         t &lt; until;
-         t += timingPoint.BeatLength / beatDivisor):
-        float xPosition = (float)t
-        tickを描画</code></pre>
-
-<p>
-  これは再スナップ用の<code>GetClosestSnappedTime()</code>を呼ぶ処理ではありません。
-  詳細は
-  <a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/Compose/Components/Timeline/TimelineTickDisplay.cs" target="_blank" rel="noopener noreferrer">TimelineTickDisplay.cs</a>
-  の<code>createTicks()</code>で確認できます。
-</p>
-
-<h3><span class="tag">lazer 2</span>再スナップ時刻</h3>
+<h3><span class="tag">lazer 1</span>再スナップ時刻</h3>
 
 <p>
   lazerの全ノーツ再スナップは<code>EditorBeatmap.SnapAllHitObjectsToCurrentDivisor()</code>から<code>SnapTime()</code>を呼び、
@@ -629,10 +606,33 @@ return snapTime  // double</code></pre>
   <a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorBeatmap.cs" target="_blank" rel="noopener noreferrer">EditorBeatmap.cs</a>
 </p>
 
-<h3><span class="tag">lazer 3</span>ビートスナップ時刻</h3>
+<h3><span class="tag">lazer 2</span>グリッド描画時刻</h3>
 
 <p>
-  lazerのビートスナップ時刻の算出処理は再スナップ関数を直接呼びません。
+  lazerのタイムラインも、各timing pointから次のtiming pointまで<code>snapLength</code>を繰り返し加算してtickを生成します。
+  ループ変数<code>t</code>は<code>double</code>で、描画用のX位置へ渡すときに<code>float</code>へ変換されます。
+</p>
+
+<pre><code>for each timingPoint:
+    until = 次のtimingPoint.Time または曲の終端
+
+    for (double t = timingPoint.Time;
+         t &lt; until;
+         t += timingPoint.BeatLength / beatDivisor):
+        float xPosition = (float)t
+        tickを描画</code></pre>
+
+<p>
+  これは再スナップ用の<code>GetClosestSnappedTime()</code>を呼ぶ処理ではありません。
+  詳細は
+  <a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/Compose/Components/Timeline/TimelineTickDisplay.cs" target="_blank" rel="noopener noreferrer">TimelineTickDisplay.cs</a>
+  の<code>createTicks()</code>で確認できます。
+</p>
+
+<h3><span class="tag">lazer 3</span>グリッド時刻</h3>
+
+<p>
+  lazerのグリッド時刻の算出処理は再スナップ関数を直接呼びません。
   前進では<code>Floor</code>、後退では<code>Ceiling</code>を使い、操作方向にあるsnap番号を選択します。
   ただし、選んだsnap番号から時刻を作る式は再スナップと同じです。
 </p>
@@ -657,7 +657,7 @@ seekTime = timingPoint.Time + snapIndex * seekAmount</code></pre>
   の<code>seek()</code>で確認できます。
 </p>
 
-<h2 id="stable-internal-difference">5. stableでは再スナップ時刻とビートスナップ時刻が1msずれることがある</h2>
+<h2 id="stable-internal-difference">5. stableでは再スナップ時刻とグリッド時刻が1msずれることがある</h2>
 
 <p>
   stableでは、両処理が異なる計算開始点と異なる整数化順序を使います。
@@ -673,7 +673,7 @@ seekTime = timingPoint.Time + snapIndex * seekAmount</code></pre>
   <pre><code>redTime = 1038
 beatLength = 297.029702970297
 
-stableビートスナップのretTiming:
+stableグリッド時刻のretTiming:
 1038
 → 740.970297029703
 → 443.940594059406
@@ -691,33 +691,33 @@ stable再スナップ:
     snapTime = 53538
     conv.i4 = 53538
 
-stableビートスナップ:
+stableグリッド時刻:
     retTimingから候補を計算
     rawCandidate = 53537.99999999999
     conv.i4 = 53537</code></pre>
 
 <div class="example-result">
   <div><span>stable再スナップ</span><strong class="good">53538</strong></div>
-  <div><span>stableビートスナップ</span><strong class="difference">53537</strong></div>
+  <div><span>stableグリッド時刻</span><strong class="difference">53537</strong></div>
   <div><span>差</span><strong class="difference">-1 ms</strong></div>
 </div>
 
 <h3>00:34:787 / 1/8 snap</h3>
 
 <pre><code>stable再スナップ = 34788
-stableビートスナップのrawCandidate = 34787.99999999999
-stableビートスナップのconv.i4後 = 34787</code></pre>
+stableグリッド時刻のrawCandidate = 34787.99999999999
+stableグリッド時刻のconv.i4後 = 34787</code></pre>
 
 <p>
-  この場合、譜面上の<code>34787</code>はビートスナップ時刻には一致しますが、再スナップを実行すると<code>34788</code>へ移動します。
+  この場合、譜面上の<code>34787</code>はグリッド時刻には一致しますが、再スナップを実行すると<code>34788</code>へ移動します。
   これは画面表示の誤差ではなく、整数化される前の実値と整数化位置の違いです。
 </p>
 
-<h2 id="lazer-internal-match">6. lazerでは再スナップ時刻とビートスナップ時刻がほとんど一致する</h2>
+<h2 id="lazer-internal-match">6. lazerでは再スナップ時刻とグリッド時刻がほとんど一致する</h2>
 
 <p>
   lazerでは2つのメソッドの役割は異なります。
-  再スナップは「最も近いsnap番号」、ビートスナップ時刻の算出処理は「操作方向のsnap番号」を選びます。
+  再スナップは「最も近いsnap番号」、グリッド時刻の算出処理は「操作方向のsnap番号」を選びます。
   しかし、選択後の時刻生成はどちらも次の形です。
 </p>
 
@@ -733,15 +733,15 @@ stableビートスナップのconv.i4後 = 34787</code></pre>
 </div>
 
 <p>
-  したがって、同じsnap番号を指している限り、再スナップ時刻とビートスナップ時刻は同じ<code>double</code>時刻になります。
+  したがって、同じsnap番号を指している限り、再スナップ時刻とグリッド時刻は同じ<code>double</code>時刻になります。
   timing point境界、負時刻、操作方向による次／前の選択などでは制御フローが異なりますが、
   通常のtiming区間内で「そのsnap番号が何msか」を比較すると、ほとんど一致します。
 </p>
 
-<h2 id="wheel-client-difference">7. stableとlazerではビートスナップ時刻が1msずれることがある</h2>
+<h2 id="wheel-client-difference">7. stableとlazerではグリッド時刻が1msずれることがある</h2>
 
 <p>
-  stableとlazerは、ビートスナップ候補の時刻を作る段階から異なります。
+  stableとlazerは、グリッド候補の時刻を作る段階から異なります。
 </p>
 
 <div class="table-wrap">
@@ -788,8 +788,8 @@ stableビートスナップのconv.i4後 = 34787</code></pre>
       <tr>
         <th>譜面時刻</th>
         <th>snap</th>
-        <th>stableビートスナップ</th>
-        <th>lazer snap / 通常のビートスナップ位置</th>
+        <th>stableグリッド時刻</th>
+        <th>lazerグリッド時刻</th>
         <th>判定</th>
       </tr>
     </thead>
@@ -813,8 +813,8 @@ stableビートスナップのconv.i4後 = 34787</code></pre>
 </div>
 
 <p>
-  Modding Helperの「osu!stable ビートスナップ時刻判定」は、このstable固有の整数候補とlazerの通常snap時刻を分離して比較しています。
-  lazerのビートスナップ時刻の算出処理には方向・timing point境界の追加処理がありますが、通常区間での候補時刻はlazer再スナップと同じsnap集合です。
+  Modding Helperの「osu!stable グリッド時刻判定」は、このstable固有の整数候補とlazerの通常のグリッド時刻を分離して比較しています。
+  lazerのグリッド時刻の算出処理には方向・timing point境界の追加処理がありますが、通常区間での候補時刻はlazer再スナップと同じsnap集合です。
 </p>
 
 <h2 id="resnap-client-difference">8. stableとlazerでは再スナップ時刻にも差が生まれる可能性がある</h2>
@@ -891,8 +891,8 @@ lazer:
 <div class="notes">
   <div class="notes-title">まとめ</div>
   <strong>同じsnapという概念を使っていても、3種類の時刻は別メソッドです。</strong><br>
-  stableではビートスナップ候補の早い段階で整数化するため、再スナップやlazerと1msずれる例が現れます。<br>
-  lazerでは再スナップ時刻とビートスナップ時刻を同じ原点・同じ掛け算から<code>double</code>として算出するため、同じsnap番号ならほとんど一致します。<br>
+  stableではグリッド候補の早い段階で整数化するため、再スナップやlazerと1msずれる例が現れます。<br>
+  lazerでは再スナップ時刻とグリッド時刻を同じ原点・同じ掛け算から<code>double</code>として算出するため、同じsnap番号ならほとんど一致します。<br>
   stableとlazerの再スナップにも丸め規則などの差はありますが、通常の正時刻では影響する条件が限定されています。
 </div>
 

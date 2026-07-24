@@ -315,26 +315,26 @@
 
 <p class="lead">
   What the osu! editor presents as a “snap position” actually involves three separate values:
-  the <strong>timeline-grid rendering time</strong>,
-  the <strong>resnap time</strong>, and
-  the <strong>beat-snap time</strong>.
+  the <strong>resnap time</strong>,
+  the <strong>grid rendering time</strong>, and
+  the <strong>grid time</strong>.
   They share timing points and beat divisors, but do not necessarily use the same origin, operation order, rounding mode, or integer conversion.
 </p>
 
 <div class="summary-grid">
   <div class="summary-card">
     <div class="summary-label">Time 1</div>
-    <div class="summary-value">Timeline-grid rendering</div>
-    <div class="summary-description">A visual coordinate used to draw beat and bar lines. It does not decide an integer hit-object timestamp.</div>
-  </div>
-  <div class="summary-card">
-    <div class="summary-label">Time 2</div>
-    <div class="summary-value">Resnap</div>
+    <div class="summary-value">Resnap time</div>
     <div class="summary-description">The destination used by “Snap all notes to current snap divisor”.</div>
   </div>
   <div class="summary-card">
+    <div class="summary-label">Time 2</div>
+    <div class="summary-value">Grid rendering time</div>
+    <div class="summary-description">A visual coordinate used to draw beat and bar lines. It does not decide an integer hit-object timestamp.</div>
+  </div>
+  <div class="summary-card">
     <div class="summary-label">Time 3</div>
-    <div class="summary-value">Beat-snap time</div>
+    <div class="summary-value">Grid time</div>
     <div class="summary-description">The editor clock position reached when moving to the previous or next beat with the mouse wheel or arrow keys.</div>
   </div>
 </div>
@@ -348,7 +348,7 @@
     <li><a href="#lazer">osu!lazer calculations</a></li>
     <li><a href="#stable-internal-difference">1 ms differences inside stable</a></li>
     <li><a href="#lazer-internal-match">Why lazer usually agrees internally</a></li>
-    <li><a href="#wheel-client-difference">Stable/lazer beat-snap differences</a></li>
+    <li><a href="#wheel-client-difference">Stable/lazer grid-time differences</a></li>
     <li><a href="#resnap-client-difference">Stable/lazer resnap differences</a></li>
   </ol>
 </nav>
@@ -367,19 +367,19 @@
     </thead>
     <tbody>
       <tr>
-        <td><strong>Timeline-grid rendering</strong></td>
-        <td>Draw beat and bar lines</td>
-        <td>No; it remains a rendering coordinate</td>
-        <td>The visible range affects generation</td>
-      </tr>
-      <tr>
-        <td><strong>Resnap</strong></td>
+        <td><strong>Resnap time</strong></td>
         <td>Move object starts and ends to the selected divisor</td>
         <td>Stable converts to an integer; lazer stores a double internally</td>
         <td>Selects the closest snap to the old object time</td>
       </tr>
       <tr>
-        <td><strong>Beat-snap time</strong></td>
+        <td><strong>Grid rendering time</strong></td>
+        <td>Draw beat and bar lines</td>
+        <td>No; it remains a rendering coordinate</td>
+        <td>The visible range affects generation</td>
+      </tr>
+      <tr>
+        <td><strong>Grid time</strong></td>
         <td>Move the editor clock to the previous or next snap</td>
         <td>Stable constructs integer candidates; lazer retains doubles</td>
         <td>Depends on scroll direction and timing-point boundaries</td>
@@ -390,7 +390,7 @@
 
 <div class="section section-yellow">
   <strong>Important:</strong>
-  A grid line visually overlapping an object, resnap moving to an integer time, and the beat-snap time displayed after using the mouse wheel or arrow keys are three separate observations.
+  A grid line visually overlapping an object, resnap moving to an integer time, and the grid time displayed after using the mouse wheel or arrow keys are three separate observations.
 </div>
 
 <h2 id="sources">2. Analysis methods and sources</h2>
@@ -401,7 +401,7 @@
     <div class="source-title">Reverse engineering osu!.exe</div>
     <p>
       osu!stable is not open source, so the editor paths were followed in disassembled IL.
-      The resnap analysis centres on method <code>0600347E</code> and its caller; the analysis of the beat-snap time calculation centres on <code>06003484</code>.
+      The resnap analysis centres on method <code>0600347E</code> and its caller; the analysis of the grid time calculation centres on <code>06003484</code>.
       The positions of <code>float64</code> operations, <code>Math.Round</code>, and <code>conv.i4</code> were included.
     </p>
     <p class="muted">Method IDs and obfuscated names are specific to the analysed build.</p>
@@ -412,10 +412,10 @@
     <div class="source-title">Official GitHub source</div>
     <p>The following links are pinned to the commit used during this analysis.</p>
     <ul>
-      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/Compose/Components/Timeline/TimelineTickDisplay.cs" target="_blank" rel="noopener noreferrer">TimelineTickDisplay.cs</a> — grid rendering</li>
       <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Beatmaps/ControlPoints/ControlPointInfo.cs" target="_blank" rel="noopener noreferrer">ControlPointInfo.cs</a> — closest snapped time</li>
       <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorBeatmap.cs" target="_blank" rel="noopener noreferrer">EditorBeatmap.cs</a> — resnap all objects</li>
-      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorClock.cs" target="_blank" rel="noopener noreferrer">EditorClock.cs</a> — beat-snap time calculation</li>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/Compose/Components/Timeline/TimelineTickDisplay.cs" target="_blank" rel="noopener noreferrer">TimelineTickDisplay.cs</a> — grid rendering</li>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorClock.cs" target="_blank" rel="noopener noreferrer">EditorClock.cs</a> — grid time calculation</li>
     </ul>
   </div>
 </div>
@@ -429,7 +429,22 @@
 
 <h2 id="stable">3. The three osu!stable calculations</h2>
 
-<h3><span class="tag">stable 1</span>Timeline-grid rendering time</h3>
+<h3><span class="tag">stable 1</span>Resnap time</h3>
+
+<pre><code>relative = objectTime - redTime
+ratio = relative / (beatLength / beatSnap)
+snapIndex = Math.Round(ratio)
+snapTime = redTime + snapIndex * (beatLength / beatSnap)
+integerTime = conv.i4(snapTime)</code></pre>
+
+<ul>
+  <li><code>Math.Round(double)</code> uses midpoint-to-even rounding.</li>
+  <li>The snap-length division occurs separately in the ratio and final-time expressions.</li>
+  <li>The helper returns <code>float64</code>; its caller immediately applies <code>conv.i4</code>.</li>
+  <li>For normal timestamp ranges, <code>conv.i4</code> truncates towards zero.</li>
+</ul>
+
+<h3><span class="tag">stable 2</span>Grid rendering time</h3>
 
 <p>
   Stable finds a beat position before the left edge of the visible range, then repeatedly adds <code>snapLength</code> while drawing lines.
@@ -447,25 +462,10 @@ while (gridTime &lt; viewportRight):
   The viewport-dependent origin also makes this unsuitable as the definition of resnap time.
 </p>
 
-<h3><span class="tag">stable 2</span>Resnap time</h3>
-
-<pre><code>relative = objectTime - redTime
-ratio = relative / (beatLength / beatSnap)
-snapIndex = Math.Round(ratio)
-snapTime = redTime + snapIndex * (beatLength / beatSnap)
-integerTime = conv.i4(snapTime)</code></pre>
-
-<ul>
-  <li><code>Math.Round(double)</code> uses midpoint-to-even rounding.</li>
-  <li>The snap-length division occurs separately in the ratio and final-time expressions.</li>
-  <li>The helper returns <code>float64</code>; its caller immediately applies <code>conv.i4</code>.</li>
-  <li>For normal timestamp ranges, <code>conv.i4</code> truncates towards zero.</li>
-</ul>
-
-<h3><span class="tag">stable 3</span>Beat-snap time</h3>
+<h3><span class="tag">stable 3</span>Grid time</h3>
 
 <p>
-  Beat-snap navigation uses a separate method. If the first red timing point is positive, stable repeatedly subtracts its full beat length until an origin at or before zero is reached.
+  Grid time calculation uses a separate method. If the first red timing point is positive, stable repeatedly subtracts its full beat length until an origin at or before zero is reached.
 </p>
 
 <pre><code>retTiming = activeRedTime
@@ -494,28 +494,7 @@ ties select upper</code></pre>
 
 <h2 id="lazer">4. The three osu!lazer calculations</h2>
 
-<h3><span class="tag">lazer 1</span>Timeline-grid rendering time</h3>
-
-<p>
-  Lazer repeatedly adds the snap length from each timing point until the next timing point.
-  The loop variable is a <code>double</code>; it is cast to <code>float</code> for the visual X position.
-</p>
-
-<pre><code>for each timingPoint:
-    until = next timing point or track end
-
-    for (double t = timingPoint.Time;
-         t &lt; until;
-         t += timingPoint.BeatLength / beatDivisor):
-        float xPosition = (float)t
-        draw tick</code></pre>
-
-<p>
-  This path does not call <code>GetClosestSnappedTime()</code>.
-  See <a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/Compose/Components/Timeline/TimelineTickDisplay.cs" target="_blank" rel="noopener noreferrer">TimelineTickDisplay.cs</a>.
-</p>
-
-<h3><span class="tag">lazer 2</span>Resnap time</h3>
+<h3><span class="tag">lazer 1</span>Resnap time</h3>
 
 <pre><code>snapLength = timingPoint.BeatLength / beatDivisor
 beats = (Math.Max(objectTime, 0) - timingPoint.Time) / snapLength
@@ -539,10 +518,31 @@ return snapTime  // double</code></pre>
   and <a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorBeatmap.cs" target="_blank" rel="noopener noreferrer">EditorBeatmap.cs</a>.
 </p>
 
-<h3><span class="tag">lazer 3</span>Beat-snap time</h3>
+<h3><span class="tag">lazer 2</span>Grid rendering time</h3>
 
 <p>
-  Lazer does not directly call the resnap helper when calculating the beat-snap time.
+  Lazer repeatedly adds the snap length from each timing point until the next timing point.
+  The loop variable is a <code>double</code>; it is cast to <code>float</code> for the visual X position.
+</p>
+
+<pre><code>for each timingPoint:
+    until = next timing point or track end
+
+    for (double t = timingPoint.Time;
+         t &lt; until;
+         t += timingPoint.BeatLength / beatDivisor):
+        float xPosition = (float)t
+        draw tick</code></pre>
+
+<p>
+  This path does not call <code>GetClosestSnappedTime()</code>.
+  See <a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/Compose/Components/Timeline/TimelineTickDisplay.cs" target="_blank" rel="noopener noreferrer">TimelineTickDisplay.cs</a>.
+</p>
+
+<h3><span class="tag">lazer 3</span>Grid time</h3>
+
+<p>
+  Lazer does not directly call the resnap helper when calculating the grid time.
   It uses <code>Floor</code> when moving forward and <code>Ceiling</code> when moving backward.
   Once the directional snap index is selected, however, it builds the timestamp with the same origin and multiplication used by resnap.
 </p>
@@ -563,11 +563,11 @@ seekTime = timingPoint.Time + snapIndex * seekAmount</code></pre>
   See <a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Screens/Edit/EditorClock.cs" target="_blank" rel="noopener noreferrer">EditorClock.cs</a>.
 </p>
 
-<h2 id="stable-internal-difference">5. Stable resnap and beat-snap times can differ by 1 ms</h2>
+<h2 id="stable-internal-difference">5. Stable resnap and grid times can differ by 1 ms</h2>
 
 <p>
   Stable uses a different origin and integer-conversion order in the two operations.
-  A mathematically integral snap can therefore become an exact integer in resnap but an integer-minus-epsilon in the beat-snap time calculation.
+  A mathematically integral snap can therefore become an exact integer in resnap but an integer-minus-epsilon in the grid time calculation.
 </p>
 
 <div class="section section-red">
@@ -579,7 +579,7 @@ seekTime = timingPoint.Time + snapIndex * seekAmount</code></pre>
   <pre><code>redTime = 1038
 beatLength = 297.029702970297
 
-stable beat-snap retTiming:
+stable grid time retTiming:
 1038
 → 740.970297029703
 → 443.940594059406
@@ -593,30 +593,30 @@ stable beat-snap retTiming:
     snapTime = 53538
     conv.i4 = 53538
 
-stable beat-snap:
+stable grid time:
     rawCandidate = 53537.99999999999
     conv.i4 = 53537</code></pre>
 
 <div class="example-result">
   <div><span>Stable resnap</span><strong class="good">53538</strong></div>
-  <div><span>Stable beat-snap</span><strong class="difference">53537</strong></div>
+  <div><span>Stable grid time</span><strong class="difference">53537</strong></div>
   <div><span>Difference</span><strong class="difference">-1 ms</strong></div>
 </div>
 
 <h3>00:34:787 / 1/8 snap</h3>
 
 <pre><code>stable resnap = 34788
-stable beat-snap rawCandidate = 34787.99999999999
-stable beat-snap after conv.i4 = 34787</code></pre>
+stable grid time rawCandidate = 34787.99999999999
+stable grid time after conv.i4 = 34787</code></pre>
 
 <p>
-  An object at <code>34787</code> therefore matches the beat-snap time, but “resnap all notes” moves it to <code>34788</code>.
+  An object at <code>34787</code> therefore matches the grid time, but “resnap all notes” moves it to <code>34788</code>.
 </p>
 
-<h2 id="lazer-internal-match">6. Lazer resnap and beat-snap times usually agree</h2>
+<h2 id="lazer-internal-match">6. Lazer resnap and grid times usually agree</h2>
 
 <p>
-  The two methods choose an index differently—nearest for resnap, directional for the beat-snap time calculation—but use the same timestamp construction:
+  The two methods choose an index differently—nearest for resnap, directional for the grid time calculation—but use the same timestamp construction:
 </p>
 
 <pre><code>timingPoint.Time + snapIndex * (beatLength / beatDivisor)</code></pre>
@@ -635,7 +635,7 @@ stable beat-snap after conv.i4 = 34787</code></pre>
   Control flow can still differ around negative times, directional movement, and timing-point boundaries.
 </p>
 
-<h2 id="wheel-client-difference">7. Stable and lazer beat-snap times can differ by 1 ms</h2>
+<h2 id="wheel-client-difference">7. Stable and lazer grid times can differ by 1 ms</h2>
 
 <div class="table-wrap">
   <table>
@@ -677,8 +677,8 @@ stable beat-snap after conv.i4 = 34787</code></pre>
       <tr>
         <th>Map time</th>
         <th>Snap</th>
-        <th>Stable beat-snap</th>
-        <th>Lazer snap / normal beat-snap position</th>
+        <th>Stable grid time</th>
+        <th>Lazer grid time</th>
         <th>Result</th>
       </tr>
     </thead>
@@ -702,7 +702,7 @@ stable beat-snap after conv.i4 = 34787</code></pre>
 </div>
 
 <p>
-  Modding Helper&apos;s stable beat-snap time section compares these stable integer candidates with lazer&apos;s normal snap time.
+  Modding Helper&apos;s stable grid time section compares these stable integer candidates with lazer&apos;s normal grid time.
   Lazer has extra directional and boundary behaviour, but its candidate times in an ordinary timing section belong to the same snap set as lazer resnap.
 </p>
 
@@ -773,8 +773,8 @@ lazer:
 <div class="notes">
   <div class="notes-title">Summary</div>
   The three values are separate methods even though they describe the same snap concept.<br>
-  Stable&apos;s early integer conversion during the beat-snap time calculation creates common 1 ms differences from stable resnap and lazer.<br>
-  Lazer calculates resnap and beat-snap times as <code>double</code> timestamps from the same origin and multiplication, so the same snap index usually gives the same time.<br>
+  Stable&apos;s early integer conversion during the grid time calculation creates common 1 ms differences from stable resnap and lazer.<br>
+  Lazer calculates resnap and grid times as <code>double</code> timestamps from the same origin and multiplication, so the same snap index usually gives the same time.<br>
   Stable and lazer resnap also differ in rounding and boundary handling, but those differences affect a narrower set of ordinary positive timestamps.
 </div>
 
