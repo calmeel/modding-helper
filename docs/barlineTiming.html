@@ -295,50 +295,39 @@ barLength = 400 × 4 = 1600
 barLength = 419.58041958042 × 4
           = 1678.32167832168 ms</code></pre>
 </div>
-<p>最初の赤線は負の時刻にあり、その1小節後の理論位置<code>1457.32167832168 ms</code>は、次の赤線<code>1457 ms</code>を約<code>0.322 ms</code>超えています。この端数をいつ評価するかが、両クライアントの本数を分けます。</p>
-
-<h3>先に結論</h3>
-<p>負時刻に最初の赤線がある場合、両クライアントは、その赤線と同じ小節周期にある最初の生成可能な非負時刻を求めます。今回の候補は<code>1457.32167832168 ms</code>です。</p>
-<div class="table-wrap"><table><thead><tr><th>クライアント</th><th>初期候補の扱い</th><th>結果</th></tr></thead><tbody>
-  <tr><td>osu!stable</td><td>初期候補を先に描画し、その後で次の赤線へ切り替えます。描画時には<code>conv.i4</code>で整数化します。</td><td><code>1457.321... → 1457 ms</code>が1本、次の赤線由来の<code>1457 ms</code>が1本となり、合計2本です。</td></tr>
-  <tr><td>osu!lazer</td><td>初期候補が「現在の赤線から次の赤線まで」の区間内にあるかを、描画前に<code>double</code>のまま確認します。</td><td><code>1457.321... ms</code>は区間終端の<code>1457 ms</code>を超えるため除外され、次の赤線由来の1本だけです。</td></tr>
+<h3>発生メカニズム</h3>
+<p>負時刻に最初の赤線がある場合、両クライアントは、その赤線と小節周期が一致する最初の非負時刻を求めます。この時刻をここでは<strong>初期候補</strong>と呼びます。今回の初期候補<code>1457.32167832168 ms</code>は、次の赤線<code>1457 ms</code>を約<code>0.322 ms</code>超えています。</p>
+<div class="table-wrap"><table><thead><tr><th>クライアント</th><th>初期候補の扱い</th><th>今回の結果</th></tr></thead><tbody>
+  <tr><td>osu!stable</td><td>境界確認前に描画し、<code>conv.i4</code>で整数化する</td><td><code>1457.321... → 1457 ms</code>を生成</td></tr>
+  <tr><td>osu!lazer</td><td>次の赤線を区間終端として、描画前に<code>double</code>で比較する</td><td><code>1457.321... &gt; 1457</code>のため除外</td></tr>
 </tbody></table></div>
-<div class="section section-green"><strong>一言で表すと：</strong>stableは初期候補を先に描画してから次の赤線を確認します。lazerは初期候補が次の赤線までの区間内か確認してから描画します。</div>
-<p>したがって、stableで完全な二重小節線になる条件は、初期候補の生の値が次の赤線と完全一致することではなく、<strong><code>conv.i4(初期候補) = 次の赤線時刻</code></strong>となることです。</p>
+<div class="section section-green"><strong>両者の違い：</strong>stableは初期候補を先に描画してから次の赤線を確認します。lazerは初期候補が次の赤線までの区間内にあるか確認してから描画します。</div>
 
-<h3><span class="tag">stable</span>描画後に次の赤線との境界を判定する</h3>
-<pre><code>最初の開始位置:
-    t = -221
-        - trunc(-221 / 1678.32167832168)
-          × 1678.32167832168
-      = -221
+<h3><span class="tag">stable</span>初期候補の後に時刻が戻る</h3>
+<pre><code>初期候補:
+    -221 + 1678.32167832168
+    = 1457.32167832168
 
-    t &lt; 0 なので:
-    t += 1678.32167832168
-      = 1457.32167832168
+1. 初期候補を先に描画
+   conv.i4(1457.32167832168) = 1457
+   → -221 msの赤線由来として1本
 
-1回目のループ:
-    currentRed = -221の赤線
-    conv.i4(1457.32167832168) = 1457
-    → 前区間由来の小節線を1457 msに1本生成
+2. 小節長を加算
+   t = 3135.64335664336
+   t &gt;= 次の赤線1457
+   → 次の赤線へ切り替え、tを1457へ戻す
 
-    t += 1678.32167832168
-      = 3135.64335664336
-    3135.64335664336 &gt;= 次の赤線1457
-    → 次の赤線へ切り替え、t = 1457
-
-2回目のループ:
-    currentRed = 1457の赤線
-    conv.i4(1457) = 1457
-    → 新区間由来の小節線を1457 msに1本生成</code></pre>
+3. 次の赤線由来として1457 msに1本</code></pre>
 <div class="example-result">
   <div><span>最初の赤線由来</span><strong class="difference">1本</strong></div>
   <div><span>次の赤線由来</span><strong class="difference">1本</strong></div>
   <div><span>stable 合計</span><strong class="difference">2本</strong></div>
 </div>
-<p>stableは現在の候補を描いたあと、小節長を加えた<strong>次回候補</strong>で赤線の切替を判定します。そのため、正の剰余へ正規化した初期候補<code>1457.321... ms</code>がすでに次の赤線を超えていても、1回目のループでは前区間由来として描画されます。さらに描画時の<code>conv.i4</code>で端数が切り捨てられ、次の赤線と同じ<code>1457 ms</code>に重なります。</p>
+<p>stableは初期候補を描いたあと、小節長を加えた<strong>次回候補</strong>で赤線の切替を判定します。次の赤線が初期候補より前にある場合、初期候補を生成した後で内部時刻を次の赤線まで戻すため、生成順が時間上では逆転する奇妙な減少が起こります。</p>
+<p>次の赤線で<code>OmitFirstBarLine</code>が無効なら、その赤線由来の先頭小節線も描画されます。今回の初期候補は、描画時の<code>conv.i4</code>で<code>1457.321... → 1457 ms</code>と切り捨てられるため、次の赤線由来の<code>1457 ms</code>と完全に重なります。</p>
+<div class="section section-yellow"><strong>完全な二重小節線になる条件：</strong>初期候補の生の値が次の赤線と完全一致する必要はありません。<code>conv.i4(初期候補) = 次の赤線時刻</code>なら、整数化後に2本が同時刻へ重なります。</div>
 
-<h3><span class="tag">stable</span>最初の赤線を-218 msへ動かした場合</h3>
+<h3><span class="tag">test譜面</span>最初の赤線を-218 msへ動かした場合</h3>
 <p>最初の赤線だけを<code>-221 ms</code>から<code>-218 ms</code>へ動かしても、初期候補が次の赤線より後になる構造は変わりません。ただし、前区間由来の線の正確な時刻は変わります。</p>
 <pre><code>最初の赤線:
     -218,419.58041958042,4,1,0,40,1,0
@@ -357,7 +346,7 @@ barLength = 419.58041958042 × 4
   <div><span>次の赤線由来</span><strong>1457 ms</strong></div>
   <div><span>stableでの間隔</span><strong class="difference">3 ms</strong></div>
 </div>
-<p>したがって、stableではこの変更後も近接した2本が生成されますが、計算上は<code>1457 ms</code>に2本ではなく、<code>1457 ms</code>と<code>1460 ms</code>に1本ずつです。プレイフィールド上では3 ms差が非常に小さいため、同じ位置の二重線に見える可能性があります。</p>
+<p>stableの内部的な生成順は<code>1460 → 1457 ms</code>となり、時刻が3 ms減少します。プレイフィールド上では近接した二重線に見えますが、計算上は同じ時刻の2本ではありません。</p>
 
 <h3><span class="tag">lazer</span>前区間の終端条件で超過候補を除外する</h3>
 <pre><code>generationStartTime = min(0, 408) = 0
@@ -381,7 +370,7 @@ barLength = 419.58041958042 × 4
   <div><span>次の赤線由来</span><strong>1本</strong></div>
   <div><span>lazer 合計</span><strong class="good">1本</strong></div>
 </div>
-<div class="section section-yellow"><strong>負時刻開始バグと完全な重なりは別の条件です。</strong>stableの負時刻開始バグは、正規化した初期候補に対して次の赤線との境界判定を行わず、1回だけ描画してしまうことです。元譜面で2本が完全に重なるのは、それに加えて<code>1457.321... ms</code>が<code>conv.i4</code>で次の赤線と同じ<code>1457 ms</code>へ切り捨てられるためです。最初の赤線を<code>-218 ms</code>へ動かした場合も余分な1本は残りますが、前区間由来は<code>1460 ms</code>となり、厳密には3 ms離れます。lazerは各赤線区間の開始候補を<code>double</code>のまま区間終端と比較するため、どちらの場合も超過した前区間候補を生成しません。</div>
+<div class="section section-yellow"><strong>OmitFirstBarLineの例外：</strong>次の赤線で<code>OmitFirstBarLine</code>が有効なら、その赤線由来の先頭小節線は省略されます。stableの初期候補による余分な1本は残りますが、合計は1本になります。</div>
 
 <div class="notes"><div class="notes-title">まとめ</div>
   stableは反復加算結果を<code>conv.i4</code>で切り捨てるため、再スナップ位置より小節線が1 ms前になることがあります。<br>
