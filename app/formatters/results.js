@@ -413,12 +413,17 @@ function formatBarlineNoteBarlineSeparationLines(result, t) {
 
 function formatBarlineDetachedBarlineLine(item, t) {
   const deltaSign = item.delta > 0 ? "+" : "";
+  const objectLabel = item.objectType === "slider"
+    ? t("offsetObjectSlider")
+    : item.objectType === "spinner"
+      ? t("offsetObjectSpinner")
+      : t("barlineNote");
   return (
     `<span class="result-warn">` +
     `${formatBarlineClientScope(item, t)}` +
     `${formatBarlineTimestampLink(item.barlineTime)} -> ${formatTimestampLink(item.noteTime)} | ` +
     `${escapeHtml(t("barlineGeneratedBarline"))}: ${formatBarlineSpeed(item.barlineSpeed)} px/s | ` +
-    `${escapeHtml(t("barlineNote"))}: ${formatBarlineSpeed(item.noteSpeed)} px/s | ` +
+    `${escapeHtml(objectLabel)}: ${formatBarlineSpeed(item.noteSpeed)} px/s | ` +
     `${escapeHtml(t("barlineDelta"))}: ${deltaSign}${formatBarlineSpeed(item.delta)} px/s` +
     `</span>`
   );

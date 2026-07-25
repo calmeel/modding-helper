@@ -7,13 +7,13 @@ function runBarlineCheck(text, fileName) {
   const timelines = buildBarlineTimelines(text);
   const redLines = timelines.redLines;
   const greenLines = parseSpreadGreenLines(text);
-  const noteTimes = new Set(parseSpreadCircleNoteTimes(text));
+  const scrollObjects = parseSpreadScrollObjects(text);
   const sliderMultiplier = parseSpreadDifficulty(text).sliderMultiplier;
 
   const issues = detectBarlineIssues(
     timelines,
     greenLines,
-    noteTimes,
+    scrollObjects,
     sliderMultiplier
   );
 
@@ -33,7 +33,7 @@ function parseBarlineRedLines(text) {
 function detectBarlineIssues(
   timelines,
   greenLines,
-  noteTimes,
+  scrollObjects,
   sliderMultiplier
 ) {
   const empty = {
@@ -53,7 +53,7 @@ function detectBarlineIssues(
       timelines.stable.events,
       timelines.redLines,
       greenLines,
-      noteTimes,
+      scrollObjects,
       sliderMultiplier
     ),
     detectClientBarlineIssues(
@@ -61,7 +61,7 @@ function detectBarlineIssues(
       timelines.lazer.events,
       timelines.redLines,
       greenLines,
-      noteTimes,
+      scrollObjects,
       sliderMultiplier
     )
   ];
@@ -81,6 +81,7 @@ function detectBarlineIssues(
       issue => [
         issue.barlineTime,
         issue.noteTime,
+        issue.objectType,
         normalizeBarlineIssueSpeed(issue.barlineSpeed),
         normalizeBarlineIssueSpeed(issue.noteSpeed)
       ].join("|")
@@ -90,6 +91,7 @@ function detectBarlineIssues(
       issue => [
         issue.barlineTime,
         issue.noteTime,
+        issue.objectType,
         normalizeBarlineIssueSpeed(issue.barlineSpeed),
         normalizeBarlineIssueSpeed(issue.noteSpeed)
       ].join("|")
@@ -102,7 +104,7 @@ function detectClientBarlineIssues(
   events,
   redLines,
   greenLines,
-  noteTimes,
+  scrollObjects,
   sliderMultiplier
 ) {
   const doubleBarlines = detectClientDoubleBarlines(events, client);
@@ -113,6 +115,16 @@ function detectClientBarlineIssues(
       .map(line => line.time)
       .filter(time => Number.isFinite(time))
   );
+  const objectsByTime = new Map();
+
+  for (const object of scrollObjects) {
+    if (!Number.isFinite(object.time)) continue;
+
+    if (!objectsByTime.has(object.time)) {
+      objectsByTime.set(object.time, []);
+    }
+    objectsByTime.get(object.time).push(object);
+  }
 
   for (
     const barline of getUniqueBarlineComparisonTimes(events)
@@ -126,7 +138,8 @@ function detectClientBarlineIssues(
       noteTime <= lastCandidate;
       noteTime++
     ) {
-      if (!noteTimes.has(noteTime)) continue;
+      const objectsAtTime = objectsByTime.get(noteTime);
+      if (!objectsAtTime?.length) continue;
 
       const gap = Math.abs(noteTime - barlineTime);
       if (
@@ -153,17 +166,20 @@ function detectClientBarlineIssues(
         continue;
       }
 
-      addDetachedBarlineIssue(
-        target,
-        redLines,
-        greenLines,
-        sliderMultiplier,
-        barlineTime,
-        noteTime,
-        redLineAtBarline || redLineAtNote,
-        client,
-        barline.rawTimes
-      );
+      for (const object of objectsAtTime) {
+        addDetachedBarlineIssue(
+          target,
+          redLines,
+          greenLines,
+          sliderMultiplier,
+          barlineTime,
+          noteTime,
+          object.objectType,
+          redLineAtBarline || redLineAtNote,
+          client,
+          barline.rawTimes
+        );
+      }
     }
   }
 
@@ -354,6 +370,7 @@ function addDetachedBarlineIssue(
   sliderMultiplier,
   barlineTime,
   noteTime,
+  objectType,
   redLine,
   client,
   rawBarlineTimes
@@ -382,6 +399,7 @@ function addDetachedBarlineIssue(
   detachedBarlines.push({
     barlineTime,
     noteTime,
+    objectType,
     barlineSpeed,
     noteSpeed,
     delta: noteSpeed - barlineSpeed,
