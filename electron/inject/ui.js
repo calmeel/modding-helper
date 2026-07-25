@@ -1554,9 +1554,18 @@
           var canvas = document.getElementById('spectrogramCanvas');
           var wrap   = document.getElementById('spectrogramChartWrap');
           var empty  = document.getElementById('spectrogramEmpty');
+          var colorSelect = document.getElementById('spectrogramColorSelect');
+          var seekToggle  = document.getElementById('spectrogramSeekToggle');
           if (!canvas || !wrap) return;
 
           var specData = null, specForUrl = null, computing = false;
+          /* カラーマップ: 'spek'（マグマ, 既定）/ 'alt'（レインボー）。localStorage に保存 */
+          var colorMap = 'spek';
+          try { if (localStorage.getItem('moddingHelperSpectrogramColor') === 'alt') colorMap = 'alt'; } catch (e) {}
+          if (colorSelect) colorSelect.value = colorMap;
+          /* シークバー(再生ヘッド)の表示。既定 OFF。localStorage に保存 */
+          try { spectrogramSeekOn = (localStorage.getItem('moddingHelperSpectrogramSeek') === '1'); } catch (e) {}
+          if (seekToggle) seekToggle.checked = spectrogramSeekOn;
 
           var isEn = function () {
             var le = document.getElementById('langEn');
@@ -1568,7 +1577,7 @@
           };
           var redraw = function () {
             if (!specData) return;
-            window.drawTaikoSpectrogram(canvas, specData, {});
+            window.drawTaikoSpectrogram(canvas, specData, { colorMap: colorMap });
           };
           /* 音源をデコードしてスペクトログラム行列を作る（URL が変わった時だけ） */
           var ensureComputed = function () {
@@ -1581,10 +1590,24 @@
             if (computing) return;
             computing = true;
             setEmpty(true, isEn() ? 'Analyzing audio…' : '音声を解析中…');
-            var ctx = (typeof ensureSpreadAudioCtx === 'function' && ensureSpreadAudioCtx())
-              || new (window.AudioContext || window.webkitAudioContext)();
             fetch(url).then(function (r) { return r.arrayBuffer(); })
-              .then(function (ab) { return ctx.decodeAudioData(ab); })
+              .then(function (ab) {
+                /* decodeAudioData は AudioContext のレートにリサンプルして返す。
+                   縦軸上限(ナイキスト)をファイル本来のレートで出すため、ヘッダから
+                   本来のレートを読み、そのレートの OfflineAudioContext でデコードする。
+                   読めなければ通常の ctx（＝出力レート）にフォールバック。 */
+                var nativeRate = null;
+                try { nativeRate = window.taikoSniffSampleRate(ab); } catch (e) {}
+                var ctx;
+                if (nativeRate && nativeRate >= 8000 && nativeRate <= 96000) {
+                  var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+                  ctx = new OAC(1, 1, nativeRate);
+                } else {
+                  ctx = (typeof ensureSpreadAudioCtx === 'function' && ensureSpreadAudioCtx())
+                    || new (window.AudioContext || window.webkitAudioContext)();
+                }
+                return ctx.decodeAudioData(ab);
+              })
               .then(function (buf) {
                 specData = window.computeTaikoSpectrogram(buf, { fftSize: 2048, targetCols: 1600 });
                 specForUrl = url; computing = false;
@@ -1595,6 +1618,19 @@
                 setEmpty(true, isEn() ? 'Could not analyze the audio.' : '音声を解析できませんでした。');
               });
           };
+
+          /* 配色プルダウン */
+          if (colorSelect) colorSelect.addEventListener('change', function () {
+            colorMap = (colorSelect.value === 'alt') ? 'alt' : 'spek';
+            try { localStorage.setItem('moddingHelperSpectrogramColor', colorMap); } catch (e) {}
+            redraw();
+          });
+          /* シークバーの表示 ON/OFF（再生ヘッドの表示を切り替える） */
+          if (seekToggle) seekToggle.addEventListener('change', function () {
+            spectrogramSeekOn = seekToggle.checked;
+            try { localStorage.setItem('moddingHelperSpectrogramSeek', spectrogramSeekOn ? '1' : '0'); } catch (e) {}
+            if (typeof refreshPlayheads === 'function') refreshPlayheads();
+          });
 
           /* このタブが今アクティブか */
           var isActive = function () {
@@ -1691,6 +1727,8 @@
         var playheadChartIds = ['kiaiCompareChart', 'volumeCompareChart', 'spreadDensityChart',
                                 'spreadRestChart', 'spreadScrollChart', 'spreadScrollDeltaChart',
                                 'offsetWaveformCanvas', 'spectrogramCanvas'];
+        /* スペクトログラムのシークバー(再生ヘッド)は既定 OFF。setupSpectrogram が切り替える */
+        var spectrogramSeekOn = false;
         var playheadEls = {};
         var markerEls = {};
         var currentDiffFile = null;  // osu! で現在開いている .osu 名（マーカー対象 Diff）
@@ -1729,6 +1767,10 @@
           var d  = getPlayheadEl(id);
           var mk = getMarkerEl(id);
           if (!cv || !d) return;
+          /* スペクトログラムはチェックが ON の時だけシークバーを出す（既定 OFF） */
+          if (id === 'spectrogramCanvas' && !spectrogramSeekOn) {
+            d.style.display = 'none'; if (mk) mk.style.display = 'none'; return;
+          }
           var g = cv.__playheadGeom;
           var stale = g && g.__cw != null && g.__cw !== cv.clientWidth;
           if (ms < 0 || !g || !g.plot || cv.offsetParent === null || stale) {

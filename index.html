@@ -729,6 +729,16 @@
             <div>
               <h3 data-i18n="spectrogramGraphTitle">Spectrogram</h3>
             </div>
+            <div class="spectrogram-header-actions">
+              <label class="spectrogram-seek-label">
+                <input type="checkbox" id="spectrogramSeekToggle">
+                <span data-i18n="spectrogramShowSeek">Show seek bar</span>
+              </label>
+              <select id="spectrogramColorSelect">
+                <option value="spek" data-i18n="spectrogramColorMagma">Magma</option>
+                <option value="alt" data-i18n="spectrogramColorRainbow">Rainbow</option>
+              </select>
+            </div>
           </div>
 
           <div class="volume-compare-chart-wrap spectrogram-chart-wrap" id="spectrogramChartWrap" hidden>

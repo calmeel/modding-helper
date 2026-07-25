@@ -4,6 +4,52 @@
 // モッディング用途の主眼は「高音がどこでカットされているか」の可視化。
 // 低品質な MP3 の再エンコード（例: 128kbps で 16kHz 以上がバッサリ落ちる）を目で見つける。
 
+// 音声ファイルの「本来の」サンプリングレートをヘッダから読む（wav/mp3/ogg 対応）。
+//   Web Audio の decodeAudioData は AudioContext のレートにリサンプルして返すため、
+//   縦軸上限(ナイキスト)を正しく出すにはファイル本来のレートが要る（Spek は ffmpeg で読む）。
+//   判別できなければ null。
+function taikoSniffSampleRate(arrayBuffer) {
+  const u8 = new Uint8Array(arrayBuffer);
+  const le32 = (o) => (u8[o] | (u8[o + 1] << 8) | (u8[o + 2] << 16) | (u8[o + 3] << 24)) >>> 0;
+
+  // WAV: "RIFF"…"WAVE"… の "fmt " チャンクにサンプルレート
+  if (u8[0] === 0x52 && u8[1] === 0x49 && u8[2] === 0x46 && u8[3] === 0x46) {  // RIFF
+    for (let i = 12; i < u8.length - 16; i++) {
+      if (u8[i] === 0x66 && u8[i + 1] === 0x6d && u8[i + 2] === 0x74 && u8[i + 3] === 0x20) { // "fmt "
+        const sr = le32(i + 12);                 // データ先頭(+8) の audioFormat(2)+channels(2) の後
+        if (sr > 0) return sr;
+      }
+    }
+  }
+
+  // OGG(Vorbis): "OggS" … "\x01vorbis" の識別ヘッダ
+  if (u8[0] === 0x4f && u8[1] === 0x67 && u8[2] === 0x67 && u8[3] === 0x53) {  // OggS
+    for (let i = 0; i < Math.min(u8.length - 20, 70000); i++) {
+      if (u8[i] === 0x01 && u8[i + 1] === 0x76 && u8[i + 2] === 0x6f && u8[i + 3] === 0x72 &&
+          u8[i + 4] === 0x62 && u8[i + 5] === 0x69 && u8[i + 6] === 0x73) {   // \x01vorbis
+        const sr = le32(i + 12);                 // sig(7)+version(4)+channels(1)
+        if (sr > 0) return sr;
+      }
+    }
+  }
+
+  // MP3: ID3v2 をスキップしてフレーム同期を探し、レート表から引く
+  let off = 0;
+  if (u8[0] === 0x49 && u8[1] === 0x44 && u8[2] === 0x33) {                    // "ID3"
+    off = 10 + (((u8[6] & 0x7f) << 21) | ((u8[7] & 0x7f) << 14) | ((u8[8] & 0x7f) << 7) | (u8[9] & 0x7f));
+  }
+  const table = { 3: [44100, 48000, 32000], 2: [22050, 24000, 16000], 0: [11025, 12000, 8000] };
+  for (let i = off; i < u8.length - 4 && i < off + 200000; i++) {
+    if (u8[i] === 0xFF && (u8[i + 1] & 0xE0) === 0xE0) {
+      const verBits = (u8[i + 1] >> 3) & 0x03;   // 11=MPEG1 / 10=MPEG2 / 00=MPEG2.5
+      const layerBits = (u8[i + 1] >> 1) & 0x03;
+      const srIndex = (u8[i + 2] >> 2) & 0x03;
+      if (layerBits !== 0 && srIndex !== 3 && table[verBits]) return table[verBits][srIndex];
+    }
+  }
+  return null;
+}
+
 // 実数配列に対する基数2の反復 FFT（in-place）。re/im は長さ N=2^k の Float32Array。
 function taikoFFT(re, im) {
   const n = re.length;
@@ -90,16 +136,8 @@ function computeTaikoSpectrogram(audioBuffer, opts) {
            floorDb, ceilDb };
 }
 
-// 0..1 の強度を色に変換する 256段の LUT。Spek のカラーマップに寄せた
-// 黒→藍→紫→マゼンタ→赤→橙→黄。低エネルギー側の藍〜紫、中域のマゼンタが Spek の特徴。
-const TAIKO_SPEC_LUT = (function () {
-  // 制御点（位置, r, g, b）
-  const stops = [
-    [0.00,   0,   0,   0], [0.10,  30,   8,  60], [0.22,  60,  10, 110],
-    [0.35, 105,  15, 130], [0.48, 150,  25, 120], [0.60, 195,  40,  95],
-    [0.72, 228,  65,  60], [0.83, 245, 120,  30], [0.92, 250, 180,  45],
-    [1.00, 255, 235, 130],
-  ];
+// 制御点（位置,r,g,b の配列）から 256段の LUT を作る
+function taikoBuildLut(stops) {
   const lut = new Uint8Array(256 * 3);
   for (let i = 0; i < 256; i++) {
     const t = i / 255;
@@ -113,7 +151,25 @@ const TAIKO_SPEC_LUT = (function () {
     lut[i * 3 + 2] = Math.round(a[3] + (b[3] - a[3]) * f);
   }
   return lut;
-})();
+}
+
+// 選べる2つのカラーマップ（0..1 = 低エネルギー→高エネルギー）。
+const TAIKO_SPEC_LUTS = {
+  // spek: 黒→藍→紫→マゼンタ→赤→橙→黄（本家 Spek 風。低域の藍〜紫、中域マゼンタが特徴）
+  spek: taikoBuildLut([
+    [0.00,   0,   0,   0], [0.10,  30,   8,  60], [0.22,  60,  10, 110],
+    [0.35, 105,  15, 130], [0.48, 150,  25, 120], [0.60, 195,  40,  95],
+    [0.72, 228,  65,  60], [0.83, 245, 120,  30], [0.92, 250, 180,  45],
+    [1.00, 255, 235, 130],
+  ]),
+  // alt: 紫→青→シアン→緑→黄→橙→赤（spek-alternative 風の jet 系）
+  alt: taikoBuildLut([
+    [0.00,  10,   0,  30], [0.10,  30,   0, 110], [0.22,  20,  40, 180],
+    [0.35,   0, 120, 200], [0.47,   0, 190, 190], [0.58,  20, 200,  90],
+    [0.68,  90, 215,  20], [0.78, 220, 225,   0], [0.88, 255, 150,   0],
+    [1.00, 255,  20,  20],
+  ]),
+};
 
 // スペクトログラムをキャンバスへ描く。X=時間 / Y=周波数（下が0Hz、上がナイキスト）。
 //   data … computeTaikoSpectrogram の戻り値
@@ -142,6 +198,7 @@ function drawTaikoSpectrogram(canvas, data, opts) {
     return;
   }
 
+  const lut = TAIKO_SPEC_LUTS[opts.colorMap] || TAIKO_SPEC_LUTS.spek;
   const maxFreq = data.nyquist;
   const topBin = Math.max(1, Math.round(maxFreq / data.nyquist * data.bins));
 
@@ -156,9 +213,9 @@ function drawTaikoSpectrogram(canvas, data, opts) {
       const li = (Math.min(255, Math.max(0, Math.round(v * 255)))) * 3;
       const row = topBin - 1 - b;               // 反転
       const o = (row * data.cols + x) * 4;
-      px[o]     = TAIKO_SPEC_LUT[li];
-      px[o + 1] = TAIKO_SPEC_LUT[li + 1];
-      px[o + 2] = TAIKO_SPEC_LUT[li + 2];
+      px[o]     = lut[li];
+      px[o + 1] = lut[li + 1];
+      px[o + 2] = lut[li + 2];
       px[o + 3] = 255;
     }
   }
@@ -169,12 +226,22 @@ function drawTaikoSpectrogram(canvas, data, opts) {
   ctx.imageSmoothingEnabled = true;
   ctx.drawImage(tmp, 0, 0, data.cols, topBin, plot.left, plot.top, plot.width, plot.height);
 
-  // 周波数の目盛り（横のうすい線＋「20 kHz」形式のラベル）
+  // 周波数の目盛り（横のうすい線＋「20 kHz」形式のラベル）。
+  // 最上端はナイキスト周波数（=表示上限。44.1k→22.05kHz / 48k→24kHz）を必ず打つ。
   ctx.font = "10px sans-serif";
   ctx.textBaseline = "middle";
   ctx.lineWidth = 1;
   const stepHz = maxFreq > 12000 ? 5000 : (maxFreq > 4000 ? 2000 : 1000);
-  for (let f = 0; f <= maxFreq + 1; f += stepHz) {
+  const freqTicks = [];
+  for (let f = 0; f < maxFreq - stepHz * 0.35; f += stepHz) freqTicks.push(f);
+  freqTicks.push(maxFreq);                         // 最上端＝ナイキスト
+  const fmtKHz = function (hz) {
+    const k = hz / 1000;
+    // 端数があるレート（22.05kHz 等）は小数1桁、割り切れるものは整数で
+    return (Math.abs(k - Math.round(k)) < 0.05 ? String(Math.round(k)) : k.toFixed(2)) + " kHz";
+  };
+  for (let i = 0; i < freqTicks.length; i++) {
+    const f = freqTicks[i];
     const y = plot.top + plot.height * (1 - f / maxFreq);
     ctx.strokeStyle = "rgba(255,255,255,0.12)";
     ctx.beginPath();
@@ -183,7 +250,7 @@ function drawTaikoSpectrogram(canvas, data, opts) {
     ctx.stroke();
     ctx.fillStyle = "#b8b8c2";
     ctx.textAlign = "right";
-    ctx.fillText((f / 1000) + " kHz", plot.left - 6, y);
+    ctx.fillText(fmtKHz(f), plot.left - 6, y);
   }
 
   // 時間の目盛り（縦ラベル）
@@ -204,7 +271,7 @@ function drawTaikoSpectrogram(canvas, data, opts) {
   for (let i = 0; i < barH; i++) {
     const v = 1 - i / (barH - 1);                 // 上が 1（0dB）
     const li = Math.min(255, Math.max(0, Math.round(v * 255))) * 3;
-    ctx.fillStyle = "rgb(" + TAIKO_SPEC_LUT[li] + "," + TAIKO_SPEC_LUT[li + 1] + "," + TAIKO_SPEC_LUT[li + 2] + ")";
+    ctx.fillStyle = "rgb(" + lut[li] + "," + lut[li + 1] + "," + lut[li + 2] + ")";
     ctx.fillRect(barX, barTop + i, barW, 1);
   }
   ctx.strokeStyle = "rgba(255,255,255,0.25)"; ctx.lineWidth = 1;
@@ -222,6 +289,7 @@ function drawTaikoSpectrogram(canvas, data, opts) {
 }
 
 if (typeof window !== "undefined") {
+  window.taikoSniffSampleRate = taikoSniffSampleRate;
   window.computeTaikoSpectrogram = computeTaikoSpectrogram;
   window.drawTaikoSpectrogram = drawTaikoSpectrogram;
 }

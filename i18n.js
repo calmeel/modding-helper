@@ -482,6 +482,9 @@ const i18n = {
 
     tabSrCalculator: "SR Calculator",
     tabSpectrogram: "Spectrogram",
+    spectrogramColorMagma: "Magma",
+    spectrogramColorRainbow: "Rainbow",
+    spectrogramShowSeek: "Show seek bar",
     spectrogramGraphTitle: "Spectrogram",
     spectrogramGraphHelp: "Shows how the audio's frequency content changes over time. A flat cutoff near the top means the high frequencies were removed (a sign of a low-quality re-encode).",
     spectrogramNoAudio: "Load a beatmap with audio to view its spectrogram.",
@@ -1033,6 +1036,9 @@ const i18n = {
 
     tabSrCalculator: "SR計算",
     tabSpectrogram: "スペクトログラム",
+    spectrogramColorMagma: "マグマ",
+    spectrogramColorRainbow: "レインボー",
+    spectrogramShowSeek: "シークバーを表示",
     spectrogramGraphTitle: "スペクトログラム",
     spectrogramGraphHelp: "音声の周波数成分が時間とともにどう変化するかを表示します。上の方が平らに切れている場合、高音がカットされています（低品質な再エンコードのサインです）。",
     spectrogramNoAudio: "音源付きの譜面を読み込むとスペクトログラムを表示します。",
