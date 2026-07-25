@@ -538,10 +538,7 @@
       }
 
       /* ── コンパクト: チェックリストを1画面に収める ──
-         「ツール」グループを隠し、余白・文字・ボタン高さを一段詰める。 */
-      #electron-layout.etb-compact #electron-col-tabs .tab-group.etb-tool-group {
-        display: none !important;
-      }
+         余白・文字・ボタン高さを一段詰める。（「ツール」グループは隠さない） */
       #electron-layout.etb-compact #electron-col-tabs > .etb-card-body {
         padding: 9px 5px 4px !important;
       }
