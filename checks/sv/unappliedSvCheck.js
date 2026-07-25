@@ -178,23 +178,12 @@ function detectUnappliedSvBarlineIssues(
 }
 
 function getUniqueUnappliedSvBarlineTimes(events) {
-  const times = events
-    .map(event => event.time)
-    .filter(time => Number.isFinite(time))
-    .sort((a, b) => a - b);
-  const unique = [];
-
-  for (const time of times) {
-    const previous = unique[unique.length - 1];
-    if (
-      previous === undefined ||
-      Math.abs(previous - time) > BARLINE_TIMING_LAZER_EPSILON
-    ) {
-      unique.push(time);
-    }
-  }
-
-  return unique;
+  return [...new Set(
+    events
+      .map(event => event.time)
+      .filter(time => Number.isFinite(time))
+      .map(time => Math.trunc(time))
+  )].sort((a, b) => a - b);
 }
 
 function mergeUnappliedSvBarlineIssues(issues) {

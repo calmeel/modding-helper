@@ -79,15 +79,19 @@ function detectBarlineIssues(
     detachedBarlines: mergeBarlineClientIssues(
       perClient.flatMap(result => result.detachedBarlines),
       issue => [
-        normalizeBarlineIssueTime(issue.barlineTime),
-        issue.noteTime
+        issue.barlineTime,
+        issue.noteTime,
+        normalizeBarlineIssueSpeed(issue.barlineSpeed),
+        normalizeBarlineIssueSpeed(issue.noteSpeed)
       ].join("|")
     ),
     intentionalDetachedBarlines: mergeBarlineClientIssues(
       perClient.flatMap(result => result.intentionalDetachedBarlines),
       issue => [
-        normalizeBarlineIssueTime(issue.barlineTime),
-        issue.noteTime
+        issue.barlineTime,
+        issue.noteTime,
+        normalizeBarlineIssueSpeed(issue.barlineSpeed),
+        normalizeBarlineIssueSpeed(issue.noteSpeed)
       ].join("|")
     )
   };
@@ -110,9 +114,12 @@ function detectClientBarlineIssues(
       .filter(time => Number.isFinite(time))
   );
 
-  for (const barlineTime of getUniqueBarlineEventTimes(events)) {
-    const firstCandidate = Math.floor(barlineTime) - 1;
-    const lastCandidate = Math.ceil(barlineTime) + 1;
+  for (
+    const barline of getUniqueBarlineComparisonTimes(events)
+  ) {
+    const barlineTime = barline.time;
+    const firstCandidate = barlineTime - 1;
+    const lastCandidate = barlineTime + 1;
 
     for (
       let noteTime = firstCandidate;
@@ -154,7 +161,8 @@ function detectClientBarlineIssues(
         barlineTime,
         noteTime,
         redLineAtBarline || redLineAtNote,
-        client
+        client,
+        barline.rawTimes
       );
     }
   }
@@ -248,24 +256,25 @@ function detectNegativeStartBarlineWarnings(timelines) {
   }];
 }
 
-function getUniqueBarlineEventTimes(events) {
-  const times = events
-    .map(event => event.time)
-    .filter(time => Number.isFinite(time))
-    .sort((a, b) => a - b);
-  const unique = [];
+function getUniqueBarlineComparisonTimes(events) {
+  const byTime = new Map();
 
-  for (const time of times) {
-    const previous = unique[unique.length - 1];
-    if (
-      previous === undefined ||
-      Math.abs(previous - time) > BARLINE_ISSUE_TIME_EPSILON
-    ) {
-      unique.push(time);
+  for (const event of events) {
+    if (!Number.isFinite(event.time)) continue;
+
+    const time = Math.trunc(event.time);
+    if (!byTime.has(time)) {
+      byTime.set(time, []);
     }
+    byTime.get(time).push(event.time);
   }
 
-  return unique;
+  return [...byTime.entries()]
+    .map(([time, rawTimes]) => ({
+      time,
+      rawTimes
+    }))
+    .sort((a, b) => a.time - b.time);
 }
 
 function findBarlineRedLineNearTime(redLines, time) {
@@ -287,6 +296,9 @@ function mergeBarlineClientIssues(issues, keyBuilder) {
         clients: [...issue.clients],
         clientCounts: issue.clientCounts
           ? { ...issue.clientCounts }
+          : undefined,
+        rawBarlineTimes: issue.rawBarlineTimes
+          ? { ...issue.rawBarlineTimes }
           : undefined
       });
       continue;
@@ -302,6 +314,13 @@ function mergeBarlineClientIssues(issues, keyBuilder) {
       existing.clientCounts = {
         ...(existing.clientCounts ?? {}),
         ...issue.clientCounts
+      };
+    }
+
+    if (issue.rawBarlineTimes) {
+      existing.rawBarlineTimes = {
+        ...(existing.rawBarlineTimes ?? {}),
+        ...issue.rawBarlineTimes
       };
     }
   }
@@ -324,6 +343,10 @@ function normalizeBarlineIssueTime(time) {
   return Math.round(time / BARLINE_ISSUE_TIME_EPSILON);
 }
 
+function normalizeBarlineIssueSpeed(speed) {
+  return Math.round(speed / BARLINE_SCROLL_SPEED_EPSILON);
+}
+
 function addDetachedBarlineIssue(
   detachedBarlines,
   redLines,
@@ -332,7 +355,8 @@ function addDetachedBarlineIssue(
   barlineTime,
   noteTime,
   redLine,
-  client
+  client,
+  rawBarlineTimes
 ) {
   const barlineSpeed = calculateBarlineVisualScrollSpeed(
     redLines,
@@ -362,7 +386,10 @@ function addDetachedBarlineIssue(
     noteSpeed,
     delta: noteSpeed - barlineSpeed,
     redLine,
-    clients: [client]
+    clients: [client],
+    rawBarlineTimes: {
+      [client]: [...rawBarlineTimes]
+    }
   });
 }
 

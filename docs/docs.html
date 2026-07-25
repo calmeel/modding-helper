@@ -932,6 +932,7 @@ osu!stable / osu!lazerにおける小節線描画位置の生成式、浮動小�
 <div class="section section-detect">
 <span class="label label-detect">■ 検出内容1：2重小節線</span><br>
 osu!stable と osu!lazer の生成方法をそれぞれ再現し、異なる赤線区間から生成された小節線が同時刻、または 1 ms 以内に複数存在するかを確認します。<br>
+この判定では小数時刻そのものが重要なため、lazer の生成時刻を整数化せず <code>double</code> のまま比較します。同時刻に複数生成された小節線も重複除去しません。<br>
 結果には <code>[osu!stable, osu!lazer]</code>、<code>[osu!stable のみ]</code>、<code>[osu!lazer のみ]</code> のいずれかを表示します。両クライアントで2重になる場合は赤色の Error、片方だけで2重になる場合は黄色の Warning として表示します。<br><br>
 例：<br>
 <code>[osu!lazer のみ] 02:24:992 | 同時刻に 2 本の小節線が生成されます。</code>
@@ -940,6 +941,7 @@ osu!stable と osu!lazer の生成方法をそれぞれ再現し、異なる赤�
 <div class="section section-detect">
 <span class="label label-detect">■ 検出内容2：意図しない小節線の分離</span><br>
 各クライアントで実際に生成される小節線の前後 1 ms 以内にノーツがあり、小節線位置またはノーツ位置に赤線がある場合に確認します。<br>
+この判定では、lazer が保持する小数の生成時刻も <code>Math.trunc()</code> で整数 ms に変換してから比較します。整数化後の時刻・対象ノーツ・判定結果が同じ場合は、stable と lazer の結果を1件へ統合します。<br>
 小節線位置の見た目のスクロール速度と、ノーツ位置の見た目のスクロール速度を比較し、値が一致しない場合に意図しない小節線の分離として Error 表示します。結果には該当するクライアント名も表示します。<br><br>
 見た目のスクロール速度は、スプレッド比較の「スクロール速度」サブタブと同じ考え方で、現在の BPM、現在の SV、<code>SliderMultiplier</code> から計算します。<br><br>
 例：<br>
@@ -949,6 +951,7 @@ osu!stable と osu!lazer の生成方法をそれぞれ再現し、異なる赤�
 <div class="section section-detect">
 <span class="label label-detect">■ 検出内容3：演出の可能性がある小節線の分離</span><br>
 各クライアントで実際に生成される小節線の前後 1 ms 以内にあるノーツとの速度差を確認します。<br>
+この判定でも小節線の生成時刻を整数 ms に変換し、stable と lazer で同じ結果になるものは1件へ統合します。<br>
 小節線位置とノーツ位置のどちらにも赤線がない配置は、SVによる意図的な視覚演出の可能性があるため Warning として表示します。小節線より後のノーツについては、そのノーツと同時刻にSV線がある場合だけ対象にします。<br>
 <code>omit first barline</code> は各クライアントの生成処理で先に適用されるため、実際には描画されない小節線を基準にした誤検出は行いません。
 </div>
@@ -1072,6 +1075,7 @@ SV線（緑線）は、その時刻以降のノーツや小節線に適用され
 <div class="section section-detect">
 <span class="label label-detect">■ 検出内容2：小節線にSVが適用されていない可能性</span><br>
 osu!stable と osu!lazer で実際に生成される小節線位置を別々に計算し、その時刻を <code>T</code> として、<code>T + 1 ms</code> から <code>T + 5 ms</code> の範囲にSV線があるかを確認します。<br>
+この判定では、lazer が保持する小数の生成時刻も <code>Math.trunc()</code> で整数 ms に変換します。整数化後の小節線時刻・対象SV線・判定結果が同じ場合は、stable と lazer の結果を1件へ統合します。<br>
 該当するSV線がある場合、小節線にそのSVが適用されていない可能性があるため、黄色の警告として表示します。結果には <code>[osu!stable, osu!lazer]</code>、<code>[osu!stable のみ]</code>、<code>[osu!lazer のみ]</code> のいずれかを表示します。<br><br>
 
 出力例：<br>
