@@ -959,25 +959,7 @@ Example:<br>
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ Detection Content 2: Unintended Detached Barline</span><br>
-For each client, this is checked when a note exists within 1 ms before or after an actually generated barline and a red timing point exists at either the barline or note position.<br>
-For this check, lazer's fractional generation time is converted to integer milliseconds with <code>Math.trunc()</code> before comparison. If the normalized time, target note, and result are the same, the stable and lazer results are merged into one entry.<br>
-The check compares the effective visual scroll speed at the barline position with the effective visual scroll speed at the note position. If the values do not match, it is reported as an unintended detached barline error together with the applicable client label.<br><br>
-The visual scroll speed is calculated using the same idea as the Spread Comparison / Scroll Speed subtab, based on the current BPM, current SV, and <code>SliderMultiplier</code>.<br><br>
-Example:<br>
-<code>[osu!stable only] 02:45:635 -> 02:45:636 | Generated barline: 934.18 px/s | Note: 935.08 px/s | Delta: +0.9 px/s</code>
-</div>
-
-<div class="section section-detect">
-<span class="label label-detect">■ Detection Content 3: Possibly Intentional Detached Barline</span><br>
-For each client, an actually generated barline is compared with notes within 1 ms before or after it.<br>
-This check also converts the generated barline time to integer milliseconds and merges stable and lazer results that become identical.<br>
-If neither the barline position nor the note position contains a red timing point, the result is shown as a Warning because the separation may be an intentional visual effect created with SV. For a note after the barline, the check only applies when an SV line exists at the note position.<br>
-<code>omit first barline</code> is applied during each client's generation process, so the check does not use a barline that would not actually be drawn.
-</div>
-
-<div class="section section-detect">
-<span class="label label-detect">■ Detection Content 4: Negative-start Barline Bug</span><br>
+<span class="label label-detect">■ Detection Content 2: Negative-start Barline Bug</span><br>
 When the first red timing point is placed at a negative timestamp, the tool compares the first generated barline position from that red timing point with the next red timing point position.<br>
 If the first generated barline position matches or passes the next red timing point, the result is shown as a Warning because osu!stable and osu!lazer display the barline differently.<br><br>
 
@@ -1001,6 +983,17 @@ If the first generated barline position matches or passes the next red timing po
 </table>
 </div>
 
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content 3: Separation Between Notes and Barlines</span><br>
+For each client, when a note exists within 1 ms before or after an actually generated barline, the check compares the effective visual scroll speed at the barline position with the speed at the note position. Results that do not match are shown as a yellow Warning for separation between notes and barlines.<br>
+For a note after the barline, the check only applies when an SV line exists at the note position.<br>
+Lazer's fractional generation time is converted to integer milliseconds with <code>Math.trunc()</code> before comparison. If the normalized time, target note, and result are the same, the stable and lazer results are merged into one entry.<br>
+<code>omit first barline</code> is applied during each client's generation process, so the check does not use a barline that would not actually be drawn.<br><br>
+The visual scroll speed is calculated using the same idea as the Spread Comparison / Scroll Speed subtab, based on the current BPM, current SV, and <code>SliderMultiplier</code>.<br><br>
+Example:<br>
+<code>[osu!stable only] 02:45:635 -> 02:45:636 | Generated barline: 934.18 px/s | Note: 935.08 px/s | Delta: +0.9 px/s</code>
+</div>
+
 <div class="section section-bg">
 <span class="label label-bg">■ Calculation Details</span><br>
 For osu!stable, the tool follows the osu!.exe behavior: measure lengths are repeatedly added as double-precision values and converted for drawing with behavior equivalent to <code>conv.i4</code>. The red timing boundary switch order and the initial candidate calculated from a negative timing point are also reproduced.<br>
@@ -1011,7 +1004,7 @@ See “osu!stable / osu!lazer Barline Position Calculations” above for the com
 
 <div class="section section-warning">
 <span class="label label-warning">■ Notes</span><br>
-Possibly intentional detached barlines are treated as warnings because they may be deliberate visual gimmicks.<br>
+Separation between notes and barlines is treated as a Warning because it may be either a deliberate visual gimmick or a placement that needs correction.<br>
 Check the actual in-game appearance before deciding whether the placement is a problem.
 </div>
 </section>

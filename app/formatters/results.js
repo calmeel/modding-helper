@@ -319,20 +319,11 @@ function formatBarlineResultGroup(results, t) {
   }
 
   lines.push(formatSeparator());
-  lines.push(formatSectionTitle(t("barlineDetachedBarline")));
+  lines.push(formatSectionTitle(t("barlineNoteBarlineSeparation")));
 
   for (const result of results) {
     lines.push(`${getDifficultyName(result.fileName)}`);
-    lines.push(...formatBarlineDetachedBarlineLines(result, t));
-    lines.push("");
-  }
-
-  lines.push(formatSeparator());
-  lines.push(formatSectionTitle(t("barlineIntentionalDetachedBarline")));
-
-  for (const result of results) {
-    lines.push(`${getDifficultyName(result.fileName)}`);
-    lines.push(...formatBarlineIntentionalDetachedBarlineLines(result, t));
+    lines.push(...formatBarlineNoteBarlineSeparationLines(result, t));
     lines.push("");
   }
 
@@ -396,30 +387,28 @@ function formatBarlineNegativeStartWarningLines(result, t) {
   );
 }
 
-function formatBarlineDetachedBarlineLines(result, t) {
-  if (!result.detachedBarlines.length) {
-    return [t("barlineNoDetachedBarline")];
+function formatBarlineNoteBarlineSeparationLines(result, t) {
+  const items = [
+    ...(result.detachedBarlines ?? []),
+    ...(result.intentionalDetachedBarlines ?? [])
+  ].sort((a, b) =>
+    a.barlineTime - b.barlineTime ||
+    a.noteTime - b.noteTime
+  );
+
+  if (!items.length) {
+    return [t("barlineNoNoteBarlineSeparation")];
   }
 
-  return result.detachedBarlines.map(item =>
-    formatBarlineDetachedBarlineLine(item, t, "result-error")
+  return items.map(item =>
+    formatBarlineDetachedBarlineLine(item, t)
   );
 }
 
-function formatBarlineIntentionalDetachedBarlineLines(result, t) {
-  if (!result.intentionalDetachedBarlines?.length) {
-    return [t("barlineNoIntentionalDetachedBarline")];
-  }
-
-  return result.intentionalDetachedBarlines.map(item =>
-    formatBarlineDetachedBarlineLine(item, t, "result-warn")
-  );
-}
-
-function formatBarlineDetachedBarlineLine(item, t, className) {
+function formatBarlineDetachedBarlineLine(item, t) {
   const deltaSign = item.delta > 0 ? "+" : "";
   return (
-    `<span class="${className}">` +
+    `<span class="result-warn">` +
     `${formatBarlineClientScope(item, t)}` +
     `${formatBarlineTimestampLink(item.barlineTime)} -> ${formatTimestampLink(item.noteTime)} | ` +
     `${escapeHtml(t("barlineGeneratedBarline"))}: ${formatBarlineSpeed(item.barlineSpeed)} px/s | ` +

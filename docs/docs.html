@@ -939,25 +939,7 @@ osu!stable と osu!lazer の生成方法をそれぞれ再現し、異なる赤�
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ 検出内容2：意図しない小節線の分離</span><br>
-各クライアントで実際に生成される小節線の前後 1 ms 以内にノーツがあり、小節線位置またはノーツ位置に赤線がある場合に確認します。<br>
-この判定では、lazer が保持する小数の生成時刻も <code>Math.trunc()</code> で整数 ms に変換してから比較します。整数化後の時刻・対象ノーツ・判定結果が同じ場合は、stable と lazer の結果を1件へ統合します。<br>
-小節線位置の見た目のスクロール速度と、ノーツ位置の見た目のスクロール速度を比較し、値が一致しない場合に意図しない小節線の分離として Error 表示します。結果には該当するクライアント名も表示します。<br><br>
-見た目のスクロール速度は、スプレッド比較の「スクロール速度」サブタブと同じ考え方で、現在の BPM、現在の SV、<code>SliderMultiplier</code> から計算します。<br><br>
-例：<br>
-<code>[osu!stable のみ] 02:45:635 -> 02:45:636 | 小節線: 934.18 px/s | ノーツ: 935.08 px/s | 差分: +0.9 px/s</code>
-</div>
-
-<div class="section section-detect">
-<span class="label label-detect">■ 検出内容3：演出の可能性がある小節線の分離</span><br>
-各クライアントで実際に生成される小節線の前後 1 ms 以内にあるノーツとの速度差を確認します。<br>
-この判定でも小節線の生成時刻を整数 ms に変換し、stable と lazer で同じ結果になるものは1件へ統合します。<br>
-小節線位置とノーツ位置のどちらにも赤線がない配置は、SVによる意図的な視覚演出の可能性があるため Warning として表示します。小節線より後のノーツについては、そのノーツと同時刻にSV線がある場合だけ対象にします。<br>
-<code>omit first barline</code> は各クライアントの生成処理で先に適用されるため、実際には描画されない小節線を基準にした誤検出は行いません。
-</div>
-
-<div class="section section-detect">
-<span class="label label-detect">■ 検出内容4：マイナス時刻開始による小節線バグ</span><br>
+<span class="label label-detect">■ 検出内容2：マイナス時刻開始による小節線バグ</span><br>
 最初の赤線がマイナス時刻にある場合、その赤線から最初に生成される小節線位置と、次の赤線位置を比較します。<br>
 最初に生成される小節線位置が次の赤線と一致する、または次の赤線を超える場合、osu!stable と osu!lazer で小節線の見え方が異なるため Warning として表示します。<br><br>
 
@@ -981,6 +963,17 @@ osu!stable と osu!lazer の生成方法をそれぞれ再現し、異なる赤�
 </table>
 </div>
 
+<div class="section section-detect">
+<span class="label label-detect">■ 検出内容3：ノーツと小節線の分離</span><br>
+各クライアントで実際に生成される小節線の前後 1 ms 以内にノーツがある場合、小節線位置とノーツ位置の見た目のスクロール速度を比較します。値が一致しないものを、ノーツと小節線の分離として黄色の Warning で表示します。<br>
+小節線より後のノーツについては、そのノーツと同時刻にSV線がある場合だけ対象にします。<br>
+lazer が保持する小数の生成時刻も <code>Math.trunc()</code> で整数 ms に変換してから比較します。整数化後の時刻・対象ノーツ・判定結果が同じ場合は、stable と lazer の結果を1件へ統合します。<br>
+<code>omit first barline</code> は各クライアントの生成処理で先に適用されるため、実際には描画されない小節線を基準にした誤検出は行いません。<br><br>
+見た目のスクロール速度は、スプレッド比較の「スクロール速度」サブタブと同じ考え方で、現在の BPM、現在の SV、<code>SliderMultiplier</code> から計算します。<br><br>
+例：<br>
+<code>[osu!stable のみ] 02:45:635 -> 02:45:636 | 小節線: 934.18 px/s | ノーツ: 935.08 px/s | 差分: +0.9 px/s</code>
+</div>
+
 <div class="section section-bg">
 <span class="label label-bg">■ 計算方法の詳細</span><br>
 osu!stable では osu!.exe の処理に合わせ、倍精度浮動小数点で小節長を反復加算し、描画時に <code>conv.i4</code> 相当の整数変換を行います。赤線境界の切り替え順序と、マイナス時刻から求める最初の候補位置も再現します。<br>
@@ -991,7 +984,7 @@ osu!lazer ではソースコードに合わせ、小節線位置を <code>double
 
 <div class="section section-warning">
 <span class="label label-warning">■ 注意点</span><br>
-演出の可能性がある小節線の分離は、意図的なギミックである可能性があるため Warning として扱います。<br>
+ノーツと小節線の分離は、意図的なギミックである可能性も、修正が必要な配置である可能性もあるため Warning として扱います。<br>
 実際に問題があるかどうかは、該当箇所の見た目を確認してください。
 </div>
 </section>

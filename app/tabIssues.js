@@ -169,8 +169,7 @@ function getBarlineIssueLevel(results) {
       result.doubleBarlines?.some(item =>
         item.clients?.includes("stable") &&
         item.clients?.includes("lazer")
-      ) ||
-      (result.detachedBarlines?.length ?? 0) > 0
+      )
     ) ?? false;
 
   if (hasBarlineIssue) return TAB_LEVEL_ERROR;
@@ -178,6 +177,7 @@ function getBarlineIssueLevel(results) {
   const hasBarlineWarning =
     results?.some(result =>
       (result.negativeStartBarlineWarnings?.length ?? 0) > 0 ||
+      (result.detachedBarlines?.length ?? 0) > 0 ||
       (result.intentionalDetachedBarlines?.length ?? 0) > 0
     ) ?? false;
 
