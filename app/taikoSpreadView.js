@@ -412,6 +412,41 @@ function taikoTruncate(ctx, text, maxW) {
   return s + "…";
 }
 
+// 難易度名を単語優先で折り返し、maxLines 行に収める。
+//   ・1 行しか使えない時は従来どおり末尾「…」で省略。
+//   ・1 単語が幅を超える場合は文字単位で分割する。
+//   ・全部を収めきれない時は最終行末尾を「…」にして続きがあることを示す。
+function taikoWrapLines(ctx, text, maxW, maxLines) {
+  text = String(text == null ? "" : text);
+  if (maxLines <= 1) return [taikoTruncate(ctx, text, maxW)];
+  const words = text.split(/\s+/).filter(Boolean);
+  const all = [];
+  let cur = "";
+  const flush = function () { if (cur) { all.push(cur); cur = ""; } };
+  for (let wi = 0; wi < words.length; wi++) {
+    const w = words[wi];
+    if (cur && ctx.measureText(cur + " " + w).width <= maxW) { cur += " " + w; continue; }
+    flush();
+    if (ctx.measureText(w).width <= maxW) { cur = w; continue; }
+    // 幅を超える長い単語は文字単位で折る
+    let seg = "";
+    for (let ci = 0; ci < w.length; ci++) {
+      if (ctx.measureText(seg + w[ci]).width <= maxW || !seg) { seg += w[ci]; }
+      else { all.push(seg); seg = w[ci]; }
+    }
+    cur = seg;
+  }
+  flush();
+  if (!all.length) return [""];
+  if (all.length <= maxLines) return all;
+  // 溢れた分は最終行を「…」で省略
+  const kept = all.slice(0, maxLines);
+  let last = kept[maxLines - 1];
+  while (last.length > 1 && ctx.measureText(last + "…").width > maxW) last = last.slice(0, -1);
+  kept[maxLines - 1] = last + "…";
+  return kept;
+}
+
 // カプセル（連打バー）。roundRect は Electron 13(Chromium91)に無いので arc で描く
 function taikoCapsule(ctx, x1, x2, yMid, r) {
   const left = Math.min(x1, x2), right = Math.max(x1, x2);
@@ -513,7 +548,9 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
   ctx.fillStyle = "#1a1a1f";
   ctx.fillRect(0, 0, cssW, cssH);
 
-  const labelW = 112;                 // 左の難易度名カラム
+  /* 左の難易度名カラム幅。長い難易度名（例: "Charlotte's Inner Oni"）も読めるよう
+     画面幅に応じて広げる（120〜190px）。折り返し表示と併用する。 */
+  const labelW = Math.round(Math.min(190, Math.max(120, cssW * 0.15)));
   const playX0 = labelW;
   const playX1 = cssW;
   /* 判定ラインの位置（プレイフィールド幅に対する割合）。既定 0.5＝中央。
@@ -816,6 +853,7 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
   ctx.beginPath(); ctx.moveTo(labelW, 0); ctx.lineTo(labelW, cssH); ctx.stroke();
   ctx.font = "11px sans-serif";
   ctx.textAlign = "left"; ctx.textBaseline = "middle";
+  const labelLineH = 13;               // 折り返し1行の高さ
   for (let i = 0; i < n; i++) {
     const yTop = topPad + i * laneH;
     const yMid = yTop + laneH / 2;
@@ -829,7 +867,16 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
       ctx.beginPath(); ctx.arc(labelW - 8, yMid, 3, 0, Math.PI * 2); ctx.fill();
     }
     ctx.fillStyle = isSound ? "#dffbe8" : "#cfcfe0";
-    ctx.fillText(taikoTruncate(ctx, diffs[i].name || "Diff " + (i + 1), labelW - (isSound ? 18 : 12)), 10, yMid);
+    /* テキストは x=10 から。右側は余白（効果音レーンは丸印ぶん多め）を空ける。
+       レーンの高さに収まる行数だけ折り返し、縦中央に配置する。 */
+    const textMaxW = labelW - 10 - (isSound ? 14 : 6);
+    const maxLines = Math.max(1, Math.floor((laneH - 2) / labelLineH));
+    const lines = taikoWrapLines(ctx, diffs[i].name || "Diff " + (i + 1), textMaxW, maxLines);
+    let ty = yMid - ((lines.length - 1) * labelLineH) / 2;
+    for (let li = 0; li < lines.length; li++) {
+      ctx.fillText(lines[li], 10, ty);
+      ty += labelLineH;
+    }
   }
 
   if (!playable) {
