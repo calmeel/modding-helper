@@ -166,7 +166,10 @@ function getDoubleSvIssueLevel(results) {
 function getBarlineIssueLevel(results) {
   const hasBarlineIssue =
     results?.some(result =>
-      (result.doubleBarlines?.length ?? 0) > 0 ||
+      result.doubleBarlines?.some(item =>
+        item.clients?.includes("stable") &&
+        item.clients?.includes("lazer")
+      ) ||
       (result.detachedBarlines?.length ?? 0) > 0
     ) ?? false;
 
@@ -174,6 +177,10 @@ function getBarlineIssueLevel(results) {
 
   const hasBarlineWarning =
     results?.some(result =>
+      result.doubleBarlines?.some(item =>
+        !item.clients?.includes("stable") ||
+        !item.clients?.includes("lazer")
+      ) ||
       (result.negativeStartBarlineWarnings?.length ?? 0) > 0 ||
       (result.intentionalDetachedBarlines?.length ?? 0) > 0
     ) ?? false;

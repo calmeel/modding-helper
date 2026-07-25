@@ -345,6 +345,9 @@ function formatBarlineDoubleBarlineLines(result, t) {
   }
 
   return result.doubleBarlines.map(item => {
+    const isBothClients =
+      item.clients?.includes("stable") &&
+      item.clients?.includes("lazer");
     const isSameTime =
       Math.abs(item.redLineTime - item.barlineTime) <=
       BARLINE_ISSUE_TIME_EPSILON;
@@ -368,7 +371,7 @@ function formatBarlineDoubleBarlineLines(result, t) {
         `${formatBarlineTimestampLink(item.redLineTime)}`;
 
     return (
-      `<span class="result-error">` +
+      `<span class="${isBothClients ? "result-error" : "result-warn"}">` +
       `${formatBarlineClientScope(item)}${timestamps} | ` +
       `${escapeHtml(message)}` +
       `</span>`
