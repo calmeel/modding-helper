@@ -141,6 +141,27 @@
         tabsCol.appendChild(tabsBody);
         tabsCol.appendChild(tabsSettingsBody);
 
+        /* ツールカード（中央カラム・チェックリストの下）。
+           緑のツールボタン群（音声波形/スペクトログラム/SR計算/BN評価）をここへ移す。
+           中身のタブグループは DOM 挿入後（タイムライン除去の後）に移設する。 */
+        var toolsCard = document.createElement('div');
+        toolsCard.className = 'etb-card';
+        toolsCard.id = 'etb-card-tools';
+        var toolsHead = document.createElement('div');
+        toolsHead.className = 'etb-card-head';
+        toolsHead.innerHTML = '<span class="etb-card-title" id="etb-title-tools">ツール</span>';
+        var toolsBody = document.createElement('div');
+        toolsBody.className = 'etb-card-body';
+        toolsBody.id = 'etb-tools-body';
+        toolsCard.appendChild(toolsHead);
+        toolsCard.appendChild(toolsBody);
+
+        /* 中央カラム: チェックリストカード＋ツールカードを縦積みするラッパー。 */
+        var centerCol = document.createElement('div');
+        centerCol.id = 'electron-col-center';
+        centerCol.appendChild(tabsCol);
+        centerCol.appendChild(toolsCard);
+
         /* チェック結果カード */
         var outputCol = document.createElement('div');
         outputCol.id = 'electron-col-output';
@@ -169,7 +190,7 @@
         var colsWrap = document.createElement('div');
         colsWrap.id = 'etb-cols';
         colsWrap.appendChild(futureCol);
-        colsWrap.appendChild(tabsCol);
+        colsWrap.appendChild(centerCol);
         colsWrap.appendChild(outputCol);
 
         layout.appendChild(compactBar);
@@ -216,6 +237,16 @@
           /* タブが消えた分、グループの折り畳みと「現在のタブ」を作り直す */
           if (typeof applyTabVisibilitySettings === 'function') applyTabVisibilitySettings();
         } catch (e) { /* 失敗しても他のUIは動かす */ }
+
+        /* 緑のツールボタン群（音声波形/スペクトログラム/SR計算/BN評価）のタブグループを
+           中央カラムの「ツール」カードへ丸ごと移す。bnCompare を目印にグループを特定する。
+           タブ切替はイベント委譲（closest('.tab-button')）なので、置き場所が変わっても動く。
+           .tab-group ごと移すので hidden-tab-group 等の既存ロジックもそのまま効く。 */
+        try {
+          var toolAnchorBtn = document.querySelector('.tab-button[data-tab="bnCompare"]');
+          var toolGroupEl = toolAnchorBtn && toolAnchorBtn.closest('.tab-group');
+          if (toolGroupEl) toolsBody.appendChild(toolGroupEl);
+        } catch (e) { /* 失敗してもチェックリスト側に残るだけ */ }
 
         /* ── スプレッド表示タブ（exe 限定）──
            全難易度のノーツを等速(SV無視)で右→左に流し、osu! 再生に同期する。 */
@@ -2099,12 +2130,7 @@
           wrap.appendChild(btn);
         });
 
-        /* 「ツール」グループ（音声波形・タイムライン・BN評価）を最下部に隔離 */
-        var toolAnchor = document.querySelector('#electron-col-tabs .tab-button[data-tab="bnCompare"]');
-        if (toolAnchor) {
-          var toolGroup = toolAnchor.closest('.tab-group');
-          if (toolGroup) toolGroup.classList.add('etb-tool-group');
-        }
+        /* ツールグループは「ツール」カードへ移設済み（DOM 挿入直後の処理を参照）。 */
 
         /* リアルタイム表示の値をダブルクリックでクリップボードにコピー */
         ['osu-t-timing', 'osu-t-bpm', 'osu-t-sv', 'osu-t-vbpm', 'osu-t-vol'].forEach(function(id) {
@@ -2158,6 +2184,7 @@
               settingsMode ? 'チェックリストの設定' : 'チェックリスト',
               settingsMode ? 'Check list settings'  : 'Check list');
           set('etb-title-results',      'チェック結果',       'Check results');
+          set('etb-title-tools',        'ツール',            'Tools');
           set('etb-tab-main',           'チェック',          'Check');
           set('etb-tab-preview',        'プレビュー',        'Preview');
           set('toggleTabSettings',      '設定',              'Settings');

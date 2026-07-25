@@ -329,7 +329,9 @@
 
       /* 設定モード: 左カラム(譜面読み込み設定＋プレビュータブ設定)と中央(チェックリスト設定)を 50/50 */
       #electron-layout.etb-settings #electron-col-future { flex: 1 1 0 !important; }
-      #electron-layout.etb-settings #electron-col-tabs   { flex: 1 1 0 !important; }
+      #electron-layout.etb-settings #electron-col-center { flex: 1 1 0 !important; }
+      /* 設定モードではツールカードを出さない（中央はチェックリスト設定だけにする） */
+      #electron-layout.etb-settings #etb-card-tools { display: none !important; }
       /* 左カラムの2カードは内容の高さで上から積む */
       #electron-layout.etb-settings #etb-card-viewsettings,
       #electron-layout.etb-settings #etb-card-loadsettings,
@@ -476,12 +478,52 @@
       #osu-t-timing { font-size: 15px; color: #ddd; letter-spacing: 0.02em; }
 
       /* ── タブ列（チェックリストカード） ── */
-      #electron-col-tabs {
+      /* 中央カラム: チェックリストカード＋ツールカードを縦積みするラッパー。
+         カラム幅(flex)はここが持ち、中の2カードを縦に並べる。 */
+      #electron-col-center {
         flex: 1.6 !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+        gap: 8px !important;
+      }
+      #electron-col-tabs {
+        flex: 1 1 auto !important;   /* 中央カラム内で伸びてスクロール（下のツールカードは固定高） */
         overflow: hidden !important;
         padding: 0 !important;
         box-sizing: border-box !important;
         min-width: 0 !important;
+        min-height: 0 !important;
+      }
+      /* ツールカード（緑のツールボタン群）。内容の高さで下部に固定。 */
+      #etb-card-tools {
+        flex: 0 0 auto !important;
+        min-width: 0 !important;
+      }
+      #etb-card-tools > .etb-card-body { padding: 8px 6px !important; }
+      /* ツールカード内はグループ枠・タイトルを出さず、ボタンをグリッドで並べる
+         （カード見出しが「ツール」なのでグループ見出しは重複＝隠す）。 */
+      #etb-card-tools .tab-group {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)) !important;
+        gap: 5px !important;
+        width: auto !important;
+        min-width: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      #etb-card-tools .tab-group-title { display: none !important; }
+      #etb-card-tools .tab-button {
+        font-size: 11px !important;
+        padding: 5px 6px !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
       }
       #electron-col-tabs > .etb-card-body {
         flex: 1 1 auto;
@@ -501,6 +543,11 @@
         column-gap: 5px !important;
         row-gap: 20px !important;
         box-sizing: border-box !important;
+        /* web の @media(max-width:1600px) が付ける下線＋下余白はカードでは不要なので打ち消す
+           （「その他」グループの下に区切り線が出るのを防ぐ）。上余白は既存のまま維持。 */
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+        margin-bottom: 0 !important;
       }
 
       /* グループ枠とタイトルの背景をカード色に馴染ませる
@@ -531,12 +578,6 @@
       }
       #electron-col-tabs .tab-group-title { font-size: 11px !important; }
 
-      /* 「ツール」グループは最下部に全幅で隔離（上に余白を空けて区切る） */
-      #electron-col-tabs .tab-group.etb-tool-group {
-        grid-column: 1 / -1 !important;
-        margin-top: 16px !important;
-      }
-
       /* ── コンパクト: チェックリストを1画面に収める ──
          余白・文字・ボタン高さを一段詰める。（「ツール」グループは隠さない） */
       #electron-layout.etb-compact #electron-col-tabs > .etb-card-body {
@@ -565,13 +606,27 @@
         min-height: 21px !important;
         line-height: 1.15 !important;
       }
+      /* コンパクト: ツールカードもチェックリストに合わせて一段詰める */
+      #electron-layout.etb-compact #etb-card-tools > .etb-card-body {
+        padding: 6px 5px !important;
+      }
+      #electron-layout.etb-compact #etb-card-tools .tab-group {
+        grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)) !important;
+        gap: 4px !important;
+      }
+      #electron-layout.etb-compact #etb-card-tools .tab-button {
+        font-size: 10.5px !important;
+        padding: 2px 4px !important;
+        min-height: 21px !important;
+        line-height: 1.15 !important;
+      }
 
       /* スプレッド表示パネル（プレビュータブ専用。通常は非表示） */
       #electron-col-output #tab-spreadPlay { padding: 0 !important; }
 
       /* ── プレビューモード: スプレッド表示を全面に、他カラム/サブタブを隠す ── */
       #electron-layout.etb-preview #electron-col-future,
-      #electron-layout.etb-preview #electron-col-tabs { display: none !important; }
+      #electron-layout.etb-preview #electron-col-center { display: none !important; }
       #electron-layout.etb-preview #electron-col-output { flex: 1 1 100% !important; }
       #electron-layout.etb-preview #electron-col-output > .etb-card-head { display: none !important; }
       #electron-layout.etb-preview #electron-col-output .tab-visibility-settings { display: none !important; }
