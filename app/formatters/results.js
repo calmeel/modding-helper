@@ -775,7 +775,7 @@ function formatKiaiSnapResult(result, t) {
     lines.push(
       isError
         ? `<span class="result-error">${line}</span>`
-        : line
+        : `<span class="result-warn">${line}</span>`
     );
   }
 
@@ -1039,7 +1039,9 @@ function formatSampleSetResult(result, t) {
     lines.push(t("timingPoints"));
     for (const item of result.timingIssues) {
       lines.push(
-        `${formatTimestampLink(item.time)} | ${item.lineType} | ${formatSampleSetIssueText(item)}`
+        `<span class="result-warn">` +
+        `${formatTimestampLink(item.time)} | ${item.lineType} | ${formatSampleSetIssueText(item)}` +
+        `</span>`
       );
     }
     lines.push("");
@@ -1049,7 +1051,9 @@ function formatSampleSetResult(result, t) {
     lines.push(t("hitObjects"));
     for (const item of result.objectIssues) {
       lines.push(
-        `${formatTimestampLink(item.time)} | ${item.objectType} | ${formatSampleSetIssueText(item)}`
+        `<span class="result-warn">` +
+        `${formatTimestampLink(item.time)} | ${item.objectType} | ${formatSampleSetIssueText(item)}` +
+        `</span>`
       );
     }
   }
