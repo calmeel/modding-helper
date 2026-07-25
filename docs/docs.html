@@ -933,7 +933,7 @@ osu!stable / osu!lazerにおける小節線描画位置の生成式、浮動小�
 <span class="label label-detect">■ 検出内容1：2重小節線</span><br>
 osu!stable と osu!lazer の生成方法をそれぞれ再現し、異なる赤線区間から生成された小節線が同時刻、または 1 ms 以内に複数存在するかを確認します。<br>
 この判定では小数時刻そのものが重要なため、lazer の生成時刻を整数化せず <code>double</code> のまま比較します。同時刻に複数生成された小節線も重複除去しません。<br>
-結果には <code>[osu!stable, osu!lazer]</code>、<code>[osu!stable のみ]</code>、<code>[osu!lazer のみ]</code> のいずれかを表示します。両クライアントで2重になる場合は赤色の Error、片方だけで2重になる場合は黄色の Warning として表示します。<br><br>
+結果には <code>[osu!stable, osu!lazer]</code>、<code>[osu!stable のみ]</code>、<code>[osu!lazer のみ]</code> のいずれかを表示します。両クライアントで2重になる場合は赤色の Error、片方だけで2重になる場合は警告なしの白文字として表示します。片方だけの結果では、タブにも Warning / Error を付けません。<br><br>
 例：<br>
 <code>[osu!lazer のみ] 02:24:992 | 同時刻に 2 本の小節線が生成されます。</code>
 </div>

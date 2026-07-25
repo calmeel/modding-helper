@@ -177,10 +177,6 @@ function getBarlineIssueLevel(results) {
 
   const hasBarlineWarning =
     results?.some(result =>
-      result.doubleBarlines?.some(item =>
-        !item.clients?.includes("stable") ||
-        !item.clients?.includes("lazer")
-      ) ||
       (result.negativeStartBarlineWarnings?.length ?? 0) > 0 ||
       (result.intentionalDetachedBarlines?.length ?? 0) > 0
     ) ?? false;

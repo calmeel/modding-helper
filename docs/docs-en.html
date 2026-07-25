@@ -953,7 +953,7 @@ For the osu!stable / osu!lazer barline-generation formulas, floating-point behav
 <span class="label label-detect">■ Detection Content 1: Double Barline</span><br>
 The tool reproduces the osu!stable and osu!lazer generation methods separately, then checks whether barlines generated from different red timing sections occur at the same time or within 1 ms of one another.<br>
 Because the fractional time itself matters to this check, lazer generation times are compared as <code>double</code> values without integer conversion. Multiple barlines generated at the same timestamp are not deduplicated.<br>
-Each result is labeled <code>[osu!stable, osu!lazer]</code>, <code>[osu!stable only]</code>, or <code>[osu!lazer only]</code>. A double barline affecting both clients is shown as a red Error, while one affecting only one client is shown as a yellow Warning.<br><br>
+Each result is labeled <code>[osu!stable, osu!lazer]</code>, <code>[osu!stable only]</code>, or <code>[osu!lazer only]</code>. A double barline affecting both clients is shown as a red Error, while one affecting only one client is shown as normal white text without a warning. A one-client-only result does not set the tab to Warning or Error.<br><br>
 Example:<br>
 <code>[osu!lazer only] 02:24:992 | 2 barlines are generated at the same time.</code>
 </div>

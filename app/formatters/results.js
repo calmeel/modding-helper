@@ -369,9 +369,12 @@ function formatBarlineDoubleBarlineLines(result, t) {
       ? formatBarlineTimestampLink(item.barlineTime)
       : `${formatBarlineTimestampLink(item.barlineTime)} -> ` +
         `${formatBarlineTimestampLink(item.redLineTime)}`;
+    const classAttribute = isBothClients
+      ? ` class="result-error"`
+      : "";
 
     return (
-      `<span class="${isBothClients ? "result-error" : "result-warn"}">` +
+      `<span${classAttribute}>` +
       `${formatBarlineClientScope(item, t)}${timestamps} | ` +
       `${escapeHtml(message)}` +
       `</span>`
