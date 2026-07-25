@@ -453,7 +453,7 @@ function formatMultipleUnappliedSvResults(results, t) {
     sortedResults,
     "barlineIssues",
     "unappliedSvNoBarlineIssues",
-    "unappliedSvBarlineMessage",
+    null,
     t
   ));
 
@@ -493,7 +493,11 @@ function formatUnappliedSvIssueLine(issue, t, messageKey) {
   const deltaText = `${t("unappliedSvDeltaLabel")} ${formatUnappliedSvDelta(followingSv - targetSv)}`;
   const svText = `${targetSvText} -> ${followingSvText} (${deltaText})`;
   const offsetText = `+${formatBarlinePreciseNumber(issue.offset)} ms`;
-  const message = t(messageKey).replace("{offset}", offsetText);
+  const messageSuffix = messageKey
+    ? ` | ${escapeHtml(
+        t(messageKey).replace("{offset}", offsetText)
+      )}`
+    : "";
   const clientScope = issue.targetType === "barline"
     ? formatBarlineClientScope(issue, t)
     : "";
@@ -505,8 +509,8 @@ function formatUnappliedSvIssueLine(issue, t, messageKey) {
     `${clientScope}${targetTimeLink} -> ` +
     `${formatTimestampLink(issue.greenTime)} | ` +
     `${offsetText} | ` +
-    `${escapeHtml(svText)} | ` +
-    `${escapeHtml(message)}` +
+    `${escapeHtml(svText)}` +
+    `${messageSuffix}` +
     `</span>`;
 }
 
