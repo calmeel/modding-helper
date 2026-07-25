@@ -137,6 +137,7 @@ function buildStableBarlineTimeline(redLines, lastHitObjectEndTime) {
         rawTime: time,
         sectionIndex,
         sectionTime: section.time,
+        candidateIndex,
         source: isInitialCandidate
           ? "initial-candidate"
           : time === section.time

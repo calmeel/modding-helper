@@ -208,35 +208,34 @@ function applyTaikoNoteVelocities(notes, red, green, sliderMultiplier) {
   }
 }
 
-// 小節線を生成して速度も付与する。赤線の meter ごとに1本、
-// 緑線の「小節線を省略」(effects bit3=8) の時刻はスキップする。
+// osu!stable と同じ手順で小節線を生成し、速度も付与する。
+// 生成時刻は共通の barlineTiming.js に任せることで、負時刻開始、
+// 赤線境界、反復加算誤差、conv.i4 相当の整数化、omit first barline を再現する。
 // NCシンバルが鳴る間隔（小節数）。meter に関係なく4小節ごと。
 const NC_CYMBAL_MEASURES = 4;
 
-function buildTaikoBarlines(red, green, sliderMultiplier, endTime, omitTimes) {
-  const bars = [];
-  if (!red || !red.length) return bars;
-  const omit = Object.create(null);
-  if (omitTimes) for (const t of omitTimes) omit[Math.round(t)] = true;
-
-  for (let i = 0; i < red.length; i++) {
-    const r = red[i];
-    const meter = Number.isFinite(r.meter) && r.meter > 0 ? r.meter : 4;
-    const measure = r.beatLength * meter;
-    if (!Number.isFinite(measure) || measure <= 0) continue;
-    const segEnd = i + 1 < red.length ? red[i + 1].time : endTime;
-    if (!(segEnd > r.time)) continue;
-    if ((segEnd - r.time) / measure > 20000) continue; // 異常値でのフリーズ防止
-    /* major = NCシンバルが鳴る小節線。**meter に関係なく 4小節ごと**（3/4 でも4小節ごと）。
-       小節番号は赤線ごとに 0 から数え直すので、各赤線の最初の小節線は必ず major。
-       ※ lazer の汎用 BarLineGenerator は `currentBeat % TimeSignature.Numerator == 0` と
-         書かれているが、実際の osu! の挙動は meter を問わず4小節ごと。実機に合わせている。 */
-    let barIndex = 0;
-    for (let t = r.time; t < segEnd; t += measure, barIndex++) {
-      if (!omit[Math.round(t)]) bars.push({ time: t, major: barIndex % NC_CYMBAL_MEASURES === 0 });
-    }
+function buildTaikoBarlines(text, red, green, sliderMultiplier) {
+  if (
+    typeof buildBarlineTimelines !== "function" ||
+    typeof text !== "string"
+  ) {
+    return [];
   }
-  bars.sort((a, b) => a.time - b.time);
+
+  const timeline = buildBarlineTimelines(text);
+  const bars = timeline.stable.events
+    .map(event => ({
+      time: event.time,
+      rawTime: event.rawTime,
+      sectionIndex: event.sectionIndex,
+      major:
+        event.candidateIndex % NC_CYMBAL_MEASURES === 0
+    }))
+    .sort((a, b) =>
+      a.time - b.time ||
+      a.sectionIndex - b.sectionIndex
+    );
+
   applyTaikoNoteVelocities(bars, red, green, sliderMultiplier); // .vel を付与
   return bars;
 }
@@ -439,7 +438,7 @@ function taikoTickColor(beatPos, snap) {
 }
 
 // 全レーン貫通のスナップグリッド
-function drawTaikoGrid(ctx, red, currentTime, judgmentX, pxPerMs, x0, x1, y0, y1, snap) {
+function drawTaikoGrid(ctx, red, currentTime, judgmentX, pxPerMs, x0, x1, y0, y1, snap, showNcCymbal) {
   if (!red || !red.length) return;
   const leftTime  = currentTime - (judgmentX - x0) / pxPerMs;
   const rightTime = currentTime + (x1 - judgmentX) / pxPerMs;
@@ -471,9 +470,24 @@ function drawTaikoGrid(ctx, red, currentTime, judgmentX, pxPerMs, x0, x1, y0, y1
       const isMeasure = isBeat && (((beatsFromStart % meter) + meter) % meter === 0);
 
       let color, w;
-      if (isMeasure)      { color = "rgba(255,255,255,0.32)"; w = 1.5; }
-      else if (isBeat)    { if (!drawBeat) continue;  color = "rgba(255,255,255,0.14)"; w = 1; }
-      else                { if (!drawMinor) continue; color = taikoTickColor(beatPos, snap); w = 1; }
+      if (isMeasure) {
+        const measureIndex = Math.floor(beatsFromStart / meter);
+        const major =
+          showNcCymbal &&
+          measureIndex % NC_CYMBAL_MEASURES === 0;
+        color = major
+          ? TAIKO_COLORS.ncBar
+          : "rgba(255,255,255,0.32)";
+        w = major ? 2 : 1.5;
+      } else if (isBeat) {
+        if (!drawBeat) continue;
+        color = "rgba(255,255,255,0.14)";
+        w = 1;
+      } else {
+        if (!drawMinor) continue;
+        color = taikoTickColor(beatPos, snap);
+        w = 1;
+      }
 
       const x = judgmentX + (t - currentTime) * pxPerMs;
       ctx.strokeStyle = color; ctx.lineWidth = w;
@@ -586,27 +600,25 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
     /* グリッドは等速表示のみ（SV適用時はノーツと合わなくなるため出さない＝ゲーム画面に近い） */
     if (!svMode) {
       let refRed = null;
-      for (let i = 0; i < n; i++) { if (diffs[i].red && diffs[i].red.length) { refRed = diffs[i].red; break; } }
-      drawTaikoGrid(ctx, refRed, currentTime, judgmentX, pxPerMs, playX0, playX1, topPad, gridY1, snap);
-      /* NCシンバルが鳴る小節線（major）を強調。等速表示では全難易度で同じ時間軸なので
-         最初に見つかった小節線リストを使い、全レーンを貫く1本として描く。 */
-      if (showNcCymbal) {
-        let refBars = null;
-        for (let i = 0; i < n; i++) {
-          if (diffs[i].barlines && diffs[i].barlines.length) { refBars = diffs[i].barlines; break; }
-        }
-        if (refBars) {
-          ctx.strokeStyle = TAIKO_COLORS.ncBar;
-          ctx.lineWidth = 2;
-          for (let b = 0; b < refBars.length; b++) {
-            if (!refBars[b].major) continue;
-            const bx = judgmentX + (refBars[b].time - currentTime) * pxPerMs;
-            if (bx < playX0 - 2 || bx > playX1 + 2) continue;
-            const px = Math.round(bx) + 0.5;
-            ctx.beginPath(); ctx.moveTo(px, topPad); ctx.lineTo(px, gridY1); ctx.stroke();
-          }
+      for (let i = 0; i < n; i++) {
+        if (diffs[i].red && diffs[i].red.length) {
+          refRed = diffs[i].red;
+          break;
         }
       }
+      drawTaikoGrid(
+        ctx,
+        refRed,
+        currentTime,
+        judgmentX,
+        pxPerMs,
+        playX0,
+        playX1,
+        topPad,
+        gridY1,
+        snap,
+        showNcCymbal
+      );
     }
 
     const futureMs = (playX1 - judgmentX) / pxPerMs;

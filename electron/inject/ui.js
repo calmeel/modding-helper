@@ -805,13 +805,15 @@
               }
               var marks = window.parseTaikoTimelineMarks
                 ? window.parseTaikoTimelineMarks(d.text) : null;
-              /* 小節線も1回だけ生成（譜面末尾＋1小節ぶんまで） */
+              /* 小節線も1回だけ生成（osu!stable の生成処理を再現） */
               var barlines = [];
               if (window.buildTaikoBarlines && notes.length) {
-                var last = notes[notes.length - 1];
-                var endT = (last.endTime != null ? last.endTime : last.time) + 4000;
-                barlines = window.buildTaikoBarlines(red, green, sm, endT,
-                  marks ? marks.omitBarline : null);
+                barlines = window.buildTaikoBarlines(
+                  d.text,
+                  red,
+                  green,
+                  sm
+                );
               }
               return {
                 name: name,
