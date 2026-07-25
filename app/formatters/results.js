@@ -372,7 +372,7 @@ function formatBarlineDoubleBarlineLines(result, t) {
 
     return (
       `<span class="${isBothClients ? "result-error" : "result-warn"}">` +
-      `${formatBarlineClientScope(item)}${timestamps} | ` +
+      `${formatBarlineClientScope(item, t)}${timestamps} | ` +
       `${escapeHtml(message)}` +
       `</span>`
     );
@@ -386,7 +386,7 @@ function formatBarlineNegativeStartWarningLines(result, t) {
 
   return result.negativeStartBarlineWarnings.map(item =>
     `<span class="result-warn">` +
-    `${formatBarlineClientScope(item)}` +
+    `${formatBarlineClientScope(item, t)}` +
     `${formatBarlineTimestampLink(item.nextRedLineTime)} | ` +
     `${escapeHtml(t(item.stableLazerMessageKey))}` +
     `</span>`
@@ -417,7 +417,7 @@ function formatBarlineDetachedBarlineLine(item, t, className) {
   const deltaSign = item.delta > 0 ? "+" : "";
   return (
     `<span class="${className}">` +
-    `${formatBarlineClientScope(item)}` +
+    `${formatBarlineClientScope(item, t)}` +
     `${formatBarlineTimestampLink(item.barlineTime)} -> ${formatTimestampLink(item.noteTime)} | ` +
     `${escapeHtml(t("barlineGeneratedBarline"))}: ${formatBarlineSpeed(item.barlineSpeed)} px/s | ` +
     `${escapeHtml(t("barlineNote"))}: ${formatBarlineSpeed(item.noteSpeed)} px/s | ` +
@@ -492,7 +492,7 @@ function formatUnappliedSvIssueLine(issue, t, messageKey) {
   const offsetText = `+${formatBarlinePreciseNumber(issue.offset)} ms`;
   const message = t(messageKey).replace("{offset}", offsetText);
   const clientScope = issue.targetType === "barline"
-    ? formatBarlineClientScope(issue)
+    ? formatBarlineClientScope(issue, t)
     : "";
   const targetTimeLink = issue.targetType === "barline"
     ? formatBarlineTimestampLink(issue.targetTime)
@@ -528,13 +528,20 @@ function formatBarlineSpeed(value) {
   return (Math.round(value * 100) / 100).toString();
 }
 
-function formatBarlineClientScope(item) {
+function formatBarlineClientScope(item, t) {
   const clients = item?.clients ?? [];
   if (!clients.length) return "";
 
   const labels = clients.map(client =>
     client === "stable" ? "osu!stable" : "osu!lazer"
   );
+
+  if (labels.length === 1) {
+    const onlyLabel = t("barlineClientOnly")
+      .replace("{client}", labels[0]);
+    return `[${onlyLabel}] `;
+  }
+
   return `[${labels.join(", ")}] `;
 }
 

@@ -932,9 +932,9 @@ osu!stable / osu!lazerにおける小節線描画位置の生成式、浮動小�
 <div class="section section-detect">
 <span class="label label-detect">■ 検出内容1：2重小節線</span><br>
 osu!stable と osu!lazer の生成方法をそれぞれ再現し、異なる赤線区間から生成された小節線が同時刻、または 1 ms 以内に複数存在するかを確認します。<br>
-結果には <code>[osu!stable, osu!lazer]</code>、<code>[osu!stable]</code>、<code>[osu!lazer]</code> のいずれかを表示します。両クライアントで2重になる場合は赤色の Error、片方だけで2重になる場合は黄色の Warning として表示します。<br><br>
+結果には <code>[osu!stable, osu!lazer]</code>、<code>[osu!stable のみ]</code>、<code>[osu!lazer のみ]</code> のいずれかを表示します。両クライアントで2重になる場合は赤色の Error、片方だけで2重になる場合は黄色の Warning として表示します。<br><br>
 例：<br>
-<code>[osu!lazer] 02:24:992 | 同時刻に 2 本の小節線が生成されます。</code>
+<code>[osu!lazer のみ] 02:24:992 | 同時刻に 2 本の小節線が生成されます。</code>
 </div>
 
 <div class="section section-detect">
@@ -943,7 +943,7 @@ osu!stable と osu!lazer の生成方法をそれぞれ再現し、異なる赤�
 小節線位置の見た目のスクロール速度と、ノーツ位置の見た目のスクロール速度を比較し、値が一致しない場合に意図しない小節線の分離として Error 表示します。結果には該当するクライアント名も表示します。<br><br>
 見た目のスクロール速度は、スプレッド比較の「スクロール速度」サブタブと同じ考え方で、現在の BPM、現在の SV、<code>SliderMultiplier</code> から計算します。<br><br>
 例：<br>
-<code>[osu!stable] 02:45:635 -> 02:45:636 | 小節線: 934.18 px/s | ノーツ: 935.08 px/s | 差分: +0.9 px/s</code>
+<code>[osu!stable のみ] 02:45:635 -> 02:45:636 | 小節線: 934.18 px/s | ノーツ: 935.08 px/s | 差分: +0.9 px/s</code>
 </div>
 
 <div class="section section-detect">
@@ -956,7 +956,7 @@ osu!stable と osu!lazer の生成方法をそれぞれ再現し、異なる赤�
 <div class="section section-detect">
 <span class="label label-detect">■ 検出内容4：マイナス時刻開始による小節線バグ</span><br>
 最初の赤線がマイナス時刻にある場合、その赤線から最初に生成される小節線位置と、次の赤線位置を比較します。<br>
-最初に生成される小節線位置が次の赤線と一致する、または次の赤線を超える場合、osu!stable と osu!lazer で小節線の見え方が異なる可能性があるため Warning として表示します。<br><br>
+最初に生成される小節線位置が次の赤線と一致する、または次の赤線を超える場合、osu!stable と osu!lazer で小節線の見え方が異なるため Warning として表示します。<br><br>
 
 <table class="ratio-threshold-table">
   <thead>
@@ -968,11 +968,11 @@ osu!stable と osu!lazer の生成方法をそれぞれ再現し、異なる赤�
   <tbody>
     <tr>
       <td><code>omit first barline</code> 有効</td>
-      <td class="ratio-warn">osu!stable では1本の小節線である一方、osu!lazer では小節線が消失している可能性があります。</td>
+      <td class="ratio-warn">osu!stable では1本の小節線が表示されますが、osu!lazer では小節線が表示されません。</td>
     </tr>
     <tr>
       <td><code>omit first barline</code> 無効</td>
-      <td class="ratio-warn">osu!stable では2重小節線である一方、osu!lazer では1本の小節線になっている可能性があります。</td>
+      <td class="ratio-warn">osu!stable では2重小節線が表示されますが、osu!lazer では1本の小節線が表示されます。</td>
     </tr>
   </tbody>
 </table>
@@ -1072,7 +1072,7 @@ SV線（緑線）は、その時刻以降のノーツや小節線に適用され
 <div class="section section-detect">
 <span class="label label-detect">■ 検出内容2：小節線にSVが適用されていない可能性</span><br>
 osu!stable と osu!lazer で実際に生成される小節線位置を別々に計算し、その時刻を <code>T</code> として、<code>T + 1 ms</code> から <code>T + 5 ms</code> の範囲にSV線があるかを確認します。<br>
-該当するSV線がある場合、小節線にそのSVが適用されていない可能性があるため、黄色の警告として表示します。結果には <code>[osu!stable, osu!lazer]</code>、<code>[osu!stable]</code>、<code>[osu!lazer]</code> のいずれかを表示します。<br><br>
+該当するSV線がある場合、小節線にそのSVが適用されていない可能性があるため、黄色の警告として表示します。結果には <code>[osu!stable, osu!lazer]</code>、<code>[osu!stable のみ]</code>、<code>[osu!lazer のみ]</code> のいずれかを表示します。<br><br>
 
 出力例：<br>
 <code>[osu!stable, osu!lazer] 02:33:864 -> 02:33:865 | +1 ms | 小節線SV x1 -> 直後SV x0.5 (SV差 -0.5) | 小節線生成位置の +1 ms 後にSV線があります。小節線にSVが適用されていない可能性があります。</code>
