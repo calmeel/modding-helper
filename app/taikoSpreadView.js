@@ -554,6 +554,12 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
      譜面数が多くレーンが縮んだ時だけ、大音符が収まるように小さくする。 */
   const radius = Math.max(4, Math.min(rWant, laneH * 0.32)); // 大音符=laneH*0.48 まで
   const bigR   = radius * 1.5;
+  /* ゲーム画面表示(svMode)の横スクロール縮尺。
+     ノーツが実機縮尺(rWant)より小さくクランプされた分だけ、横方向も同じ比率で縮める。
+     こうしないと「ノーツの大きさ : 接近距離」の比が崩れ、譜面数が多い（レーンが
+     縮む）ほどノーツ間隔だけ実際より広く見えてゲームプレイ再現から外れる。
+     縮んでいない時は radius===rWant なので係数1＝従来と同じ。 */
+  const svHScale = svScale * (radius / rWant);
   const gridY1 = topPad + n * laneH;
   const playable = currentTime != null && Number.isFinite(currentTime);
 
@@ -647,7 +653,7 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
         for (let b = 0; b < diff.barlines.length; b++) {
           const bar = diff.barlines[b];
           const bv = (bar.vel != null && Number.isFinite(bar.vel) && bar.vel > 0) ? bar.vel : 0.3;
-          const bx = judgmentX + (bar.time - currentTime) * bv * svScale;
+          const bx = judgmentX + (bar.time - currentTime) * bv * svHScale;
           if (bx < playX0 - 4 || bx > playX1 + 4) continue;
           /* NCシンバルが鳴る小節線は太く色を変えて強調 */
           const major = showNcCymbal && bar.major;
@@ -680,8 +686,8 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
              SV により画面上の順序が入れ替わり得るので、時間による打ち切りはせず
              各ノーツの x 範囲で可視判定する。 */
           const vel = (note.vel != null && Number.isFinite(note.vel) && note.vel > 0) ? note.vel : 0.3;
-          x  = judgmentX + dt * vel * svScale;
-          x2 = judgmentX + (endT - currentTime) * vel * svScale;
+          x  = judgmentX + dt * vel * svHScale;
+          x2 = judgmentX + (endT - currentTime) * vel * svHScale;
           const lo = Math.min(x, x2), hi = Math.max(x, x2);
           if (hi < playX0 - 60 || lo > playX1 + 60) continue;
         } else {
@@ -726,7 +732,13 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
             const dur = endT - note.time;
             if (dur > 0) {
               const times = taikoDrumRollTickTimes(note);
-              const tickR = Math.max(1.2, r * 0.2);
+              /* ティックの点の大きさは lazer 準拠。
+                 TickPiece の tick_size=0.35（ノーツ径に対する比）＝ ノーツ半径 r × 0.35。
+                 r は Finisher連打で bigR(=radius×1.5) になるので、IsStrong(強連打)の
+                 大小はここに自動で反映される（lazer の STRONG_SCALE≒1.538 に相当）。
+                 出典: osu.Game.Rulesets.Taiko/Skinning/Default/TickPiece.cs
+                       osu.Game.Rulesets.Taiko/Objects/Drawables/DrawableDrumRollTick.cs */
+              const tickR = Math.max(1.2, r * 0.35);
               ctx.fillStyle = TAIKO_COLORS.rollTick;
               for (let ti = 0; ti < times.length; ti++) {
                 const tx = x + ((times[ti] - note.time) / dur) * (x2 - x);
