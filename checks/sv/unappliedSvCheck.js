@@ -3,16 +3,31 @@ const UNAPPLIED_SV_MAX_OFFSET_MS = 5;
 const UNAPPLIED_SV_DISPLAY_PRECISION = 1000;
 
 function runUnappliedSvCheck(text, fileName) {
-  const redLines = parseSpreadRedLines(text);
+  const timelines = buildBarlineTimelines(text);
+  const redLines = timelines.redLines;
   const greenLines = parseSpreadGreenLines(text);
   const greenLinesByTime = groupUnappliedSvGreenLinesByTime(greenLines);
   const noteTimes = parseSpreadCircleNoteTimes(text);
-  const barlineTimes = buildUnappliedSvBarlineTimes(text);
+  const stableBarlineIssues = detectUnappliedSvBarlineIssues(
+    timelines.stable.events,
+    "stable",
+    greenLines,
+    redLines
+  );
+  const lazerBarlineIssues = detectUnappliedSvBarlineIssues(
+    timelines.lazer.events,
+    "lazer",
+    greenLines,
+    redLines
+  );
 
   return {
     fileName,
     noteIssues: detectUnappliedSvTargetIssues(noteTimes, greenLines, greenLinesByTime, redLines, "note"),
-    barlineIssues: detectUnappliedSvTargetIssues(barlineTimes, greenLines, greenLinesByTime, redLines, "barline")
+    barlineIssues: mergeUnappliedSvBarlineIssues([
+      ...stableBarlineIssues,
+      ...lazerBarlineIssues
+    ])
   };
 }
 
@@ -101,43 +116,127 @@ function getUnappliedSvCurrentGreenLine(greenLines, redLines, targetTime) {
 }
 
 function buildUnappliedSvBarlineTimes(text) {
-  const redLines = parseBarlineRedLines(text);
-  const barlineTimes = [];
-  const omittedFirstBarlineTimes = new Set(
-    redLines
-      .filter(redLine => redLine.omitFirstBarline)
-      .map(redLine => redLine.time)
-  );
-  const lastHitObjectTime = getLastHitObjectTime(text);
+  const timelines = buildBarlineTimelines(text);
+  return {
+    stable: getUniqueUnappliedSvBarlineTimes(timelines.stable.events),
+    lazer: getUniqueUnappliedSvBarlineTimes(timelines.lazer.events)
+  };
+}
 
-  for (let i = 0; i < redLines.length; i++) {
-    const section = redLines[i];
-    const nextSection = redLines[i + 1] ?? null;
-    const measureLength = section.beatLength * section.meter;
+function detectUnappliedSvBarlineIssues(
+  events,
+  client,
+  greenLines,
+  redLines
+) {
+  const issues = [];
+  const seen = new Set();
+  const targetTimes = getUniqueUnappliedSvBarlineTimes(events);
 
-    if (!Number.isFinite(measureLength) || measureLength <= 0) continue;
+  for (const targetTime of targetTimes) {
+    const targetGreenLine = getUnappliedSvCurrentGreenLine(
+      greenLines,
+      redLines,
+      targetTime
+    );
 
-    const sectionEnd = nextSection
-      ? nextSection.time
-      : Math.max(lastHitObjectTime, section.time) + measureLength;
+    for (const greenLine of greenLines) {
+      const offset = greenLine.time - targetTime;
+      if (offset < UNAPPLIED_SV_MIN_OFFSET_MS - BARLINE_TIMING_LAZER_EPSILON) {
+        continue;
+      }
+      if (offset > UNAPPLIED_SV_MAX_OFFSET_MS + BARLINE_TIMING_LAZER_EPSILON) {
+        break;
+      }
 
-    // ハズレ値の beatLength で小節線が無限生成されフリーズするのを防ぐ
-    if ((sectionEnd - section.time) / measureLength > 200000) continue;
+      const key = [
+        client,
+        normalizeUnappliedSvBarlineTime(targetTime),
+        greenLine.time,
+        greenLine.beatLength
+      ].join("|");
+      if (seen.has(key)) continue;
+      seen.add(key);
 
-    for (
-      let rawBarlineTime = section.time;
-      rawBarlineTime < sectionEnd - 1e-6;
-      rawBarlineTime += measureLength
+      if (!hasUnappliedSvDisplayDelta(targetGreenLine, greenLine)) {
+        continue;
+      }
+
+      issues.push({
+        targetType: "barline",
+        targetTime,
+        greenTime: greenLine.time,
+        offset,
+        targetGreenLine,
+        greenLine,
+        clients: [client]
+      });
+    }
+  }
+
+  return issues;
+}
+
+function getUniqueUnappliedSvBarlineTimes(events) {
+  const times = events
+    .map(event => event.time)
+    .filter(time => Number.isFinite(time))
+    .sort((a, b) => a - b);
+  const unique = [];
+
+  for (const time of times) {
+    const previous = unique[unique.length - 1];
+    if (
+      previous === undefined ||
+      Math.abs(previous - time) > BARLINE_TIMING_LAZER_EPSILON
     ) {
-      const barlineTime = Math.floor(rawBarlineTime);
-      if (
-        Number.isFinite(barlineTime) &&
-        !omittedFirstBarlineTimes.has(barlineTime)
-      ) {
-        barlineTimes.push(barlineTime);
+      unique.push(time);
+    }
+  }
+
+  return unique;
+}
+
+function mergeUnappliedSvBarlineIssues(issues) {
+  const merged = new Map();
+
+  for (const issue of issues) {
+    const key = [
+      normalizeUnappliedSvBarlineTime(issue.targetTime),
+      issue.greenTime,
+      issue.greenLine.beatLength
+    ].join("|");
+    const existing = merged.get(key);
+
+    if (!existing) {
+      merged.set(key, {
+        ...issue,
+        clients: [...issue.clients]
+      });
+      continue;
+    }
+
+    for (const client of issue.clients) {
+      if (!existing.clients.includes(client)) {
+        existing.clients.push(client);
       }
     }
   }
 
-  return [...new Set(barlineTimes)].sort((a, b) => a - b);
+  const clientOrder = { stable: 0, lazer: 1 };
+  return [...merged.values()]
+    .map(issue => ({
+      ...issue,
+      clients: issue.clients.sort((a, b) =>
+        clientOrder[a] - clientOrder[b]
+      )
+    }))
+    .sort((a, b) =>
+      a.targetTime - b.targetTime ||
+      a.greenTime - b.greenTime
+    );
+}
+
+function normalizeUnappliedSvBarlineTime(time) {
+  return Math.round(time / BARLINE_TIMING_LAZER_EPSILON);
 }

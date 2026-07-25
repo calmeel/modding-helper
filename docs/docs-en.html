@@ -951,114 +951,26 @@ For the osu!stable / osu!lazer barline-generation formulas, floating-point behav
 
 <div class="section section-detect">
 <span class="label label-detect">■ Detection Content 1: Double Barline</span><br>
-The check calculates generated barline positions from the red timing point BPM and meter, then checks whether another red timing point exists at the generated barline position <code>+1 ms</code>.<br>
-If that red timing point does not have <code>omit first barline</code> enabled, it is reported as a double barline issue.<br><br>
+The tool reproduces the osu!stable and osu!lazer generation methods separately, then checks whether barlines generated from different red timing sections occur at the same time or within 1 ms of one another.<br>
+Each result is labeled <code>[osu!stable, osu!lazer]</code>, <code>[osu!stable]</code>, or <code>[osu!lazer]</code>.<br><br>
 Example:<br>
-<code>02:45:635 -> 02:45:636 | A red timing point exists at the generated barline +1 ms without omit first barline enabled.</code>
+<code>[osu!lazer] 02:24:992 | 2 barlines are generated at the same time.</code>
 </div>
 
 <div class="section section-detect">
 <span class="label label-detect">■ Detection Content 2: Unintended Detached Barline</span><br>
-This is checked when the double barline condition is met and a note exists on the <code>+1 ms</code> red timing point.<br>
-The check compares the effective visual scroll speed at the generated barline position with the effective visual scroll speed at the note position. If the values do not match, it is reported as an unintended detached barline error.<br><br>
+For each client, this is checked when a note exists within 1 ms before or after an actually generated barline and a red timing point exists at either the barline or note position.<br>
+The check compares the effective visual scroll speed at the barline position with the effective visual scroll speed at the note position. If the values do not match, it is reported as an unintended detached barline error together with the applicable client label.<br><br>
 The visual scroll speed is calculated using the same idea as the Spread Comparison / Scroll Speed subtab, based on the current BPM, current SV, and <code>SliderMultiplier</code>.<br><br>
 Example:<br>
-<code>02:45:635 -> 02:45:636 | Generated barline: 934.18 px/s | Note: 935.08 px/s | Delta: +0.9 px/s</code>
+<code>[osu!stable] 02:45:635 -> 02:45:636 | Generated barline: 934.18 px/s | Note: 935.08 px/s | Delta: +0.9 px/s</code>
 </div>
 
 <div class="section section-detect">
 <span class="label label-detect">■ Detection Content 3: Possibly Intentional Detached Barline</span><br>
-When the generated barline position is treated as <code>T</code>, this is checked when there is no red timing point at <code>T + 1 ms</code>, but a note and an SV line exist at that same position.<br>
-The check compares the visual scroll speed at the generated barline position with the visual scroll speed at the <code>T + 1 ms</code> note position. If the values do not match, it is reported as a possibly intentional detached barline warning.<br><br>
-The check also handles notes at <code>T - 1 ms</code>. In that case, it compares the visual scroll speed at the generated barline position <code>T</code> with the visual scroll speed at the <code>T - 1 ms</code> note position.<br>
-If the values do not match, it is also reported as a possibly intentional detached barline warning.<br><br>
-When a red timing point exists at <code>T + 1 ms</code>, the existing behavior is kept: if the speeds differ, it is reported as an unintended detached barline error.<br><br>
-However, if a note and a barline are both at <code>T</code> and the red timing point at <code>T + 1 ms</code> has <code>omit first barline</code> enabled, no first barline is drawn at <code>T + 1 ms</code>.
-Because the note and barline remain together at <code>T</code>, this arrangement is not reported as a possibly intentional detached barline.
-</div>
-
-<div class="section section-detect">
-<span class="label label-detect">■ Detection Patterns</span><br>
-The generated barline position is treated as <code>T</code>, the position 1 ms later as <code>T + 1 ms</code>, and the position 1 ms earlier as <code>T - 1 ms</code>.<br>
-If an <code>omit first barline</code> red timing point exists at <code>T</code>, the tool treats the automatically generated barline at that position as intentionally hidden.<br><br>
-
-<table class="ratio-threshold-table">
-  <thead>
-    <tr>
-      <th><code>T</code> state</th>
-      <th><code>T + 1 ms</code> state</th>
-      <th>Note position</th>
-      <th>Double barline</th>
-      <th>Detached barline</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Normal generated barline position</td>
-      <td>Red timing point without <code>omit first barline</code></td>
-      <td>None</td>
-      <td class="ratio-error">Detected</td>
-      <td>Not detected</td>
-    </tr>
-    <tr>
-      <td>Normal generated barline position</td>
-      <td>Red timing point without <code>omit first barline</code></td>
-      <td><code>T + 1 ms</code></td>
-      <td class="ratio-error">Detected</td>
-      <td class="ratio-error">Detected if the speeds differ</td>
-    </tr>
-    <tr>
-      <td>Normal generated barline position</td>
-      <td>Red timing point with <code>omit first barline</code></td>
-      <td><code>T + 1 ms</code></td>
-      <td>Not detected</td>
-      <td class="ratio-error">Detected if the speeds differ</td>
-    </tr>
-    <tr>
-      <td>Normal generated barline position</td>
-      <td>Red timing point with <code>omit first barline</code></td>
-      <td><code>T</code></td>
-      <td>Not detected</td>
-      <td>Not detected</td>
-    </tr>
-    <tr>
-      <td>Normal generated barline position</td>
-      <td>No red timing point / SV line exists</td>
-      <td><code>T + 1 ms</code></td>
-      <td>Not detected</td>
-      <td class="ratio-warn">Warning if the speeds differ</td>
-    </tr>
-    <tr>
-      <td>Normal generated barline position</td>
-      <td>Follows the existing checks</td>
-      <td><code>T - 1 ms</code></td>
-      <td>Follows the existing checks</td>
-      <td class="ratio-warn">Warning if the speeds differ</td>
-    </tr>
-    <tr>
-      <td>Red timing point with <code>omit first barline</code></td>
-      <td>Red timing point without <code>omit first barline</code></td>
-      <td>None</td>
-      <td>Not detected</td>
-      <td>Not detected</td>
-    </tr>
-    <tr>
-      <td>Red timing point with <code>omit first barline</code></td>
-      <td>Red timing point without <code>omit first barline</code></td>
-      <td><code>T</code></td>
-      <td>Not detected</td>
-      <td class="ratio-error">Detected if the speeds differ</td>
-    </tr>
-  </tbody>
-</table>
-
-<br>
-In the final case, the tool compares the scroll speed of the barline produced by the <code>T + 1 ms</code> red timing point with the scroll speed of the note placed at <code>T</code>.<br>
-For this reason, it is not treated as a double barline issue, and it is only reported as a detached barline issue when the visual scroll speeds do not match.<br>
-In contrast, when a normal barline and a note are both at <code>T</code> and the red timing point at <code>T + 1 ms</code> has <code>omit first barline</code> enabled, no comparison barline is drawn at <code>T + 1 ms</code>.<br>
-Because the barline and note at <code>T</code> are not detached, this case is not reported.<br>
-Also, even if the red timing point at <code>T + 1 ms</code> has <code>omit first barline</code> enabled, when a note is placed at the same <code>T + 1 ms</code> position, the tool compares the speed of the barline at <code>T</code> with the speed of the note at <code>T + 1 ms</code>.<br>
-When a note is placed at <code>T - 1 ms</code>, the tool compares the speed of the barline at <code>T</code> with the speed of the note at <code>T - 1 ms</code>.
+For each client, an actually generated barline is compared with notes within 1 ms before or after it.<br>
+If neither the barline position nor the note position contains a red timing point, the result is shown as a Warning because the separation may be an intentional visual effect created with SV. For a note after the barline, the check only applies when an SV line exists at the note position.<br>
+<code>omit first barline</code> is applied during each client's generation process, so the check does not use a barline that would not actually be drawn.
 </div>
 
 <div class="section section-detect">
@@ -1088,10 +1000,10 @@ If the first generated barline position matches or passes the next red timing po
 
 <div class="section section-bg">
 <span class="label label-bg">■ Calculation Details</span><br>
-Generated barline positions are calculated from the red timing point time, <code>beatLength</code>, and meter.<br>
-Red timing point times and generated barline positions are floored so they are handled on osu!'s integer millisecond timeline.<br>
-If the meter cannot be read, it is treated as <code>4/4</code>.<br><br>
-Each red timing section is checked from the current red timing point until the next red timing point. For the final red timing section, the check includes the next generated barline after the last HitObject.<br>
+For osu!stable, the tool follows the osu!.exe behavior: measure lengths are repeatedly added as double-precision values and converted for drawing with behavior equivalent to <code>conv.i4</code>. The red timing boundary switch order and the initial candidate calculated from a negative timing point are also reproduced.<br>
+For osu!lazer, the tool follows the source code: barline positions remain <code>double</code>, and are corrected to an integer only when they are within <code>1e-7 ms</code> of one. Section end checks, red timing boundaries, and <code>omit first barline</code> follow lazer's generation order.<br>
+Two barlines generated at the same timestamp remain two events rather than being deduplicated. If the meter cannot be read, it is treated as <code>4/4</code>.<br><br>
+See “osu!stable / osu!lazer Barline Position Calculations” above for the complete formulas and boundary behavior.<br>
 </div>
 
 <div class="section section-warning">
@@ -1193,11 +1105,11 @@ Example output:<br>
 
 <div class="section section-detect">
 <span class="label label-detect">■ Detection 2: SV may not be applied to barlines</span><br>
-The tool calculates generated barline positions from red timing point BPM and meter values, then treats each generated barline position as <code>T</code> and checks for SV lines between <code>T + 1 ms</code> and <code>T + 5 ms</code>.<br>
-If such an SV line exists, the tool displays a yellow warning because the SV may not be applied to that barline.<br><br>
+The tool separately calculates the barline positions actually generated by osu!stable and osu!lazer, then treats each position as <code>T</code> and checks for SV lines between <code>T + 1 ms</code> and <code>T + 5 ms</code>.<br>
+If such an SV line exists, the tool displays a yellow warning because the SV may not be applied to that barline. Each result is labeled <code>[osu!stable, osu!lazer]</code>, <code>[osu!stable]</code>, or <code>[osu!lazer]</code>.<br><br>
 
 Example output:<br>
-<code>02:33:864 -> 02:33:865 | +1 ms | Barline SV x1 -> Following SV x0.5 (SV delta -0.5) | An SV line exists +1 ms after the generated barline. The SV may not be applied to the barline.</code>
+<code>[osu!stable, osu!lazer] 02:33:864 -> 02:33:865 | +1 ms | Barline SV x1 -> Following SV x0.5 (SV delta -0.5) | An SV line exists +1 ms after the generated barline. The SV may not be applied to the barline.</code>
 </div>
 
 <div class="section section-warning">

@@ -1,18 +1,20 @@
 const BARLINE_SCROLL_BASE_PX_PER_BEAT = 175;
 const BARLINE_SCROLL_SPEED_EPSILON = 1e-6;
+const BARLINE_ISSUE_TIME_EPSILON = 1e-7;
+const BARLINE_DOUBLE_MAX_GAP_MS = 1;
 
 function runBarlineCheck(text, fileName) {
-  const redLines = parseBarlineRedLines(text);
+  const timelines = buildBarlineTimelines(text);
+  const redLines = timelines.redLines;
   const greenLines = parseSpreadGreenLines(text);
   const noteTimes = new Set(parseSpreadCircleNoteTimes(text));
   const sliderMultiplier = parseSpreadDifficulty(text).sliderMultiplier;
 
   const issues = detectBarlineIssues(
-    redLines,
+    timelines,
     greenLines,
     noteTimes,
-    sliderMultiplier,
-    getLastHitObjectTime(text)
+    sliderMultiplier
   );
 
   return {
@@ -25,276 +27,301 @@ function runBarlineCheck(text, fileName) {
 }
 
 function parseBarlineRedLines(text) {
-  const timingPoints = parseTimingPointsDetailed(text)
-    .filter(point =>
-      point.uninherited === 1 &&
-      Number.isFinite(point.time) &&
-      Number.isFinite(point.beatLength) &&
-      point.beatLength > 0
-    )
-    .map(point => ({
-      ...point,
-      time: parseBarlineTime(point.raw),
-      meter: parseBarlineMeter(point.raw),
-      omitFirstBarline: (point.effects & 8) !== 0
-    }));
-
-  timingPoints.sort((a, b) => {
-    if (a.time !== b.time) return a.time - b.time;
-    return a.lineNo - b.lineNo;
-  });
-
-  return timingPoints;
-}
-
-function parseBarlineTime(raw) {
-  const parts = String(raw ?? "").split(",").map(part => part.trim());
-  const time = parseFloat(parts[0]);
-  return Number.isFinite(time) ? Math.floor(time) : 0;
-}
-
-function parseBarlineMeter(raw) {
-  const parts = String(raw ?? "").split(",").map(part => part.trim());
-  const meter = parseInt(parts[2], 10);
-  return Number.isFinite(meter) && meter > 0 ? meter : 4;
+  return parseBarlineTimingRedLines(text);
 }
 
 function detectBarlineIssues(
+  timelines,
+  greenLines,
+  noteTimes,
+  sliderMultiplier
+) {
+  const empty = {
+    doubleBarlines: [],
+    negativeStartBarlineWarnings: [],
+    detachedBarlines: [],
+    intentionalDetachedBarlines: []
+  };
+
+  if (!timelines.redLines.length) {
+    return empty;
+  }
+
+  const perClient = [
+    detectClientBarlineIssues(
+      "stable",
+      timelines.stable.events,
+      timelines.redLines,
+      greenLines,
+      noteTimes,
+      sliderMultiplier
+    ),
+    detectClientBarlineIssues(
+      "lazer",
+      timelines.lazer.events,
+      timelines.redLines,
+      greenLines,
+      noteTimes,
+      sliderMultiplier
+    )
+  ];
+
+  return {
+    doubleBarlines: mergeBarlineClientIssues(
+      perClient.flatMap(result => result.doubleBarlines),
+      issue => [
+        normalizeBarlineIssueTime(issue.barlineTime),
+        normalizeBarlineIssueTime(issue.redLineTime)
+      ].join("|")
+    ),
+    negativeStartBarlineWarnings:
+      detectNegativeStartBarlineWarnings(timelines),
+    detachedBarlines: mergeBarlineClientIssues(
+      perClient.flatMap(result => result.detachedBarlines),
+      issue => [
+        normalizeBarlineIssueTime(issue.barlineTime),
+        issue.noteTime
+      ].join("|")
+    ),
+    intentionalDetachedBarlines: mergeBarlineClientIssues(
+      perClient.flatMap(result => result.intentionalDetachedBarlines),
+      issue => [
+        normalizeBarlineIssueTime(issue.barlineTime),
+        issue.noteTime
+      ].join("|")
+    )
+  };
+}
+
+function detectClientBarlineIssues(
+  client,
+  events,
   redLines,
   greenLines,
   noteTimes,
-  sliderMultiplier,
-  lastHitObjectTime
+  sliderMultiplier
 ) {
-  const doubleBarlines = [];
-  const negativeStartBarlineWarnings = [];
+  const doubleBarlines = detectClientDoubleBarlines(events, client);
   const detachedBarlines = [];
   const intentionalDetachedBarlines = [];
-
-  if (!redLines.length) {
-    return {
-      doubleBarlines,
-      negativeStartBarlineWarnings,
-      detachedBarlines,
-      intentionalDetachedBarlines
-    };
-  }
-
-  const redLinesByTime = new Map();
-  for (const redLine of redLines) {
-    if (!redLinesByTime.has(redLine.time)) {
-      redLinesByTime.set(redLine.time, []);
-    }
-    redLinesByTime.get(redLine.time).push(redLine);
-  }
-
   const greenLineTimes = new Set(
     greenLines
       .map(line => line.time)
       .filter(time => Number.isFinite(time))
   );
 
-  detectNegativeStartBarlineWarnings(
-    negativeStartBarlineWarnings,
-    redLines
-  );
-
-  for (let i = 0; i < redLines.length; i++) {
-    const section = redLines[i];
-    const nextSection = redLines[i + 1] ?? null;
-    const measureLength = section.beatLength * section.meter;
-
-    if (!Number.isFinite(measureLength) || measureLength <= 0) continue;
-
-    const sectionEnd = nextSection
-      ? nextSection.time
-      : Math.max(lastHitObjectTime, section.time) + measureLength;
-
-    // ハズレ値の beatLength（例: 1E-308）で小節線が無限生成されフリーズするのを防ぐ
-    if ((sectionEnd - section.time) / measureLength > 200000) continue;
+  for (const barlineTime of getUniqueBarlineEventTimes(events)) {
+    const firstCandidate = Math.floor(barlineTime) - 1;
+    const lastCandidate = Math.ceil(barlineTime) + 1;
 
     for (
-      let rawBarlineTime = section.time;
-      rawBarlineTime < sectionEnd - BARLINE_SCROLL_SPEED_EPSILON;
-      rawBarlineTime += measureLength
+      let noteTime = firstCandidate;
+      noteTime <= lastCandidate;
+      noteTime++
     ) {
-      const barlineTime = Math.floor(rawBarlineTime);
-      const redLineTime = barlineTime + 1;
-      const redLine = findBarlineRedLineAtTime(redLinesByTime, redLineTime, {
-        omitFirstBarline: false
-      });
-      const omittedRedLine = findBarlineRedLineAtTime(redLinesByTime, redLineTime, {
-        omitFirstBarline: true
-      });
-      const omittedBarlineRedLine = findBarlineRedLineAtTime(
-        redLinesByTime,
-        barlineTime,
-        { omitFirstBarline: true }
+      if (!noteTimes.has(noteTime)) continue;
+
+      const gap = Math.abs(noteTime - barlineTime);
+      if (
+        gap <= BARLINE_ISSUE_TIME_EPSILON ||
+        gap > BARLINE_DOUBLE_MAX_GAP_MS + BARLINE_ISSUE_TIME_EPSILON
+      ) {
+        continue;
+      }
+
+      const redLineAtBarline = findBarlineRedLineNearTime(
+        redLines,
+        barlineTime
       );
+      const redLineAtNote = findBarlineRedLineNearTime(redLines, noteTime);
+      const target = redLineAtBarline || redLineAtNote
+        ? detachedBarlines
+        : intentionalDetachedBarlines;
 
-      if (!redLine) {
-        if (
-          !redLinesByTime.has(redLineTime) &&
-          noteTimes.has(redLineTime) &&
-          greenLineTimes.has(redLineTime)
-        ) {
-          addDetachedBarlineIssue(
-            intentionalDetachedBarlines,
-            redLines,
-            greenLines,
-            sliderMultiplier,
-            barlineTime,
-            redLineTime,
-            null,
-            barlineTime,
-            redLineTime
-          );
-        }
-
-        if (!omittedBarlineRedLine) {
-          addBeforeBarlineIntentionalDetachedIssue(
-            intentionalDetachedBarlines,
-            redLines,
-            greenLines,
-            noteTimes,
-            sliderMultiplier,
-            barlineTime
-          );
-        }
-
-        if (omittedRedLine && noteTimes.has(redLineTime)) {
-          addDetachedBarlineIssue(
-            detachedBarlines,
-            redLines,
-            greenLines,
-            sliderMultiplier,
-            barlineTime,
-            redLineTime,
-            omittedRedLine,
-            barlineTime,
-            redLineTime
-          );
-        }
-
+      if (
+        target === intentionalDetachedBarlines &&
+        noteTime > barlineTime &&
+        !greenLineTimes.has(noteTime)
+      ) {
         continue;
       }
 
-      if (!omittedBarlineRedLine) {
-        doubleBarlines.push({
-          barlineTime,
-          redLineTime,
-          redLine
-        });
-
-        addBeforeBarlineIntentionalDetachedIssue(
-          intentionalDetachedBarlines,
-          redLines,
-          greenLines,
-          noteTimes,
-          sliderMultiplier,
-          barlineTime
-        );
-
-        if (noteTimes.has(redLineTime)) {
-          addDetachedBarlineIssue(
-            detachedBarlines,
-            redLines,
-            greenLines,
-            sliderMultiplier,
-            barlineTime,
-            redLineTime,
-            redLine,
-            barlineTime,
-            redLineTime
-          );
-        }
-
-        continue;
-      }
-
-      if (noteTimes.has(barlineTime)) {
-        addDetachedBarlineIssue(
-          detachedBarlines,
-          redLines,
-          greenLines,
-          sliderMultiplier,
-          barlineTime,
-          barlineTime,
-          redLine,
-          redLineTime,
-          barlineTime
-        );
-      }
+      addDetachedBarlineIssue(
+        target,
+        redLines,
+        greenLines,
+        sliderMultiplier,
+        barlineTime,
+        noteTime,
+        redLineAtBarline || redLineAtNote,
+        client
+      );
     }
   }
 
   return {
     doubleBarlines,
-    negativeStartBarlineWarnings,
     detachedBarlines,
     intentionalDetachedBarlines
   };
 }
 
-function detectNegativeStartBarlineWarnings(warnings, redLines) {
-  if (redLines.length < 2) return;
+function detectClientDoubleBarlines(events, client) {
+  const sortedEvents = events
+    .filter(event => Number.isFinite(event.time))
+    .slice()
+    .sort((a, b) =>
+      a.time - b.time ||
+      a.sectionIndex - b.sectionIndex
+    );
+  const issues = [];
+  const seen = new Set();
+
+  for (let i = 0; i < sortedEvents.length; i++) {
+    const first = sortedEvents[i];
+
+    for (let j = i + 1; j < sortedEvents.length; j++) {
+      const second = sortedEvents[j];
+      const gap = second.time - first.time;
+
+      if (
+        gap >
+        BARLINE_DOUBLE_MAX_GAP_MS + BARLINE_ISSUE_TIME_EPSILON
+      ) {
+        break;
+      }
+
+      if (first.sectionIndex === second.sectionIndex) continue;
+
+      const key = [
+        normalizeBarlineIssueTime(first.time),
+        normalizeBarlineIssueTime(second.time)
+      ].join("|");
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      const count = sortedEvents.filter(event =>
+        event.time >= first.time - BARLINE_ISSUE_TIME_EPSILON &&
+        event.time <= second.time + BARLINE_ISSUE_TIME_EPSILON
+      ).length;
+
+      issues.push({
+        barlineTime: first.time,
+        redLineTime: second.time,
+        gap,
+        count,
+        clients: [client],
+        clientCounts: { [client]: count }
+      });
+    }
+  }
+
+  return issues;
+}
+
+function detectNegativeStartBarlineWarnings(timelines) {
+  const redLines = timelines.redLines;
+  if (redLines.length < 2) return [];
 
   const firstRedLine = redLines[0];
   const nextRedLine = redLines[1];
+  const initialCandidate = timelines.stable.initialCandidate;
 
-  if (firstRedLine.time >= 0) return;
+  if (
+    firstRedLine.time >= 0 ||
+    !Number.isFinite(initialCandidate) ||
+    initialCandidate < nextRedLine.time
+  ) {
+    return [];
+  }
 
-  const measureLength = firstRedLine.beatLength * firstRedLine.meter;
-  if (!Number.isFinite(measureLength) || measureLength <= 0) return;
-
-  const generatedBarlineTime = Math.floor(firstRedLine.time + measureLength);
-  if (generatedBarlineTime < nextRedLine.time) return;
-
-  warnings.push({
+  return [{
     firstRedLineTime: firstRedLine.time,
-    generatedBarlineTime,
+    generatedBarlineTime: Math.trunc(initialCandidate),
+    rawGeneratedBarlineTime: initialCandidate,
     nextRedLineTime: nextRedLine.time,
     nextRedLine,
+    clients: ["stable"],
     stableLazerMessageKey: nextRedLine.omitFirstBarline
       ? "barlineNegativeStartStableSingleLazerMissing"
       : "barlineNegativeStartStableDoubleLazerSingle"
-  });
+  }];
 }
 
-function findBarlineRedLineAtTime(redLinesByTime, time, options = {}) {
-  const candidates = redLinesByTime.get(time) ?? [];
+function getUniqueBarlineEventTimes(events) {
+  const times = events
+    .map(event => event.time)
+    .filter(time => Number.isFinite(time))
+    .sort((a, b) => a - b);
+  const unique = [];
 
-  if (typeof options.omitFirstBarline === "boolean") {
-    return candidates.find(redLine =>
-      redLine.omitFirstBarline === options.omitFirstBarline
-    ) ?? null;
+  for (const time of times) {
+    const previous = unique[unique.length - 1];
+    if (
+      previous === undefined ||
+      Math.abs(previous - time) > BARLINE_ISSUE_TIME_EPSILON
+    ) {
+      unique.push(time);
+    }
   }
 
-  return candidates[0] ?? null;
+  return unique;
 }
 
-function addBeforeBarlineIntentionalDetachedIssue(
-  intentionalDetachedBarlines,
-  redLines,
-  greenLines,
-  noteTimes,
-  sliderMultiplier,
-  barlineTime
-) {
-  const noteTime = barlineTime - 1;
-  if (!noteTimes.has(noteTime)) return;
+function findBarlineRedLineNearTime(redLines, time) {
+  return redLines.find(redLine =>
+    Math.abs(redLine.time - time) <= BARLINE_ISSUE_TIME_EPSILON
+  ) ?? null;
+}
 
-  addDetachedBarlineIssue(
-    intentionalDetachedBarlines,
-    redLines,
-    greenLines,
-    sliderMultiplier,
-    barlineTime,
-    noteTime,
-    null,
-    barlineTime,
-    noteTime
-  );
+function mergeBarlineClientIssues(issues, keyBuilder) {
+  const merged = new Map();
+
+  for (const issue of issues) {
+    const key = keyBuilder(issue);
+    const existing = merged.get(key);
+
+    if (!existing) {
+      merged.set(key, {
+        ...issue,
+        clients: [...issue.clients],
+        clientCounts: issue.clientCounts
+          ? { ...issue.clientCounts }
+          : undefined
+      });
+      continue;
+    }
+
+    for (const client of issue.clients) {
+      if (!existing.clients.includes(client)) {
+        existing.clients.push(client);
+      }
+    }
+
+    if (issue.clientCounts) {
+      existing.clientCounts = {
+        ...(existing.clientCounts ?? {}),
+        ...issue.clientCounts
+      };
+    }
+  }
+
+  const clientOrder = { stable: 0, lazer: 1 };
+  return [...merged.values()]
+    .map(issue => ({
+      ...issue,
+      clients: issue.clients.sort((a, b) =>
+        clientOrder[a] - clientOrder[b]
+      )
+    }))
+    .sort((a, b) =>
+      (a.barlineTime ?? a.nextRedLineTime) -
+      (b.barlineTime ?? b.nextRedLineTime)
+    );
+}
+
+function normalizeBarlineIssueTime(time) {
+  return Math.round(time / BARLINE_ISSUE_TIME_EPSILON);
 }
 
 function addDetachedBarlineIssue(
@@ -305,20 +332,19 @@ function addDetachedBarlineIssue(
   barlineTime,
   noteTime,
   redLine,
-  barlineSpeedTime,
-  noteSpeedTime
+  client
 ) {
   const barlineSpeed = calculateBarlineVisualScrollSpeed(
     redLines,
     greenLines,
     sliderMultiplier,
-    barlineSpeedTime
+    barlineTime
   );
   const noteSpeed = calculateBarlineVisualScrollSpeed(
     redLines,
     greenLines,
     sliderMultiplier,
-    noteSpeedTime
+    noteTime
   );
 
   if (
@@ -335,7 +361,8 @@ function addDetachedBarlineIssue(
     barlineSpeed,
     noteSpeed,
     delta: noteSpeed - barlineSpeed,
-    redLine
+    redLine,
+    clients: [client]
   });
 }
 

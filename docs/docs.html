@@ -931,114 +931,26 @@ osu!stable / osu!lazerにおける小節線描画位置の生成式、浮動小�
 
 <div class="section section-detect">
 <span class="label label-detect">■ 検出内容1：2重小節線</span><br>
-赤線の BPM・拍子から小節線生成位置を計算し、その小節線生成位置の <code>+1 ms</code> に赤線があるかを確認します。<br>
-その赤線で <code>omit first barline</code> が有効になっていない場合、2重小節線として検出します。<br><br>
+osu!stable と osu!lazer の生成方法をそれぞれ再現し、異なる赤線区間から生成された小節線が同時刻、または 1 ms 以内に複数存在するかを確認します。<br>
+結果には <code>[osu!stable, osu!lazer]</code>、<code>[osu!stable]</code>、<code>[osu!lazer]</code> のいずれかを表示します。<br><br>
 例：<br>
-<code>02:45:635 -> 02:45:636 | 小節線生成位置 +1 ms に赤線がありますが、omit first barline が有効ではありません。</code>
+<code>[osu!lazer] 02:24:992 | 同時刻に 2 本の小節線が生成されます。</code>
 </div>
 
 <div class="section section-detect">
 <span class="label label-detect">■ 検出内容2：意図しない小節線の分離</span><br>
-2重小節線の条件に加えて、<code>+1 ms</code> の赤線位置にノーツがある場合に確認します。<br>
-小節線生成位置の見た目のスクロール速度と、ノーツ位置の見た目のスクロール速度を比較し、値が一致しない場合に意図しない小節線の分離として Error 表示します。<br><br>
+各クライアントで実際に生成される小節線の前後 1 ms 以内にノーツがあり、小節線位置またはノーツ位置に赤線がある場合に確認します。<br>
+小節線位置の見た目のスクロール速度と、ノーツ位置の見た目のスクロール速度を比較し、値が一致しない場合に意図しない小節線の分離として Error 表示します。結果には該当するクライアント名も表示します。<br><br>
 見た目のスクロール速度は、スプレッド比較の「スクロール速度」サブタブと同じ考え方で、現在の BPM、現在の SV、<code>SliderMultiplier</code> から計算します。<br><br>
 例：<br>
-<code>02:45:635 -> 02:45:636 | 小節線: 934.18 px/s | ノーツ: 935.08 px/s | 差分: +0.9 px/s</code>
+<code>[osu!stable] 02:45:635 -> 02:45:636 | 小節線: 934.18 px/s | ノーツ: 935.08 px/s | 差分: +0.9 px/s</code>
 </div>
 
 <div class="section section-detect">
 <span class="label label-detect">■ 検出内容3：演出の可能性がある小節線の分離</span><br>
-小節線生成位置を <code>T</code> としたとき、<code>T + 1 ms</code> に赤線がなく、同じ位置にノーツと SV線がある場合に確認します。<br>
-小節線生成位置の見た目のスクロール速度と、<code>T + 1 ms</code> のノーツ位置の見た目のスクロール速度を比較し、値が一致しない場合に演出の可能性がある小節線の分離として Warning 表示します。<br><br>
-また、<code>T - 1 ms</code> にノーツがある場合も、小節線生成位置 <code>T</code> の見た目のスクロール速度と、<code>T - 1 ms</code> のノーツ位置の見た目のスクロール速度を比較します。<br>
-値が一致しない場合は、同じく演出の可能性がある小節線の分離として Warning 表示します。<br><br>
-<code>T + 1 ms</code> に赤線がある場合は従来通り、速度差があれば「意図しない小節線の分離」として Error 表示します。<br><br>
-ただし、<code>T</code> にノーツと小節線があり、<code>T + 1 ms</code> に <code>omit first barline</code> 有効の赤線がある場合、<code>T + 1 ms</code> の先頭小節線は描画されません。
-この配置では小節線とノーツはどちらも <code>T</code> にあり分離していないため、演出の可能性がある小節線の分離として検出しません。
-</div>
-
-<div class="section section-detect">
-<span class="label label-detect">■ 判定パターン</span><br>
-小節線生成位置を <code>T</code>、その 1 ms 後を <code>T + 1 ms</code>、その 1 ms 前を <code>T - 1 ms</code> として扱います。<br>
-<code>T</code> に <code>omit first barline</code> 有効の赤線がある場合は、その位置の自動生成小節線を意図的に消しているものとして扱います。<br><br>
-
-<table class="ratio-threshold-table">
-  <thead>
-    <tr>
-      <th><code>T</code> の状態</th>
-      <th><code>T + 1 ms</code> の状態</th>
-      <th>ノーツ位置</th>
-      <th>2重小節線</th>
-      <th>小節線の分離</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>通常の小節線生成位置</td>
-      <td><code>omit first barline</code> 無効の赤線</td>
-      <td>なし</td>
-      <td class="ratio-error">検出する</td>
-      <td>検出しない</td>
-    </tr>
-    <tr>
-      <td>通常の小節線生成位置</td>
-      <td><code>omit first barline</code> 無効の赤線</td>
-      <td><code>T + 1 ms</code></td>
-      <td class="ratio-error">検出する</td>
-      <td class="ratio-error">速度差があれば検出する</td>
-    </tr>
-    <tr>
-      <td>通常の小節線生成位置</td>
-      <td><code>omit first barline</code> 有効の赤線</td>
-      <td><code>T + 1 ms</code></td>
-      <td>検出しない</td>
-      <td class="ratio-error">速度差があれば検出する</td>
-    </tr>
-    <tr>
-      <td>通常の小節線生成位置</td>
-      <td><code>omit first barline</code> 有効の赤線</td>
-      <td><code>T</code></td>
-      <td>検出しない</td>
-      <td>検出しない</td>
-    </tr>
-    <tr>
-      <td>通常の小節線生成位置</td>
-      <td>赤線なし / SV線あり</td>
-      <td><code>T + 1 ms</code></td>
-      <td>検出しない</td>
-      <td class="ratio-warn">速度差があれば Warning</td>
-    </tr>
-    <tr>
-      <td>通常の小節線生成位置</td>
-      <td>既存判定に従う</td>
-      <td><code>T - 1 ms</code></td>
-      <td>既存判定に従う</td>
-      <td class="ratio-warn">速度差があれば Warning</td>
-    </tr>
-    <tr>
-      <td><code>omit first barline</code> 有効の赤線</td>
-      <td><code>omit first barline</code> 無効の赤線</td>
-      <td>なし</td>
-      <td>検出しない</td>
-      <td>検出しない</td>
-    </tr>
-    <tr>
-      <td><code>omit first barline</code> 有効の赤線</td>
-      <td><code>omit first barline</code> 無効の赤線</td>
-      <td><code>T</code></td>
-      <td>検出しない</td>
-      <td class="ratio-error">速度差があれば検出する</td>
-    </tr>
-  </tbody>
-</table>
-
-<br>
-最後のケースでは、<code>T + 1 ms</code> の赤線から見える小節線の速度と、<code>T</code> に置かれたノーツの速度を比較します。<br>
-そのため、2重小節線としては扱わず、見た目のスクロール速度が一致しない場合のみ小節線の分離として検出します。<br>
-一方、通常の小節線とノーツが <code>T</code> にあり、<code>T + 1 ms</code> の赤線で <code>omit first barline</code> が有効なケースでは、<code>T + 1 ms</code> に比較対象となる小節線が描画されません。<br>
-この場合、<code>T</code> の小節線とノーツは分離していないため検出しません。<br>
-また、<code>T + 1 ms</code> の赤線自体が <code>omit first barline</code> 有効であっても、同じ <code>T + 1 ms</code> にノーツがある場合は、<code>T</code> の小節線と <code>T + 1 ms</code> のノーツの速度差を確認します。<br>
-<code>T - 1 ms</code> にノーツがある場合は、<code>T</code> の小節線と <code>T - 1 ms</code> のノーツの速度差を確認します。
+各クライアントで実際に生成される小節線の前後 1 ms 以内にあるノーツとの速度差を確認します。<br>
+小節線位置とノーツ位置のどちらにも赤線がない配置は、SVによる意図的な視覚演出の可能性があるため Warning として表示します。小節線より後のノーツについては、そのノーツと同時刻にSV線がある場合だけ対象にします。<br>
+<code>omit first barline</code> は各クライアントの生成処理で先に適用されるため、実際には描画されない小節線を基準にした誤検出は行いません。
 </div>
 
 <div class="section section-detect">
@@ -1068,10 +980,10 @@ osu!stable / osu!lazerにおける小節線描画位置の生成式、浮動小�
 
 <div class="section section-bg">
 <span class="label label-bg">■ 計算方法の詳細</span><br>
-小節線生成位置は、赤線の時刻、<code>beatLength</code>、拍子（meter）から計算します。<br>
-赤線時刻と小節線生成位置は、osu! の整数 ms 上で扱うために小数点以下を切り捨てます。<br>
-拍子が読み取れない場合は <code>4/4</code> として扱います。<br><br>
-各赤線区間は、現在の赤線から次の赤線までを対象にします。最後の赤線区間では、最後の HitObject 以降の次の小節線までを確認対象に含めます。
+osu!stable では osu!.exe の処理に合わせ、倍精度浮動小数点で小節長を反復加算し、描画時に <code>conv.i4</code> 相当の整数変換を行います。赤線境界の切り替え順序と、マイナス時刻から求める最初の候補位置も再現します。<br>
+osu!lazer ではソースコードに合わせ、小節線位置を <code>double</code> のまま保持し、整数から <code>1e-7 ms</code> 以内の場合だけ整数へ補正します。区間の終端判定、赤線境界、<code>omit first barline</code> の処理も lazer の生成手順に従います。<br>
+同時刻に2本生成された小節線は重複除去せず、2本として保持します。拍子が読み取れない場合は <code>4/4</code> として扱います。<br><br>
+式と境界処理の詳細は、上記の「osu!stable / osu!lazer 小節線描画位置の計算」を参照してください。
 </div>
 
 <div class="section section-warning">
@@ -1159,11 +1071,11 @@ SV線（緑線）は、その時刻以降のノーツや小節線に適用され
 
 <div class="section section-detect">
 <span class="label label-detect">■ 検出内容2：小節線にSVが適用されていない可能性</span><br>
-赤線のBPMと拍子から小節線生成位置を計算し、その時刻を <code>T</code> として、<code>T + 1 ms</code> から <code>T + 5 ms</code> の範囲にSV線があるかを確認します。<br>
-該当するSV線がある場合、小節線にそのSVが適用されていない可能性があるため、黄色の警告として表示します。<br><br>
+osu!stable と osu!lazer で実際に生成される小節線位置を別々に計算し、その時刻を <code>T</code> として、<code>T + 1 ms</code> から <code>T + 5 ms</code> の範囲にSV線があるかを確認します。<br>
+該当するSV線がある場合、小節線にそのSVが適用されていない可能性があるため、黄色の警告として表示します。結果には <code>[osu!stable, osu!lazer]</code>、<code>[osu!stable]</code>、<code>[osu!lazer]</code> のいずれかを表示します。<br><br>
 
 出力例：<br>
-<code>02:33:864 -> 02:33:865 | +1 ms | 小節線SV x1 -> 直後SV x0.5 (SV差 -0.5) | 小節線生成位置の +1 ms 後にSV線があります。小節線にSVが適用されていない可能性があります。</code>
+<code>[osu!stable, osu!lazer] 02:33:864 -> 02:33:865 | +1 ms | 小節線SV x1 -> 直後SV x0.5 (SV差 -0.5) | 小節線生成位置の +1 ms 後にSV線があります。小節線にSVが適用されていない可能性があります。</code>
 </div>
 
 <div class="section section-warning">

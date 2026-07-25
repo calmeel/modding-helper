@@ -344,12 +344,36 @@ function formatBarlineDoubleBarlineLines(result, t) {
     return [t("barlineNoDoubleBarline")];
   }
 
-  return result.doubleBarlines.map(item =>
-    `<span class="result-error">` +
-    `${formatTimestampLink(item.barlineTime)} -> ${formatTimestampLink(item.redLineTime)} | ` +
-    `${escapeHtml(t("barlineMissingOmitFirst"))}` +
-    `</span>`
-  );
+  return result.doubleBarlines.map(item => {
+    const isSameTime =
+      Math.abs(item.redLineTime - item.barlineTime) <=
+      BARLINE_ISSUE_TIME_EPSILON;
+    const count = Math.max(
+      2,
+      ...Object.values(item.clientCounts ?? {})
+    );
+    const message = isSameTime
+      ? t("barlineSameTimeMultiple")
+          .replace("{count}", String(count))
+      : t("barlineCloseMultiple")
+          .replace(
+            "{gap}",
+            formatBarlinePreciseNumber(
+              Math.abs(item.redLineTime - item.barlineTime)
+            )
+          );
+    const timestamps = isSameTime
+      ? formatBarlineTimestampLink(item.barlineTime)
+      : `${formatBarlineTimestampLink(item.barlineTime)} -> ` +
+        `${formatBarlineTimestampLink(item.redLineTime)}`;
+
+    return (
+      `<span class="result-error">` +
+      `${formatBarlineClientScope(item)}${timestamps} | ` +
+      `${escapeHtml(message)}` +
+      `</span>`
+    );
+  });
 }
 
 function formatBarlineNegativeStartWarningLines(result, t) {
@@ -359,7 +383,8 @@ function formatBarlineNegativeStartWarningLines(result, t) {
 
   return result.negativeStartBarlineWarnings.map(item =>
     `<span class="result-warn">` +
-    `${formatTimestampLink(item.nextRedLineTime)} | ` +
+    `${formatBarlineClientScope(item)}` +
+    `${formatBarlineTimestampLink(item.nextRedLineTime)} | ` +
     `${escapeHtml(t(item.stableLazerMessageKey))}` +
     `</span>`
   );
@@ -389,7 +414,8 @@ function formatBarlineDetachedBarlineLine(item, t, className) {
   const deltaSign = item.delta > 0 ? "+" : "";
   return (
     `<span class="${className}">` +
-    `${formatTimestampLink(item.barlineTime)} -> ${formatTimestampLink(item.noteTime)} | ` +
+    `${formatBarlineClientScope(item)}` +
+    `${formatBarlineTimestampLink(item.barlineTime)} -> ${formatTimestampLink(item.noteTime)} | ` +
     `${escapeHtml(t("barlineGeneratedBarline"))}: ${formatBarlineSpeed(item.barlineSpeed)} px/s | ` +
     `${escapeHtml(t("barlineNote"))}: ${formatBarlineSpeed(item.noteSpeed)} px/s | ` +
     `${escapeHtml(t("barlineDelta"))}: ${deltaSign}${formatBarlineSpeed(item.delta)} px/s` +
@@ -460,12 +486,19 @@ function formatUnappliedSvIssueLine(issue, t, messageKey) {
   const followingSvText = `${t("unappliedSvFollowingSvLabel")} x${formatUnappliedSvNumber(followingSv)}`;
   const deltaText = `${t("unappliedSvDeltaLabel")} ${formatUnappliedSvDelta(followingSv - targetSv)}`;
   const svText = `${targetSvText} -> ${followingSvText} (${deltaText})`;
-  const message = t(messageKey).replace("{offset}", `+${issue.offset} ms`);
+  const offsetText = `+${formatBarlinePreciseNumber(issue.offset)} ms`;
+  const message = t(messageKey).replace("{offset}", offsetText);
+  const clientScope = issue.targetType === "barline"
+    ? formatBarlineClientScope(issue)
+    : "";
+  const targetTimeLink = issue.targetType === "barline"
+    ? formatBarlineTimestampLink(issue.targetTime)
+    : formatTimestampLink(issue.targetTime);
 
   return `<span class="result-warn">` +
-    `${formatTimestampLink(issue.targetTime)} -> ` +
+    `${clientScope}${targetTimeLink} -> ` +
     `${formatTimestampLink(issue.greenTime)} | ` +
-    `+${issue.offset} ms | ` +
+    `${offsetText} | ` +
     `${escapeHtml(svText)} | ` +
     `${escapeHtml(message)}` +
     `</span>`;
@@ -490,6 +523,36 @@ function formatUnappliedSvDelta(value) {
 function formatBarlineSpeed(value) {
   if (!Number.isFinite(value)) return "N/A";
   return (Math.round(value * 100) / 100).toString();
+}
+
+function formatBarlineClientScope(item) {
+  const clients = item?.clients ?? [];
+  if (!clients.length) return "";
+
+  const labels = clients.map(client =>
+    client === "stable" ? "osu!stable" : "osu!lazer"
+  );
+  return `[${labels.join(", ")}] `;
+}
+
+function formatBarlineTimestampLink(time) {
+  if (!Number.isFinite(time)) return "N/A";
+
+  const integerTime = Math.trunc(time);
+  const link = formatTimestampLink(integerTime);
+  const fraction = time - integerTime;
+
+  if (Math.abs(fraction) <= BARLINE_ISSUE_TIME_EPSILON) {
+    return link;
+  }
+
+  const sign = fraction > 0 ? "+" : "";
+  return `${link} (${sign}${formatBarlinePreciseNumber(fraction)} ms)`;
+}
+
+function formatBarlinePreciseNumber(value) {
+  if (!Number.isFinite(value)) return "N/A";
+  return (Math.round(value * 1000) / 1000).toString();
 }
 
 /** Kiai Compare系の表示関数 */
