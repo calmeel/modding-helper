@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>osu!stable / osu!lazer 小節線描画位置の計算</title>
+  <style>
+    :root{color-scheme:dark;--bg:#111;--panel:#181818;--strong:#202020;--border:#2a2a2a;--border2:#333;--text:#eee;--soft:#ccc;--muted:#aaa;--blue:#9fdcff;--yellow:#ffd580;--green:#9ff2b2;--red:#ffb3b3;--purple:#c9b6ff}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:sans-serif;font-size:14px;line-height:1.65;max-width:1200px;margin:40px auto;padding:0 20px 64px;background:var(--bg);color:var(--text)}
+    h1{color:var(--blue);border-bottom:2px solid var(--border2);padding-bottom:10px;margin-bottom:22px;line-height:1.3}h2{margin-top:48px;color:var(--blue);border-bottom:1px solid var(--border2);padding-bottom:6px;line-height:1.4}h3{margin-top:30px;color:var(--yellow);line-height:1.4}
+    p,li{color:var(--soft)}a{color:var(--blue)}code{background:#222;padding:2px 6px;border-radius:4px;color:#f2f2f2}pre{margin:14px 0 0;padding:14px 16px;overflow-x:auto;background:#0d0d0d;border:1px solid var(--border);border-radius:6px;color:#e9f6ff;line-height:1.55}pre code{padding:0;background:transparent;color:inherit}
+    table{width:100%;border-collapse:collapse;margin-top:16px;background:var(--panel);border:1px solid var(--border);font-size:13px}th{background:var(--strong);color:var(--blue);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border2);white-space:nowrap}td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}tr:hover{background:#1d1d1d}
+    .doc-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px}.doc-parent-link{color:var(--muted);font-size:13px}.doc-parent-link a{color:var(--blue);text-decoration:none}.doc-parent-link a:hover{text-decoration:underline}.lead{max-width:900px;font-size:15px}
+    .section{margin-top:20px;padding:16px 18px;background:var(--panel);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:6px}.section-yellow{border-left-color:var(--yellow)}.section-green{border-left-color:var(--green)}.section-red{border-left-color:var(--red)}
+    .summary-grid,.source-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:18px}.summary-card,.source-card{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px 16px}.summary-label,.source-label{color:var(--muted);font-size:12px}.summary-value{margin-top:5px;color:#fff;font-size:18px;font-weight:bold}.summary-description{margin-top:7px;color:var(--soft);font-size:13px}.source-title{margin-top:4px;color:var(--yellow);font-size:16px;font-weight:bold}
+    .table-wrap{overflow-x:auto;margin-top:12px}.toc{margin-top:24px;padding:16px 18px;background:var(--panel);border:1px solid var(--border);border-radius:6px}.toc strong{color:var(--yellow)}.toc ol{columns:2;column-gap:36px;margin-bottom:0;padding-left:22px}.toc li{break-inside:avoid;margin:5px 0}.toc a{text-decoration:none}.toc a:hover{text-decoration:underline}
+    .tag{display:inline-block;margin-right:6px;padding:2px 7px;border:1px solid var(--border2);border-radius:999px;color:var(--muted);font-size:11px;vertical-align:1px}.good{color:var(--green);font-weight:bold}.difference{color:var(--red);font-weight:bold}.muted{color:var(--muted)}.formula-title{color:var(--purple);font-weight:bold}
+    .example-result{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-top:14px}.example-result div{padding:10px 12px;background:#121212;border:1px solid var(--border);border-radius:5px}.example-result span{display:block;color:var(--muted);font-size:12px}.example-result strong{display:block;margin-top:3px;font-size:17px}
+    .notes{margin-top:34px;padding:14px 16px;background:var(--panel);border-left:4px solid var(--yellow)}.notes-title{color:var(--yellow);font-weight:bold;margin-bottom:8px}
+    @media(max-width:720px){body{margin-top:24px;padding-inline:14px}.toc ol{columns:1}th,td{padding:9px 10px}}
+  </style>
+</head>
+<body>
+<h1>osu!stable / osu!lazer 小節線描画位置の計算</h1>
+
+<div class="doc-header">
+  <div class="doc-parent-link">このページは <a href="docs.html">Modding Helper 説明書</a> の技術資料です。</div>
+</div>
+
+<p class="lead">
+  osu!taikoの小節線は、赤線の時刻、beat length、拍子から自動生成されます。
+  osu!stableとosu!lazerは同じ小節周期を使いますが、
+  <strong>最初の開始位置、timing point境界、浮動小数点誤差の補正、整数化</strong>が異なります。
+  そのため、同じ譜面でも小節線が1 msずれたり、片方だけ2重になったりすることがあります。
+</p>
+
+<div class="summary-grid">
+  <div class="summary-card"><div class="summary-label">共通点</div><div class="summary-value">小節長を反復加算</div><div class="summary-description"><code>barLength = beatLength × meter</code>を現在時刻へ繰り返し加えます。</div></div>
+  <div class="summary-card"><div class="summary-label">stable固有</div><div class="summary-value">描画時に整数化</div><div class="summary-description">反復加算した<code>double</code>を<code>conv.i4</code>で切り捨てます。</div></div>
+  <div class="summary-card"><div class="summary-label">lazer固有</div><div class="summary-value">整数付近を補正</div><div class="summary-description">整数から<code>1e-7 ms</code>以内なら整数へ戻し、<code>double</code>のまま保持します。</div></div>
+</div>
+
+<nav class="toc" aria-label="目次"><strong>目次</strong><ol>
+  <li><a href="#sources">調査方法と情報源</a></li>
+  <li><a href="#terms">記号と前提</a></li>
+  <li><a href="#stable">osu!stableの生成式</a></li>
+  <li><a href="#lazer">osu!lazerの生成式</a></li>
+  <li><a href="#comparison">stable / lazerの違い</a></li>
+  <li><a href="#one-ms-early">再スナップより1 ms前になる例</a></li>
+  <li><a href="#double-barline">stable 1本 / lazer 2本になる例</a></li>
+  <li><a href="#stable-double-barline">stable 2本 / lazer 1本になる例</a></li>
+</ol></nav>
+
+<h2 id="sources">1. 調査方法と情報源</h2>
+<div class="source-grid">
+  <div class="source-card">
+    <div class="source-label">osu!stable</div><div class="source-title">osu!.exeのリバースエンジニアリング</div>
+    <p>osu!stableはソースコードが公開されていないため、解析対象のosu!.exeを逆アセンブルしたILからtaikoの小節線生成経路を追跡しました。中核は解析対象buildのメソッド<code>060020D7</code>です。timing pointの<code>float64</code>値、小節長の反復加算、<code>conv.i4</code>の位置、次の赤線へ切り替える条件まで確認しています。</p>
+    <p class="muted">メソッドIDと難読化名は解析対象build固有です。</p>
+  </div>
+  <div class="source-card">
+    <div class="source-label">osu!lazer</div><div class="source-title">公式GitHubソースコード</div>
+    <p>次のリンクは、今回確認した同一commitへ固定しています。</p>
+    <ul>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Rulesets/Objects/BarLineGenerator.cs" target="_blank" rel="noopener noreferrer">BarLineGenerator.cs</a> — 小節線の生成式</li>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game.Rulesets.Taiko/UI/DrawableTaikoRuleset.cs" target="_blank" rel="noopener noreferrer">DrawableTaikoRuleset.cs</a> — taikoプレイフィールドへの追加</li>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game.Tests/NonVisual/BarLineGeneratorTest.cs" target="_blank" rel="noopener noreferrer">BarLineGeneratorTest.cs</a> — 誤差補正のテスト</li>
+      <li><a href="https://github.com/ppy/osu-framework/blob/0c3fb255384f24804e4797a31a656b340cb641d6/osu.Framework/Utils/Precision.cs" target="_blank" rel="noopener noreferrer">Precision.cs</a> — <code>1e-7</code>の許容差</li>
+    </ul>
+  </div>
+</div>
+<div class="section section-yellow"><strong>対象：</strong>このページでいう「小節線」は、osu!taikoのプレイフィールドを流れる自動生成小節線です。editorのタイムラインに描かれるbeat線・小節線とは別の生成経路です。</div>
+
+<h2 id="terms">2. 記号と前提</h2>
+<div class="table-wrap"><table><thead><tr><th>記号</th><th>意味</th></tr></thead><tbody>
+  <tr><td><code>redTime</code></td><td>赤線（uninherited timing point）の時刻</td></tr>
+  <tr><td><code>beatLength</code></td><td>赤線に保存された1拍の長さ（ms）</td></tr>
+  <tr><td><code>meter</code></td><td>拍子の分子。通常の4/4なら<code>4</code></td></tr>
+  <tr><td><code>barLength</code></td><td><code>beatLength × meter</code>で求める1小節の長さ</td></tr>
+  <tr><td><code>t</code></td><td>現在の小節線候補時刻。両クライアントとも内部では<code>double</code></td></tr>
+  <tr><td><code>OmitFirstBarLine</code></td><td>赤線の先頭小節線を省略するフラグ。<code>.osu</code>ではeffectsのbit 3（値<code>8</code>）</td></tr>
+</tbody></table></div>
+<pre><code>barLength = beatLength × meter</code></pre>
+
+<h2 id="stable">3. osu!stableの小節線生成式</h2>
+<h3><span class="tag">stable 1</span>最初の開始位置</h3>
+<p>stableはuninherited timing pointだけを時刻順に取得します。最初の候補<code>t</code>は、最初の赤線時刻を最初の小節長で正の剰余へ正規化して求めます。</p>
+<pre><code>barLength = firstRed.beatLength × firstRed.meter
+
+t = firstRed.time
+    - trunc(firstRed.time / barLength) × barLength
+
+if (t &lt; 0):
+    t += barLength</code></pre>
+<p><code>trunc</code>は0方向への切り捨てです。通常の正の小節長なら、結果は<code>0 &lt;= t &lt; barLength</code>になります。</p>
+
+<h3><span class="tag">stable 2</span>反復加算・赤線切替・整数化</h3>
+<pre><code>redLines = uninherited timing points
+limit = 最後のHitObjectの終端時刻 + 1
+i = 0
+t = 最初の開始位置
+
+while (t &lt;= limit):
+    currentRed = redLines[i]
+
+    if not (t &lt;= currentRed.time
+            and currentRed.OmitFirstBarLine):
+        drawTime = conv.i4(t)
+        小節線をdrawTimeへ追加
+
+    barLength =
+        currentRed.beatLength × currentRed.meter
+
+    if (barLength &lt; 0.001):
+        次の赤線へ切り替える
+        t = 次の赤線時刻
+    else:
+        t += barLength
+
+        if (次の赤線が存在
+            and t &gt;= 次の赤線時刻):
+            i += 1
+            t = redLines[i].time</code></pre>
+<ul>
+  <li>小節長は<code>t += barLength</code>として反復加算されます。</li>
+  <li>候補が次の赤線時刻以上なら、その候補を描く前に次の赤線へ切り替えます。</li>
+  <li>ただし、最初の赤線を正の剰余へ正規化して得た<strong>初期候補</strong>には、この境界判定がまだ行われていません。初期候補が次の赤線以上でも、1回目のループではそのまま描画されます。</li>
+  <li>小節線オブジェクトを作る直前に<code>conv.i4</code>で整数化します。</li>
+  <li><code>conv.i4</code>は0方向への切り捨てです。通常の正時刻では<code>floor</code>と同じです。</li>
+  <li>反復加算で生じた微小誤差を整数へ戻す補正はありません。</li>
+</ul>
+<div class="section section-yellow"><strong>stableの重要点：</strong>数学上は整数になる小節線でも、反復加算結果が<code>N - ε</code>になると、<code>conv.i4</code>によって<code>N - 1</code>へ切り捨てられます。</div>
+
+<h2 id="lazer">4. osu!lazerの小節線生成式</h2>
+<h3><span class="tag">lazer 1</span>生成可能な最小時刻と開始位置</h3>
+<pre><code>generationStartTime = min(0, firstHitTime)
+barLength =
+    timingPoint.BeatLength
+    × timingPoint.TimeSignature.Numerator
+
+if (timingPoint.Time &gt; generationStartTime):
+    startTime = timingPoint.Time
+else:
+    barCount = ceil(
+        (generationStartTime - timingPoint.Time)
+        / barLength
+    )
+    startTime =
+        timingPoint.Time + barCount × barLength
+
+if (timingPoint.OmitFirstBarLine):
+    startTime += barLength</code></pre>
+<ul>
+  <li>正時刻にある通常の赤線は、その赤線時刻から生成を開始します。</li>
+  <li>生成下限より前にある赤線は、赤線と小節周期が一致する最初の生成可能時刻まで進めます。</li>
+  <li><code>OmitFirstBarLine</code>が有効なら、開始位置を1小節分進めます。</li>
+</ul>
+
+<h3><span class="tag">lazer 2</span>反復加算・誤差補正・区間終端</h3>
+<pre><code>endTime =
+    次の赤線がある
+        ? 次の赤線時刻
+        : 最後のHitObject終端 + 1 + barLength
+
+for (double t = startTime;
+     Precision.AlmostBigger(endTime, t);
+     t += barLength):
+
+    roundedTime =
+        Math.Round(t, MidpointRounding.AwayFromZero)
+
+    if (abs(t - roundedTime) &lt;= 1e-7):
+        t = roundedTime
+
+    小節線をdoubleのtへ追加</code></pre>
+<ul>
+  <li>lazerも小節長を反復加算します。</li>
+  <li>整数との差が<code>1e-7 ms</code>以内なら、その整数へ補正します。</li>
+  <li>補正後の<code>t</code>へ次の小節長を加えるため、累積誤差もそこでリセットされます。</li>
+  <li><code>StartTime</code>は<code>double</code>のままで、stableのような切り捨てはありません。</li>
+  <li><code>Precision.AlmostBigger(endTime, t)</code>は<code>endTime &gt; t - 1e-7</code>です。<code>t == endTime</code>も前区間の小節線として生成されます。</li>
+</ul>
+<div class="section section-green"><strong>lazerの重要点：</strong><code>121037.99999999991</code>のような整数直前の誤差は<code>121038</code>へ戻します。一方、区間終端を含むため、前後両区間から同時刻に2本生成されることがあります。</div>
+
+<h2 id="comparison">5. osu!stableとosu!lazerの違い</h2>
+<div class="table-wrap"><table><thead><tr><th>項目</th><th>osu!stable</th><th>osu!lazer</th></tr></thead><tbody>
+  <tr><td>小節長</td><td><code>beatLength × meter</code></td><td><code>BeatLength × TimeSignature.Numerator</code></td></tr>
+  <tr><td>進め方</td><td>小節長の反復加算</td><td>小節長の反復加算</td></tr>
+  <tr><td>最初の開始位置</td><td>最初の赤線を正の剰余へ正規化</td><td><code>min(0, firstHitTime)</code>以降の整列位置</td></tr>
+  <tr><td>整数付近の補正</td><td>なし</td><td>整数から<code>1e-7 ms</code>以内なら補正</td></tr>
+  <tr><td>最終時刻</td><td><code>conv.i4</code>で0方向へ切り捨て</td><td><code>double</code>のまま保持</td></tr>
+  <tr><td>次の赤線と一致する候補</td><td>描画前に新区間へ切り替える</td><td>前区間の終端と新区間の先頭の両方で生成可能</td></tr>
+  <tr><td>最後の生成範囲</td><td>最後のHitObject終端 + 1 ms</td><td>最後のHitObject終端 + 1 ms + 1小節</td></tr>
+  <tr><td>omit first barline</td><td>赤線先頭の描画条件で抑制</td><td>開始時刻を1小節分進める</td></tr>
+</tbody></table></div>
+
+<h2 id="one-ms-early">6. stableで小節線が再スナップ位置より1 ms前になる例</h2>
+<div class="section section-red">
+  <span class="formula-title">USAO - Glitch in My System (polytone Edit) [Charlotte&apos;s Inner Oni]</span>
+  <p>検証譜面：<a href="https://osu.ppy.sh/beatmapsets/2553764#taiko/5677222" target="_blank" rel="noopener noreferrer">USAO - Glitch in My System (polytone Edit) [Charlotte&apos;s Inner Oni]</a></p>
+  <pre><code>redTime = 1038
+beatLength = 297.029702970297
+meter = 4
+barLength = 1188.118811881188...</code></pre>
+</div>
+<h3>02:01.038の理論位置</h3>
+<p>赤線<code>1038</code>から101小節後は数学上<code>121038 ms</code>ですが、stableの反復加算結果は整数のわずか手前になります。</p>
+<pre><code>stable小節線:
+    t = 1038
+    t += barLength を101回
+
+    rawBarlineTime = 121037.99999999991
+    conv.i4(rawBarlineTime) = 121037
+    小節線描画時刻 = 02:01.037</code></pre>
+<p>stableの再スナップは別処理で、選んだsnap番号から掛け算で時刻を直接作ります。この1/1 snapでは次の結果です。</p>
+<pre><code>stable再スナップ:
+    snapTime = redTime + 404 × beatLength
+    snapTime = 121038
+    conv.i4(snapTime) = 121038
+    再スナップ時刻 = 02:01.038</code></pre>
+<div class="example-result">
+  <div><span>stable 小節線</span><strong class="difference">121037</strong></div>
+  <div><span>stable 再スナップ</span><strong class="good">121038</strong></div>
+  <div><span>差</span><strong class="difference">小節線が -1 ms</strong></div>
+</div>
+
+<h3>osu!lazerでも同じ現象は起こるか</h3>
+<p><strong>この例では起こりません。</strong>lazerも途中では<code>121037.99999999991</code>になりますが、整数との差は約<code>8.73e-11 ms</code>で補正範囲内です。</p>
+<pre><code>lazer小節線:
+    rawBarlineTime = 121037.99999999991
+    roundedTime = 121038
+    abs(rawBarlineTime - roundedTime) &lt;= 1e-7
+    t = 121038へ補正
+    StartTime = 121038</code></pre>
+<div class="section section-green">lazerは小節線時刻を整数へ切り捨てず、整数直前・直後の微小誤差を整数へ戻します。そのため、stableの<code>N - ε → N - 1</code>と同じ仕組みによる1 ms早い小節線は発生しません。</div>
+
+<h2 id="double-barline">7. stableは1本、lazerは2本になる例</h2>
+<div class="section section-red">
+  <span class="formula-title">CS4W - Complementary Contrast (miyagishima) [Inner Oni]</span>
+  <p>検証譜面：<a href="https://osu.ppy.sh/beatmapsets/2336552#taiko/5016117" target="_blank" rel="noopener noreferrer">CS4W - Complementary Contrast (miyagishima) [Inner Oni]</a></p>
+  <pre><code>直前の赤線:
+    992,400,4,1,0,70,1,8
+    omit first barline = true
+
+対象の赤線:
+    144992,400,4,1,0,100,1,1
+    omit first barline = false
+
+barLength = 400 × 4 = 1600
+144992 - 992 = 144000 = 90小節</code></pre>
+</div>
+<p>直前の赤線は先頭小節線を省略するため、区間の生成位置は<code>2592, 4192, ... 143392, 144992</code>となります。</p>
+
+<h3><span class="tag">stable</span>次の赤線へ先に切り替える</h3>
+<pre><code>143392 + 1600 = 144992
+144992 &gt;= 次の赤線144992
+→ 直前区間由来として描く前に次の赤線へ切替
+→ 新しい赤線由来として144992に1本生成</code></pre>
+<div class="example-result">
+  <div><span>直前区間由来</span><strong>0本</strong></div>
+  <div><span>新区間由来</span><strong>1本</strong></div>
+  <div><span>stable 合計</span><strong class="good">1本</strong></div>
+</div>
+
+<h3><span class="tag">lazer</span>区間終端と新区間先頭の両方を生成する</h3>
+<pre><code>前区間:
+    endTime = 144992
+    t = 144992
+    Precision.AlmostBigger(144992, 144992) = true
+    → 992の赤線区間由来として1本
+
+新しい区間:
+    startTime = 144992
+    omit first barline = false
+    → 144992の赤線区間由来として1本</code></pre>
+<div class="example-result">
+  <div><span>直前区間由来</span><strong class="difference">1本</strong></div>
+  <div><span>新区間由来</span><strong class="difference">1本</strong></div>
+  <div><span>lazer 合計</span><strong class="difference">2本</strong></div>
+</div>
+<div class="section section-yellow"><strong>この2重小節線は浮動小数点誤差ではありません。</strong>前区間の終端を生成対象に含めるlazerの境界条件と、新しい赤線からも生成する処理が重なった結果です。生成後の重複削除はありません。</div>
+
+<h2 id="stable-double-barline">8. stableは2本、lazerは1本になる例</h2>
+<div class="section section-red">
+  <span class="formula-title">Halozy - Sakura Saku Utopia (Hata no Kokoro) [Sakura~ Sakura~]</span>
+  <pre><code>最初の赤線:
+    -221,419.58041958042,4,1,0,40,1,0
+
+次の赤線:
+    1457,419.58041958042,4,1,0,80,1,0
+
+最初のHitObject:
+    408 ms
+
+barLength = 419.58041958042 × 4
+          = 1678.32167832168 ms</code></pre>
+</div>
+<p>最初の赤線は負の時刻にあり、その1小節後の理論位置<code>1457.32167832168 ms</code>は、次の赤線<code>1457 ms</code>を約<code>0.322 ms</code>超えています。この端数をいつ評価するかが、両クライアントの本数を分けます。</p>
+
+<h3>先に結論</h3>
+<p>負時刻に最初の赤線がある場合、両クライアントは、その赤線と同じ小節周期にある最初の生成可能な非負時刻を求めます。今回の候補は<code>1457.32167832168 ms</code>です。</p>
+<div class="table-wrap"><table><thead><tr><th>クライアント</th><th>初期候補の扱い</th><th>結果</th></tr></thead><tbody>
+  <tr><td>osu!stable</td><td>初期候補を先に描画し、その後で次の赤線へ切り替えます。描画時には<code>conv.i4</code>で整数化します。</td><td><code>1457.321... → 1457 ms</code>が1本、次の赤線由来の<code>1457 ms</code>が1本となり、合計2本です。</td></tr>
+  <tr><td>osu!lazer</td><td>初期候補が「現在の赤線から次の赤線まで」の区間内にあるかを、描画前に<code>double</code>のまま確認します。</td><td><code>1457.321... ms</code>は区間終端の<code>1457 ms</code>を超えるため除外され、次の赤線由来の1本だけです。</td></tr>
+</tbody></table></div>
+<div class="section section-green"><strong>一言で表すと：</strong>stableは初期候補を先に描画してから次の赤線を確認します。lazerは初期候補が次の赤線までの区間内か確認してから描画します。</div>
+<p>したがって、stableで完全な二重小節線になる条件は、初期候補の生の値が次の赤線と完全一致することではなく、<strong><code>conv.i4(初期候補) = 次の赤線時刻</code></strong>となることです。</p>
+
+<h3><span class="tag">stable</span>描画後に次の赤線との境界を判定する</h3>
+<pre><code>最初の開始位置:
+    t = -221
+        - trunc(-221 / 1678.32167832168)
+          × 1678.32167832168
+      = -221
+
+    t &lt; 0 なので:
+    t += 1678.32167832168
+      = 1457.32167832168
+
+1回目のループ:
+    currentRed = -221の赤線
+    conv.i4(1457.32167832168) = 1457
+    → 前区間由来の小節線を1457 msに1本生成
+
+    t += 1678.32167832168
+      = 3135.64335664336
+    3135.64335664336 &gt;= 次の赤線1457
+    → 次の赤線へ切り替え、t = 1457
+
+2回目のループ:
+    currentRed = 1457の赤線
+    conv.i4(1457) = 1457
+    → 新区間由来の小節線を1457 msに1本生成</code></pre>
+<div class="example-result">
+  <div><span>最初の赤線由来</span><strong class="difference">1本</strong></div>
+  <div><span>次の赤線由来</span><strong class="difference">1本</strong></div>
+  <div><span>stable 合計</span><strong class="difference">2本</strong></div>
+</div>
+<p>stableは現在の候補を描いたあと、小節長を加えた<strong>次回候補</strong>で赤線の切替を判定します。そのため、正の剰余へ正規化した初期候補<code>1457.321... ms</code>がすでに次の赤線を超えていても、1回目のループでは前区間由来として描画されます。さらに描画時の<code>conv.i4</code>で端数が切り捨てられ、次の赤線と同じ<code>1457 ms</code>に重なります。</p>
+
+<h3><span class="tag">stable</span>最初の赤線を-218 msへ動かした場合</h3>
+<p>最初の赤線だけを<code>-221 ms</code>から<code>-218 ms</code>へ動かしても、初期候補が次の赤線より後になる構造は変わりません。ただし、前区間由来の線の正確な時刻は変わります。</p>
+<pre><code>最初の赤線:
+    -218,419.58041958042,4,1,0,40,1,0
+
+初期候補:
+    -218 + 1678.32167832168
+    = 1460.32167832168
+
+前区間由来:
+    conv.i4(1460.32167832168) = 1460
+
+次の赤線由来:
+    conv.i4(1457) = 1457</code></pre>
+<div class="example-result">
+  <div><span>前区間由来</span><strong class="difference">1460 ms</strong></div>
+  <div><span>次の赤線由来</span><strong>1457 ms</strong></div>
+  <div><span>stableでの間隔</span><strong class="difference">3 ms</strong></div>
+</div>
+<p>したがって、stableではこの変更後も近接した2本が生成されますが、計算上は<code>1457 ms</code>に2本ではなく、<code>1457 ms</code>と<code>1460 ms</code>に1本ずつです。プレイフィールド上では3 ms差が非常に小さいため、同じ位置の二重線に見える可能性があります。</p>
+
+<h3><span class="tag">lazer</span>前区間の終端条件で超過候補を除外する</h3>
+<pre><code>generationStartTime = min(0, 408) = 0
+
+最初の赤線区間:
+    barCount = ceil((0 - (-221)) / 1678.32167832168)
+             = 1
+    startTime = -221 + 1 × 1678.32167832168
+              = 1457.32167832168
+    endTime = 次の赤線 = 1457
+
+    Precision.AlmostBigger(1457, 1457.32167832168)
+    = false
+    → 前区間由来の小節線は生成されない
+
+次の赤線区間:
+    startTime = 1457
+    → 1457 msに1本生成</code></pre>
+<div class="example-result">
+  <div><span>最初の赤線由来</span><strong>0本</strong></div>
+  <div><span>次の赤線由来</span><strong>1本</strong></div>
+  <div><span>lazer 合計</span><strong class="good">1本</strong></div>
+</div>
+<div class="section section-yellow"><strong>負時刻開始バグと完全な重なりは別の条件です。</strong>stableの負時刻開始バグは、正規化した初期候補に対して次の赤線との境界判定を行わず、1回だけ描画してしまうことです。元譜面で2本が完全に重なるのは、それに加えて<code>1457.321... ms</code>が<code>conv.i4</code>で次の赤線と同じ<code>1457 ms</code>へ切り捨てられるためです。最初の赤線を<code>-218 ms</code>へ動かした場合も余分な1本は残りますが、前区間由来は<code>1460 ms</code>となり、厳密には3 ms離れます。lazerは各赤線区間の開始候補を<code>double</code>のまま区間終端と比較するため、どちらの場合も超過した前区間候補を生成しません。</div>
+
+<div class="notes"><div class="notes-title">まとめ</div>
+  stableは反復加算結果を<code>conv.i4</code>で切り捨てるため、再スナップ位置より小節線が1 ms前になることがあります。<br>
+  lazerは整数付近の誤差を補正し、<code>double</code>のまま保持するため、同じ仕組みによる1 ms早い小節線を防ぎます。<br>
+  一方、lazerは赤線区間の終端を生成対象に含むため、前区間と新区間の小節線が同時刻に重なり、stableでは1本・lazerでは2本になることがあります。<br>
+  逆にstableは、負時刻の最初の赤線から正規化した初期候補に対して、次の赤線との境界判定を行わず1回描画します。その初期候補が次の赤線以上なら、stableでは余分な小節線が1本生成され、lazerとの差が生じます。さらに整数化後の時刻が次の赤線と一致する場合は完全な二重小節線になります。
+</div>
+</body>
+</html>
