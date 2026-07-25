@@ -65,7 +65,7 @@ function runOffset1msCheck(text, fileName, options = {}) {
           snap: wheelDifference.snap,
           target: item.target,
           objectType: item.objectType,
-          level: "warn",
+          level: "info",
           compatibility: wheelDifference.compatibility
         });
       }

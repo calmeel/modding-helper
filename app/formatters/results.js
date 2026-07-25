@@ -168,7 +168,13 @@ function formatShiftItems(items, t) {
 
   for (const item of items) {
     const sign = item.diff > 0 ? "+" : "";
-    const className = item.level === "warn" ? "result-warn" : "result-error";
+    const className =
+      item.level === "warn"
+        ? "result-warn"
+        : item.level === "error"
+          ? "result-error"
+          : "";
+    const classAttribute = className ? ` class="${className}"` : "";
     const objectText = getOffsetObjectTypeLabel(item, t);
     const targetText =
       item.target === "sliderTail"
@@ -187,7 +193,7 @@ function formatShiftItems(items, t) {
       : null;
 
     lines.push(
-      `<span class="${className}">${formatTimestampLink(item.time)} | ` +
+      `<span${classAttribute}>${formatTimestampLink(item.time)} | ` +
       `${escapeHtml(objectText)}${targetText} ` +
       `${compatibilityText
         ? escapeHtml(compatibilityText)
