@@ -119,7 +119,10 @@
         var previewSettingsBody = document.createElement('div');
         previewSettingsBody.className = 'etb-card-body';
         previewSettingsCard.appendChild(previewSettingsBody);
-        futureCol.appendChild(previewSettingsCard);
+        /* 設定モードの右カラム（プレビュータブ設定を単独で置く）。設定以外は CSS で隠す。 */
+        var settingsRightCol = document.createElement('div');
+        settingsRightCol.id = 'electron-col-settings-right';
+        settingsRightCol.appendChild(previewSettingsCard);
 
         /* チェックリストカード */
         var tabsCol = document.createElement('div');
@@ -156,11 +159,24 @@
         toolsCard.appendChild(toolsHead);
         toolsCard.appendChild(toolsBody);
 
-        /* 中央カラム: チェックリストカード＋ツールカードを縦積みするラッパー。 */
+        /* ツールの表示設定カード（設定モード時のみ表示。中央カラム・チェックリストの表示設定の下）。
+           音声波形/スペクトログラム/SR計算/BN評価 の表示トグルをここへ振り分ける。 */
+        var toolsSettingsCard = document.createElement('div');
+        toolsSettingsCard.className = 'etb-card';
+        toolsSettingsCard.id = 'etb-card-toolsettings';
+        toolsSettingsCard.style.display = 'none';
+        toolsSettingsCard.innerHTML = '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-toolsettings">ツールの表示設定</span></div>';
+        var toolsSettingsBody = document.createElement('div');
+        toolsSettingsBody.className = 'etb-card-body';
+        toolsSettingsBody.id = 'etb-toolsettings-body';
+        toolsSettingsCard.appendChild(toolsSettingsBody);
+
+        /* 中央カラム: チェックリスト（表示設定）カード＋ツールカード＋ツール表示設定カードを縦積み。 */
         var centerCol = document.createElement('div');
         centerCol.id = 'electron-col-center';
         centerCol.appendChild(tabsCol);
         centerCol.appendChild(toolsCard);
+        centerCol.appendChild(toolsSettingsCard);
 
         /* チェック結果カード */
         var outputCol = document.createElement('div');
@@ -192,6 +208,7 @@
         colsWrap.appendChild(futureCol);
         colsWrap.appendChild(centerCol);
         colsWrap.appendChild(outputCol);
+        colsWrap.appendChild(settingsRightCol);
 
         layout.appendChild(compactBar);
         layout.appendChild(colsWrap);
@@ -209,8 +226,16 @@
         if (osuSrcEl) { osuSrcEl.hidden = false; loadSettingsBody.appendChild(osuSrcEl); }
         var tabSettingsPanelEl = document.getElementById('tabSettingsPanel');
         if (tabSettingsPanelEl) {
+          /* ツール系タブの表示トグルは「ツールの表示設定」カードへ、
+             それ以外は「チェックリストの表示設定」へ振り分ける。 */
+          var toolToggleTabs = {
+            offsetWaveform: 1, spectrogram: 1, srCalculator: 1, timeline: 1, bnCompare: 1
+          };
           Array.prototype.slice.call(tabSettingsPanelEl.querySelectorAll('label')).forEach(function(lb) {
-            tabsSettingsBody.appendChild(lb);
+            var inp = lb.querySelector('.tab-visibility-toggle');
+            var tab = inp && inp.getAttribute('data-target-tab');
+            if (tab && toolToggleTabs[tab]) toolsSettingsBody.appendChild(lb);
+            else tabsSettingsBody.appendChild(lb);
           });
         }
         var tabVisEl = document.querySelector('.tab-visibility-settings');
@@ -1990,13 +2015,15 @@
           setDisp('etb-card-file',         !s && !isOsu);
           setDisp('etb-card-viewsettings',  s);
           setDisp('etb-card-loadsettings',  s);
+          /* 右カラム(設定)のプレビュータブ設定。カラムの表示/非表示は CSS が担う */
           setDisp('etb-card-previewsettings', s);
           applyViewModeUi();   // モード切替でドロップエリアの置き場所が変わる
           /* 設定を開いたら Diff表示チェックリストを現在の譜面で作り直す */
           if (s && window.__spreadRebuildDiffList) window.__spreadRebuildDiffList();
-          /* 中央カラム（チェックリスト） */
+          /* 中央カラム（チェックリストの表示設定＋ツールの表示設定） */
           setDisp('etb-checklist-buttons-body',  !s);
           setDisp('etb-checklist-settings-body',  s);
+          setDisp('etb-card-toolsettings',        s);
           /* 右カラム（チェック結果/プレビュー）は設定モード中のみ隠す */
           setDisp('electron-col-output',  !s);
           /* レイアウトのモードクラス（設定=50/50, プレビュー=スプレッド全面） */
@@ -2014,7 +2041,7 @@
           var isEn = document.getElementById('langEn') && document.getElementById('langEn').classList.contains('active');
           var clT = document.getElementById('etb-title-checklist');
           if (clT) clT.textContent = s
-            ? (isEn ? 'Check list settings' : 'チェックリストの設定')
+            ? (isEn ? 'Check list display' : 'チェックリストの表示設定')
             : (isEn ? 'Check list' : 'チェックリスト');
           /* チェック/プレビュー/設定ボタンのアクティブ表示（今どこを見ているか） */
           var sBtn = document.getElementById('toggleTabSettings');
@@ -2181,10 +2208,11 @@
           set('etb-diffvis-title',      '表示するDiff',       'Shown diffs');
           set('etb-diffvis-none',       '（譜面が読み込まれていません）', '(No beatmap loaded)');
           set('etb-title-checklist',
-              settingsMode ? 'チェックリストの設定' : 'チェックリスト',
-              settingsMode ? 'Check list settings'  : 'Check list');
+              settingsMode ? 'チェックリストの表示設定' : 'チェックリスト',
+              settingsMode ? 'Check list display'      : 'Check list');
           set('etb-title-results',      'チェック結果',       'Check results');
           set('etb-title-tools',        'ツール',            'Tools');
+          set('etb-title-toolsettings', 'ツールの表示設定',   'Tool display');
           set('etb-tab-main',           'チェック',          'Check');
           set('etb-tab-preview',        'プレビュー',        'Preview');
           set('toggleTabSettings',      '設定',              'Settings');

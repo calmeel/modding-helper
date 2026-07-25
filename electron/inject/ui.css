@@ -327,15 +327,36 @@
       #electron-col-future > .etb-card { flex: 0 0 auto; }
       #etb-meta-body { padding: 0 !important; }
 
-      /* 設定モード: 左カラム(譜面読み込み設定＋プレビュータブ設定)と中央(チェックリスト設定)を 50/50 */
+      /* ── 設定モード: 3分割 ──
+         左  = 表示モード＋譜面読み込み設定 / 中央 = チェックリスト表示設定＋ツール表示設定
+         右  = プレビュータブ設定（専用カラム #electron-col-settings-right）。
+         チェック結果カラムは設定中は隠す（JS の setDisp）。 */
       #electron-layout.etb-settings #electron-col-future { flex: 1 1 0 !important; }
       #electron-layout.etb-settings #electron-col-center { flex: 1 1 0 !important; }
-      /* 設定モードではツールカードを出さない（中央はチェックリスト設定だけにする） */
+      #electron-layout.etb-settings #electron-col-settings-right {
+        display: flex !important;
+        flex: 1 1 0 !important;
+      }
+      /* 設定モードではチェック用ツールカード(緑ボタン)は出さない */
       #electron-layout.etb-settings #etb-card-tools { display: none !important; }
-      /* 左カラムの2カードは内容の高さで上から積む */
+      /* 各カラム内の設定カードは内容の高さで上から積む（左カラムの積み方に統一）。
+         中央のチェックリスト表示設定カードも設定時は内容高にして、ツール表示設定を
+         その直下に密着させる。はみ出す時はカラム側(#electron-col-center)がスクロール。 */
+      #electron-layout.etb-settings #electron-col-tabs,
       #electron-layout.etb-settings #etb-card-viewsettings,
       #electron-layout.etb-settings #etb-card-loadsettings,
+      #electron-layout.etb-settings #etb-card-toolsettings,
       #electron-layout.etb-settings #etb-card-previewsettings { flex: 0 0 auto !important; }
+      #electron-layout.etb-settings #electron-col-center { overflow-y: auto !important; }
+
+      /* 設定モード専用の右カラム。設定以外（チェック/プレビュー）では隠す。 */
+      #electron-col-settings-right {
+        display: none;
+        min-width: 0;
+        overflow-y: auto;
+        flex-direction: column;
+        gap: 8px;
+      }
       /* プレビュー設定カード: 先頭セクションだけ区切り線を出さない（2つ目以降は区切る） */
       /* 設定カードの先頭セクションは区切り線と上余白を出さない（2つ目以降だけ区切る）。
          カードを問わず効かせる（表示モードのように1セクションだけのカードもあるため）。 */
@@ -763,9 +784,12 @@
       }
 
       /* 設定モード: 移設したタブ表示トグルを縦リスト表示にする
-         （.tab-settings-panel から出したので元の flex 指定が効かないため再指定） */
-      #etb-checklist-settings-body { padding: 10px 12px 8px !important; }
-      #etb-checklist-settings-body label {
+         （.tab-settings-panel から出したので元の flex 指定が効かないため再指定）。
+         「チェックリストの表示設定」と「ツールの表示設定」は同一の見た目に揃える。 */
+      #etb-checklist-settings-body,
+      #etb-toolsettings-body { padding: 10px 12px 8px !important; }
+      #etb-checklist-settings-body label,
+      #etb-toolsettings-body label {
         display: flex !important;
         align-items: center !important;
         gap: 7px !important;
@@ -775,7 +799,8 @@
         cursor: pointer !important;
         white-space: normal !important;
       }
-      #etb-checklist-settings-body input { cursor: pointer; flex-shrink: 0; }
+      #etb-checklist-settings-body input,
+      #etb-toolsettings-body input { cursor: pointer; flex-shrink: 0; }
 
       /* ── タイトルバーに移動した .top-links 要素のスタイル上書き ── */
       #etb-nav > a,
@@ -873,7 +898,9 @@
       #electron-layout.etb-compact.etb-settings .osu-source-title,
       #electron-layout.etb-compact.etb-settings .etb-sfx-none,
       #electron-layout.etb-compact.etb-settings #etb-checklist-settings-body label,
-      #electron-layout.etb-compact.etb-settings #etb-checklist-settings-body span { font-size: 11px !important; }
+      #electron-layout.etb-compact.etb-settings #etb-checklist-settings-body span,
+      #electron-layout.etb-compact.etb-settings #etb-toolsettings-body label,
+      #electron-layout.etb-compact.etb-settings #etb-toolsettings-body span { font-size: 11px !important; }
       #electron-layout.etb-compact.etb-settings .etb-sfx-opt,
       #electron-layout.etb-compact.etb-settings .osu-source-option,
       #electron-layout.etb-compact.etb-settings .etb-sfx-vol-label { font-size: 11.5px !important; }
