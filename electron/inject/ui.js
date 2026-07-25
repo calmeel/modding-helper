@@ -1420,7 +1420,12 @@
           };
 
           var SP_SFX_LOOKAHEAD_MS = 120;
-          var SP_SFX_SETTLE_MS = 200;  // 再生開始直後、出音が安定するまで予約を見送る時間
+          /* 再生開始直後に効果音の予約を見送る時間。
+             昔 <audio> 再生だった頃は currentTime が開始直後に不正確で、安定を待つため
+             200ms 見送っていた（そのぶん出だしの効果音が鳴らずラグに聞こえた）。
+             現在は AudioContext の PCM 再生で currentTime が開始の瞬間から正確なので、
+             見送りは不要。0 = 開始直後から鳴らす。 */
+          var SP_SFX_SETTLE_MS = 0;
           var spSfxPlayFrom = null;    // この再生セッションの開始曲位置
           var spSfxLastSong = null;   // 前フレームの曲時刻（シーク検出用）
           var spSfxSchedTo = null;    // ここまでの曲時刻を予約済み
