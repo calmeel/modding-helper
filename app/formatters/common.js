@@ -123,12 +123,22 @@ function sortResultsForDisplay(results) {
     // Taiko以外は既存順を維持
     if (modeA !== 1) return 0;
 
-    return getTaikoDifficultySortKey(a.fileName) - getTaikoDifficultySortKey(b.fileName);
+    return getTaikoDifficultySortKey(a) - getTaikoDifficultySortKey(b);
   });
 }
 
-function getTaikoDifficultySortKey(fileName) {
-  const name = normalizeDifficultyName(getDifficultyNameText(fileName));
+function getTaikoDifficultySortKey(fileNameOrResult) {
+  // スプレッド比較・Electronプレビューと同じ難易度分類を使用する。
+  // これにより Overdrive Oni などの修飾語付き Oni も Inner Oni より上に並ぶ。
+  if (typeof getSpreadSortInfo === "function") {
+    const sortInfo = getSpreadSortInfo(fileNameOrResult);
+
+    if (Number.isFinite(sortInfo?.score)) {
+      return sortInfo.score;
+    }
+  }
+
+  const name = normalizeDifficultyName(getDifficultyNameText(fileNameOrResult));
 
   // Guest diff: "___'s Oni" → "Oni" を拾う
   if (/\bkantan\b/.test(name)) return 10;
