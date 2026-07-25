@@ -90,7 +90,10 @@ function getSpreadSortInfo(fileName) {
     if (isGuestOni || isPlainOni) {
       modifier = 0;
     } else if (isLiteOni) {
-      modifier = -1;
+      // "lite/light/basic" は一段軽い版。inner と組む Lite Inner Oni は
+      // 無印 Oni と Inner Oni の間に置く（0 < 0.5 < 1）。
+      // 単体の Lite Oni は従来どおり無印 Oni の下（-1）。
+      modifier = hasWord("inner") ? 0.5 : -1;
     } else if (hasWord("hell", "lunatic")) {
       modifier = 3;
     } else if (hasWord("ura")) {
