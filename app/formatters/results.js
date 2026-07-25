@@ -431,7 +431,6 @@ function formatMultipleUnappliedSvResults(results, t) {
     sortedResults,
     "noteIssues",
     "unappliedSvNoNoteIssues",
-    "unappliedSvNoteMessage",
     t
   ));
 
@@ -442,14 +441,13 @@ function formatMultipleUnappliedSvResults(results, t) {
     sortedResults,
     "barlineIssues",
     "unappliedSvNoBarlineIssues",
-    null,
     t
   ));
 
   return lines.join("\n").trimEnd();
 }
 
-function formatUnappliedSvResultsByDiff(results, issueKey, noIssueKey, messageKey, t) {
+function formatUnappliedSvResultsByDiff(results, issueKey, noIssueKey, t) {
   const lines = [];
 
   for (const result of results) {
@@ -460,7 +458,7 @@ function formatUnappliedSvResultsByDiff(results, issueKey, noIssueKey, messageKe
       lines.push(t(noIssueKey));
     } else {
       for (const issue of issues) {
-        lines.push(formatUnappliedSvIssueLine(issue, t, messageKey));
+        lines.push(formatUnappliedSvIssueLine(issue, t));
       }
     }
 
@@ -470,7 +468,7 @@ function formatUnappliedSvResultsByDiff(results, issueKey, noIssueKey, messageKe
   return lines;
 }
 
-function formatUnappliedSvIssueLine(issue, t, messageKey) {
+function formatUnappliedSvIssueLine(issue, t) {
   const targetSvLabel =
     issue.targetType === "barline"
       ? t("unappliedSvBarlineSvLabel")
@@ -482,11 +480,6 @@ function formatUnappliedSvIssueLine(issue, t, messageKey) {
   const deltaText = `${t("unappliedSvDeltaLabel")} ${formatUnappliedSvDelta(followingSv - targetSv)}`;
   const svText = `${targetSvText} -> ${followingSvText} (${deltaText})`;
   const offsetText = `+${formatBarlinePreciseNumber(issue.offset)} ms`;
-  const messageSuffix = messageKey
-    ? ` | ${escapeHtml(
-        t(messageKey).replace("{offset}", offsetText)
-      )}`
-    : "";
   const clientScope = issue.targetType === "barline"
     ? formatBarlineClientScope(issue, t)
     : "";
@@ -499,7 +492,6 @@ function formatUnappliedSvIssueLine(issue, t, messageKey) {
     `${formatTimestampLink(issue.greenTime)} | ` +
     `${offsetText} | ` +
     `${escapeHtml(svText)}` +
-    `${messageSuffix}` +
     `</span>`;
 }
 
