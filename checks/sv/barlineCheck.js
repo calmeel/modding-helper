@@ -2,6 +2,10 @@ const BARLINE_SCROLL_BASE_PX_PER_BEAT = 175;
 const BARLINE_SCROLL_SPEED_EPSILON = 1e-6;
 const BARLINE_ISSUE_TIME_EPSILON = 1e-7;
 const BARLINE_DOUBLE_MAX_GAP_MS = 1;
+const BARLINE_SEPARATION_DIRECT_MAX_GAP_MS = 1;
+const BARLINE_SEPARATION_BOUNDARY_MAX_GAP_MS = 1;
+const BARLINE_SEPARATION_BRIDGED_MAX_GAP_MS =
+  BARLINE_SEPARATION_BOUNDARY_MAX_GAP_MS * 2;
 
 function runBarlineCheck(text, fileName) {
   const timelines = buildBarlineTimelines(text);
@@ -115,6 +119,10 @@ function detectClientBarlineIssues(
       .map(line => line.time)
       .filter(time => Number.isFinite(time))
   );
+  const scrollSpeedBoundaryTimes = [
+    ...redLines.map(line => line.time),
+    ...greenLines.map(line => line.time)
+  ].filter(time => Number.isFinite(time));
   const objectsByTime = new Map();
 
   for (const object of scrollObjects) {
@@ -130,8 +138,10 @@ function detectClientBarlineIssues(
     const barline of getUniqueBarlineComparisonTimes(events)
   ) {
     const barlineTime = barline.time;
-    const firstCandidate = barlineTime - 1;
-    const lastCandidate = barlineTime + 1;
+    const firstCandidate =
+      barlineTime - BARLINE_SEPARATION_BRIDGED_MAX_GAP_MS;
+    const lastCandidate =
+      barlineTime + BARLINE_SEPARATION_BRIDGED_MAX_GAP_MS;
 
     for (
       let noteTime = firstCandidate;
@@ -142,10 +152,22 @@ function detectClientBarlineIssues(
       if (!objectsAtTime?.length) continue;
 
       const gap = Math.abs(noteTime - barlineTime);
-      if (
-        gap <= BARLINE_ISSUE_TIME_EPSILON ||
-        gap > BARLINE_DOUBLE_MAX_GAP_MS + BARLINE_ISSUE_TIME_EPSILON
-      ) {
+      if (gap <= BARLINE_ISSUE_TIME_EPSILON) {
+        continue;
+      }
+
+      const isDirectCandidate =
+        gap <=
+        BARLINE_SEPARATION_DIRECT_MAX_GAP_MS +
+          BARLINE_ISSUE_TIME_EPSILON;
+      const scrollSpeedBoundaryTime =
+        findBridgingBarlineScrollSpeedBoundary(
+          scrollSpeedBoundaryTimes,
+          barlineTime,
+          noteTime
+        );
+
+      if (!isDirectCandidate && scrollSpeedBoundaryTime == null) {
         continue;
       }
 
@@ -161,7 +183,8 @@ function detectClientBarlineIssues(
       if (
         target === intentionalDetachedBarlines &&
         noteTime > barlineTime &&
-        !greenLineTimes.has(noteTime)
+        !greenLineTimes.has(noteTime) &&
+        scrollSpeedBoundaryTime == null
       ) {
         continue;
       }
@@ -188,6 +211,39 @@ function detectClientBarlineIssues(
     detachedBarlines,
     intentionalDetachedBarlines
   };
+}
+
+function findBridgingBarlineScrollSpeedBoundary(
+  boundaryTimes,
+  barlineTime,
+  objectTime
+) {
+  const firstTime = Math.min(barlineTime, objectTime);
+  const lastTime = Math.max(barlineTime, objectTime);
+
+  for (const boundaryTime of boundaryTimes) {
+    if (
+      boundaryTime <
+        firstTime - BARLINE_ISSUE_TIME_EPSILON ||
+      boundaryTime >
+        lastTime + BARLINE_ISSUE_TIME_EPSILON
+    ) {
+      continue;
+    }
+
+    if (
+      Math.abs(boundaryTime - barlineTime) <=
+        BARLINE_SEPARATION_BOUNDARY_MAX_GAP_MS +
+          BARLINE_ISSUE_TIME_EPSILON &&
+      Math.abs(boundaryTime - objectTime) <=
+        BARLINE_SEPARATION_BOUNDARY_MAX_GAP_MS +
+          BARLINE_ISSUE_TIME_EPSILON
+    ) {
+      return boundaryTime;
+    }
+  }
+
+  return null;
 }
 
 function detectClientDoubleBarlines(events, client) {

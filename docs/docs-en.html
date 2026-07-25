@@ -986,8 +986,8 @@ If the first generated barline position matches or passes the next red timing po
 
 <div class="section section-detect">
 <span class="label label-detect">■ Detection Content 3: Separation Between Notes and Barlines</span><br>
-For each client, when the start of a Circle, Slider, or Spinner exists within 1 ms before or after an actually generated barline, the check compares the effective visual scroll speed at the barline position with the speed at the object position. Results that do not match are shown as a yellow Warning for separation between notes and barlines.<br>
-For an object after the barline, the check only applies when an SV line exists at the object position.<br>
+For each client, when the start of a Circle, Slider, or Spinner exists within 1 ms before or after an actually generated barline, the check compares the effective visual scroll speed at the barline position with the speed at the object position. An object 2 ms away is also compared when a scroll-speed boundary created by a red or green timing point lies between them and is within 1 ms of both. Results that do not match are shown as a yellow Warning for separation between notes and barlines.<br>
+For an object after the barline, the check applies when an SV line exists at the object position or when the scroll-speed boundary described above bridges the object and barline.<br>
 Lazer's fractional generation time is converted to integer milliseconds with <code>Math.trunc()</code> before comparison. If the normalized time, target object, and result are the same, the stable and lazer results are merged into one entry.<br>
 <code>omit first barline</code> is applied during each client's generation process, so the check does not use a barline that would not actually be drawn.<br><br>
 The visual scroll speed is calculated using the same idea as the Spread Comparison / Scroll Speed subtab, based on the current BPM, current SV, and <code>SliderMultiplier</code>.<br><br>
