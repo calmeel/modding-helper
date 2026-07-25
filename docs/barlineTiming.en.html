@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>osu!stable / osu!lazer Barline Position Calculations</title>
+  <style>
+    :root{color-scheme:dark;--bg:#111;--panel:#181818;--strong:#202020;--border:#2a2a2a;--border2:#333;--text:#eee;--soft:#ccc;--muted:#aaa;--blue:#9fdcff;--yellow:#ffd580;--green:#9ff2b2;--red:#ffb3b3;--purple:#c9b6ff}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:sans-serif;font-size:14px;line-height:1.65;max-width:1200px;margin:40px auto;padding:0 20px 64px;background:var(--bg);color:var(--text)}
+    h1{color:var(--blue);border-bottom:2px solid var(--border2);padding-bottom:10px;margin-bottom:22px;line-height:1.3}h2{margin-top:48px;color:var(--blue);border-bottom:1px solid var(--border2);padding-bottom:6px;line-height:1.4}h3{margin-top:30px;color:var(--yellow);line-height:1.4}
+    p,li{color:var(--soft)}a{color:var(--blue)}code{background:#222;padding:2px 6px;border-radius:4px;color:#f2f2f2}pre{margin:14px 0 0;padding:14px 16px;overflow-x:auto;background:#0d0d0d;border:1px solid var(--border);border-radius:6px;color:#e9f6ff;line-height:1.55}pre code{padding:0;background:transparent;color:inherit}
+    table{width:100%;border-collapse:collapse;margin-top:16px;background:var(--panel);border:1px solid var(--border);font-size:13px}th{background:var(--strong);color:var(--blue);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border2);white-space:nowrap}td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}tr:hover{background:#1d1d1d}
+    .doc-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px}.doc-parent-link{color:var(--muted);font-size:13px}.doc-parent-link a{color:var(--blue);text-decoration:none}.doc-parent-link a:hover{text-decoration:underline}.lead{max-width:900px;font-size:15px}
+    .section{margin-top:20px;padding:16px 18px;background:var(--panel);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:6px}.section-yellow{border-left-color:var(--yellow)}.section-green{border-left-color:var(--green)}.section-red{border-left-color:var(--red)}
+    .summary-grid,.source-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:18px}.summary-card,.source-card{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px 16px}.summary-label,.source-label{color:var(--muted);font-size:12px}.summary-value{margin-top:5px;color:#fff;font-size:18px;font-weight:bold}.summary-description{margin-top:7px;color:var(--soft);font-size:13px}.source-title{margin-top:4px;color:var(--yellow);font-size:16px;font-weight:bold}
+    .table-wrap{overflow-x:auto;margin-top:12px}.toc{margin-top:24px;padding:16px 18px;background:var(--panel);border:1px solid var(--border);border-radius:6px}.toc strong{color:var(--yellow)}.toc ol{columns:2;column-gap:36px;margin-bottom:0;padding-left:22px}.toc li{break-inside:avoid;margin:5px 0}.toc a{text-decoration:none}.toc a:hover{text-decoration:underline}
+    .tag{display:inline-block;margin-right:6px;padding:2px 7px;border:1px solid var(--border2);border-radius:999px;color:var(--muted);font-size:11px;vertical-align:1px}.good{color:var(--green);font-weight:bold}.difference{color:var(--red);font-weight:bold}.muted{color:var(--muted)}.formula-title{color:var(--purple);font-weight:bold}
+    .example-result{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-top:14px}.example-result div{padding:10px 12px;background:#121212;border:1px solid var(--border);border-radius:5px}.example-result span{display:block;color:var(--muted);font-size:12px}.example-result strong{display:block;margin-top:3px;font-size:17px}
+    .notes{margin-top:34px;padding:14px 16px;background:var(--panel);border-left:4px solid var(--yellow)}.notes-title{color:var(--yellow);font-weight:bold;margin-bottom:8px}
+    @media(max-width:720px){body{margin-top:24px;padding-inline:14px}.toc ol{columns:1}th,td{padding:9px 10px}}
+  </style>
+</head>
+<body>
+<h1>osu!stable / osu!lazer Barline Position Calculations</h1>
+
+<div class="doc-header">
+  <div class="doc-parent-link">This page is a technical supplement to the <a href="docs-en.html">Modding Helper documentation</a>.</div>
+</div>
+
+<p class="lead">
+  osu!taiko barlines are generated automatically from red timing point times, beat lengths, and time signatures.
+  osu!stable and osu!lazer use the same measure interval, but differ in
+  <strong>their initial starting positions, timing point boundaries, floating-point error correction, and integer conversion</strong>.
+  Consequently, the same beatmap may show a 1 ms barline offset or a doubled barline in only one client.
+</p>
+
+<div class="summary-grid">
+  <div class="summary-card"><div class="summary-label">Shared behavior</div><div class="summary-value">Repeatedly add the measure length</div><div class="summary-description"><code>barLength = beatLength × meter</code> is added repeatedly to the current time.</div></div>
+  <div class="summary-card"><div class="summary-label">Specific to stable</div><div class="summary-value">Convert to integer when drawing</div><div class="summary-description">The repeatedly accumulated <code>double</code> is truncated with <code>conv.i4</code>.</div></div>
+  <div class="summary-card"><div class="summary-label">Specific to lazer</div><div class="summary-value">Correct values near integers</div><div class="summary-description">A value within <code>1e-7 ms</code> of an integer is corrected to that integer and retained as a <code>double</code>.</div></div>
+</div>
+
+<nav class="toc" aria-label="Table of contents"><strong>Table of contents</strong><ol>
+  <li><a href="#sources">Research method and sources</a></li>
+  <li><a href="#terms">Terms and assumptions</a></li>
+  <li><a href="#stable">osu!stable generation formula</a></li>
+  <li><a href="#lazer">osu!lazer generation formula</a></li>
+  <li><a href="#comparison">Differences between stable and lazer</a></li>
+  <li><a href="#one-ms-early">Example: 1 ms before the resnap time</a></li>
+  <li><a href="#double-barline">Example: one in stable / two in lazer</a></li>
+  <li><a href="#stable-double-barline">Example: two in stable / one in lazer</a></li>
+</ol></nav>
+
+<h2 id="sources">1. Research Method and Sources</h2>
+<div class="source-grid">
+  <div class="source-card">
+    <div class="source-label">osu!stable</div><div class="source-title">Reverse engineering osu!.exe</div>
+    <p>Because the osu!stable source code is not public, the taiko barline-generation path was traced through the disassembled IL of the osu!.exe build under investigation. The core routine is method <code>060020D7</code> in that build. The investigation covered the timing point <code>float64</code> values, repeated measure-length addition, the position of <code>conv.i4</code>, and the condition used to switch to the next red timing point.</p>
+    <p class="muted">Method IDs and obfuscated names are specific to the build under investigation.</p>
+  </div>
+  <div class="source-card">
+    <div class="source-label">osu!lazer</div><div class="source-title">Official GitHub source code</div>
+    <p>The following links are pinned to the commits examined for this investigation.</p>
+    <ul>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game/Rulesets/Objects/BarLineGenerator.cs" target="_blank" rel="noopener noreferrer">BarLineGenerator.cs</a> — barline generation formula</li>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game.Rulesets.Taiko/UI/DrawableTaikoRuleset.cs" target="_blank" rel="noopener noreferrer">DrawableTaikoRuleset.cs</a> — addition to the taiko playfield</li>
+      <li><a href="https://github.com/ppy/osu/blob/5da71008b082d1a77e4bb301dc98886f1f24b895/osu.Game.Tests/NonVisual/BarLineGeneratorTest.cs" target="_blank" rel="noopener noreferrer">BarLineGeneratorTest.cs</a> — error-correction tests</li>
+      <li><a href="https://github.com/ppy/osu-framework/blob/0c3fb255384f24804e4797a31a656b340cb641d6/osu.Framework/Utils/Precision.cs" target="_blank" rel="noopener noreferrer">Precision.cs</a> — the <code>1e-7</code> tolerance</li>
+    </ul>
+  </div>
+</div>
+<div class="section section-yellow"><strong>Scope:</strong> “Barline” on this page means the automatically generated barline that travels across the osu!taiko playfield. It is generated through a different path from the beat and measure lines drawn on the editor timeline.</div>
+
+<h2 id="terms">2. Terms and Assumptions</h2>
+<div class="table-wrap"><table><thead><tr><th>Term</th><th>Meaning</th></tr></thead><tbody>
+  <tr><td><code>redTime</code></td><td>Time of a red line (an uninherited timing point)</td></tr>
+  <tr><td><code>beatLength</code></td><td>Length of one beat stored in the red timing point, in milliseconds</td></tr>
+  <tr><td><code>meter</code></td><td>Numerator of the time signature; normally <code>4</code> for 4/4</td></tr>
+  <tr><td><code>barLength</code></td><td>Length of one measure, calculated as <code>beatLength × meter</code></td></tr>
+  <tr><td><code>t</code></td><td>Current candidate barline time; internally a <code>double</code> in both clients</td></tr>
+  <tr><td><code>OmitFirstBarLine</code></td><td>Flag that omits the first barline at a red timing point; effects bit 3 (value <code>8</code>) in an <code>.osu</code> file</td></tr>
+</tbody></table></div>
+<pre><code>barLength = beatLength × meter</code></pre>
+
+<h2 id="stable">3. osu!stable Barline Generation Formula</h2>
+<h3><span class="tag">stable 1</span>Initial starting position</h3>
+<p>stable retrieves only uninherited timing points and sorts them by time. The first candidate <code>t</code> is found by normalizing the first red timing point time to a positive remainder of the first measure length.</p>
+<pre><code>barLength = firstRed.beatLength × firstRed.meter
+
+t = firstRed.time
+    - trunc(firstRed.time / barLength) × barLength
+
+if (t &lt; 0):
+    t += barLength</code></pre>
+<p><code>trunc</code> truncates toward zero. For an ordinary positive measure length, the result is <code>0 &lt;= t &lt; barLength</code>.</p>
+
+<h3><span class="tag">stable 2</span>Repeated addition, red-line switching, and integer conversion</h3>
+<pre><code>redLines = uninherited timing points
+limit = end time of the last HitObject + 1
+i = 0
+t = initial starting position
+
+while (t &lt;= limit):
+    currentRed = redLines[i]
+
+    if not (t &lt;= currentRed.time
+            and currentRed.OmitFirstBarLine):
+        drawTime = conv.i4(t)
+        add a barline at drawTime
+
+    barLength =
+        currentRed.beatLength × currentRed.meter
+
+    if (barLength &lt; 0.001):
+        switch to the next red line
+        t = time of the next red line
+    else:
+        t += barLength
+
+        if (a next red line exists
+            and t &gt;= time of the next red line):
+            i += 1
+            t = redLines[i].time</code></pre>
+<ul>
+  <li>The measure length is repeatedly added as <code>t += barLength</code>.</li>
+  <li>If a candidate is at or after the next red timing point, stable switches to the next red timing point before drawing that candidate.</li>
+  <li>However, this boundary check has not yet occurred for the <strong>initial candidate</strong> obtained by normalizing the first red timing point to a positive remainder. Even if the initial candidate is at or after the next red timing point, it is drawn unchanged during the first loop iteration.</li>
+  <li><code>conv.i4</code> converts the value to an integer immediately before the barline object is created.</li>
+  <li><code>conv.i4</code> truncates toward zero. At ordinary positive times, this is equivalent to <code>floor</code>.</li>
+  <li>There is no correction that returns floating-point error from repeated addition to an integer.</li>
+</ul>
+<div class="section section-yellow"><strong>Key stable behavior:</strong> Even when a barline is mathematically located at an integer, if repeated addition produces <code>N - ε</code>, <code>conv.i4</code> truncates it to <code>N - 1</code>.</div>
+
+<h2 id="lazer">4. osu!lazer Barline Generation Formula</h2>
+<h3><span class="tag">lazer 1</span>Earliest generation time and starting position</h3>
+<pre><code>generationStartTime = min(0, firstHitTime)
+barLength =
+    timingPoint.BeatLength
+    × timingPoint.TimeSignature.Numerator
+
+if (timingPoint.Time &gt; generationStartTime):
+    startTime = timingPoint.Time
+else:
+    barCount = ceil(
+        (generationStartTime - timingPoint.Time)
+        / barLength
+    )
+    startTime =
+        timingPoint.Time + barCount × barLength
+
+if (timingPoint.OmitFirstBarLine):
+    startTime += barLength</code></pre>
+<ul>
+  <li>An ordinary red timing point at a positive time starts generating barlines at that timing point time.</li>
+  <li>A red timing point before the generation boundary is advanced to the first generatable time aligned with that red timing point’s measure cycle.</li>
+  <li>When <code>OmitFirstBarLine</code> is enabled, the starting position is advanced by one measure.</li>
+</ul>
+
+<h3><span class="tag">lazer 2</span>Repeated addition, error correction, and section endpoint</h3>
+<pre><code>endTime =
+    a next red line exists
+        ? time of the next red line
+        : end of the last HitObject + 1 + barLength
+
+for (double t = startTime;
+     Precision.AlmostBigger(endTime, t);
+     t += barLength):
+
+    roundedTime =
+        Math.Round(t, MidpointRounding.AwayFromZero)
+
+    if (abs(t - roundedTime) &lt;= 1e-7):
+        t = roundedTime
+
+    add a barline at the double value t</code></pre>
+<ul>
+  <li>lazer also advances by repeatedly adding the measure length.</li>
+  <li>If the distance from an integer is at most <code>1e-7 ms</code>, the value is corrected to that integer.</li>
+  <li>Because the next measure length is added to the corrected <code>t</code>, accumulated error is reset at that point as well.</li>
+  <li><code>StartTime</code> remains a <code>double</code>; it is not truncated as it is in stable.</li>
+  <li><code>Precision.AlmostBigger(endTime, t)</code> means <code>endTime &gt; t - 1e-7</code>. A value where <code>t == endTime</code> is also generated as a barline belonging to the preceding section.</li>
+</ul>
+<div class="section section-green"><strong>Key lazer behavior:</strong> An error just below an integer, such as <code>121037.99999999991</code>, is corrected to <code>121038</code>. On the other hand, because the section endpoint is included, both adjacent sections may generate a barline at the same time.</div>
+
+<h2 id="comparison">5. Differences Between osu!stable and osu!lazer</h2>
+<div class="table-wrap"><table><thead><tr><th>Item</th><th>osu!stable</th><th>osu!lazer</th></tr></thead><tbody>
+  <tr><td>Measure length</td><td><code>beatLength × meter</code></td><td><code>BeatLength × TimeSignature.Numerator</code></td></tr>
+  <tr><td>Advancement</td><td>Repeatedly add the measure length</td><td>Repeatedly add the measure length</td></tr>
+  <tr><td>Initial starting position</td><td>Normalize the first red timing point to a positive remainder</td><td>First aligned position at or after <code>min(0, firstHitTime)</code></td></tr>
+  <tr><td>Near-integer correction</td><td>None</td><td>Correct when within <code>1e-7 ms</code> of an integer</td></tr>
+  <tr><td>Final time value</td><td>Truncate toward zero with <code>conv.i4</code></td><td>Retain as a <code>double</code></td></tr>
+  <tr><td>Candidate matching the next red line</td><td>Switch to the new section before drawing</td><td>May generate at both the preceding section’s endpoint and the new section’s start</td></tr>
+  <tr><td>Final generation range</td><td>End of the last HitObject + 1 ms</td><td>End of the last HitObject + 1 ms + one measure</td></tr>
+  <tr><td>Omit first barline</td><td>Suppress with a drawing condition at the red-line start</td><td>Advance the starting time by one measure</td></tr>
+</tbody></table></div>
+
+<h2 id="one-ms-early">6. Example: A stable Barline 1 ms Before the Resnap Time</h2>
+<div class="section section-red">
+  <span class="formula-title">USAO - Glitch in My System (polytone Edit) [Charlotte&apos;s Inner Oni]</span>
+  <p>Test beatmap: <a href="https://osu.ppy.sh/beatmapsets/2553764#taiko/5677222" target="_blank" rel="noopener noreferrer">USAO - Glitch in My System (polytone Edit) [Charlotte&apos;s Inner Oni]</a></p>
+  <pre><code>redTime = 1038
+beatLength = 297.029702970297
+meter = 4
+barLength = 1188.118811881188...</code></pre>
+</div>
+<h3>Theoretical position at 02:01.038</h3>
+<p>Mathematically, 101 measures after the red timing point at <code>1038</code> is <code>121038 ms</code>, but stable’s repeated-addition result falls just below the integer.</p>
+<pre><code>stable barline:
+    t = 1038
+    add barLength to t 101 times
+
+    rawBarlineTime = 121037.99999999991
+    conv.i4(rawBarlineTime) = 121037
+    rendered barline time = 02:01.037</code></pre>
+<p>stable’s resnap command uses a separate process and calculates the time directly by multiplying the selected snap index. For this 1/1 snap, the result is:</p>
+<pre><code>stable resnap:
+    snapTime = redTime + 404 × beatLength
+    snapTime = 121038
+    conv.i4(snapTime) = 121038
+    resnap time = 02:01.038</code></pre>
+<div class="example-result">
+  <div><span>stable barline</span><strong class="difference">121037</strong></div>
+  <div><span>stable resnap</span><strong class="good">121038</strong></div>
+  <div><span>Difference</span><strong class="difference">Barline is −1 ms</strong></div>
+</div>
+
+<h3>Does the same behavior occur in osu!lazer?</h3>
+<p><strong>Not in this example.</strong> lazer also reaches <code>121037.99999999991</code> during calculation, but its distance from the integer is approximately <code>8.73e-11 ms</code>, which is within the correction tolerance.</p>
+<pre><code>lazer barline:
+    rawBarlineTime = 121037.99999999991
+    roundedTime = 121038
+    abs(rawBarlineTime - roundedTime) &lt;= 1e-7
+    correct t to 121038
+    StartTime = 121038</code></pre>
+<div class="section section-green">lazer does not truncate the barline time to an integer; it corrects tiny errors immediately before or after an integer back to that integer. Therefore, it does not produce a barline 1 ms early through the same <code>N - ε → N - 1</code> mechanism as stable.</div>
+
+<h2 id="double-barline">7. Example: One Barline in stable, Two in lazer</h2>
+<div class="section section-red">
+  <span class="formula-title">CS4W - Complementary Contrast (miyagishima) [Inner Oni]</span>
+  <p>Test beatmap: <a href="https://osu.ppy.sh/beatmapsets/2336552#taiko/5016117" target="_blank" rel="noopener noreferrer">CS4W - Complementary Contrast (miyagishima) [Inner Oni]</a></p>
+  <pre><code>preceding red line:
+    992,400,4,1,0,70,1,8
+    omit first barline = true
+
+target red line:
+    144992,400,4,1,0,100,1,1
+    omit first barline = false
+
+barLength = 400 × 4 = 1600
+144992 - 992 = 144000 = 90 measures</code></pre>
+</div>
+<p>Because the preceding red timing point omits its first barline, its section generates at <code>2592, 4192, ... 143392, 144992</code>.</p>
+
+<h3><span class="tag">stable</span>Switch to the next red line first</h3>
+<pre><code>143392 + 1600 = 144992
+144992 &gt;= next red line at 144992
+→ switch to the next red line before drawing it
+  as part of the preceding section
+→ generate one barline at 144992 from the new red line</code></pre>
+<div class="example-result">
+  <div><span>From preceding section</span><strong>0</strong></div>
+  <div><span>From new section</span><strong>1</strong></div>
+  <div><span>stable total</span><strong class="good">1</strong></div>
+</div>
+
+<h3><span class="tag">lazer</span>Generate both the section endpoint and the new section start</h3>
+<pre><code>preceding section:
+    endTime = 144992
+    t = 144992
+    Precision.AlmostBigger(144992, 144992) = true
+    → one barline from the section beginning at 992
+
+new section:
+    startTime = 144992
+    omit first barline = false
+    → one barline from the section beginning at 144992</code></pre>
+<div class="example-result">
+  <div><span>From preceding section</span><strong class="difference">1</strong></div>
+  <div><span>From new section</span><strong class="difference">1</strong></div>
+  <div><span>lazer total</span><strong class="difference">2</strong></div>
+</div>
+<div class="section section-yellow"><strong>This doubled barline is not caused by floating-point error.</strong> It results from lazer’s boundary condition including the endpoint of the preceding section while the new timing section also generates at the same time. There is no duplicate-removal step after generation.</div>
+
+<h2 id="stable-double-barline">8. Example: Two Barlines in stable, One in lazer</h2>
+<div class="section section-red">
+  <span class="formula-title">Halozy - Sakura Saku Utopia (Hata no Kokoro) [Sakura~ Sakura~]</span>
+  <pre><code>first red line:
+    -221,419.58041958042,4,1,0,40,1,0
+
+next red line:
+    1457,419.58041958042,4,1,0,80,1,0
+
+first HitObject:
+    408 ms
+
+barLength = 419.58041958042 × 4
+          = 1678.32167832168 ms</code></pre>
+</div>
+<h3>How it occurs</h3>
+<p>When the first red timing point is at a negative time, both clients find the first non-negative time aligned with that timing point’s measure cycle. This page calls that time the <strong>initial candidate</strong>. In this example, the initial candidate at <code>1457.32167832168 ms</code> is approximately <code>0.322 ms</code> after the next red timing point at <code>1457 ms</code>.</p>
+<div class="table-wrap"><table><thead><tr><th>Client</th><th>How the initial candidate is handled</th><th>Result in this example</th></tr></thead><tbody>
+  <tr><td>osu!stable</td><td>Draw before checking the boundary, then convert with <code>conv.i4</code></td><td>Generate <code>1457.321... → 1457 ms</code></td></tr>
+  <tr><td>osu!lazer</td><td>Use the next red timing point as the section endpoint and compare as <code>double</code> before drawing</td><td>Exclude because <code>1457.321... &gt; 1457</code></td></tr>
+</tbody></table></div>
+<div class="section section-green"><strong>Difference between the clients:</strong> stable draws the initial candidate before checking the next red timing point. lazer checks whether the initial candidate is within the section ending at the next red timing point before drawing it.</div>
+
+<h3><span class="tag">stable</span>The internal time moves backward after the initial candidate</h3>
+<pre><code>initial candidate:
+    -221 + 1678.32167832168
+    = 1457.32167832168
+
+1. Draw the initial candidate first
+   conv.i4(1457.32167832168) = 1457
+   → one barline from the red line at -221 ms
+
+2. Add the measure length
+   t = 3135.64335664336
+   t &gt;= next red line at 1457
+   → switch to the next red line and move t back to 1457
+
+3. Generate one barline at 1457 ms
+   from the next red line</code></pre>
+<div class="example-result">
+  <div><span>From first red line</span><strong class="difference">1</strong></div>
+  <div><span>From next red line</span><strong class="difference">1</strong></div>
+  <div><span>stable total</span><strong class="difference">2</strong></div>
+</div>
+<p>After drawing the initial candidate, stable adds the measure length and checks for a timing-point switch using the <strong>next candidate</strong>. When the next red timing point is before the initial candidate, stable first generates the initial candidate and then moves its internal time backward to the next red timing point. This produces the unusual time decrease in generation order.</p>
+<p>If <code>OmitFirstBarLine</code> is disabled on the next red timing point, its starting barline is also drawn. In this example, <code>conv.i4</code> truncates the initial candidate from <code>1457.321... → 1457 ms</code>, so it overlaps the <code>1457 ms</code> barline from the next red timing point exactly.</p>
+<div class="section section-yellow"><strong>Condition for an exact doubled barline:</strong> The raw initial-candidate value does not need to equal the next red timing point exactly. The two barlines overlap after integer conversion whenever <code>conv.i4(initial candidate) = next red-line time</code>.</div>
+
+<h3><span class="tag">Test beatmap</span>Moving the first red line to −218 ms</h3>
+<p>Moving only the first red timing point from <code>-221 ms</code> to <code>-218 ms</code> does not change the fact that the initial candidate lies after the next red timing point. It does, however, change the exact time of the barline from the preceding section.</p>
+<pre><code>first red line:
+    -218,419.58041958042,4,1,0,40,1,0
+
+initial candidate:
+    -218 + 1678.32167832168
+    = 1460.32167832168
+
+from preceding section:
+    conv.i4(1460.32167832168) = 1460
+
+from next red line:
+    conv.i4(1457) = 1457</code></pre>
+<div class="example-result">
+  <div><span>From preceding section</span><strong class="difference">1460 ms</strong></div>
+  <div><span>From next red line</span><strong>1457 ms</strong></div>
+  <div><span>Interval in stable</span><strong class="difference">3 ms</strong></div>
+</div>
+<p>stable’s internal generation order becomes <code>1460 → 1457 ms</code>, decreasing by 3 ms. The lines appear close together on the playfield, but mathematically they are not two barlines at the same time.</p>
+
+<h3><span class="tag">lazer</span>Exclude the candidate beyond the preceding section’s endpoint</h3>
+<pre><code>generationStartTime = min(0, 408) = 0
+
+first red-line section:
+    barCount = ceil((0 - (-221)) / 1678.32167832168)
+             = 1
+    startTime = -221 + 1 × 1678.32167832168
+              = 1457.32167832168
+    endTime = next red line = 1457
+
+    Precision.AlmostBigger(1457, 1457.32167832168)
+    = false
+    → no barline is generated from the preceding section
+
+next red-line section:
+    startTime = 1457
+    → generate one barline at 1457 ms</code></pre>
+<div class="example-result">
+  <div><span>From first red line</span><strong>0</strong></div>
+  <div><span>From next red line</span><strong>1</strong></div>
+  <div><span>lazer total</span><strong class="good">1</strong></div>
+</div>
+
+<div class="notes"><div class="notes-title">Summary</div>
+  stable truncates repeated-addition results with <code>conv.i4</code>, so a barline can appear 1 ms before the resnap time.<br>
+  lazer corrects errors close to integers and retains the time as a <code>double</code>, preventing a 1 ms-early barline caused by the same mechanism.<br>
+  On the other hand, because lazer includes the endpoint of a red timing section in its generation range, the preceding and new sections can generate barlines at the same time, resulting in one barline in stable but two in lazer.<br>
+  Conversely, stable draws the initial candidate normalized from a negative first red timing point once without checking it against the next red timing point. If that candidate is at or after the next red timing point, stable generates one extra barline that lazer does not. If its time after integer conversion matches the next red timing point, the result is an exact doubled barline.
+</div>
+</body>
+</html>
