@@ -2398,8 +2398,17 @@
                ※リアルタイム表示カードは下で常時更新（プレイ中OK）。
                osu! の時刻が届いた＝再生/シークなので、ドラッグ中でなければ手動解除。 */
             if (data && typeof data.time === 'number' && data.time >= 0 && data.editing) {
+              var prevOsuTime = spreadLastTime;
               spreadLastTime = data.time;
-              /* ドラッグ中・自前の音楽再生中は手動位置を維持 */
+              /* osu! のタイムラインが動いた（シーク/再生）＝ osu! 側を操作した合図。
+                 その場合は自前の音楽再生を止めて osu! 追従に戻す。
+                 osu! は一時停止中も同じ時刻を送り続けるので、前回と時刻が変化した
+                 ときだけ発火させる（一時停止中のスタンドアロン再生は止めない）。 */
+              if (spreadAudioPlaying && prevOsuTime != null &&
+                  Math.abs(data.time - prevOsuTime) > 2) {
+                if (spAudio && !spAudio.paused) spAudio.pause(); // 'pause' で spreadAudioPlaying=false
+              }
+              /* ドラッグ中・（止めなかった）音楽再生中は手動位置を維持 */
               if (!spreadDragging && !spreadAudioPlaying) spreadManualTime = null;
             } else {
               spreadLastTime = null;
