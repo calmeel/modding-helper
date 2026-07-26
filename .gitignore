@@ -1,7 +1,7 @@
 node_modules/
 dist/
 
-# ビルド成果物（電子ビルド出力・検証ビルド。GitHub/Pages に上げない）
+# ビルド成果物（電子ビルド出力・検証ビルド）
 electron/dist/
 electron/dist-verify/
 
@@ -9,7 +9,7 @@ electron/dist-verify/
 .claude/
 CLAUDE.md
 
-# リアルタイム(osu!メモリ監視)関連は非公開（GitHub に上げない）
+# リアルタイム (osu!メモリ監視)関連は非公開（第三者に依る悪用禁止）
 electron/osu/osuMemory.ps1
 electron/osu/osuWatcher.js
 
@@ -24,6 +24,5 @@ desktop.ini
 
 # Self-contained SR calculator build output
 electron/resources/sr-calculator/
-
 electron/sr-calculator/bin
 electron/sr-calculator/obj
