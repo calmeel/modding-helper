@@ -623,7 +623,7 @@ const i18n = {
     noOffsetWheel: "グリッド時刻に関する差は見つかりませんでした。",
     noOffset: "スナップされていないオブジェクトは見つかりませんでした。",
     
-    noDoubleSv: "Double SVは見つかりませんでした。",
+    noDoubleSv: "二重SVは見つかりませんでした。",
     barlineDoubleBarline: "2重小節線",
     barlineNegativeStartBug: "マイナス時刻開始による小節線バグ",
     barlineNoteBarlineSeparation: "ノーツと小節線の分離",
