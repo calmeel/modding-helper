@@ -1732,7 +1732,7 @@
             var p = document.getElementById('tab-spectrogram');
             return p && p.classList.contains('active');
           };
-          /* タブボタンのクリックで計算＆描画（app/ui.js の切替が active を付けた後に走る） */
+          /* タブボタンのクリックで計算＆描画（app/ui/setup.js の切替が active を付けた後に走る） */
           var btnEl = document.querySelector('.tab-button[data-tab="spectrogram"]');
           if (btnEl) btnEl.addEventListener('click', function () { setTimeout(ensureComputed, 0); });
           /* 表示中にウィンドウサイズが変わったら描き直し（分離窓の高さ追従にも効く） */
@@ -1775,7 +1775,7 @@
 
         /* 左パネルの動作モード: 'osu' = osu! メモリからリアルタイム表示 /
            'file' = 読み込んだファイルのメタデータを表示。
-           初期値は保存済みのチェック対象設定に合わせる（script.js と一致させる）。 */
+           初期値は保存済みのチェック対象設定に合わせる（app/main.js と一致させる）。 */
         var panelMode = 'file';
         try {
           if (localStorage.getItem('moddingHelperCheckSource') === 'osu') panelMode = 'osu';
@@ -2566,7 +2566,7 @@
             renderMapPanel(data);
           });
 
-          /* ── script.js から呼ぶパネル制御 API ── */
+        /* ── app/main.js から呼ぶパネル制御 API ── */
           window.__osuPanel = {
             setMode: function(mode) {
               panelMode = (mode === 'file') ? 'file' : 'osu';

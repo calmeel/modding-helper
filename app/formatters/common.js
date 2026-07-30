@@ -12,6 +12,12 @@ function formatDuration(ms) {
   return msToTimestamp(ms);
 }
 
+function formatSvValue(beatLength) {
+  const value = beatLength < 0 ? -100 / beatLength : 1;
+  if (!Number.isFinite(value)) return "N/A";
+  return (Math.round(value * 1000) / 1000).toString();
+}
+
 function getDifficultyNameText(fileNameOrResult) {
   if (fileNameOrResult && typeof fileNameOrResult === "object") {
     if (fileNameOrResult.difficultyName) {
@@ -116,6 +122,22 @@ function escapeHtml(text) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function visibleWidth(text) {
+  return [...String(text)].reduce((sum, ch) => {
+    return sum + (/[^\x00-\xff]/.test(ch) ? 2 : 1);
+  }, 0);
+}
+
+function padEndVisual(text, width) {
+  const s = String(text);
+  return s + " ".repeat(Math.max(0, width - visibleWidth(s)));
+}
+
+function padStartVisual(text, width) {
+  const s = String(text);
+  return " ".repeat(Math.max(0, width - visibleWidth(s))) + s;
 }
 
 function formatSectionTitle(text) {

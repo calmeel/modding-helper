@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Modding Helper</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="app/main.css" />
   <link rel="icon" type="image/png" href="images/icon.png" />
 
   <!-- Google tag (gtag.js) -->
@@ -940,33 +940,41 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="app/oszZipLoader.js"></script>
+  <script src="app/files/oszZipLoader.js"></script>
   <script src="parsers/osuParser.js"></script>
-  <script src="app/taikoSpreadView.js"></script>
+  <script src="app/electron/taikoSpreadView.js"></script>
+
+  <!-- Checks: Notes -->
   <script src="checks/notes/clapWhistleCheck.js"></script>
   <script src="checks/notes/offset1msCheck.js"></script>
-  <script src="checks/sv/kiaiCompareCheck.js"></script>
-  <script src="checks/sv/kiaiSnapCheck.js"></script>
+  <script src="checks/notes/sampleSetCheck.js"></script>
+
+  <!-- Checks: Kiai -->
+  <script src="checks/kiai/kiaiCompareCheck.js"></script>
+  <script src="checks/kiai/kiaiSnapCheck.js"></script>
+  <script src="checks/kiai/epilepsyWarningCheck.js"></script>
+
+  <!-- Checks: SV -->
   <script src="checks/sv/doubleSvCheck.js"></script>
   <script src="checks/sv/barlineTiming.js"></script>
   <script src="checks/sv/barlineCheck.js"></script>
   <script src="checks/sv/unappliedSvCheck.js"></script>
-  <script src="checks/sv/svVolumeCheck.js"></script>
-  <script src="checks/sv/volumeCompareCheck.js"></script>
   <script src="checks/sv/redGreenMatchCheck.js"></script>
-  <script src="checks/notes/sampleSetCheck.js"></script>
-  <script src="checks/sliderSettingsCheck.js"></script>
-  <script src="checks/notes/earlyNoteCheck.js"></script>
+  <script src="checks/sv/sliderSettingsCheck.js"></script>
+
+  <!-- Checks: Volume -->
+  <script src="checks/volume/svVolumeCheck.js"></script>
+  <script src="checks/volume/volumeCompareCheck.js"></script>
+
+  <!-- Checks: Metadata -->
   <script src="checks/metadata/artistCheck.js"></script>
   <script src="checks/metadata/titleCheck.js"></script>
   <script src="checks/metadata/metadataSymbolCheck.js"></script>
   <script src="checks/metadata/tagCheck.js"></script>
   <script src="checks/metadata/sourceCheck.js"></script>
-  <script src="checks/mics/previewPointCheck.js"></script>
-  <script src="checks/mics/bgOffsetCheck.js"></script>
-  <script src="checks/sv/epilepsyWarningCheck.js"></script>
-  <script src="checks/offset/offsetWaveformCheck.js"></script>
-  <script src="checks/offset/offsetEstimator.js"></script>
+  <script src="checks/metadata/contentPermissionCheck.js"></script>
+
+  <!-- Checks: Spread -->
   <script src="checks/spread/difficulty.js"></script>
   <script src="checks/spread/finisherCheck.js"></script>
   <script src="checks/spread/scrollTiming.js"></script>
@@ -974,15 +982,66 @@
   <script src="checks/spread/restMomentCheck.js"></script>
   <script src="checks/spread/scrollSpeedCheck.js"></script>
   <script src="checks/spread/spreadCheck.js"></script>
-  <script src="checks/timelineCheck.js"></script>
-  <script src="checks/bnCompareCheck.js"></script>
-  <script src="checks/metadata/contentPermissionCheck.js"></script>
-  <script src="i18n.js"></script>
-  <script src="app/updateHistory.js"></script>
+
+  <!-- Checks: Misc -->
+  <script src="checks/misc/previewPointCheck.js"></script>
+  <script src="checks/misc/earlyNoteCheck.js"></script>
+  <script src="checks/misc/bgOffsetCheck.js"></script>
+
+  <!-- Checks: Tools -->
+  <script src="checks/tools/offsetWaveformCheck.js"></script>
+  <script src="checks/tools/offsetEstimator.js"></script>
+  <script src="checks/tools/timelineCheck.js"></script>
+  <script src="checks/tools/bnCompareCheck.js"></script>
+
+  <script src="app/i18n.js"></script>
+  <script src="app/ui/updateHistory.js"></script>
+
+  <!-- Formatters: Common -->
   <script src="app/formatters/common.js"></script>
-  <script src="app/formatters/results.js"></script>
-  <script src="app/formatters/metadata.js"></script>
-  <script src="app/formatters/misc.js"></script>
+
+  <!-- Formatters: Notes -->
+  <script src="app/formatters/notes/clapWhistle.js"></script>
+  <script src="app/formatters/notes/offset.js"></script>
+  <script src="app/formatters/notes/sampleSet.js"></script>
+
+  <!-- Formatters: Kiai -->
+  <script src="app/formatters/kiai/compare.js"></script>
+  <script src="app/formatters/kiai/snap.js"></script>
+  <script src="app/formatters/kiai/flash.js"></script>
+
+  <!-- Formatters: SV -->
+  <script src="app/formatters/sv/doubleSv.js"></script>
+  <script src="app/formatters/sv/barline.js"></script>
+  <script src="app/formatters/sv/unappliedSv.js"></script>
+  <script src="app/formatters/sv/redGreenMatch.js"></script>
+  <script src="app/formatters/sv/sliderSettings.js"></script>
+
+  <!-- Formatters: Volume -->
+  <script src="app/formatters/volume/earlyVolume.js"></script>
+  <script src="app/formatters/volume/compare.js"></script>
+
+  <!-- Formatters: Metadata -->
+  <script src="app/formatters/metadata/tags.js"></script>
+  <script src="app/formatters/metadata/artistTitle.js"></script>
+  <script src="app/formatters/metadata/source.js"></script>
+  <script src="app/formatters/metadata/contentPermission.js"></script>
+
+  <!-- Formatters: Spread -->
+  <script src="app/formatters/spread/order.js"></script>
+  <script src="app/formatters/spread/rest.js"></script>
+  <script src="app/formatters/spread/scroll.js"></script>
+  <script src="app/formatters/spread/density.js"></script>
+
+  <!-- Formatters: Misc -->
+  <script src="app/formatters/misc/bgOffset.js"></script>
+  <script src="app/formatters/misc/previewPoint.js"></script>
+  <script src="app/formatters/misc/earlyNote.js"></script>
+
+  <!-- Formatters: Tools -->
+  <script src="app/formatters/tools/timeline.js"></script>
+  <script src="app/formatters/tools/bnCompare.js"></script>
+
   <script src="app/charts/kiaiCompareChart.js"></script>
   <script src="app/charts/volumeCompareChart.js"></script>
   <script src="app/charts/spreadDensityChart.js"></script>
@@ -990,20 +1049,15 @@
   <script src="app/charts/spreadScrollChart.js"></script>
   <script src="app/charts/offsetWaveformData.js"></script>
   <script src="app/charts/offsetWaveformChart.js"></script>
-  <script src="app/fileLoader.js"></script>
-  <script src="app/ui.js"></script>
-  <script src="app/spread/index.js"></script>
-  <script src="app/spread/orderFormatters.js"></script>
-  <script src="app/spread/restFormatters.js"></script>
-  <script src="app/spread/scrollFormatters.js"></script>
-  <script src="app/spread/densityFormatters.js"></script>
-  <script src="app/spread/issueState.js"></script>
-  <script src="app/renderers.js"></script>
-  <script src="app/bnCompareRenderers.js"></script>
-  <script src="app/bnCompareUi.js"></script>
+  <script src="app/files/fileLoader.js"></script>
+  <script src="app/ui/setup.js"></script>
+  <script src="app/issues/spread.js"></script>
+  <script src="app/ui/renderers.js"></script>
+  <script src="app/tools/bnCompare/renderer.js"></script>
+  <script src="app/tools/bnCompare/ui.js"></script>
   <script src="app/tools/srCalculator.js"></script>
-  <script src="app/spectrogram.js"></script>
-  <script src="app/tabIssues.js"></script>
-  <script src="script.js"></script>
+  <script src="app/electron/spectrogram.js"></script>
+  <script src="app/issues/tabs.js"></script>
+  <script src="app/main.js"></script>
 </body>
 </html>

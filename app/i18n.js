@@ -1,4 +1,4 @@
-// i18n.js
+// Translation registry and language helpers.
 
 const i18n = {
   en: {
