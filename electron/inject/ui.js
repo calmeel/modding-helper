@@ -20,6 +20,13 @@
           if (localStorage.getItem('moddingHelperViewMode') === 'compact') viewMode = 'compact';
         } catch (e) {}
 
+        var electronText = function(key) {
+          var lang = document.documentElement.lang === 'en' ? 'en' : 'ja';
+          var dict = window.i18n || {};
+          return (dict[lang] && dict[lang][key]) ||
+            (dict.en && dict.en[key]) || key;
+        };
+
         /* ── SVG アイコン定義 ── */
         var svgBook = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>';
         var svgMin  = '<svg viewBox="0 0 12 12" width="11" height="11" fill="currentColor"><rect x="0" y="5.25" width="12" height="1.5" rx="0.5"/></svg>';
@@ -55,8 +62,10 @@
         futureCol.innerHTML =
           /* メタデータカード */
           '<div class="etb-card" id="etb-card-meta">' +
-            '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-meta">メタデータ</span>' +
-              '<button class="etb-detach-btn" data-panel="metadata" title="別ウィンドウに分離">' + svgDetach + '</button></div>' +
+            '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-meta">' +
+              electronText('electronMetadata') + '</span>' +
+              '<button class="etb-detach-btn" data-panel="metadata" data-i18n-title="electronDetachWindow" title="' +
+                electronText('electronDetachWindow') + '">' + svgDetach + '</button></div>' +
             '<div class="etb-card-body" id="etb-meta-body">' +
               '<div id="osu-map-panel">' +
                 '<div id="osu-map-bg-wrap" style="display:none"><img id="osu-map-bg" src="" alt=""></div>' +
@@ -66,13 +75,16 @@
           '</div>' +
           /* リアルタイム表示カード（osu! モードのみ表示） */
           '<div class="etb-card" id="etb-card-realtime">' +
-            '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-realtime">リアルタイム表示</span>' +
-              '<button class="etb-detach-btn" data-panel="timing" title="別ウィンドウに分離">' + svgDetach + '</button></div>' +
+            '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-realtime">' +
+              electronText('electronRealtime') + '</span>' +
+              '<button class="etb-detach-btn" data-panel="timing" data-i18n-title="electronDetachWindow" title="' +
+                electronText('electronDetachWindow') + '">' + svgDetach + '</button></div>' +
             '<div class="etb-card-body" id="osu-timing-panel">' +
               '<div class="osu-timing-row"><span class="osu-timing-label">Timing</span><span class="osu-timing-value" id="osu-t-timing">--:--:---</span></div>' +
               '<div class="osu-timing-row"><span class="osu-timing-label">BPM</span><span class="osu-timing-value" id="osu-t-bpm">---</span></div>' +
               '<div class="osu-timing-row"><span class="osu-timing-label">SV</span><span class="osu-timing-value" id="osu-t-sv">---</span></div>' +
-              '<div class="osu-timing-row"><span class="osu-timing-label" id="osu-t-vbpm-label">見た目 BPM</span><span class="osu-timing-value" id="osu-t-vbpm">---</span></div>' +
+              '<div class="osu-timing-row"><span class="osu-timing-label" id="osu-t-vbpm-label">' +
+                electronText('electronVisualBpm') + '</span><span class="osu-timing-value" id="osu-t-vbpm">---</span></div>' +
               '<div class="osu-timing-row"><span class="osu-timing-label">Volume</span><span class="osu-timing-value" id="osu-t-vol">---</span></div>' +
             '</div>' +
           '</div>';
@@ -81,7 +93,8 @@
         var fileCard = document.createElement('div');
         fileCard.className = 'etb-card';
         fileCard.id = 'etb-card-file';
-        fileCard.innerHTML = '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-file">譜面ファイル</span></div>';
+        fileCard.innerHTML = '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-file">' +
+          electronText('electronBeatmapFile') + '</span></div>';
         var fileBody = document.createElement('div');
         fileBody.className = 'etb-card-body';
         fileBody.appendChild(dropArea);
@@ -93,7 +106,8 @@
         viewSettingsCard.className = 'etb-card';
         viewSettingsCard.id = 'etb-card-viewsettings';
         viewSettingsCard.style.display = 'none';
-        viewSettingsCard.innerHTML = '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-viewsettings">表示モード</span></div>';
+        viewSettingsCard.innerHTML = '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-viewsettings">' +
+          electronText('electronDisplayMode') + '</span></div>';
         var viewSettingsBody = document.createElement('div');
         viewSettingsBody.className = 'etb-card-body';
         viewSettingsCard.appendChild(viewSettingsBody);
@@ -104,7 +118,8 @@
         loadSettingsCard.className = 'etb-card';
         loadSettingsCard.id = 'etb-card-loadsettings';
         loadSettingsCard.style.display = 'none';
-        loadSettingsCard.innerHTML = '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-loadsettings">譜面読み込み設定</span></div>';
+        loadSettingsCard.innerHTML = '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-loadsettings">' +
+          electronText('electronBeatmapLoading') + '</span></div>';
         var loadSettingsBody = document.createElement('div');
         loadSettingsBody.className = 'etb-card-body';
         loadSettingsCard.appendChild(loadSettingsBody);
@@ -115,7 +130,8 @@
         previewSettingsCard.className = 'etb-card';
         previewSettingsCard.id = 'etb-card-previewsettings';
         previewSettingsCard.style.display = 'none';
-        previewSettingsCard.innerHTML = '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-previewsettings">プレビュータブ設定</span></div>';
+        previewSettingsCard.innerHTML = '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-previewsettings">' +
+          electronText('electronPreviewTab') + '</span></div>';
         var previewSettingsBody = document.createElement('div');
         previewSettingsBody.className = 'etb-card-body';
         previewSettingsCard.appendChild(previewSettingsBody);
@@ -130,7 +146,8 @@
         tabsCol.className = 'etb-card';
         var tabsHead = document.createElement('div');
         tabsHead.className = 'etb-card-head';
-        tabsHead.innerHTML = '<span class="etb-card-title" id="etb-title-checklist">チェックリスト</span>';
+        tabsHead.innerHTML = '<span class="etb-card-title" id="etb-title-checklist">' +
+          electronText('electronChecklist') + '</span>';
         var tabsBody = document.createElement('div');
         tabsBody.className = 'etb-card-body';
         tabsBody.id = 'etb-checklist-buttons-body';
@@ -152,7 +169,8 @@
         toolsCard.id = 'etb-card-tools';
         var toolsHead = document.createElement('div');
         toolsHead.className = 'etb-card-head';
-        toolsHead.innerHTML = '<span class="etb-card-title" id="etb-title-tools">ツール</span>';
+        toolsHead.innerHTML = '<span class="etb-card-title" id="etb-title-tools">' +
+          electronText('electronTools') + '</span>';
         var toolsBody = document.createElement('div');
         toolsBody.className = 'etb-card-body';
         toolsBody.id = 'etb-tools-body';
@@ -165,7 +183,8 @@
         toolsSettingsCard.className = 'etb-card';
         toolsSettingsCard.id = 'etb-card-toolsettings';
         toolsSettingsCard.style.display = 'none';
-        toolsSettingsCard.innerHTML = '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-toolsettings">ツールの表示設定</span></div>';
+        toolsSettingsCard.innerHTML = '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-toolsettings">' +
+          electronText('electronToolDisplay') + '</span></div>';
         var toolsSettingsBody = document.createElement('div');
         toolsSettingsBody.className = 'etb-card-body';
         toolsSettingsBody.id = 'etb-toolsettings-body';
@@ -184,7 +203,8 @@
         outputCol.className = 'etb-card';
         var outHead = document.createElement('div');
         outHead.className = 'etb-card-head';
-        outHead.innerHTML = '<span class="etb-card-title" id="etb-title-results">チェック結果</span>';
+        outHead.innerHTML = '<span class="etb-card-title" id="etb-title-results">' +
+          electronText('electronCheckResults') + '</span>';
         var outBody = document.createElement('div');
         outBody.className = 'etb-card-body';
         outBody.appendChild(tabVis);
@@ -295,13 +315,17 @@
             '<button type="button" id="etb-spread-zoomin">＋</button>' +
             '</span>' +
             '<label class="etb-spread-sfx"><input type="checkbox" id="etb-spread-sfx-cb"> ' +
-            '<span id="etb-spread-sfx-text">効果音</span></label>' +
+            '<span id="etb-spread-sfx-text" data-i18n="electronHitSounds">' +
+              electronText('electronHitSounds') + '</span></label>' +
             '<label class="etb-spread-sfx"><input type="checkbox" id="etb-spread-nc-cb"> ' +
-            '<span id="etb-spread-nc-text">NCシンバルの小節線を強調表示</span></label>' +
+            '<span id="etb-spread-nc-text" data-i18n="electronHighlightNcBarlines">' +
+              electronText('electronHighlightNcBarlines') + '</span></label>' +
             /* 右: ビートスナップ(スクロールで変更) + 再生速度 */
             '<span class="etb-spread-right">' +
-            '<span class="etb-spread-snap2" id="etb-spread-snap2" title="スライダー/スクロールで変更">' +
-            '<span id="etb-spread-snap-text">ビートスナップ間隔</span> ' +
+            '<span class="etb-spread-snap2" id="etb-spread-snap2" data-i18n-title="electronSnapControlHint" title="' +
+              electronText('electronSnapControlHint') + '">' +
+            '<span id="etb-spread-snap-text" data-i18n="electronBeatSnapDivisor">' +
+              electronText('electronBeatSnapDivisor') + '</span> ' +
             '<input type="range" class="etb-spread-snap-slider" id="etb-spread-snap-slider" min="0" step="1">' +
             '<span class="etb-spread-snap-val" id="etb-spread-snap-val">1/4</span>' +
             '</span>' +
@@ -316,15 +340,20 @@
           var spBottom = document.createElement('div');
           spBottom.className = 'etb-spread-bottom';
           spBottom.innerHTML =
-            '<span class="etb-sb-time" id="etb-sb-time" title="ダブルクリック / Ctrl+C でコピー">00:00:000</span>' +
+            '<span class="etb-sb-time" id="etb-sb-time" data-i18n-title="electronCopyTimeHint" title="' +
+              electronText('electronCopyTimeHint') + '">00:00:000</span>' +
             '<span class="etb-sb-pct" id="etb-sb-pct">0.0%</span>' +
-            '<span class="etb-sb-progress" id="etb-sb-progress" title="クリックでシーク">' +
+            '<span class="etb-sb-progress" id="etb-sb-progress" data-i18n-title="electronSeekHint" title="' +
+              electronText('electronSeekHint') + '">' +
             '<canvas id="etb-sb-progress-canvas"></canvas>' +
             '</span>' +
             '<span class="etb-sb-controls">' +
-            '<button type="button" id="etb-sb-play"  title="再生">▶</button>' +
-            '<button type="button" id="etb-sb-pause" title="一時停止">❚❚</button>' +
-            '<button type="button" id="etb-sb-stop"  title="停止">■</button>' +
+            '<button type="button" id="etb-sb-play" data-i18n-title="electronPlay" title="' +
+              electronText('electronPlay') + '">▶</button>' +
+            '<button type="button" id="etb-sb-pause" data-i18n-title="electronPause" title="' +
+              electronText('electronPause') + '">❚❚</button>' +
+            '<button type="button" id="etb-sb-stop" data-i18n-title="electronStop" title="' +
+              electronText('electronStop') + '">■</button>' +
             '<button type="button" id="etb-sb-test"  title="Test">Test</button>' +
             '</span>' +
             '<span class="etb-spread-speed" id="etb-spread-speed">' +
@@ -385,7 +414,9 @@
             if (zi) zi.disabled = spSvMode;
             if (zo) zo.disabled = spSvMode;
             var zl = document.getElementById('etb-spread-zoomlabel');
-            if (zl) zl.textContent = spSvMode ? '実速' : (Math.round(spPxPerMs / SP_BASE_PX * 100) + '%');
+            if (zl) zl.textContent = spSvMode
+              ? electronText('electronRealSpeed')
+              : (Math.round(spPxPerMs / SP_BASE_PX * 100) + '%');
           };
           /* ビートスナップ: スライダー / スクロールで変更（osu!エディタ風）。表示と同期 */
           var spSnapSlider = spBar.querySelector('#etb-spread-snap-slider');
@@ -539,11 +570,11 @@
             var doTitle = document.createElement('div');
             doTitle.className = 'etb-sfx-settings-title';
             doTitle.id = 'etb-difforder-title';
-            doTitle.textContent = 'Diff順';
+            doTitle.textContent = electronText('electronDiffOrder');
             diffOrderSection.appendChild(doTitle);
             [
-              { desc: true,  id: 'etb-difforder-desc', ja: '難→易（上が難しい）' },
-              { desc: false, id: 'etb-difforder-asc',  ja: '易→難（上が易しい）' }
+              { desc: true,  id: 'etb-difforder-desc', key: 'electronHardToEasy' },
+              { desc: false, id: 'etb-difforder-asc',  key: 'electronEasyToHard' }
             ].forEach(function (opt) {
               var lb = document.createElement('label');
               lb.className = 'etb-sfx-opt';
@@ -557,7 +588,7 @@
                 if (spCacheDiffs && spCacheDiffs.length) sortSpreadDiffs(spCacheDiffs); // 即時反映
               });
               var txt = document.createElement('span');
-              txt.id = opt.id; txt.textContent = opt.ja;
+              txt.id = opt.id; txt.textContent = electronText(opt.key);
               lb.appendChild(rb);
               lb.appendChild(document.createTextNode(' '));
               lb.appendChild(txt);
@@ -570,8 +601,8 @@
               var viewModeSection = document.createElement('div');
               viewModeSection.className = 'etb-sfx-settings';
               [
-                { mode: 'wide',    id: 'etb-viewmode-wide',    ja: 'ワイド' },
-                { mode: 'compact', id: 'etb-viewmode-compact', ja: 'コンパクト' }
+                { mode: 'wide',    id: 'etb-viewmode-wide',    key: 'electronWide' },
+                { mode: 'compact', id: 'etb-viewmode-compact', key: 'electronCompact' }
               ].forEach(function (opt) {
                 var lb = document.createElement('label');
                 lb.className = 'etb-sfx-opt';
@@ -591,7 +622,7 @@
                   else if (api && api.maximizeFull) api.maximizeFull();
                 });
                 var txt = document.createElement('span');
-                txt.id = opt.id; txt.textContent = opt.ja;
+                txt.id = opt.id; txt.textContent = electronText(opt.key);
                 lb.appendChild(rb);
                 lb.appendChild(document.createTextNode(' '));
                 lb.appendChild(txt);
@@ -606,11 +637,11 @@
             var jpTitle = document.createElement('div');
             jpTitle.className = 'etb-sfx-settings-title';
             jpTitle.id = 'etb-judgepos-title';
-            jpTitle.textContent = '判定ラインの位置';
+            jpTitle.textContent = electronText('electronJudgementLine');
             judgePosSection.appendChild(jpTitle);
             [
-              { frac: SP_JUDGE_CENTER, id: 'etb-judgepos-center', ja: '中央' },
-              { frac: SP_JUDGE_LEFT,   id: 'etb-judgepos-left',   ja: '左寄せ（先を長く見る）' }
+              { frac: SP_JUDGE_CENTER, id: 'etb-judgepos-center', key: 'electronCenter' },
+              { frac: SP_JUDGE_LEFT,   id: 'etb-judgepos-left',   key: 'electronLeft' }
             ].forEach(function (opt) {
               var lb = document.createElement('label');
               lb.className = 'etb-sfx-opt';
@@ -623,7 +654,7 @@
                 try { localStorage.setItem('moddingHelperPreviewJudgeFrac', String(spJudgeFrac)); } catch (e) {}
               });
               var txt = document.createElement('span');
-              txt.id = opt.id; txt.textContent = opt.ja;
+              txt.id = opt.id; txt.textContent = electronText(opt.key);
               lb.appendChild(rb);
               lb.appendChild(document.createTextNode(' '));
               lb.appendChild(txt);
@@ -637,7 +668,7 @@
             var dvTitle = document.createElement('div');
             dvTitle.className = 'etb-sfx-settings-title';
             dvTitle.id = 'etb-diffvis-title';
-            dvTitle.textContent = '表示するDiff';
+            dvTitle.textContent = electronText('electronShownDiffs');
             diffVisSection.appendChild(dvTitle);
             var diffVisList = document.createElement('div');
             diffVisList.id = 'etb-diffvis-list';
@@ -651,7 +682,8 @@
               if (!diffs.length) {
                 var none = document.createElement('div');
                 none.className = 'etb-sfx-none'; none.id = 'etb-diffvis-none';
-                none.textContent = '（譜面が読み込まれていません）';
+                none.setAttribute('data-i18n', 'electronNoBeatmapLoaded');
+                none.textContent = electronText('electronNoBeatmapLoaded');
                 diffVisList.appendChild(none);
                 return;
               }
@@ -678,7 +710,7 @@
             var sfxTitle = document.createElement('div');
             sfxTitle.className = 'etb-sfx-settings-title';
             sfxTitle.id = 'etb-sfx-settings-title';
-            sfxTitle.textContent = '効果音の種類';
+            sfxTitle.textContent = electronText('electronHitSoundSet');
             sfxSection.appendChild(sfxTitle);
             if (spSfxSets.length) {
               var selId = (getSelectedSfxSet() || {}).id;
@@ -696,7 +728,7 @@
             } else {
               var sfxNone = document.createElement('div');
               sfxNone.className = 'etb-sfx-none'; sfxNone.id = 'etb-sfx-none';
-              sfxNone.textContent = '（sounds/ に音源フォルダがありません。合成音を使用）';
+              sfxNone.textContent = electronText('electronNoSoundFolders');
               sfxSection.appendChild(sfxNone);
             }
 
@@ -705,7 +737,7 @@
             volRow.className = 'etb-sfx-vol';
             var volLabel = document.createElement('span');
             volLabel.id = 'etb-sfx-vol-label'; volLabel.className = 'etb-sfx-vol-label';
-            volLabel.textContent = '効果音の音量';
+            volLabel.textContent = electronText('electronHitSoundVolume');
             var volRange = document.createElement('input');
             volRange.type = 'range'; volRange.min = '0'; volRange.max = '100'; volRange.step = '1';
             volRange.className = 'etb-sfx-vol-range';
@@ -736,7 +768,7 @@
             mVolRow.className = 'etb-sfx-vol';
             var mVolLabel = document.createElement('span');
             mVolLabel.id = 'etb-music-vol-label'; mVolLabel.className = 'etb-sfx-vol-label';
-            mVolLabel.textContent = '曲の音量';
+            mVolLabel.textContent = electronText('electronMusicVolume');
             var mVolRange = document.createElement('input');
             mVolRange.type = 'range'; mVolRange.min = '0'; mVolRange.max = '100'; mVolRange.step = '1';
             mVolRange.className = 'etb-sfx-vol-range';
@@ -767,7 +799,7 @@
             offRow.className = 'etb-sfx-vol';
             var offLabel = document.createElement('span');
             offLabel.id = 'etb-sfx-offset-label'; offLabel.className = 'etb-sfx-vol-label';
-            offLabel.textContent = '効果音オフセット';
+            offLabel.textContent = electronText('electronHitSoundOffset');
             var offRange = document.createElement('input');
             offRange.type = 'range'; offRange.min = '-100'; offRange.max = '100'; offRange.step = '1';
             offRange.className = 'etb-sfx-vol-range';
@@ -1950,16 +1982,9 @@
         var updateWaitingText = function() {
           var w = document.getElementById('osu-map-waiting');
           if (!w) return;
-          var isEn = document.getElementById('langEn') && document.getElementById('langEn').classList.contains('active');
-          if (panelMode === 'file') {
-            w.innerHTML = isEn
-              ? 'Load a file to<br>display its metadata'
-              : 'ファイルを読み込むと<br>メタデータが表示されます';
-          } else {
-            w.innerHTML = isEn
-              ? 'Select a beatmap in osu!<br>to display info here'
-              : 'osu! で譜面を選択すると<br>ここに情報が表示されます';
-          }
+          w.innerHTML = electronText(panelMode === 'file'
+            ? 'electronFileMetaWaiting'
+            : 'electronOsuMetaWaiting');
         };
         updateWaitingText();
 
@@ -1981,8 +2006,7 @@
             txt = (artist ? artist + ' - ' : '') + title;
             if (creator) txt += ' (' + creator + ')';
           }
-          var isEn = document.getElementById('langEn') && document.getElementById('langEn').classList.contains('active');
-          el.textContent = txt || (isEn ? 'No beatmap loaded' : '譜面が読み込まれていません');
+          el.textContent = txt || electronText('electronNoBeatmapLoadedPlain');
           el.classList.toggle('etb-compact-meta-empty', !txt);
         };
         var applyViewModeUi = function() {
@@ -2038,11 +2062,12 @@
           if (!isOsu || s || pv) hideAllPlayheads();
           else schedulePlayheadRefresh(); // チェック表示に戻ったら保持時刻で復帰
           /* チェックリストカードのタイトル切替 */
-          var isEn = document.getElementById('langEn') && document.getElementById('langEn').classList.contains('active');
           var clT = document.getElementById('etb-title-checklist');
-          if (clT) clT.textContent = s
-            ? (isEn ? 'Check list display' : 'チェックリストの表示設定')
-            : (isEn ? 'Check list' : 'チェックリスト');
+          if (clT) {
+            var checklistKey = s ? 'electronChecklistDisplay' : 'electronChecklist';
+            clT.setAttribute('data-i18n', checklistKey);
+            clT.textContent = electronText(checklistKey);
+          }
           /* チェック/プレビュー/設定ボタンのアクティブ表示（今どこを見ているか） */
           var sBtn = document.getElementById('toggleTabSettings');
           if (sBtn) sBtn.classList.toggle('active', s);
@@ -2145,7 +2170,8 @@
           if (window.getComputedStyle(wrap).position === 'static') wrap.style.position = 'relative';
           var btn = document.createElement('button');
           btn.className = 'etb-chart-detach';
-          btn.title = '別ウィンドウに分離';
+          btn.setAttribute('data-i18n-title', 'electronDetachWindow');
+          btn.title = electronText('electronDetachWindow');
           btn.innerHTML = svgDetach;
           btn.addEventListener('click', function(ev) {
             ev.stopPropagation();
@@ -2163,7 +2189,8 @@
         ['osu-t-timing', 'osu-t-bpm', 'osu-t-sv', 'osu-t-vbpm', 'osu-t-vol'].forEach(function(id) {
           var el = document.getElementById(id);
           if (!el) return;
-          el.title = 'ダブルクリックでコピー';
+          el.setAttribute('data-i18n-title', 'electronDoubleClickCopy');
+          el.title = electronText('electronDoubleClickCopy');
           el.addEventListener('dblclick', function() {
             var txt = (el.textContent || '').trim();
             if (!txt || txt === '---' || txt === '--:--:---') return;
@@ -2179,53 +2206,79 @@
         var updateTimingLabels = function() {
           var vbpmLabel = document.getElementById('osu-t-vbpm-label');
           if (!vbpmLabel) return;
-          var isEn = document.getElementById('langEn') && document.getElementById('langEn').classList.contains('active');
-          vbpmLabel.textContent = isEn ? 'Visual BPM' : '見た目 BPM';
+          vbpmLabel.setAttribute('data-i18n', 'electronVisualBpm');
+          vbpmLabel.textContent = electronText('electronVisualBpm');
         };
         updateTimingLabels();
 
         /* カードタイトルの言語対応 */
         var updatePanelTitles = function() {
-          var isEn = document.getElementById('langEn') && document.getElementById('langEn').classList.contains('active');
-          var set = function(id, ja, en) {
+          var set = function(id, key) {
             var el = document.getElementById(id);
-            if (el) el.textContent = isEn ? en : ja;
+            if (!el) return;
+            el.setAttribute('data-i18n', key);
+            el.textContent = electronText(key);
           };
-          set('etb-title-meta',         'メタデータ',        'Metadata');
-          set('etb-title-realtime',     'リアルタイム表示',   'Real-time');
-          set('etb-title-file',         '譜面ファイル',       'Beatmap file');
-          set('etb-title-loadsettings', '譜面読み込み設定',   'Beatmap loading');
-          set('etb-title-previewsettings', 'プレビュータブ設定', 'Preview tab');
-          set('etb-difforder-title',    'Diff順',            'Diff order');
-          set('etb-difforder-desc',     '難→易（上が難しい）', 'Hard→Easy (top=hardest)');
-          set('etb-difforder-asc',      '易→難（上が易しい）', 'Easy→Hard (top=easiest)');
-          set('etb-title-viewsettings',  '表示モード',          'Display mode');
-          set('etb-viewmode-wide',     'ワイド',   'Wide');
-          set('etb-viewmode-compact',  'コンパクト', 'Compact');
-          set('etb-judgepos-title',     '判定ラインの位置',    'Judgement line');
-          set('etb-judgepos-center',    '中央',              'Center');
-          set('etb-judgepos-left',      '左寄せ', 'Left');
-          set('etb-diffvis-title',      '表示するDiff',       'Shown diffs');
-          set('etb-diffvis-none',       '（譜面が読み込まれていません）', '(No beatmap loaded)');
+          var setTitle = function(id, key) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            el.setAttribute('data-i18n-title', key);
+            el.title = electronText(key);
+          };
+          set('etb-title-meta',            'electronMetadata');
+          set('etb-title-realtime',        'electronRealtime');
+          set('etb-title-file',            'electronBeatmapFile');
+          set('etb-title-loadsettings',    'electronBeatmapLoading');
+          set('etb-title-previewsettings', 'electronPreviewTab');
+          set('etb-difforder-title',       'electronDiffOrder');
+          set('etb-difforder-desc',        'electronHardToEasy');
+          set('etb-difforder-asc',         'electronEasyToHard');
+          set('etb-title-viewsettings',    'electronDisplayMode');
+          set('etb-viewmode-wide',         'electronWide');
+          set('etb-viewmode-compact',      'electronCompact');
+          set('etb-judgepos-title',        'electronJudgementLine');
+          set('etb-judgepos-center',       'electronCenter');
+          set('etb-judgepos-left',         'electronLeft');
+          set('etb-diffvis-title',         'electronShownDiffs');
+          set('etb-diffvis-none',          'electronNoBeatmapLoaded');
           set('etb-title-checklist',
-              settingsMode ? 'チェックリストの表示設定' : 'チェックリスト',
-              settingsMode ? 'Check list display'      : 'Check list');
-          set('etb-title-results',      'チェック結果',       'Check results');
-          set('etb-title-tools',        'ツール',            'Tools');
-          set('etb-title-toolsettings', 'ツールの表示設定',   'Tool display');
-          set('etb-tab-main',           'チェック',          'Check');
-          set('etb-tab-preview',        'プレビュー',        'Preview');
-          set('toggleTabSettings',      '設定',              'Settings');
-          set('etb-spread-snap-text',   'ビートスナップ間隔',  'Beat Snap Divisor');
-          set('etb-spread-sfx-text',    '効果音',            'Hit sounds');
-          set('etb-spread-nc-text',     'NCシンバルの小節線を強調表示', 'Highlight NC cymbal barlines');
-          set('etb-sfx-settings-title', '効果音の種類',      'Hit sound set');
-          set('etb-sfx-vol-label',      '効果音の音量',      'Hit sound vol.');
-          set('etb-music-vol-label',    '曲の音量',          'Music vol.');
-          set('etb-sfx-offset-label',   '効果音オフセット',   'Hit sound offset');
-          set('etb-sfx-none',
-              '（sounds/ に音源フォルダがありません。合成音を使用）',
-              '(No sound folders in sounds/. Using synth.)');
+              settingsMode ? 'electronChecklistDisplay' : 'electronChecklist');
+          set('etb-title-results',       'electronCheckResults');
+          set('etb-title-tools',         'electronTools');
+          set('etb-title-toolsettings',  'electronToolDisplay');
+          set('etb-tab-main',            'electronCheck');
+          set('etb-tab-preview',         'electronPreview');
+          set('toggleTabSettings',       'electronSettings');
+          set('etb-spread-snap-text',    'electronBeatSnapDivisor');
+          set('etb-spread-sfx-text',     'electronHitSounds');
+          set('etb-spread-nc-text',      'electronHighlightNcBarlines');
+          set('etb-sfx-settings-title',  'electronHitSoundSet');
+          set('etb-sfx-vol-label',       'electronHitSoundVolume');
+          set('etb-music-vol-label',     'electronMusicVolume');
+          set('etb-sfx-offset-label',    'electronHitSoundOffset');
+          set('etb-sfx-none',            'electronNoSoundFolders');
+
+          setTitle('etb-spread-snap2', 'electronSnapControlHint');
+          setTitle('etb-sb-time',      'electronCopyTimeHint');
+          setTitle('etb-sb-progress',  'electronSeekHint');
+          setTitle('etb-sb-play',      'electronPlay');
+          setTitle('etb-sb-pause',     'electronPause');
+          setTitle('etb-sb-stop',      'electronStop');
+
+          document.querySelectorAll('.etb-detach-btn, .etb-chart-detach')
+            .forEach(function(el) {
+              el.setAttribute('data-i18n-title', 'electronDetachWindow');
+              el.title = electronText('electronDetachWindow');
+            });
+          ['osu-t-timing', 'osu-t-bpm', 'osu-t-sv', 'osu-t-vbpm', 'osu-t-vol']
+            .forEach(function(id) {
+              setTitle(id, 'electronDoubleClickCopy');
+            });
+          var zoomLabel = document.getElementById('etb-spread-zoomlabel');
+          var testButton = document.getElementById('etb-sb-test');
+          if (zoomLabel && testButton && testButton.classList.contains('active')) {
+            zoomLabel.textContent = electronText('electronRealSpeed');
+          }
         };
         updatePanelTitles();
 
@@ -2308,12 +2361,17 @@
                 updateWaitingText();
                 updateTimingLabels();
                 updatePanelTitles();
+                /* Source / Tags の空値表示（なし / None）とタグの
+                   ツールチップも、現在の言語で再描画する。 */
+                if (typeof renderMapPanel === 'function' && lastMapMeta) {
+                  renderMapPanel(lastMapMeta);
+                }
               }).observe(langEnBtn, { attributes: true, attributeFilter: ['class'] });
             }
 
             /* 設定ボタンのテキスト（歯車は付けない） */
             var settingsBtn = document.getElementById('toggleTabSettings');
-            if (settingsBtn) settingsBtn.textContent = '設定';
+            if (settingsBtn) settingsBtn.textContent = electronText('electronSettings');
 
             /* 「チェック」「プレビュー」ボタンを設定の前に追加し、
                チェック/プレビュー/設定 を明示的な切替タブにする */
@@ -2321,7 +2379,7 @@
               var mainTabBtn = document.createElement('button');
               mainTabBtn.id = 'etb-tab-main';
               mainTabBtn.type = 'button';
-              mainTabBtn.textContent = 'チェック';
+              mainTabBtn.textContent = electronText('electronCheck');
               settingsBtn.parentNode.insertBefore(mainTabBtn, settingsBtn);
               mainTabBtn.addEventListener('click', function() {
                 settingsMode = false; previewMode = false; // チェック表示へ
@@ -2331,7 +2389,7 @@
               var previewTabBtn = document.createElement('button');
               previewTabBtn.id = 'etb-tab-preview';
               previewTabBtn.type = 'button';
-              previewTabBtn.textContent = 'プレビュー';
+              previewTabBtn.textContent = electronText('electronPreview');
               settingsBtn.parentNode.insertBefore(previewTabBtn, settingsBtn);
               previewTabBtn.addEventListener('click', function() {
                 settingsMode = false; previewMode = true; // プレビュー（スプレッド表示）へ
@@ -2340,6 +2398,7 @@
 
               applyPanelModeUi(); // 追加直後に active 表示を反映
             }
+            updatePanelTitles();
 
             var extSep = document.createElement('div');
             extSep.style.cssText = 'width:1px;background:#363636;margin:9px 4px;flex-shrink:0;-webkit-app-region:no-drag;';
@@ -2384,7 +2443,9 @@
             var upToast = document.createElement('div');
             upToast.id = 'etb-update-toast';
             upToast.innerHTML =
-              '<div class="etb-update-text">アップデートをダウンロード中 <span id="etb-update-pct">0</span>%</div>' +
+              '<div class="etb-update-text"><span data-i18n="electronUpdateDownloading">' +
+                electronText('electronUpdateDownloading') +
+              '</span> <span id="etb-update-pct">0</span>%</div>' +
               '<div class="etb-update-track"><div id="etb-update-fill"></div></div>';
             document.body.appendChild(upToast);
             window.electronAPI.onUpdateProgress(function(pct) {
@@ -2405,8 +2466,7 @@
             if (!data) { clearMetaToWaiting(); return; }
             if (bg) bg.src = data.bgDataUrl || '';
             document.getElementById('osu-map-bg-wrap').style.display = data.bgDataUrl ? '' : 'none';
-            var isEn = document.getElementById('langEn') && document.getElementById('langEn').classList.contains('active');
-            var noneText = isEn ? 'None' : 'なし';
+            var noneText = electronText('none');
             var row = function(label, value, cls, alwaysShow) {
               if (!value && !alwaysShow) return '';
               var isEmpty = !value;
@@ -2424,8 +2484,7 @@
                   '<span class="osu-map-value none">' + noneText + '</span>' +
                   '</div>';
               }
-              var isEnTag = document.getElementById('langEn') && document.getElementById('langEn').classList.contains('active');
-              var chipTitle = isEnTag ? 'Click: mark / Double-click: copy' : 'クリック: チェック / ダブルクリック: コピー';
+              var chipTitle = electronText('electronTagHint');
               var chips = data.tags.split(' ').filter(function(t) { return t; })
                 .map(function(t) { return '<span class="osu-tag-chip" title="' + chipTitle + '">' + t + '</span>'; })
                 .join('');
@@ -2569,4 +2628,10 @@
               .observe(el, { childList: true });
           });
         })();
+
+        /* Web 側の初回 applyLanguage() より後に追加した Electron 専用 DOM に、
+           保存済みの現在言語を適用する。 */
+        if (typeof window.applyModdingHelperLanguage === 'function') {
+          window.applyModdingHelperLanguage();
+        }
       })();

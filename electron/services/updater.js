@@ -6,6 +6,43 @@ const { app, dialog } = require('electron');
 const { autoUpdater } = require('electron-updater');
 
 let getMainWin = () => null;
+let currentLang = 'ja';
+
+const messages = {
+  en: {
+    title: 'Update',
+    failed: 'The update failed.',
+    installManually: 'Please install the latest version manually.',
+    available: (version) => 'A new version, v' + version + ', is available.',
+    confirm: 'Update now?\n(The app will restart automatically after downloading.)',
+    update: 'Update',
+    later: 'Later',
+    downloaded: (version) => 'Version ' + version + ' has finished downloading.',
+    restartToApply: 'Restart the app to apply the update.',
+    restartNow: 'Restart now',
+  },
+  ja: {
+    title: 'アップデート',
+    failed: 'アップデートに失敗しました。',
+    installManually: 'お手数ですが、最新版を手動でインストールしてください。',
+    available: (version) => '新しいバージョン v' + version + ' があります。',
+    confirm: '今すぐアップデートしますか？\n（ダウンロード後、自動で再起動して適用します）',
+    update: 'アップデート',
+    later: '後で',
+    downloaded: (version) => 'v' + version + ' のダウンロードが完了しました。',
+    restartToApply: '再起動して適用します。',
+    restartNow: '今すぐ再起動',
+  },
+};
+
+function text(key, value) {
+  const entry = messages[currentLang][key];
+  return typeof entry === 'function' ? entry(value) : entry;
+}
+
+function setLanguage(lang) {
+  currentLang = lang === 'en' ? 'en' : 'ja';
+}
 
 // 生きているメイン窓（無ければ null）。ダイアログの親に使う
 function liveWin() {
@@ -41,10 +78,10 @@ function setupAutoUpdate() {
     updating = false;
     sendProgress(-1);
     dialog.showMessageBox(liveWin(), {
-      type: 'error', title: 'アップデート', noLink: true, buttons: ['OK'],
-      message: 'アップデートに失敗しました。',
+      type: 'error', title: text('title'), noLink: true, buttons: ['OK'],
+      message: text('failed'),
       detail: (err && err.message ? err.message : String(err)) +
-        '\n\nお手数ですが、最新版を手動でインストールしてください。',
+        '\n\n' + text('installManually'),
     }).catch(() => {});
   };
 
@@ -53,10 +90,10 @@ function setupAutoUpdate() {
     dialogOpen = true;
     dialog.showMessageBox(liveWin(), {
       type: 'info',
-      title: 'アップデート',
-      message: '新しいバージョン v' + info.version + ' があります。',
-      detail: '今すぐアップデートしますか？\n（ダウンロード後、自動で再起動して適用します）',
-      buttons: ['アップデート', '後で'],
+      title: text('title'),
+      message: text('available', info.version),
+      detail: text('confirm'),
+      buttons: [text('update'), text('later')],
       defaultId: 0,
       cancelId: 1,
       noLink: true,
@@ -77,10 +114,10 @@ function setupAutoUpdate() {
     sendProgress(-1);
     dialog.showMessageBox(liveWin(), {
       type: 'info',
-      title: 'アップデート',
-      message: 'v' + info.version + ' のダウンロードが完了しました。',
-      detail: '再起動して適用します。',
-      buttons: ['今すぐ再起動', '後で'],
+      title: text('title'),
+      message: text('downloaded', info.version),
+      detail: text('restartToApply'),
+      buttons: [text('restartNow'), text('later')],
       defaultId: 0,
       cancelId: 1,
       noLink: true,
@@ -97,4 +134,4 @@ function setupAutoUpdate() {
   setTimeout(() => { autoUpdater.checkForUpdates().catch(() => {}); }, 4000);
 }
 
-module.exports = { init, setupAutoUpdate };
+module.exports = { init, setLanguage, setupAutoUpdate };

@@ -449,6 +449,11 @@ document.addEventListener("DOMContentLoaded", () => {
       el.textContent = t(key);
     });
 
+    document.querySelectorAll("[data-i18n-title]").forEach(el => {
+      const key = el.dataset.i18nTitle;
+      el.title = t(key);
+    });
+
     refreshOsuSourceStatus();
 
     if (fileName) {
@@ -457,6 +462,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (langEn) langEn.classList.toggle("active", currentLang === "en");
     if (langJa) langJa.classList.toggle("active", currentLang === "ja");
+    if (window.electronAPI &&
+        typeof window.electronAPI.setLanguage === "function") {
+      window.electronAPI.setLanguage(currentLang);
+    }
     if (manualLink) {
       manualLink.href = currentLang === "ja" ? "docs/docs.html" : "docs/docs-en.html";
     }
@@ -584,6 +593,10 @@ document.addEventListener("DOMContentLoaded", () => {
     updateTabIssueStates(state);
     bnCompareUi.renderBnSelectedResult();
   }
+
+  // did-finish-load 後に追加される Electron 専用 DOM へも、
+  // 現在言語を初回適用できるよう公開する。
+  window.applyModdingHelperLanguage = applyLanguage;
 
   function renderResult() {
     renderClapWhistleResult(state.clapWhistle, dom, t);

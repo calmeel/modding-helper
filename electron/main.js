@@ -192,6 +192,7 @@ app.whenReady().then(() => {
   ipcMain.handle('sr-calculate', (event, payload) =>
     srCalculator.calculate(payload));
   ipcMain.on('sr-cancel', () => srCalculator.cancel());
+  ipcMain.on('app-language-changed', (event, lang) => updater.setLanguage(lang));
 
   ipcMain.on('win-minimize',  () => { if (mainWin) mainWin.minimize(); });
   /* 最大化の解除は「標準のデスクトップサイズ」に落とす。

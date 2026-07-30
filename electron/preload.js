@@ -17,6 +17,7 @@ function revealStartupUI() {
 
 contextBridge.exposeInMainWorld('electronAPI', {
   revealStartupUI,
+  setLanguage: (lang) => ipcRenderer.send('app-language-changed', lang),
   copyText: (text) => clipboard.writeText(String(text)),
   onOsuMapInfo:  (cb) => ipcRenderer.on('osu-map-info',    (_, data) => cb(data)),
   onTimingInfo:  (cb) => ipcRenderer.on('osu-timing-info', (_, data) => cb(data)),
