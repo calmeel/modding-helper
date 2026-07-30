@@ -91,6 +91,7 @@ function createWindow() {
     webPreferences: {
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
+      additionalArguments: ['--modding-helper-main-window'],
     },
     icon: path.join(root, 'images', 'icon.ico'),
   });
@@ -127,35 +128,46 @@ function createWindow() {
     }
   );
 
-  win.loadFile(path.join(root, 'index.html'));
-
-  // 安全策: 注入が万一失敗してもウィンドウが出るよう一定時間後に必ず表示
-  setTimeout(() => { if (!win.isDestroyed() && !win.isVisible()) win.show(); }, 4000);
-
-  win.webContents.on('did-finish-load', () => {
+  win.webContents.once('did-finish-load', async () => {
     // スプレッド表示の効果音源セット（sounds/<セット>/ にあれば）を注入。無ければ合成音にフォールバック
     try {
-      win.webContents.executeJavaScript(
+      await win.webContents.executeJavaScript(
         'window.__taikoSoundSets = ' + JSON.stringify(loadTaikoSoundSets()) + ';'
-      ).catch(() => {});
+      );
     } catch (_) {}
-    // ─────────────────────────────────────────────
-    // CSS 注入
-    // ─────────────────────────────────────────────
-    win.webContents.insertCSS(loadInjectCss());
 
-    // ─────────────────────────────────────────────
-    // DOM 操作・イベント注入
-    // ─────────────────────────────────────────────
-    win.webContents.executeJavaScript(buildInjectJs()).then(function() {
-      if (!win.isDestroyed()) win.show();  // 変換完了後に表示（ちらつき防止）
-      osuWatcher.setDeliver(popouts.broadcastOsuData);
-      osuWatcher.start(win);
-    }).catch(function() {
+    try {
+      // CSS と DOM の注入を完了させ、Electron 用レイアウトが描画可能に
+      // なってから表示する。insertCSS() も非同期なので必ず待つ。
+      await win.webContents.insertCSS(loadInjectCss());
+      await win.webContents.executeJavaScript(buildInjectJs());
+      await win.webContents.executeJavaScript(
+        '(function() {' +
+          'window.electronAPI.revealStartupUI();' +
+          'return new Promise(function(resolve) {' +
+            'requestAnimationFrame(function() {' +
+              'requestAnimationFrame(resolve);' +
+            '});' +
+          '});' +
+        '})()'
+      );
+    } catch (error) {
+      console.error('Electron UI initialization failed:', error);
+      try {
+        await win.webContents.executeJavaScript(
+          'window.electronAPI.revealStartupUI();'
+        );
+      } catch (_) {}
+    } finally {
       if (!win.isDestroyed()) win.show();
       osuWatcher.setDeliver(popouts.broadcastOsuData);
       osuWatcher.start(win);
-    });
+    }
+  });
+
+  win.loadFile(path.join(root, 'index.html')).catch(function(error) {
+    console.error('Failed to load Electron UI:', error);
+    if (!win.isDestroyed()) win.show();
   });
 
   win.on('page-title-updated', function(e) { e.preventDefault(); });

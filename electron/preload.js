@@ -1,6 +1,22 @@
-const { contextBridge, ipcRenderer, clipboard } = require('electron');
+const { contextBridge, ipcRenderer, clipboard, webFrame } = require('electron');
+
+// メインウィンドウでは Web 版レイアウトを最初の1フレームも描画しない。
+// Electron 用 DOM・CSS の注入完了後に main.js から解除する。
+let startupCloakCssKey = null;
+if (process.argv.includes('--modding-helper-main-window')) {
+  startupCloakCssKey = webFrame.insertCSS(
+    'html { visibility: hidden !important; background-color: #1e1e1e !important; }'
+  );
+}
+
+function revealStartupUI() {
+  if (startupCloakCssKey == null) return;
+  webFrame.removeInsertedCSS(startupCloakCssKey);
+  startupCloakCssKey = null;
+}
 
 contextBridge.exposeInMainWorld('electronAPI', {
+  revealStartupUI,
   copyText: (text) => clipboard.writeText(String(text)),
   onOsuMapInfo:  (cb) => ipcRenderer.on('osu-map-info',    (_, data) => cb(data)),
   onTimingInfo:  (cb) => ipcRenderer.on('osu-timing-info', (_, data) => cb(data)),
