@@ -27,12 +27,11 @@ function renderOffsetResultFromSources(sources, dom, t) {
     ? dom.includeAdvancedOffsetSnaps.checked
     : false;
 
-  const results = sources.map(source => ({
-    ...runOffset1msCheck(source.text, source.fileName, {
+  const results = sources.map(source =>
+    runOffset1msCheck(source.text, source.fileName, {
       includeAdvancedSnaps
-    }),
-    mode: source.mode
-  }));
+    })
+  );
 
   dom.shiftOutput.innerHTML = formatMultipleShiftResults(results, t);
 
@@ -61,10 +60,9 @@ function renderBarlineResultFromSources(sources, dom, t) {
     return null;
   }
 
-  const results = sources.map(source => ({
-    ...runBarlineCheck(source.text, source.fileName),
-    mode: source.mode
-  }));
+  const results = sources.map(source =>
+    runBarlineCheck(source.text, source.fileName)
+  );
 
   dom.barlineOutput.innerHTML = formatMultipleBarlineResults(results, t);
 
@@ -120,12 +118,11 @@ function analyzeDoubleSvSourcesFromSources(sources, dom) {
     ? parseInt(dom.doubleSvGap.value, 10)
     : 2;
 
-  return sources.map(source => ({
-    ...runDoubleSvCheck(source.text, source.fileName, {
+  return sources.map(source =>
+    runDoubleSvCheck(source.text, source.fileName, {
       maxGapMs
-    }),
-    mode: source.mode
-  }));
+    })
+  );
 }
 
 function renderSvVolumeResultFromSources(sources, dom, t) {
@@ -144,14 +141,13 @@ function renderSvVolumeResultFromSources(sources, dom, t) {
     ? dom.svVolumeLargeChangeOnly.checked
     : false;
 
-  const results = sources.map(source => ({
-    ...runSvVolumeCheck(source.text, source.fileName, {
+  const results = sources.map(source =>
+    runSvVolumeCheck(source.text, source.fileName, {
       thresholdMode,
       largeChangeOnly,
       largeChangeThreshold: 15
-    }),
-    mode: source.mode
-  }));
+    })
+  );
   
   dom.svVolumeOutput.innerHTML = formatMultipleSvVolumeResults(results, t);
 

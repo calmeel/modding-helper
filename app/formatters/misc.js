@@ -355,7 +355,7 @@ function formatMultipleEpilepsyWarningResults(results, t) {
     return t("noOsuFiles");
   }
 
-  return formatByModeIfHybrid(results, formatEpilepsyWarningResult, t);
+  return formatSortedResults(results, formatEpilepsyWarningResult, t);
 }
 
 function formatEpilepsyWarningResult(result, t) {

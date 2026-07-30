@@ -1,4 +1,4 @@
-/** ハイブリットセットの場合、taikoモード以外を弾く */
+/** Taikoモード以外の譜面を読み込み対象から除外する */
 function isTaikoMode(mode) {
   return mode === 1;
 }
@@ -96,38 +96,26 @@ async function analyzeOszFile(file) {
       continue;
     }
 
-    clapWhistleResults.push({
-      ...runClapWhistleCheck(text, entry.name),
-      mode
-    });
+    clapWhistleResults.push(runClapWhistleCheck(text, entry.name));
 
-    shiftResults.push({
-      ...runOffset1msCheck(text, entry.name),
-      mode
-    });
+    shiftResults.push(runOffset1msCheck(text, entry.name));
 
     offsetSources.push({
       text,
-      fileName: entry.name,
-      mode
+      fileName: entry.name
     });
 
     doubleSvSources.push({
       text,
-      fileName: entry.name,
-      mode
+      fileName: entry.name
     });
 
     barlineSources.push({
       text,
-      fileName: entry.name,
-      mode
+      fileName: entry.name
     });
 
-    unappliedSvResults.push({
-      ...runUnappliedSvCheck(text, entry.name),
-      mode
-    });
+    unappliedSvResults.push(runUnappliedSvCheck(text, entry.name));
 
     const audioFileName = parseOffsetAudioFilename(text);
     const audioEntry = findOszAudioEntry(zip, entry.name, audioFileName);
@@ -157,78 +145,45 @@ async function analyzeOszFile(file) {
     offsetWaveformSources.push({
       text,
       fileName: entry.name,
-      mode,
       audioFileName,
       audioEntryName: audioEntry?.name ?? "",
       audioBlob,
       audioDurationMs
     });
 
-    kiaiResults.push({
-      ...runKiaiAnalyze(text, entry.name, { audioDurationMs }),
-      mode
-    });
+    kiaiResults.push(runKiaiAnalyze(text, entry.name, { audioDurationMs }));
 
-    kiaiSnapResults.push({
-      ...runKiaiSnapCheck(text, entry.name),
-      mode
-    });
+    kiaiSnapResults.push(runKiaiSnapCheck(text, entry.name));
 
     svVolumeSources.push({
       text,
       fileName: entry.name,
-      mode,
       audioDurationMs
     });
 
-    redGreenMatchResults.push({
-      ...runRedGreenMatchCheck(text, entry.name),
-      mode
-    });
+    redGreenMatchResults.push(runRedGreenMatchCheck(text, entry.name));
 
-    sampleSetResults.push({
-      ...runSampleSetCheck(text, entry.name),
-      mode
-    });
+    sampleSetResults.push(runSampleSetCheck(text, entry.name));
 
-    sliderSettingsResults.push({
-      ...runSliderSettingsCheck(text, entry.name),
-      mode
-    });
+    sliderSettingsResults.push(runSliderSettingsCheck(text, entry.name));
 
-    earlyNoteResults.push({
-      ...runEarlyNoteCheck(text, entry.name),
-      mode
-    });
+    earlyNoteResults.push(runEarlyNoteCheck(text, entry.name));
 
-    artistResults.push({
-      ...runArtistCheck(text, entry.name),
-      mode
-    });
+    artistResults.push(runArtistCheck(text, entry.name));
 
-    titleResults.push({
-      ...runTitleCheck(text, entry.name),
-      mode
-    });
+    titleResults.push(runTitleCheck(text, entry.name));
 
-    sourceResults.push({
-      ...runSourceCheck(text, entry.name),
-      mode
-    });
+    sourceResults.push(runSourceCheck(text, entry.name));
 
-    tagResults.push({
-      ...runTagCheck(text, entry.name),
-      mode
-    });
+    tagResults.push(runTagCheck(text, entry.name));
 
-    previewPointResults.push({
-      ...runPreviewPointCheck(text, entry.name, {
+    previewPointResults.push(
+      runPreviewPointCheck(text, entry.name, {
         audioFileName,
         audioEntryName: audioEntry?.name ?? "",
         audioBytes
-      }),
-      mode
-    });
+      })
+    );
 
     const bgOffsetResult = runBgOffsetCheck(text, entry.name);
     await attachBgImageTypesFromOsz(
@@ -238,26 +193,16 @@ async function analyzeOszFile(file) {
       bgImageTypeCache
     );
 
-    bgOffsetResults.push({
-      ...bgOffsetResult,
-      mode
-    });
+    bgOffsetResults.push(bgOffsetResult);
 
-    epilepsyWarningResults.push({
-      ...runEpilepsyWarningCheck(text, entry.name),
-      mode
-    });
+    epilepsyWarningResults.push(runEpilepsyWarningCheck(text, entry.name));
 
     spreadResults.push({
       ...runSpreadCheck(text, entry.name),
-      audioDurationMs,
-      mode
+      audioDurationMs
     });
 
-    contentPermissionResults.push({
-      ...runContentPermissionCheck(text, entry.name),
-      mode
-    });
+    contentPermissionResults.push(runContentPermissionCheck(text, entry.name));
   }
 
   return {
@@ -306,37 +251,27 @@ async function processFile(file) {
 
     return {
       clapWhistle: [
-        {
-          ...runClapWhistleCheck(text, file.name),
-          mode
-        }
+        runClapWhistleCheck(text, file.name)
       ],
       offsetSources: [
-        { text, fileName: file.name, mode }
+        { text, fileName: file.name }
       ],
       offset: [
-        {
-          ...runOffset1msCheck(text, file.name),
-          mode
-        }
+        runOffset1msCheck(text, file.name)
       ],
       doubleSvSources: [
-        { text, fileName: file.name, mode }
+        { text, fileName: file.name }
       ],
       barlineSources: [
-        { text, fileName: file.name, mode }
+        { text, fileName: file.name }
       ],
       unappliedSv: [
-        {
-          ...runUnappliedSvCheck(text, file.name),
-          mode
-        }
+        runUnappliedSvCheck(text, file.name)
       ],
       offsetWaveformSources: [
         {
           text,
           fileName: file.name,
-          mode,
           audioFileName: parseOffsetAudioFilename(text),
           audioEntryName: "",
           audioBlob: null,
@@ -344,103 +279,60 @@ async function processFile(file) {
         }
       ],
       kiaiCompare: [
-        {
-          ...runKiaiAnalyze(text, file.name, { audioDurationMs: 0 }),
-          mode
-        }
+        runKiaiAnalyze(text, file.name, { audioDurationMs: 0 })
       ],
       kiaiSnap: [
-        {
-          ...runKiaiSnapCheck(text, file.name),
-          mode
-        }
+        runKiaiSnapCheck(text, file.name)
       ],
       svVolumeSources: [
-        { text, fileName: file.name, mode, audioDurationMs: 0 }
+        { text, fileName: file.name, audioDurationMs: 0 }
       ],
       volumeCompareSources: [
-        { text, fileName: file.name, mode, audioDurationMs: 0 }
+        { text, fileName: file.name, audioDurationMs: 0 }
       ],
       redGreenMatch: [
-        {
-          ...runRedGreenMatchCheck(text, file.name),
-          mode
-        }
+        runRedGreenMatchCheck(text, file.name)
       ],
       sampleSet: [
-        {
-          ...runSampleSetCheck(text, file.name),
-          mode
-        }
+        runSampleSetCheck(text, file.name)
       ],
       sliderSettings: [
-        {
-          ...runSliderSettingsCheck(text, file.name),
-          mode
-        }
+        runSliderSettingsCheck(text, file.name)
       ],
       earlyNote: [
-        {
-          ...runEarlyNoteCheck(text, file.name),
-          mode
-        }
+        runEarlyNoteCheck(text, file.name)
       ],
       artist: [
-        {
-          ...runArtistCheck(text, file.name),
-          mode
-        }
+        runArtistCheck(text, file.name)
       ],
       title: [
-        {
-          ...runTitleCheck(text, file.name),
-          mode
-        }
+        runTitleCheck(text, file.name)
       ],
       source: [
-        {
-          ...runSourceCheck(text, file.name),
-          mode
-        }
+        runSourceCheck(text, file.name)
       ],
       tag: [
-        {
-          ...runTagCheck(text, file.name),
-          mode
-        }
+        runTagCheck(text, file.name)
       ],
       previewPoint: [
-        {
-          ...runPreviewPointCheck(text, file.name, {
-            audioFileName: parseOffsetAudioFilename(text)
-          }),
-          mode
-        }
+        runPreviewPointCheck(text, file.name, {
+          audioFileName: parseOffsetAudioFilename(text)
+        })
       ],
       bgOffset: [
-        {
-          ...runBgOffsetCheck(text, file.name),
-          mode
-        }
+        runBgOffsetCheck(text, file.name)
       ],
       epilepsyWarning: [
-        {
-          ...runEpilepsyWarningCheck(text, file.name),
-          mode
-        }
+        runEpilepsyWarningCheck(text, file.name)
       ],
       spread: [
         {
           ...runSpreadCheck(text, file.name),
-          audioDurationMs: 0,
-          mode
+          audioDurationMs: 0
         }
       ],
       contentPermission: [
-        {
-          ...runContentPermissionCheck(text, file.name),
-          mode
-        }
+        runContentPermissionCheck(text, file.name)
       ],
     };
   }

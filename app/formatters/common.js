@@ -51,80 +51,18 @@ function getRegisteredDifficultyName(fileName) {
   return registry.get(fileName) || null;
 }
 
-/** 表示整形関数 */
-/** modeのグループ関数 */
-function hasMultipleModes(results) {
-  const modes = new Set(results.map(result => result.mode ?? 0));
-  return modes.size >= 2;
-}
-
-function groupByMode(results) {
-  const groups = new Map();
-
-  for (const result of results) {
-    const mode = result.mode ?? 0;
-
-    if (!groups.has(mode)) {
-      groups.set(mode, []);
-    }
-
-    groups.get(mode).push(result);
-  }
-
-  return groups;
-}
-
-function getModeName(mode) {
-  switch (mode) {
-    case 0: return "Standard";
-    case 1: return "Taiko";
-    case 2: return "Catch";
-    case 3: return "Mania";
-    default: return `Mode ${mode}`;
-  }
-}
-
-function formatByModeIfHybrid(results, formatter, t) {
-  if (!hasMultipleModes(results)) {
-    return sortResultsForDisplay(results)
-      .map(result => formatter(result, t))
-      .join("\n\n");
-  }
-
-  const lines = [];
-
-  for (const [mode, group] of groupByMode(results)) {
-    lines.push(`<span class="mode-name">[${getModeName(mode)}]</span>`);
-    lines.push("");
-
-    lines.push(
-      sortResultsForDisplay(group)
-        .map(result => formatter(result, t))
-        .join("\n\n")
-    );
-
-    lines.push("");
-    lines.push("==============================");
-    lines.push("");
-  }
-
-  return lines.join("\n").trimEnd();
+/** Taiko結果の表示整形関数 */
+function formatSortedResults(results, formatter, t) {
+  return sortResultsForDisplay(results)
+    .map(result => formatter(result, t))
+    .join("\n\n");
 }
 
 /** Taiko用ソート関数 */
 function sortResultsForDisplay(results) {
-  return [...results].sort((a, b) => {
-    const modeA = a.mode ?? 0;
-    const modeB = b.mode ?? 0;
-
-    // modeが違う場合は既存順を維持
-    if (modeA !== modeB) return 0;
-
-    // Taiko以外は既存順を維持
-    if (modeA !== 1) return 0;
-
-    return getTaikoDifficultySortKey(a) - getTaikoDifficultySortKey(b);
-  });
+  return [...results].sort(
+    (a, b) => getTaikoDifficultySortKey(a) - getTaikoDifficultySortKey(b)
+  );
 }
 
 function getTaikoDifficultySortKey(fileNameOrResult) {

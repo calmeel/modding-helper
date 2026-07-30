@@ -23,8 +23,7 @@ async function readBnOszFile(file) {
       id: `diff-${i}`,
       fileName: entry.name,
       diffName: getDifficultyNameText(entry.name),
-      text,
-      mode: parseMode(text)
+      text
     });
   }
 

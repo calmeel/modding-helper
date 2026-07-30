@@ -1307,11 +1307,6 @@ pre {
   font-weight: 500;
 }
 
-.mode-name {
-  color: #ff6b6b;
-  font-weight: 500;
-}
-
 code {
   background: #1f2a38;        /* 濃い青系 */
   color: #7fd1ff;             /* 薄い青（重要） */

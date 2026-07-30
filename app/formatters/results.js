@@ -3,45 +3,20 @@ function formatMultipleResults(results, t, showClap, showWhistle) {
     return t("noOsuFiles");
   }
 
-  // Hybrid setではない場合：今まで通り、サマリー表を表示
-  if (!hasMultipleModes(results)) {
-    const sortedResults = sortResultsForDisplay(results);
-    const lines = [];
-
-    lines.push(formatClapWhistleSummaryTable(sortedResults, t));
-    lines.push("");
-    lines.push(formatSeparator());
-
-    lines.push(
-      sortedResults
-        .map(result => formatResult(result, t, showClap, showWhistle))
-        .join("\n\n")
-    );
-
-    return lines.join("\n");
-  }
-
-  // Hybrid setの場合だけ：modeごとに分ける
+  const sortedResults = sortResultsForDisplay(results);
   const lines = [];
 
-  for (const [mode, group] of groupByMode(results)) {
-    const sortedGroup = sortResultsForDisplay(group);
+  lines.push(formatClapWhistleSummaryTable(sortedResults, t));
+  lines.push("");
+  lines.push(formatSeparator());
 
-    lines.push(`<span class="mode-name">[${getModeName(mode)}]</span>`);
-    lines.push("");
+  lines.push(
+    sortedResults
+      .map(result => formatResult(result, t, showClap, showWhistle))
+      .join("\n\n")
+  );
 
-    lines.push(formatClapWhistleSummaryTable(sortedGroup, t));
-    lines.push("");
-    lines.push(formatSeparator());
-
-    lines.push(
-      sortedGroup
-        .map(result => formatResult(result, t, showClap, showWhistle))
-        .join("\n\n")
-    );
-  }
-
-  return lines.join("\n").trimEnd();
+  return lines.join("\n");
 }
 
 function formatClapWhistleSummaryTable(results, t) {
@@ -128,7 +103,7 @@ function formatMultipleShiftResults(results, t) {
     return t("noOsuFiles");
   }
 
-  return formatByModeIfHybrid(results, formatShiftResult, t);
+  return formatSortedResults(results, formatShiftResult, t);
 }
 
 function formatShiftResult(result, t) {
@@ -223,7 +198,7 @@ function formatMultipleDoubleSvResults(results, t) {
     return t("noOsuFiles");
   }
 
-  return formatByModeIfHybrid(results, formatDoubleSvResult, t);
+  return formatSortedResults(results, formatDoubleSvResult, t);
 }
 
 function formatDoubleSvResult(result, t) {
@@ -286,22 +261,7 @@ function formatMultipleBarlineResults(results, t) {
     return t("noOsuFiles");
   }
 
-  if (!hasMultipleModes(results)) {
-    return formatBarlineResultGroup(sortResultsForDisplay(results), t);
-  }
-
-  const lines = [];
-
-  for (const [mode, group] of groupByMode(results)) {
-    lines.push(`<span class="mode-name">[${getModeName(mode)}]</span>`);
-    lines.push("");
-    lines.push(formatBarlineResultGroup(sortResultsForDisplay(group), t));
-    lines.push("");
-    lines.push("==============================");
-    lines.push("");
-  }
-
-  return lines.join("\n").trimEnd();
+  return formatBarlineResultGroup(sortResultsForDisplay(results), t);
 }
 
 function formatBarlineResultGroup(results, t) {
@@ -705,7 +665,7 @@ function formatMultipleKiaiSnapResults(results, t) {
     return t("noOsuFiles");
   }
 
-  return formatByModeIfHybrid(results, formatKiaiSnapResult, t);
+  return formatSortedResults(results, formatKiaiSnapResult, t);
 }
 
 function formatKiaiSnapResult(result, t) {
@@ -793,7 +753,7 @@ function formatMultipleSvVolumeResults(results, t) {
     return t("noOsuFiles");
   }
 
-  return formatByModeIfHybrid(results, formatSvVolumeResult, t);
+  return formatSortedResults(results, formatSvVolumeResult, t);
 }
 
 function formatSvVolumeResult(result, t) {
@@ -979,7 +939,7 @@ function formatMultipleRedGreenMatchResults(results, t) {
     return t("noOsuFiles");
   }
 
-  return formatByModeIfHybrid(results, formatRedGreenMatchResult, t);
+  return formatSortedResults(results, formatRedGreenMatchResult, t);
 }
 
 function formatRedGreenMatchResult(result, t) {
@@ -1026,7 +986,7 @@ function formatMultipleSampleSetResults(results, t) {
     return t("noOsuFiles");
   }
 
-  return formatByModeIfHybrid(results, formatSampleSetResult, t);
+  return formatSortedResults(results, formatSampleSetResult, t);
 }
 
 function formatSampleSetResult(result, t) {

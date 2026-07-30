@@ -413,13 +413,3 @@ function parseMode(text) {
 
   return 0; // default = Standard
 }
-
-function getModeName(mode) {
-  switch (mode) {
-    case 0: return "Standard";
-    case 1: return "Taiko";
-    case 2: return "Catch";
-    case 3: return "Mania";
-    default: return `Mode ${mode}`;
-  }
-}

@@ -22,7 +22,6 @@ function runVolumeCompareCheck(sources, options = {}) {
 
   const parsed = sources.map(source => ({
     fileName: source.fileName,
-    mode: source.mode,
     timingPoints: parseTimingPointsDetailed(source.text),
     endTime: getLastHitObjectEndTime(source.text),
     audioDurationMs: normalizeVolumeCompareAudioDurationMs(source.audioDurationMs),
@@ -48,7 +47,6 @@ function runVolumeCompareCheck(sources, options = {}) {
 
       return {
         fileName: item.fileName,
-        mode: item.mode,
         volume: current ? current.volume : null
       };
     });
@@ -85,7 +83,6 @@ function runVolumeCompareCheck(sources, options = {}) {
     intervals,
     series: parsed.map(item => ({
       fileName: item.fileName,
-      mode: item.mode,
       endTime: item.endTime,
       displayEndTime,
       audioDurationMs: item.audioDurationMs,
