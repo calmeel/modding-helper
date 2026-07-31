@@ -731,8 +731,8 @@
         font-variant-numeric: tabular-nums; color: #9fb0c0;
         min-width: 46px; text-align: right; flex-shrink: 0;
       }
-      .etb-sb-progress { flex: 1 1 auto; min-width: 80px; height: 18px; cursor: pointer; display: block; }
-      .etb-sb-progress canvas { display: block; width: 100%; height: 18px; }
+      .etb-sb-progress { flex: 1 1 auto; min-width: 80px; height: 27px; cursor: pointer; display: block; }
+      .etb-sb-progress canvas { display: block; width: 100%; height: 27px; }
       .etb-sb-controls { display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0; }
       .etb-sb-controls button {
         height: 22px; min-width: 26px; padding: 0 7px; line-height: 1; font-size: 11px;

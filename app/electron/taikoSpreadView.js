@@ -427,12 +427,15 @@ function resolveTaikoBreakRegions(notes, breaks) {
   return out;
 }
 
-// 下部の進捗バー（音源長を 100% とした帯）。kiai=オレンジ背景 / SV=緑 / BPM=赤 /
-// プレビューポイント=黄 / Bookmark=青、再生位置を白線で表示。
+// 下部の進捗バー（音源長を 100% とした3段の帯）。
+//   上段: BPM(赤)
+//   中段: BPM(赤) + SV(緑、赤より前面)
+//   下段: Bookmark(青) + プレビューポイント(黄)
+// 中段と下段の境界を白い時間軸とし、その周囲に kiai のオレンジ帯を表示する。
 function drawTaikoProgressBar(canvas, marks, durationMs, curMs) {
   const wrap = canvas.parentElement || canvas;
   const cssW = Math.max(40, canvas.clientWidth || wrap.clientWidth || 300);
-  const cssH = Math.max(8, canvas.clientHeight || 18);
+  const cssH = Math.max(12, canvas.clientHeight || 27);
   const dpr = window.devicePixelRatio || 1;
   if (canvas.width  !== Math.round(cssW * dpr)) canvas.width  = Math.round(cssW * dpr);
   if (canvas.height !== Math.round(cssH * dpr)) canvas.height = Math.round(cssH * dpr);
@@ -445,39 +448,50 @@ function drawTaikoProgressBar(canvas, marks, durationMs, curMs) {
 
   const dur = durationMs > 0 ? durationMs : 0;
   const xOf = (t) => (dur > 0 ? Math.max(0, Math.min(cssW, (t / dur) * cssW)) : 0);
-  const midY = Math.round(cssH / 2) + 0.5;          // 中央の軸線
-  const kiaiHalf = Math.max(2, Math.round(cssH * 0.2)); // kiai 帯の上下の厚み
-  // 上半分/下半分に伸びる目盛り線
-  const vseg = (t, color, w, up) => {
+  const upperY = Math.round(cssH / 3) + 0.5;       // 上段と中段の境界
+  const axisY = Math.round(cssH * 2 / 3) + 0.5;    // 中段と下段の境界（時間軸）
+  const kiaiHalf = Math.max(2, Math.round(cssH / 6)); // kiai 帯の上下の厚み
+  const vseg = (t, color, w, y0, y1) => {
     ctx.strokeStyle = color; ctx.lineWidth = w || 1;
     const x = Math.round(xOf(t)) + 0.5;
     ctx.beginPath();
-    if (up) { ctx.moveTo(x, 1); ctx.lineTo(x, midY); }
-    else    { ctx.moveTo(x, midY); ctx.lineTo(x, cssH - 1); }
+    ctx.moveTo(x, y0); ctx.lineTo(x, y1);
     ctx.stroke();
   };
 
-  // kiai: 中央線の上下だけをオレンジで塗る（全高は塗らない）
+  // kiai: 中段と下段の境界線の周囲だけをオレンジで塗る（全高は塗らない）
   if (dur > 0 && marks && marks.kiai) {
     ctx.fillStyle = "rgba(245,150,40,0.55)";
     for (const k of marks.kiai) {
       const s = xOf(k.start);
       const e = xOf(k.end == null ? dur : k.end);
-      if (e > s) ctx.fillRect(s, midY - kiaiHalf, Math.max(1, e - s), kiaiHalf * 2);
+      if (e > s) ctx.fillRect(s, axisY - kiaiHalf, Math.max(1, e - s), kiaiHalf * 2);
     }
   }
 
-  // 中央の白い細線（時間軸）
+  // 上段と中段の境界線
+  ctx.strokeStyle = "rgba(255,255,255,0.14)"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, upperY); ctx.lineTo(cssW, upperY); ctx.stroke();
+
+  // 中段と下段の間の白い細線（時間軸）
   ctx.strokeStyle = "rgba(255,255,255,0.75)"; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(0, midY); ctx.lineTo(cssW, midY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, axisY); ctx.lineTo(cssW, axisY); ctx.stroke();
 
   if (dur > 0 && marks) {
-    // 白線より上: SV(緑) / BPM(赤)
-    if (marks.sv)  for (const t of marks.sv)  vseg(t, "rgba(80,220,120,0.95)", 1, true);
-    if (marks.bpm) for (const t of marks.bpm) vseg(t, "rgba(240,70,70,1)",     1, true);
-    // 白線より下: Bookmark(青) / プレビューポイント(黄)
-    if (marks.bookmarks) for (const t of marks.bookmarks) vseg(t, "rgba(80,150,255,1)", 1, false);
-    if (marks.preview != null) vseg(marks.preview, "rgba(250,220,60,1)", 2, false);
+    // BPM(赤)は上段から中段まで。SV(緑)を後から中段に描き、重なり時は前面にする。
+    if (marks.bpm) for (const t of marks.bpm) {
+      vseg(t, "rgba(240,70,70,1)", 1, 1, axisY);
+    }
+    if (marks.sv) for (const t of marks.sv) {
+      vseg(t, "rgba(80,220,120,0.95)", 1, upperY, axisY);
+    }
+    // 下段: Bookmark(青) / プレビューポイント(黄)
+    if (marks.bookmarks) for (const t of marks.bookmarks) {
+      vseg(t, "rgba(80,150,255,1)", 1, axisY, cssH - 1);
+    }
+    if (marks.preview != null) {
+      vseg(marks.preview, "rgba(250,220,60,1)", 2, axisY, cssH - 1);
+    }
   }
 
   ctx.strokeStyle = "#2a2a33"; ctx.lineWidth = 1;
