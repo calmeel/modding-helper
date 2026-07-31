@@ -531,6 +531,129 @@ function drawTaikoGrid(ctx, red, currentTime, judgmentX, pxPerMs, x0, x1, y0, y1
   }
 }
 
+let taikoKiaiGlowImage = null;
+let taikoKiaiGlowLoadStarted = false;
+
+function getTaikoKiaiGlowImage() {
+  if (
+    !taikoKiaiGlowLoadStarted &&
+    typeof Image !== "undefined" &&
+    typeof document !== "undefined"
+  ) {
+    taikoKiaiGlowLoadStarted = true;
+    taikoKiaiGlowImage = new Image();
+    taikoKiaiGlowImage.decoding = "async";
+    taikoKiaiGlowImage.onerror = () => {
+      taikoKiaiGlowImage = null;
+    };
+    taikoKiaiGlowImage.src = new URL(
+      "images/taiko-glow.png",
+      document.baseURI
+    ).href;
+  }
+
+  return (
+    taikoKiaiGlowImage &&
+    taikoKiaiGlowImage.complete &&
+    taikoKiaiGlowImage.naturalWidth > 0
+  )
+    ? taikoKiaiGlowImage
+    : null;
+}
+
+function isTaikoKiaiAt(marks, time) {
+  if (!marks?.kiai?.length || !Number.isFinite(time)) return false;
+  return marks.kiai.some(interval =>
+    time >= interval.start &&
+    (interval.end == null || time < interval.end)
+  );
+}
+
+function drawTaikoKiaiBands(
+  ctx,
+  diffs,
+  currentTime,
+  judgmentX,
+  pxPerMs,
+  playX0,
+  playX1,
+  topPad,
+  laneH
+) {
+  ctx.fillStyle = "rgba(245, 154, 48, 0.13)";
+
+  for (let i = 0; i < diffs.length; i++) {
+    const intervals = diffs[i].marks?.kiai ?? [];
+    const y = topPad + i * laneH;
+
+    for (const interval of intervals) {
+      const rawStart = judgmentX + (interval.start - currentTime) * pxPerMs;
+      const rawEnd = interval.end == null
+        ? playX1
+        : judgmentX + (interval.end - currentTime) * pxPerMs;
+      const start = Math.max(playX0, rawStart);
+      const end = Math.min(playX1, rawEnd);
+
+      if (end > start) {
+        ctx.fillRect(start, y, end - start, laneH);
+      }
+    }
+  }
+}
+
+function drawTaikoKiaiGlow(
+  ctx,
+  judgmentX,
+  yMid,
+  yTop,
+  laneH,
+  bigRadius,
+  playX0,
+  playX1
+) {
+  const size = Math.min(
+    laneH * 1.3,
+    Math.max(laneH, bigRadius * 3.35)
+  );
+  const image = getTaikoKiaiGlowImage();
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(playX0, yTop, playX1 - playX0, laneH);
+  ctx.clip();
+
+  if (image) {
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = 0.56;
+    ctx.drawImage(
+      image,
+      judgmentX - size / 2,
+      yMid - size / 2,
+      size,
+      size
+    );
+  } else {
+    const radius = Math.max(bigRadius * 1.35, laneH * 0.42);
+    const gradient = ctx.createRadialGradient(
+      judgmentX,
+      yMid,
+      bigRadius * 0.45,
+      judgmentX,
+      yMid,
+      radius
+    );
+    gradient.addColorStop(0, "rgba(255, 210, 45, 0.52)");
+    gradient.addColorStop(0.55, "rgba(255, 145, 25, 0.24)");
+    gradient.addColorStop(1, "rgba(255, 100, 10, 0)");
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(judgmentX, yMid, radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
 // diffs: [{name, notes, red}], currentTime: ms(or null)
 // opts: {pxPerMs, snap, emptyText, idleText}
 function drawTaikoSpread(canvas, diffs, currentTime, opts) {
@@ -563,6 +686,7 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
   const soundLane = Number.isFinite(opts.soundLane) ? opts.soundLane : -1; // 効果音を鳴らすレーン
   const isSelected = typeof opts.isSelected === "function" ? opts.isSelected : null; // 選択中判定
   const showNcCymbal = !!opts.showNcCymbal;   // NCシンバル位置(major小節線)の強調
+  const highlightKiai = opts.highlightKiai !== false; // Kiai背景・判定枠の炎
   const hits = [];                            // クリック判定用に描いたノーツの位置を溜める
   const svMode  = !!opts.svMode;              // true = ゲーム画面表示（SV/BPM適用）
   /* osu!px → 画面px の換算。判定点→右端の到達時間が実機と一致するように、
@@ -604,6 +728,21 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
   for (let i = 0; i < n; i++) {
     ctx.fillStyle = i % 2 === 0 ? "#202028" : "#1b1b22";
     ctx.fillRect(playX0, topPad + i * laneH, playX1 - playX0, laneH);
+  }
+
+  /* 等速表示では、各DiffのKiai区間を時間位置に沿った薄い背景色で示す。 */
+  if (playable && !svMode && highlightKiai) {
+    drawTaikoKiaiBands(
+      ctx,
+      diffs,
+      currentTime,
+      judgmentX,
+      pxPerMs,
+      playX0,
+      playX1,
+      topPad,
+      laneH
+    );
   }
 
   // グリッド + ノーツ（プレイフィールドにクリップ）
@@ -673,7 +812,8 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
     for (let i = 0; i < n; i++) {
       const diff = diffs[i];
       const notes = diff.notes;
-      const yMid = topPad + i * laneH + laneH / 2;
+      const yTop = topPad + i * laneH;
+      const yMid = yTop + laneH / 2;
       // 連打(尾)の最長長さをキャッシュ。過去側 break の安全マージンに使う
       // （head が画面外でも尾が見えている連打を消さないため）。
       if (diff._maxRollMs == null) {
@@ -686,7 +826,6 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
       }
       /* ゲーム画面表示: 小節線（ノーツと同じSV速度で流れる） */
       if (svMode && diff.barlines && diff.barlines.length) {
-        const yTop = topPad + i * laneH;
         for (let b = 0; b < diff.barlines.length; b++) {
           const bar = diff.barlines[b];
           const bv = (bar.vel != null && Number.isFinite(bar.vel) && bar.vel > 0) ? bar.vel : 0.3;
@@ -702,6 +841,18 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
       }
       /* ゲーム画面表示: 判定枠（受け口）。ノーツより先に描いて背面にする */
       if (svMode) {
+        if (highlightKiai && isTaikoKiaiAt(diff.marks, currentTime)) {
+          drawTaikoKiaiGlow(
+            ctx,
+            judgmentX,
+            yMid,
+            yTop,
+            laneH,
+            bigR,
+            playX0,
+            playX1
+          );
+        }
         ctx.beginPath();
         ctx.arc(judgmentX, yMid, bigR, 0, Math.PI * 2);
         ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.lineWidth = 2; ctx.stroke();

@@ -317,9 +317,6 @@
             '<label class="etb-spread-sfx"><input type="checkbox" id="etb-spread-sfx-cb"> ' +
             '<span id="etb-spread-sfx-text" data-i18n="electronHitSounds">' +
               electronText('electronHitSounds') + '</span></label>' +
-            '<label class="etb-spread-sfx"><input type="checkbox" id="etb-spread-nc-cb"> ' +
-            '<span id="etb-spread-nc-text" data-i18n="electronHighlightNcBarlines">' +
-              electronText('electronHighlightNcBarlines') + '</span></label>' +
             /* 右: ビートスナップ(スクロールで変更) + 再生速度 */
             '<span class="etb-spread-right">' +
             '<span class="etb-spread-snap2" id="etb-spread-snap2" data-i18n-title="electronSnapControlHint" title="' +
@@ -361,6 +358,7 @@
             '<button type="button" data-rate="0.5">50%</button>' +
             '<button type="button" data-rate="0.75">75%</button>' +
             '<button type="button" data-rate="1">100%</button>' +
+            '<button type="button" data-rate="1.5">150%</button>' +
             '</span>';
           spPanel.appendChild(spBottom);
 
@@ -371,7 +369,7 @@
           var spSnap = 4;
           try { var sn = parseInt(localStorage.getItem('moddingHelperPreviewSnap'), 10); if (SP_SNAP_DIVS.indexOf(sn) >= 0) spSnap = sn; } catch (e) {}
           var spPlaybackRate = 1;
-          try { var pr = parseFloat(localStorage.getItem('moddingHelperPreviewRate')); if (pr === 0.25 || pr === 0.5 || pr === 0.75 || pr === 1) spPlaybackRate = pr; } catch (e) {}
+          try { var pr = parseFloat(localStorage.getItem('moddingHelperPreviewRate')); if (pr === 0.25 || pr === 0.5 || pr === 0.75 || pr === 1 || pr === 1.5) spPlaybackRate = pr; } catch (e) {}
           /* Test: ゲーム画面表示（SV/BPM/SliderMultiplier を反映した実機同等のスクロール） */
           var spSvMode = false;
           /* 判定ラインの位置（プレイフィールド幅に対する割合）。
@@ -445,7 +443,7 @@
           });
           updateSnapUi();
 
-          /* 再生速度（25/50/75/100%）: osu!エディタ風。自前の音楽再生に適用 */
+          /* 再生速度（25/50/75/100/150%）: osu!エディタ風。自前の音楽再生に適用 */
           var updateSpeedActive = function () {
             var wrap = document.getElementById('etb-spread-speed');
             if (!wrap) return;
@@ -484,9 +482,13 @@
 
           /* 効果音（ドン/カツ）: ON のとき、選択レーンのノーツを再生に合わせて鳴らす */
           var spHitSounds = false;   // 効果音 ON/OFF
-          /* NCシンバルが鳴る小節線（major）を強調表示するか */
-          var spShowNc = false;
-          try { if (localStorage.getItem('moddingHelperPreviewNcCymbal') === '1') spShowNc = true; } catch (e) {}
+          /* Kiai強調とNCシンバル小節線は既定ON。明示的にOFF保存された時だけ無効。 */
+          var spHighlightKiai = true;
+          var spShowNc = true;
+          try {
+            if (localStorage.getItem('moddingHelperPreviewKiaiHighlight') === '0') spHighlightKiai = false;
+            if (localStorage.getItem('moddingHelperPreviewNcCymbal') === '0') spShowNc = false;
+          } catch (e) {}
           var spSynth = null;        // Web Audio シンセ/サンプルキット
           var spSoundLane = 0;       // 効果音を鳴らすレーン（0=最上=最難）。クリックで変更
 
@@ -705,6 +707,65 @@
             };
             window.__spreadRebuildDiffList = rebuildDiffVisibilityList;
 
+            /* その他の設定: Kiai表示とNCシンバル小節線の強調 */
+            var otherSection = document.createElement('div');
+            otherSection.className = 'etb-sfx-settings';
+            var otherTitle = document.createElement('div');
+            otherTitle.className = 'etb-sfx-settings-title';
+            otherTitle.id = 'etb-preview-other-title';
+            otherTitle.textContent = electronText('electronOtherSettings');
+            otherSection.appendChild(otherTitle);
+            [
+              {
+                id: 'etb-preview-kiai-cb',
+                textId: 'etb-preview-kiai-text',
+                key: 'electronHighlightKiai',
+                checked: spHighlightKiai,
+                change: function(checked) {
+                  spHighlightKiai = checked;
+                  try {
+                    localStorage.setItem(
+                      'moddingHelperPreviewKiaiHighlight',
+                      checked ? '1' : '0'
+                    );
+                  } catch (e) {}
+                }
+              },
+              {
+                id: 'etb-preview-nc-cb',
+                textId: 'etb-preview-nc-text',
+                key: 'electronHighlightNcBarlines',
+                checked: spShowNc,
+                change: function(checked) {
+                  spShowNc = checked;
+                  try {
+                    localStorage.setItem(
+                      'moddingHelperPreviewNcCymbal',
+                      checked ? '1' : '0'
+                    );
+                  } catch (e) {}
+                }
+              }
+            ].forEach(function(opt) {
+              var lb = document.createElement('label');
+              lb.className = 'etb-sfx-opt';
+              var cb = document.createElement('input');
+              cb.type = 'checkbox';
+              cb.id = opt.id;
+              cb.checked = opt.checked;
+              cb.addEventListener('change', function() {
+                opt.change(cb.checked);
+              });
+              var txt = document.createElement('span');
+              txt.id = opt.textId;
+              txt.textContent = electronText(opt.key);
+              lb.appendChild(cb);
+              lb.appendChild(document.createTextNode(' '));
+              lb.appendChild(txt);
+              otherSection.appendChild(lb);
+            });
+            previewSettingsBody.appendChild(otherSection);
+
             var sfxSection = document.createElement('div');
             sfxSection.className = 'etb-sfx-settings';
             var sfxTitle = document.createElement('div');
@@ -825,16 +886,6 @@
             sfxSection.appendChild(offRow);
 
             previewSettingsBody.appendChild(sfxSection);
-          }
-
-          /* NCシンバル位置（major な小節線）の強調表示。保存して次回も維持 */
-          var spNcCb = spBar.querySelector('#etb-spread-nc-cb');
-          if (spNcCb) {
-            spNcCb.checked = spShowNc;
-            spNcCb.addEventListener('change', function () {
-              spShowNc = spNcCb.checked;
-              try { localStorage.setItem('moddingHelperPreviewNcCymbal', spShowNc ? '1' : '0'); } catch (e) {}
-            });
           }
 
           var spSfxCb = spBar.querySelector('#etb-spread-sfx-cb');
@@ -1611,6 +1662,7 @@
               svMode: spSvMode, /* SVスケールは実機速度に一致するよう描画側で自動計算 */
               soundLane: spHitSounds ? Math.min(spSoundLane, diffs.length - 1) : -1,
               judgeFrac: spJudgeFrac,
+              highlightKiai: spHighlightKiai,
               showNcCymbal: spShowNc,
               isSelected: spSelNotes.length ? spIsSelected : null,
               marquee: spMarquee,
@@ -2254,7 +2306,9 @@
           set('toggleTabSettings',       'electronSettings');
           set('etb-spread-snap-text',    'electronBeatSnapDivisor');
           set('etb-spread-sfx-text',     'electronHitSounds');
-          set('etb-spread-nc-text',      'electronHighlightNcBarlines');
+          set('etb-preview-other-title', 'electronOtherSettings');
+          set('etb-preview-kiai-text',   'electronHighlightKiai');
+          set('etb-preview-nc-text',     'electronHighlightNcBarlines');
           set('etb-sfx-settings-title',  'electronHitSoundSet');
           set('etb-sfx-vol-label',       'electronHitSoundVolume');
           set('etb-music-vol-label',     'electronMusicVolume');
