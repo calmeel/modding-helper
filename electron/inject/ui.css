@@ -753,7 +753,7 @@
       }
       .etb-spread-snap2 {
         display: inline-flex; align-items: center; gap: 6px;
-        cursor: ns-resize; user-select: none;
+        user-select: none;
         background: #2a2a33; border: 1px solid #3a3a45; border-radius: 4px;
         padding: 2px 8px;
       }

@@ -317,7 +317,7 @@
             '<label class="etb-spread-sfx"><input type="checkbox" id="etb-spread-sfx-cb"> ' +
             '<span id="etb-spread-sfx-text" data-i18n="electronHitSounds">' +
               electronText('electronHitSounds') + '</span></label>' +
-            /* 右: 小節/拍 + ビートスナップ(スクロールで変更) */
+            /* 右: 小節/拍 + ビートスナップ(ドラッグ/マウスホイールで変更) */
             '<span class="etb-spread-right">' +
             '<span class="etb-spread-meter" id="etb-spread-meter" data-i18n-title="electronMeasureBeat" title="' +
               electronText('electronMeasureBeat') + '">--:--</span>' +
@@ -467,7 +467,7 @@
               ? electronText('electronRealSpeed')
               : (Math.round(spZoomRatio * 100) + '%');
           };
-          /* ビートスナップ: スライダー / スクロールで変更（osu!エディタ風）。表示と同期 */
+          /* ビートスナップ: ドラッグ / マウスホイールで変更（osu!エディタ風）。表示と同期 */
           var spSnapSlider = spBar.querySelector('#etb-spread-snap-slider');
           if (spSnapSlider) spSnapSlider.max = String(SP_SNAP_DIVS.length - 1);
           var updateSnapUi = function () {
