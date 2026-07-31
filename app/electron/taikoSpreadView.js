@@ -1275,6 +1275,18 @@ function createTaikoHitSynth(extCtx) {
   const master = ctx.createGain();       // 音量マスター
   master.gain.value = 1;
   master.connect(ctx.destination);
+  const activeSources = new Set();
+  const trackSource = (source) => {
+    activeSources.add(source);
+    source.onended = () => activeSources.delete(source);
+    return source;
+  };
+  const stopAll = () => {
+    for (const source of activeSources) {
+      try { source.stop(); } catch (_) {}
+    }
+    activeSources.clear();
+  };
   let noiseBuf = null;
   const getNoise = () => {
     if (noiseBuf) return noiseBuf;
@@ -1293,7 +1305,7 @@ function createTaikoHitSynth(extCtx) {
     const v = big ? 0.95 : 0.6;
     g.gain.setValueAtTime(v, t);
     g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-    const o = ctx.createOscillator();
+    const o = trackSource(ctx.createOscillator());
     o.type = "sine";
     o.frequency.setValueAtTime(190, t);
     o.frequency.exponentialRampToValueAtTime(80, t + 0.11);
@@ -1304,7 +1316,7 @@ function createTaikoHitSynth(extCtx) {
   const kat = (big, when) => {
     const t = at(when);
     const dur = 0.07;
-    const src = ctx.createBufferSource();
+    const src = trackSource(ctx.createBufferSource());
     src.buffer = getNoise();
     const bp = ctx.createBiquadFilter();
     bp.type = "bandpass"; bp.frequency.value = 1400; bp.Q.value = 0.7;
@@ -1317,7 +1329,7 @@ function createTaikoHitSynth(extCtx) {
   };
   const resume = () => { if (ctx.state === "suspended") ctx.resume(); };
   const setVolume = (v) => { master.gain.value = Math.max(0, Math.min(1, v)); };
-  return { don, kat, resume, setVolume, ctx };
+  return { don, kat, resume, setVolume, stopAll, ctx };
 }
 
 // 自前の音源ファイル（base64データURLのマップ）から効果音キットを作る。
@@ -1330,6 +1342,13 @@ function createTaikoSampleKit(soundMap, extCtx) {
   const master = ctx.createGain();       // 音量マスター
   master.gain.value = 1;
   master.connect(ctx.destination);
+  const activeSources = new Set();
+  const stopAll = () => {
+    for (const source of activeSources) {
+      try { source.stop(); } catch (_) {}
+    }
+    activeSources.clear();
+  };
   const buffers = { don: null, kat: null, donBig: null, katBig: null };
   Object.keys(buffers).forEach((k) => {
     if (!soundMap[k]) return;
@@ -1342,6 +1361,8 @@ function createTaikoSampleKit(soundMap, extCtx) {
   const play = (buf, vol, when) => {
     if (!buf) return;
     const src = ctx.createBufferSource();
+    activeSources.add(src);
+    src.onended = () => activeSources.delete(src);
     src.buffer = buf;
     const g = ctx.createGain();
     g.gain.value = vol;
@@ -1353,6 +1374,7 @@ function createTaikoSampleKit(soundMap, extCtx) {
     kat: (big, when) => play(big && buffers.katBig ? buffers.katBig : buffers.kat, big ? 1.0 : 0.85, when),
     resume: () => { if (ctx.state === "suspended") ctx.resume(); },
     setVolume: (v) => { master.gain.value = Math.max(0, Math.min(1, v)); },
+    stopAll,
     ctx
   };
 }

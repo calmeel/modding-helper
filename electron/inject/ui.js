@@ -1080,6 +1080,9 @@
           var SP_WHEEL_MAX = 6;   // 加速時の最大目盛り/ノッチ
           var SP_WHEEL_GAP = 90;  // この間隔(ms)以内の連続回転で加速
           var spWheelLast = 0, spWheelAccel = 1;
+          /* ホイールシーク中は効果音を鳴らさない。最後の入力から少し待って再開する。 */
+          var SP_WHEEL_SFX_SILENCE_MS = 120;
+          var spSfxWheelSilentUntil = 0;
           var spreadSnapStep = function (red, t, snap, dir, steps) {
             steps = steps || 1; // 1ノッチで動くスナップ目盛り数
             if (!red || !red.length) return t + dir * steps * 100;
@@ -1251,6 +1254,12 @@
               return;
             }
             var wasPlaying = !!(spAudio && !spAudio.paused);
+            /* すでに先読み予約された音も止め、連続ホイール中の重なりを防ぐ。 */
+            spSfxWheelSilentUntil = performance.now() + SP_WHEEL_SFX_SILENCE_MS;
+            if (spSynth && spSynth.stopAll) spSynth.stopAll();
+            spSfxLastSong = null;
+            spSfxSchedTo = null;
+            spSfxPlayFrom = null;
             /* 連続で速く回すほど1ノッチの移動目盛りを増やす（単発はきっちり1目盛り） */
             var now = performance.now();
             if (now - spWheelLast < SP_WHEEL_GAP) spWheelAccel = Math.min(spWheelAccel + 1, SP_WHEEL_MAX);
@@ -1678,6 +1687,10 @@
           var spSfxLastSong = null;   // 前フレームの曲時刻（シーク検出用）
           var spSfxSchedTo = null;    // ここまでの曲時刻を予約済み
           var scheduleSpreadHitSounds = function (diffs, playing) {
+            /* ホイールシーク中は予約しない。終了後はその時点から新しく予約する。 */
+            if (performance.now() < spSfxWheelSilentUntil) {
+              spSfxLastSong = null; spSfxSchedTo = null; spSfxPlayFrom = null; return;
+            }
             if (!spHitSounds || !spSynth || !spSynth.ctx || !playing) {
               spSfxLastSong = null; spSfxSchedTo = null; spSfxPlayFrom = null; return;
             }
