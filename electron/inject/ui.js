@@ -1213,7 +1213,7 @@
               e.preventDefault();
               return;
             }
-            if (spAudio && !spAudio.paused) spAudio.pause(); // ホイールでシークしたら音楽は止める
+            var wasPlaying = !!(spAudio && !spAudio.paused);
             /* 連続で速く回すほど1ノッチの移動目盛りを増やす（単発はきっちり1目盛り） */
             var now = performance.now();
             if (now - spWheelLast < SP_WHEEL_GAP) spWheelAccel = Math.min(spWheelAccel + 1, SP_WHEEL_MAX);
@@ -1222,7 +1222,25 @@
             var base = getSpreadTime(); if (base == null) base = 0;
             var red = spreadRefRed(getSpreadDiffs());
             var dir = e.deltaY > 0 ? 1 : -1; // 下回し=進む
-            setSpreadManual(spreadSnapStep(red, base, spSnap, dir, spWheelAccel));
+            var target = spreadSnapStep(red, base, spSnap, dir, spWheelAccel);
+            if (wasPlaying && spAudioSrcRef) {
+              /* 再生中は音源も移動先へ合わせる。spAudio.currentTime の setter が
+                 再生ソースを新しい位置から作り直すため、一時停止状態にはならない。 */
+              var durMs = (spAudio.duration && isFinite(spAudio.duration))
+                ? spAudio.duration * 1000
+                : Infinity;
+              target = Math.max(0, Math.min(target, durMs - 1));
+              setSpreadManual(target);
+              try { spAudio.currentTime = target / 1000; } catch (_) {}
+              /* 効果音の先読み位置も破棄し、移動先のタイムラインから予約し直す。 */
+              spSfxLastSong = null;
+              spSfxSchedTo = null;
+              spSfxPlayFrom = null;
+              /* 将来別の音源実装へ差し替えて setter が再開しない場合にも再生を維持する。 */
+              if (spAudio.paused) spAudio.play().catch(function () {});
+            } else {
+              setSpreadManual(target);
+            }
             e.preventDefault();
           }, { passive: false });
 
