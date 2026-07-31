@@ -203,6 +203,28 @@ function parseTaikoRedTiming(text) {
   return red;
 }
 
+// 現在位置を、アクティブな赤線を起点とする「小節:拍」に変換する。
+// 例: meter=4 なら 0:0 → 0:1 → 0:2 → 0:3 → 1:0。
+function getTaikoMeasureBeat(red, time) {
+  if (!Array.isArray(red) || !red.length || !Number.isFinite(time)) return null;
+
+  let point = red[0];
+  for (let i = 1; i < red.length; i++) {
+    if (red[i].time > time) break;
+    point = red[i];
+  }
+  if (!Number.isFinite(point.time) || !(point.beatLength > 0)) return null;
+
+  const meter = Number.isFinite(point.meter) && point.meter > 0
+    ? Math.floor(point.meter)
+    : 4;
+  // 浮動小数点誤差で拍の境界直後が前の拍になるのを避ける。
+  const beatIndex = Math.floor((time - point.time) / point.beatLength + 1e-7);
+  const measure = Math.floor(beatIndex / meter);
+  const beat = beatIndex - measure * meter;
+  return { measure, beat, meter };
+}
+
 // osu!taiko の実機スクロール定数（800x600 換算）
 //   175 px/beat × SliderMultiplier（既定1.4 → 245 px/beat）
 //   受け口は左端から165px、プレイフィールド長 = 600×アスペクト比 − 165（16:9 で約901px）
@@ -1330,6 +1352,7 @@ if (typeof window !== "undefined") {
   window.taikoSwellRemainingHits = taikoSwellRemainingHits;
   window.resolveTaikoBreakRegions = resolveTaikoBreakRegions;
   window.parseTaikoRedTiming = parseTaikoRedTiming;
+  window.getTaikoMeasureBeat = getTaikoMeasureBeat;
   window.parseTaikoTimelineMarks = parseTaikoTimelineMarks;
   window.getTaikoDominantBpm = getTaikoDominantBpm;
   window.getTaikoEqualSpeedPxPerMs = getTaikoEqualSpeedPxPerMs;

@@ -743,8 +743,14 @@
       .etb-sb-controls button:hover { background: #34343f; color: #fff; }
       .etb-sb-controls button.active { background: #3a5bd0; border-color: #3a5bd0; color: #fff; }
 
-      /* 右寄せグループ: ビートスナップ(スクロール式) + 再生速度 */
+      /* 右寄せグループ: 小節/拍 + ビートスナップ(スクロール式) */
       .etb-spread-right { display: inline-flex; align-items: center; gap: 14px; margin-left: auto; }
+      .etb-spread-meter {
+        min-width: 42px; padding: 2px 8px;
+        background: #202029; border: 1px solid #3a3a45; border-radius: 4px;
+        color: #9fb0c0; font-weight: 600; text-align: center;
+        font-variant-numeric: tabular-nums; user-select: none;
+      }
       .etb-spread-snap2 {
         display: inline-flex; align-items: center; gap: 6px;
         cursor: ns-resize; user-select: none;

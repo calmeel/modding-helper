@@ -317,8 +317,10 @@
             '<label class="etb-spread-sfx"><input type="checkbox" id="etb-spread-sfx-cb"> ' +
             '<span id="etb-spread-sfx-text" data-i18n="electronHitSounds">' +
               electronText('electronHitSounds') + '</span></label>' +
-            /* 右: ビートスナップ(スクロールで変更) + 再生速度 */
+            /* 右: 小節/拍 + ビートスナップ(スクロールで変更) */
             '<span class="etb-spread-right">' +
+            '<span class="etb-spread-meter" id="etb-spread-meter" data-i18n-title="electronMeasureBeat" title="' +
+              electronText('electronMeasureBeat') + '">--:--</span>' +
             '<span class="etb-spread-snap2" id="etb-spread-snap2" data-i18n-title="electronSnapControlHint" title="' +
               electronText('electronSnapControlHint') + '">' +
             '<span id="etb-spread-snap-text" data-i18n="electronBeatSnapDivisor">' +
@@ -1059,6 +1061,20 @@
             }
             return null;
           };
+          /* 現在位置を、アクティブな赤線から数えた「小節:拍」で右上に表示する。 */
+          var updateSpreadMeterUi = function (diffs, curMs) {
+            var el = document.getElementById('etb-spread-meter');
+            if (!el) return;
+            var red = spreadRefRed(diffs || []);
+            var pos = window.getTaikoMeasureBeat
+              ? window.getTaikoMeasureBeat(red, curMs)
+              : null;
+            var value = pos ? (pos.measure + ':' + pos.beat) : '--:--';
+            if (el.textContent !== value) el.textContent = value;
+            var title = electronText('electronMeasureBeat');
+            if (pos) title += ' · ' + pos.meter + '/4';
+            if (el.title !== title) el.title = title;
+          };
           /* スナップ1目盛り分ステップ（ホイール用）。グリッドに吸着して dir 方向へ */
           /* ホイール加速: ゆっくり回すと1目盛り、速く連続で回すと段々多く進む */
           var SP_WHEEL_MAX = 6;   // 加速時の最大目盛り/ノッチ
@@ -1757,11 +1773,12 @@
               spreadManualTime = spAudio.currentTime * 1000;
             }
             var allDiffs = getSpreadDiffs();
+            var curTime = getSpreadTime();
             /* 100%の基準速度は、非表示設定に左右されない全Diffから決める。 */
             updateSpreadBaseSpeed(allDiffs);
+            updateSpreadMeterUi(allDiffs, curTime);
             /* 非表示Diffを除外（レーンは上に詰まる）。両処理・描画で同じ配列を使う */
             var diffs = allDiffs.filter(function (d) { return !spHiddenDiffs[d.fileName]; });
-            var curTime = getSpreadTime();
             /* 効果音（音楽再生中のみ、先読みスケジュール） */
             scheduleSpreadHitSounds(diffs, spreadAudioPlaying && !spAudio.paused);
             var isEn = false;
@@ -2429,6 +2446,7 @@
           set('etb-sfx-offset-label',    'electronHitSoundOffset');
           set('etb-sfx-none',            'electronNoSoundFolders');
 
+          setTitle('etb-spread-meter', 'electronMeasureBeat');
           setTitle('etb-spread-snap2', 'electronSnapControlHint');
           setTitle('etb-sb-time',      'electronCopyTimeHint');
           setTitle('etb-sb-progress',  'electronSeekHint');
