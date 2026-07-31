@@ -94,6 +94,24 @@ function taikoSwellRequiredHits(durationMs, overallDifficulty) {
   return Math.trunc(Math.max(1, (durationMs / 1000) * perSecond));
 }
 
+// プレビューで風船の必要打数を自動演奏する時刻。
+// 実際のゲームでは風船区間内なら打鍵時刻は自由なので、プレビューでは
+// 必要打数を区間全体へ等間隔に配置する。終端ちょうどは判定終了と重なるため含めない。
+function taikoSwellHitTimes(note) {
+  const start = note && Number.isFinite(note.time) ? note.time : 0;
+  const end = note && Number.isFinite(note.endTime) ? Math.max(start, note.endTime) : start;
+  const requiredHits = note && Number.isFinite(note.requiredHits)
+    ? Math.max(1, Math.trunc(note.requiredHits))
+    : 1;
+  const duration = end - start;
+  if (!(duration > 0) || requiredHits === 1) return [start];
+
+  const spacing = duration / requiredHits;
+  const times = [];
+  for (let i = 0; i < requiredHits; i++) times.push(start + i * spacing);
+  return times;
+}
+
 // 連打(drumroll)のティック間隔[ms]。osu!taiko の規則に合わせる:
 //   ・SliderTickRate をそのまま使わず、3 のときだけ 3、それ以外（1/2/4 等）は 4
 //   ・間隔 = 連打開始時点の「赤線」の beatLength ÷ その値（緑線=SV は影響しない）
@@ -174,6 +192,50 @@ const OSU_TAIKO_PLAYFIELD_PX = 600 * (16 / 9) - 165; // ≒901.7（16:9基準）
 // 通常ノーツの直径(800x600換算)。位置と同じ縮尺で描くことで実機と同じ見え方になる。
 // 実機と見比べて調整可能（大きい=詰まって見える / 小さい=まばらに見える）。
 const OSU_TAIKO_NOTE_PX = 65;
+
+// 等速表示の基準に使う dominant BPM。
+// 最後のノーツまでの各赤線区間を合計し、最も長く使われている BPM を返す。
+function getTaikoDominantBpm(red, endTime) {
+  if (!Array.isArray(red) || !red.length || !Number.isFinite(endTime)) return null;
+
+  const durationsByBpm = new Map();
+  for (let i = 0; i < red.length; i++) {
+    const point = red[i];
+    const next = red[i + 1];
+    const start = Math.max(0, point.time);
+    const end = Math.max(start, next ? Math.min(next.time, endTime) : endTime);
+    const duration = end - start;
+    if (!Number.isFinite(point.beatLength) || point.beatLength <= 0 || duration <= 0) continue;
+
+    const bpm = 60000 / point.beatLength;
+    if (!Number.isFinite(bpm) || bpm <= 0) continue;
+    const key = bpm.toFixed(6);
+    durationsByBpm.set(key, (durationsByBpm.get(key) || 0) + duration);
+  }
+
+  let dominantBpm = null;
+  let dominantDuration = -1;
+  for (const [key, duration] of durationsByBpm) {
+    if (duration > dominantDuration) {
+      dominantBpm = parseFloat(key);
+      dominantDuration = duration;
+    }
+  }
+  return dominantBpm;
+}
+
+// SliderMultiplier 1.4 / SV x1.0 の実機速度を、現在のプレビュー幅へ換算する。
+// drawTaikoSpread のラベル幅・Test表示の縮尺と同じ式を使う。
+function getTaikoEqualSpeedPxPerMs(dominantBpm, canvasWidth) {
+  if (!Number.isFinite(dominantBpm) || dominantBpm <= 0) return null;
+  const cssW = Math.max(360, Number.isFinite(canvasWidth) ? canvasWidth : 800);
+  const labelW = Math.round(Math.min(190, Math.max(120, cssW * 0.15)));
+  const playWidth = cssW - labelW;
+  const previewScale = (playWidth / 2) / OSU_TAIKO_PLAYFIELD_PX;
+  const osuPxPerMs = OSU_TAIKO_PX_PER_BEAT * 1.4 * dominantBpm / 60000;
+  const pxPerMs = osuPxPerMs * previewScale;
+  return Number.isFinite(pxPerMs) && pxPerMs > 0 ? pxPerMs : null;
+}
 
 // ゲーム画面表示(SV適用)用: 各ノーツのスクロール速度を求めて note.vel [osu!px/ms] に入れる。
 //   osu!taiko は「ノーツごとに、その時刻の SV/BPM で決まる速度」で流れる方式。
@@ -1148,9 +1210,12 @@ if (typeof window !== "undefined") {
   window.assignTaikoComboNumbers = assignTaikoComboNumbers;
   window.taikoDrumRollTickTimes = taikoDrumRollTickTimes;
   window.taikoSwellRequiredHits = taikoSwellRequiredHits;
+  window.taikoSwellHitTimes = taikoSwellHitTimes;
   window.resolveTaikoBreakRegions = resolveTaikoBreakRegions;
   window.parseTaikoRedTiming = parseTaikoRedTiming;
   window.parseTaikoTimelineMarks = parseTaikoTimelineMarks;
+  window.getTaikoDominantBpm = getTaikoDominantBpm;
+  window.getTaikoEqualSpeedPxPerMs = getTaikoEqualSpeedPxPerMs;
   window.applyTaikoNoteVelocities = applyTaikoNoteVelocities;
   window.buildTaikoBarlines = buildTaikoBarlines;
   window.drawTaikoProgressBar = drawTaikoProgressBar;

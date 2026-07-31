@@ -393,16 +393,52 @@
           var saveHiddenDiffs = function () {
             try { localStorage.setItem('moddingHelperPreviewHiddenDiffs', JSON.stringify(spHiddenDiffs)); } catch (e) {}
           };
-          var SP_BASE_PX = 0.32, SP_ZOOM_MIN = 0.06, SP_ZOOM_MAX = 2.2;
-          var spPxPerMs = SP_BASE_PX;
+          var SP_FALLBACK_BASE_PX = 0.32;
+          var SP_ZOOM_RATIO_MIN = 0.06 / SP_FALLBACK_BASE_PX;
+          var SP_ZOOM_RATIO_MAX = 2.2 / SP_FALLBACK_BASE_PX;
+          var spBasePxPerMs = SP_FALLBACK_BASE_PX;
+          var spZoomRatio = 1;
+          var spPxPerMs = spBasePxPerMs;
+          var spBaseSpeedKey = '';
           var updateSpZoomLabel = function () {
             var l = document.getElementById('etb-spread-zoomlabel');
-            if (l) l.textContent = Math.round(spPxPerMs / SP_BASE_PX * 100) + '%';
+            if (l) l.textContent = Math.round(spZoomRatio * 100) + '%';
           };
-          var setSpZoom = function (v) {
+          var setSpZoomRatio = function (ratio) {
             /* ゲーム画面表示(Test)中は実機と同じ速度で見せるためズーム不可 */
             if (spSvMode) return;
-            spPxPerMs = Math.max(SP_ZOOM_MIN, Math.min(SP_ZOOM_MAX, v));
+            spZoomRatio = Math.max(SP_ZOOM_RATIO_MIN, Math.min(SP_ZOOM_RATIO_MAX, ratio));
+            spPxPerMs = spBasePxPerMs * spZoomRatio;
+            updateSpZoomLabel();
+          };
+          var setSpZoom = function (v) {
+            setSpZoomRatio(v / spBasePxPerMs);
+          };
+          /* 全Diffの dominant BPM の中央値を使い、難易度固有の例外に引っ張られないようにする。 */
+          var getSpreadRepresentativeBpm = function (diffs) {
+            var bpms = (diffs || []).map(function (d) { return d.dominantBpm; })
+              .filter(function (bpm) { return Number.isFinite(bpm) && bpm > 0; })
+              .sort(function (a, b) { return a - b; });
+            if (!bpms.length) return null;
+            var mid = Math.floor(bpms.length / 2);
+            return bpms.length % 2 ? bpms[mid] : (bpms[mid - 1] + bpms[mid]) / 2;
+          };
+          var updateSpreadBaseSpeed = function (diffs) {
+            var bpm = getSpreadRepresentativeBpm(diffs);
+            var canvasWidth = Math.max(
+              360,
+              spCanvas.clientWidth || (spCanvas.parentElement && spCanvas.parentElement.clientWidth) || 800
+            );
+            var key = (bpm == null ? 'fallback' : bpm.toFixed(6)) + ':' + Math.round(canvasWidth);
+            if (key === spBaseSpeedKey) return;
+            spBaseSpeedKey = key;
+            var calculated = window.getTaikoEqualSpeedPxPerMs
+              ? window.getTaikoEqualSpeedPxPerMs(bpm, canvasWidth)
+              : null;
+            spBasePxPerMs = Number.isFinite(calculated) && calculated > 0
+              ? calculated
+              : SP_FALLBACK_BASE_PX;
+            spPxPerMs = spBasePxPerMs * spZoomRatio;
             updateSpZoomLabel();
           };
           /* ズームUIの有効/無効を SV モードに合わせて切り替える */
@@ -414,7 +450,7 @@
             var zl = document.getElementById('etb-spread-zoomlabel');
             if (zl) zl.textContent = spSvMode
               ? electronText('electronRealSpeed')
-              : (Math.round(spPxPerMs / SP_BASE_PX * 100) + '%');
+              : (Math.round(spZoomRatio * 100) + '%');
           };
           /* ビートスナップ: スライダー / スクロールで変更（osu!エディタ風）。表示と同期 */
           var spSnapSlider = spBar.querySelector('#etb-spread-snap-slider');
@@ -944,6 +980,14 @@
               }
               var marks = window.parseTaikoTimelineMarks
                 ? window.parseTaikoTimelineMarks(d.text) : null;
+              var lastNoteEnd = null;
+              if (notes.length) {
+                var lastNote = notes[notes.length - 1];
+                lastNoteEnd = lastNote.endTime != null ? lastNote.endTime : lastNote.time;
+              }
+              var dominantBpm = window.getTaikoDominantBpm
+                ? window.getTaikoDominantBpm(red, lastNoteEnd)
+                : null;
               /* 小節線も1回だけ生成（osu!stable の生成処理を再現） */
               var barlines = [];
               if (window.buildTaikoBarlines && notes.length) {
@@ -959,6 +1003,7 @@
                 fileName: d.fileName || '',
                 notes: notes,
                 red: red,
+                dominantBpm: dominantBpm,
                 barlines: barlines,
                 /* 進捗バー用マーカー(kiai/SV/BPM/PreviewTime/Bookmarks)を1回だけ解析 */
                 marks: marks
@@ -1181,9 +1226,18 @@
             e.preventDefault();
           }, { passive: false });
 
-          /* ダブルクリックで追従に復帰 */
+          /* ノーツをダブルクリックすると、そのノーツの開始時刻へシークする。 */
           spCanvas.addEventListener('dblclick', function (e) {
-            spreadManualTime = null;
+            var p = spCanvasPos(e);
+            var hit = spHitTest(p.x, p.y);
+            if (hit && hit.note && Number.isFinite(hit.note.time)) {
+              var target = hit.note.time;
+              /* 音源がある場合は、再生中・停止中を問わず音楽側の位置も揃える。 */
+              if (spAudio && spAudioSrcRef) {
+                try { spAudio.currentTime = target / 1000; } catch (_) {}
+              }
+              setSpreadManual(target);
+            }
             e.preventDefault();
           });
 
@@ -1627,10 +1681,28 @@
                   }
                   continue;
                 }
+                if (note.kind === 'denden') {
+                  /* 風船は必要打数を区間内に等間隔で置き、ドン開始でドン/カツを交互に鳴らす。
+                     osu!本体では最初の面/縁はどちらでもよく、以降の交互入力だけが必須。
+                     プレビューでは出音を一意にするためドン開始に固定する。 */
+                  var swellEnd = note.endTime != null ? note.endTime : nt;
+                  if (swellEnd <= from) continue;
+                  if (!note._swellHitTimes && window.taikoSwellHitTimes) {
+                    note._swellHitTimes = window.taikoSwellHitTimes(note); // 1回だけ計算
+                  }
+                  var swellHits = note._swellHitTimes || [];
+                  for (var si = 0; si < swellHits.length; si++) {
+                    var st = swellHits[si];
+                    if (st <= from) continue;
+                    if (st > horizon) break;
+                    if (si % 2 === 0) spSynth.don(false, realWhen(st));
+                    else spSynth.kat(false, realWhen(st));
+                  }
+                  continue;
+                }
                 if (nt <= from) continue;
                 if (note.kind === 'don') spSynth.don(note.big, realWhen(nt));
                 else if (note.kind === 'kat') spSynth.kat(note.big, realWhen(nt));
-                /* 風船(denden)は鳴らさない */
               }
             }
             spSfxSchedTo = horizon;
@@ -1645,8 +1717,11 @@
             if (spreadAudioPlaying && !spAudio.paused) {
               spreadManualTime = spAudio.currentTime * 1000;
             }
+            var allDiffs = getSpreadDiffs();
+            /* 100%の基準速度は、非表示設定に左右されない全Diffから決める。 */
+            updateSpreadBaseSpeed(allDiffs);
             /* 非表示Diffを除外（レーンは上に詰まる）。両処理・描画で同じ配列を使う */
-            var diffs = getSpreadDiffs().filter(function (d) { return !spHiddenDiffs[d.fileName]; });
+            var diffs = allDiffs.filter(function (d) { return !spHiddenDiffs[d.fileName]; });
             var curTime = getSpreadTime();
             /* 効果音（音楽再生中のみ、先読みスケジュール） */
             scheduleSpreadHitSounds(diffs, spreadAudioPlaying && !spAudio.paused);
