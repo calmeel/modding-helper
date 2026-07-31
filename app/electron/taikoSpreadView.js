@@ -1169,8 +1169,9 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
              各ノーツの x 範囲で可視判定する。 */
           const vel = (note.vel != null && Number.isFinite(note.vel) && note.vel > 0) ? note.vel : 0.3;
           if (isDen) {
-            /* stable の表示寿命 L(S) と共通プリエンプト P から実際の予告開始を決める。
-               S-L(S) で右端へ入り、S で判定枠へ到達して終了まで留まる。
+            /* stable の表示寿命 L(S) と共通プリエンプト P から予告開始を決める。
+               接近中の位置は通常ノーツと同じ note.vel（SliderMultiplier / SV / BPM）で
+               求め、S で判定枠へ到達した後は終了までそこに留める。
                P<L(S) の場合は、画面内へ入っていても S-P まで透明のまま。 */
             if (currentTime >= endT + TAIKO_SWELL_FADE_OUT_MS) continue;
             const stableLifetime = Number.isFinite(note.stableSwellLifetimeMs)
@@ -1181,10 +1182,7 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
               : stableLifetime;
             const warningStart = note.time - Math.min(stablePreempt, stableLifetime);
             if (currentTime < warningStart) continue;
-            const approach = stableLifetime > 0
-              ? Math.max(0, Math.min(1, dt / stableLifetime))
-              : 0;
-            x = judgmentX + approach * (playX1 - judgmentX);
+            x = judgmentX + Math.max(0, dt) * vel * svHScale;
             x2 = x;
           } else {
             x  = judgmentX + dt * vel * svHScale;
