@@ -490,7 +490,7 @@ function drawTaikoProgressBar(canvas, marks, durationMs, curMs) {
       vseg(t, "rgba(80,150,255,1)", 1, axisY, cssH - 1);
     }
     if (marks.preview != null) {
-      vseg(marks.preview, "rgba(250,220,60,1)", 2, axisY, cssH - 1);
+      vseg(marks.preview, "rgba(250,220,60,1)", 1, axisY, cssH - 1);
     }
   }
 
