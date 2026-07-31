@@ -538,13 +538,29 @@
             var sv0 = parseInt(localStorage.getItem('moddingHelperSfxVolume'), 10);
             if (Number.isFinite(sv0)) spSfxVolume01 = Math.max(0, Math.min(100, sv0)) / 100;
           } catch (e) {}
-          /* 効果音オフセット(ms)。+で遅らせ / -で早める。設定画面で調整・永続化。
-             音楽側の出力バッファぶん効果音が早く聞こえるのを打ち消す。
-             既定 35 は実際に聴き合わせて決めた値。 */
-          var spSfxOffsetMs = 30;
+          /* 効果音の内部基準遅延と、設定画面で指定する相対補正(ms)。
+             基準遅延 30ms を設定上の 0ms とし、+で遅らせ / -で早める。 */
+          var SP_SFX_BASE_DELAY_MS = 30;
+          var SP_SFX_TIMING_ADJUST_LIMIT_MS = 250;
+          var spSfxTimingAdjustMs = 0;
           try {
-            var so0 = parseInt(localStorage.getItem('moddingHelperSfxOffset'), 10);
-            if (Number.isFinite(so0)) spSfxOffsetMs = Math.max(-200, Math.min(200, so0));
+            var timingAdjust0 = parseInt(localStorage.getItem('moddingHelperSfxTimingAdjustment'), 10);
+            if (Number.isFinite(timingAdjust0)) {
+              spSfxTimingAdjustMs = Math.max(
+                -SP_SFX_TIMING_ADJUST_LIMIT_MS,
+                Math.min(SP_SFX_TIMING_ADJUST_LIMIT_MS, timingAdjust0)
+              );
+            } else {
+              /* 旧設定は絶対値だったため、30ms を引いて同じ再生タイミングを保つ。 */
+              var legacyOffset0 = parseInt(localStorage.getItem('moddingHelperSfxOffset'), 10);
+              if (Number.isFinite(legacyOffset0)) {
+                spSfxTimingAdjustMs = Math.max(
+                  -SP_SFX_TIMING_ADJUST_LIMIT_MS,
+                  Math.min(SP_SFX_TIMING_ADJUST_LIMIT_MS, legacyOffset0 - SP_SFX_BASE_DELAY_MS)
+                );
+                localStorage.setItem('moddingHelperSfxTimingAdjustment', String(spSfxTimingAdjustMs));
+              }
+            }
           } catch (e) {}
           /* 曲の音量（0..1）。設定画面で 0〜100 入力。spAudio.volume に反映。 */
           var spMusicVolume01 = 1.0;
@@ -891,7 +907,7 @@
             mVolRow.appendChild(mVolNum);
             sfxSection.appendChild(mVolRow);
 
-            /* 効果音オフセット(ms): +で遅らせ / -で早める */
+            /* 効果音タイミング補正(ms): 基準値 0、+で遅らせ / -で早める */
             var offRow = document.createElement('div');
             offRow.className = 'etb-sfx-vol';
             var offLabel = document.createElement('span');
@@ -901,20 +917,25 @@
             offRange.type = 'range'; offRange.min = '-100'; offRange.max = '100'; offRange.step = '1';
             offRange.className = 'etb-sfx-vol-range';
             var offNum = document.createElement('input');
-            offNum.type = 'number'; offNum.min = '-200'; offNum.max = '200'; offNum.step = '1';
+            offNum.type = 'number'; offNum.min = String(-SP_SFX_TIMING_ADJUST_LIMIT_MS);
+            offNum.max = String(SP_SFX_TIMING_ADJUST_LIMIT_MS); offNum.step = '1';
             offNum.id = 'etb-sfx-offset-input'; offNum.className = 'etb-sfx-vol-num';
-            var applyOffset = function (v, from) {
-              v = Math.max(-200, Math.min(200, Math.round(v)));
-              spSfxOffsetMs = v;
-              try { localStorage.setItem('moddingHelperSfxOffset', String(v)); } catch (e) {}
+            var applyTimingAdjustment = function (v, from) {
+              v = Math.max(-SP_SFX_TIMING_ADJUST_LIMIT_MS, Math.min(SP_SFX_TIMING_ADJUST_LIMIT_MS, Math.round(v)));
+              spSfxTimingAdjustMs = v;
+              try {
+                localStorage.setItem('moddingHelperSfxTimingAdjustment', String(v));
+                /* 旧バージョンへ戻した場合も同じタイミングになるよう、旧キーも更新する。 */
+                localStorage.setItem('moddingHelperSfxOffset', String(SP_SFX_BASE_DELAY_MS + v));
+              } catch (e) {}
               if (from !== 'range') offRange.value = String(Math.max(-100, Math.min(100, v)));
               if (from !== 'num') offNum.value = String(v);
             };
-            offRange.value = String(Math.max(-100, Math.min(100, spSfxOffsetMs)));
-            offNum.value = String(spSfxOffsetMs);
-            offRange.addEventListener('input', function () { applyOffset(parseInt(offRange.value, 10) || 0, 'range'); });
+            offRange.value = String(Math.max(-100, Math.min(100, spSfxTimingAdjustMs)));
+            offNum.value = String(spSfxTimingAdjustMs);
+            offRange.addEventListener('input', function () { applyTimingAdjustment(parseInt(offRange.value, 10) || 0, 'range'); });
             offNum.addEventListener('input', function () {
-              var v = parseInt(offNum.value, 10); if (Number.isFinite(v)) applyOffset(v, 'num');
+              var v = parseInt(offNum.value, 10); if (Number.isFinite(v)) applyTimingAdjustment(v, 'num');
             });
             offRow.appendChild(offLabel);
             offRow.appendChild(offRange);
@@ -1623,7 +1644,7 @@
              タイムストレッチは1つの打点を複数の粒に分けて重ねるため、曲の打点が
              本来より早く聴こえる（25%では1打点が約8粒に現れる）。その分だけ
              効果音も前倒しする必要があり、ズレ量は速度が遅いほど大きい。
-             値は実際に聴いて合わせた実測値。基準(100%)は「効果音オフセット」設定側で調整する。 */
+             値は実際に聴いて合わせた実測値。基準(100%)は「効果音タイミング補正」設定側で調整する。 */
           var SP_SFX_RATE_ADJUST = { '1': 0, '0.75': -20, '0.5': -50, '0.25': -80 };
           var spSfxRateAdjust = function (r) {
             var v = SP_SFX_RATE_ADJUST[String(r)];
@@ -1653,7 +1674,7 @@
             var ctxNow  = spSynth.ctx.currentTime;
             var rate    = spPlaybackRate || 1; // 曲時刻→実時間の換算（再生速度）
             /* 音楽も同じ ctx を通しているので出力レイテンシは共通＝相殺される。
-               追加の補正は不要（設定画面の「効果音オフセット」で手動微調整のみ）。 */
+               追加の補正は不要（設定画面の「効果音タイミング補正」で手動微調整のみ）。 */
             /* シーク/巻き戻し/大ジャンプ → 予約位置をリセット（過去を鳴らさない） */
             if (spSfxLastSong == null || songNow < spSfxLastSong - 5 || songNow - spSfxLastSong > 300) {
               spSfxSchedTo = songNow;
@@ -1669,10 +1690,10 @@
             var diff = diffs[Math.min(spSoundLane, diffs.length - 1)];
             if (diff && diff.notes) {
               var notes = diff.notes;
-              /* 曲時間 → 実時間。オフセットは実時間の定数なので割らない
+              /* 曲時間 → 実時間。基準遅延とタイミング補正は実時間の定数なので割らない
                  （割ると 25% 再生で4倍に効いてしまう）。
                  さらに速度ごとの補正を足す（下の SP_SFX_RATE_ADJUST を参照）。 */
-              var offMs = spSfxOffsetMs + spSfxRateAdjust(rate);
+              var offMs = SP_SFX_BASE_DELAY_MS + spSfxTimingAdjustMs + spSfxRateAdjust(rate);
               var realWhen = function (songMs) {
                 return ctxNow + (songMs - songNow) / 1000 / rate + offMs / 1000;
               };
