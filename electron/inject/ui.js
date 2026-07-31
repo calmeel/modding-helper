@@ -1615,7 +1615,9 @@
               isSelected: spSelNotes.length ? spIsSelected : null,
               marquee: spMarquee,
               emptyText: isEn ? 'No beatmap loaded' : '譜面が読み込まれていません',
-              idleText:  isEn ? 'Play in osu! to scroll' : 'osu! を再生すると流れます'
+              idleText: panelMode === 'osu'
+                ? (isEn ? 'Play in osu! to scroll' : 'osu! を再生すると流れます')
+                : (isEn ? 'Use the preview controls to seek or play' : 'プレビューの操作で再生・シークできます')
             });
             spRaf = requestAnimationFrame(spLoop);
           };
@@ -1782,17 +1784,18 @@
         } catch (e) {}
 
         /* スプレッド表示の時刻ソース:
-           - 通常は osu! の最新再生位置(spreadLastTime)に追従。
+           - osu モードでは osu! の最新再生位置(spreadLastTime)に追従。
              前方予測は入れない（一時停止時に追い越して戻る現象を避けるため）。
            - ユーザーがスプレッド表示をドラッグ/ホイールでシークすると手動モード
              (spreadManualTime)になり、その位置を表示。
-           - osu! の時刻が動いたら（再生/シーク）追従に復帰。ただしドラッグ中は維持。 */
+           - file モードでは osu! から届く時刻を参照しない。 */
         var spreadLastTime = null;
         var spreadManualTime = null;
         var spreadDragging = false;
         var spreadAudioPlaying = false; // modding-helper 内で音楽再生中か
         var getSpreadTime = function () {
-          return spreadManualTime != null ? spreadManualTime : spreadLastTime;
+          if (spreadManualTime != null) return spreadManualTime;
+          return panelMode === 'osu' ? spreadLastTime : null;
         };
 
         /* トップレベルの表示モード: チェック / プレビュー / 設定 の3タブ。
@@ -2507,6 +2510,10 @@
 
           /* ── osu! タイミング情報 IPC（osu モードのみ反映） ── */
           window.electronAPI.onTimingInfo(function(data) {
+            /* file モードでは、別の譜面を再生中の osu! の時刻を
+               プレビューやグラフへ一切流さない。 */
+            if (panelMode !== 'osu') return;
+
             /* プレビュー(スプレッド)の追従は data.editing のときのみ許可。
                editing = Edit 画面 または エディタのテストプレイ（osuWatcher.js が判定）。
                本番のゲームプレイ中は追従させない＝デュアルスクリーンでの先読みチート対策。
@@ -2528,7 +2535,6 @@
             } else {
               spreadLastTime = null;
             }
-            if (panelMode !== 'osu') return;
             /* グラフ上の再生ヘッドを更新（時刻が無ければ -1 で非表示） */
             updatePlayheads(data && typeof data.time === 'number' ? data.time : -1);
             var timing = document.getElementById('osu-t-timing');
@@ -2571,6 +2577,12 @@
           window.__osuPanel = {
             setMode: function(mode) {
               panelMode = (mode === 'file') ? 'file' : 'osu';
+              if (panelMode === 'file') {
+                /* osu モードの最後の位置を残さず、以降の IPC 追従も止める。 */
+                spreadLastTime = null;
+                currentDiffFile = null;
+                updatePlayheads(-1);
+              }
               applyPanelModeUi();
               resetTimingPanel();
               clearMetaToWaiting();
