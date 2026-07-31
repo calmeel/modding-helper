@@ -11,6 +11,10 @@
     color: #ddd;
     overflow: hidden;
   }
+  :where(button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 2px solid #5b9bd5;
+    outline-offset: 2px;
+  }
   #root { display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; padding: 8px; }
 
   /* メタデータ */

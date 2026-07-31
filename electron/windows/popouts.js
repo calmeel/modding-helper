@@ -102,6 +102,9 @@ function injectChartPopout(pop, chartId) {
   pop.webContents.insertCSS(`
     html, body { height:100%; margin:0; overflow:hidden; background:#1e1e1e; }
     body { font-family: Arial,"Meiryo","Yu Gothic UI","Hiragino Sans",sans-serif; color:#ddd; }
+    :where(button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])):focus-visible {
+      outline:2px solid #5b9bd5; outline-offset:2px;
+    }
     .app { height:100vh; max-width:none !important; width:100% !important; margin:0 !important; padding:0 !important; box-sizing:border-box; display:flex; flex-direction:column; overflow:hidden; }
     /* 見出しと説明文はウィンドウのタイトルバーで足りるので出さない。 */
     .volume-compare-chart-header {
