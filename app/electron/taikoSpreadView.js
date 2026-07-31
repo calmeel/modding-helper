@@ -112,6 +112,25 @@ function taikoSwellHitTimes(note) {
   return times;
 }
 
+// プレビューの自動演奏時点で残っている風船の必要打数。
+// taikoSwellHitTimes と同じ時刻列を使うため、効果音と表示のカウントが一致する。
+function taikoSwellRemainingHits(note, currentTime) {
+  const requiredHits = note && Number.isFinite(note.requiredHits)
+    ? Math.max(1, Math.trunc(note.requiredHits))
+    : 1;
+  if (!Number.isFinite(currentTime)) return requiredHits;
+
+  if (!note._swellHitTimes) note._swellHitTimes = taikoSwellHitTimes(note);
+  const times = note._swellHitTimes;
+  let lo = 0, hi = times.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (times[mid] <= currentTime) lo = mid + 1;
+    else hi = mid;
+  }
+  return Math.max(0, requiredHits - lo);
+}
+
 // 連打(drumroll)のティック間隔[ms]。osu!taiko の規則に合わせる:
 //   ・SliderTickRate をそのまま使わず、3 のときだけ 3、それ以外（1/2/4 等）は 4
 //   ・間隔 = 連打開始時点の「赤線」の beatLength ÷ その値（緑線=SV は影響しない）
@@ -457,6 +476,9 @@ const TAIKO_COLORS = {
   rollTick: "rgba(140,95,0,0.55)", // 連打のティック（黄と同系のやや暗い琥珀。茶色すぎると浮く）
   denden: "rgba(205,205,212,0.9)", // 風船/スピナー(denden): 薄いグレー（TaikoEditor風）
   dendenText: "#2b2b34",          // 風船に出す必要打数（薄い本体の上なので暗い色）
+  swellFill: "#d9dce2",           // ゲーム画面表示のスピナー本体（白寄りのライトグレー）
+  swellCore: "#747983",           // 中央の残り打数を載せるグレー
+  swellRing: "rgba(244,246,250,0.9)", // 進捗・接近リング
   ncBar: "rgba(120,220,255,0.95)", // NCシンバルが鳴る小節線（major）
   selRing: "rgba(255,105,215,0.95)", // 選択中のノーツの縁（osu!エディタ風のピンク）
   selGlow: "rgba(255,60,200,0.95)",  // その外側のモヤ
@@ -466,12 +488,79 @@ const TAIKO_COLORS = {
   breakMain:  "rgba(165,165,175,0.42)", // break 区間そのもの
   breakFaint: "rgba(140,140,150,0.22)", // その前後の余白
 };
+const TAIKO_SWELL_FADE_OUT_MS = 300;
 
 function taikoTruncate(ctx, text, maxW) {
   if (ctx.measureText(text).width <= maxW) return text;
   let s = text;
   while (s.length > 1 && ctx.measureText(s + "…").width > maxW) s = s.slice(0, -1);
   return s + "…";
+}
+
+// ゲーム画面表示用の風船。開始後は判定枠に留まり、残り打数を中央に表示する。
+function drawTaikoGameSwell(ctx, x, y, radius, laneH, note, currentTime) {
+  const requiredHits = Number.isFinite(note.requiredHits)
+    ? Math.max(1, Math.trunc(note.requiredHits))
+    : 1;
+  const remaining = taikoSwellRemainingHits(note, currentTime);
+  const completion = Math.max(0, Math.min(1, 1 - remaining / requiredHits));
+  const start = note.time;
+  const end = note.endTime != null ? note.endTime : start;
+  const duration = Math.max(1, end - start);
+  const timeProgress = Math.max(0, Math.min(1, (currentTime - start) / duration));
+  const active = currentTime >= start;
+  const fadeProgress = Math.max(0, Math.min(1, (currentTime - end) / TAIKO_SWELL_FADE_OUT_MS));
+  /* smoothstep の逆。終点では不透明のまま、300msかけて両端が滑らかに減衰する。 */
+  const fadeAlpha = 1 - fadeProgress * fadeProgress * (3 - 2 * fadeProgress);
+  const outerR = Math.min(
+    laneH * 0.47,
+    radius * (active ? 1.48 - timeProgress * 0.26 : 1.48)
+  );
+
+  ctx.save();
+  ctx.globalAlpha = fadeAlpha;
+
+  /* lazer の expanding ring に相当。打数が進むほど少し外へ広がる。 */
+  if (active && completion > 0) {
+    const progressRingR = Math.min(
+      laneH * 0.48,
+      outerR + radius * completion * 0.28
+    );
+    ctx.beginPath();
+    ctx.arc(x, y, progressRingR, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(232,235,242," + (0.2 + completion * 0.3) + ")";
+    ctx.lineWidth = Math.max(1, radius * 0.12);
+    ctx.stroke();
+  }
+
+  /* 区間の残り時間に合わせて縮む接近リング。 */
+  ctx.beginPath();
+  ctx.arc(x, y, outerR, 0, Math.PI * 2);
+  ctx.strokeStyle = TAIKO_COLORS.swellRing;
+  ctx.lineWidth = Math.max(1.5, radius * 0.13);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fillStyle = TAIKO_COLORS.swellFill;
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,0.96)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(x, y, radius * 0.68, 0, Math.PI * 2);
+  ctx.fillStyle = TAIKO_COLORS.swellCore;
+  ctx.fill();
+
+  const digits = String(remaining).length;
+  const fontScale = digits >= 3 ? 0.7 : digits === 2 ? 0.9 : 1.15;
+  ctx.font = "bold " + Math.max(8, Math.round(radius * fontScale)) + "px sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(String(remaining), x, y + 0.5);
+  ctx.restore();
 }
 
 // 難易度名を単語優先で折り返し、maxLines 行に収める。
@@ -928,16 +1017,26 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
       for (let k = notes.length - 1; k >= 0; k--) {
         const note = notes[k];
         const dt = note.time - currentTime;            // head
+        const isDen = note.kind === "denden";
         const isRoll = note.kind === "drumroll" || note.kind === "denden";
         const endT = note.endTime != null ? note.endTime : note.time;
+        const isGameSwell = svMode && isDen;
         let x, x2;
         if (svMode) {
           /* ゲーム画面表示: ノーツごとの速度(SV/BPM/SliderMultiplier)で位置を決める。
              SV により画面上の順序が入れ替わり得るので、時間による打ち切りはせず
              各ノーツの x 範囲で可視判定する。 */
           const vel = (note.vel != null && Number.isFinite(note.vel) && note.vel > 0) ? note.vel : 0.3;
-          x  = judgmentX + dt * vel * svHScale;
-          x2 = judgmentX + (endT - currentTime) * vel * svHScale;
+          if (isDen) {
+            /* lazer と同じく、開始後の風船は判定枠より左へ進ませず終了まで留める。
+               Test表示では尾を描かず、単一の円形オブジェクトとして扱う。 */
+            if (currentTime >= endT + TAIKO_SWELL_FADE_OUT_MS) continue;
+            x = Math.max(judgmentX, judgmentX + dt * vel * svHScale);
+            x2 = x;
+          } else {
+            x  = judgmentX + dt * vel * svHScale;
+            x2 = judgmentX + (endT - currentTime) * vel * svHScale;
+          }
           const lo = Math.min(x, x2), hi = Math.max(x, x2);
           if (hi < playX0 - 60 || lo > playX1 + 60) continue;
         } else {
@@ -950,7 +1049,6 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
           x  = judgmentX + dt * pxPerMs;
           x2 = judgmentX + (endT - currentTime) * pxPerMs;
         }
-        const isDen = note.kind === "denden";
         const r = (isRoll && isDen) ? radius : (note.big ? bigR : radius);
         const selected = isSelected ? !!isSelected(note) : false;
 
@@ -963,13 +1061,15 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
           ctx.strokeStyle = TAIKO_COLORS.selRing;
           ctx.lineWidth = 3;
           for (let g = 0; g < 2; g++) {   // 2度描いて濃くする
-            if (isRoll) { taikoCapsule(ctx, x, x2, yMid, r + 2); ctx.stroke(); }
+            if (isRoll && !isGameSwell) { taikoCapsule(ctx, x, x2, yMid, r + 2); ctx.stroke(); }
             else { ctx.beginPath(); ctx.arc(x, yMid, r + 2, 0, Math.PI * 2); ctx.stroke(); }
           }
           ctx.restore();
         }
 
-        if (isRoll) {
+        if (isGameSwell) {
+          drawTaikoGameSwell(ctx, x, yMid, r, laneH, note, currentTime);
+        } else if (isRoll) {
           ctx.fillStyle = isDen ? TAIKO_COLORS.denden : TAIKO_COLORS.roll; // スピナーは薄いグレー
           taikoCapsule(ctx, x, x2, yMid, r); ctx.fill();
           if (isDen) {
@@ -1211,6 +1311,7 @@ if (typeof window !== "undefined") {
   window.taikoDrumRollTickTimes = taikoDrumRollTickTimes;
   window.taikoSwellRequiredHits = taikoSwellRequiredHits;
   window.taikoSwellHitTimes = taikoSwellHitTimes;
+  window.taikoSwellRemainingHits = taikoSwellRemainingHits;
   window.resolveTaikoBreakRegions = resolveTaikoBreakRegions;
   window.parseTaikoRedTiming = parseTaikoRedTiming;
   window.parseTaikoTimelineMarks = parseTaikoTimelineMarks;
