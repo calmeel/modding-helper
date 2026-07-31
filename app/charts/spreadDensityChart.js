@@ -13,6 +13,7 @@ const spreadDensityChartState = {
   hoverTime: null,
   dragStartX: null,
   dragCurrentX: null,
+  dragButton: null,
   initialized: false,
   resizeObserver: null
 };
@@ -85,7 +86,6 @@ function initializeSpreadDensityChart() {
   if (state.initialized || !state.dom?.spreadDensityChart) return;
 
   const canvas = state.dom.spreadDensityChart;
-  const resetButton = state.dom.spreadDensityResetZoom;
   const inversionToggle = state.dom.spreadDensityShowInversions;
 
   canvas.addEventListener("pointerdown", handleSpreadDensityPointerDown);
@@ -93,19 +93,8 @@ function initializeSpreadDensityChart() {
   canvas.addEventListener("pointerup", handleSpreadDensityPointerUp);
   canvas.addEventListener("pointercancel", handleSpreadDensityPointerCancel);
   canvas.addEventListener("pointerleave", handleSpreadDensityPointerLeave);
-
-  if (resetButton) {
-    resetButton.addEventListener("click", () => {
-      const endTime = getSpreadDensityEndTime(getSpreadDensityChartResults());
-      if (endTime <= 0) return;
-
-      state.viewStart = 0;
-      state.viewEnd = endTime;
-      state.hoverTime = null;
-      hideSpreadDensityTooltip();
-      drawSpreadDensityChart();
-    });
-  }
+  canvas.addEventListener("wheel", handleSpreadDensityWheel, { passive: false });
+  canvas.addEventListener("contextmenu", preventChartContextMenu);
 
   if (inversionToggle) {
     inversionToggle.addEventListener("change", () => {
@@ -366,18 +355,6 @@ function drawSpreadDensityChart() {
     ctx.stroke();
   }
 
-  if (state.dragStartX !== null && state.dragCurrentX !== null) {
-    const startX = clampSpreadDensityX(state.dragStartX, plot);
-    const endX = clampSpreadDensityX(state.dragCurrentX, plot);
-    ctx.fillStyle = "rgba(159, 220, 255, 0.16)";
-    ctx.fillRect(
-      Math.min(startX, endX),
-      plot.top,
-      Math.abs(endX - startX),
-      plot.height
-    );
-  }
-
   ctx.restore();
 
   canvas._spreadDensityPlot = plot;
@@ -594,9 +571,8 @@ function handleSpreadDensityPointerDown(event) {
   const point = getSpreadDensityPointerPosition(event, canvas);
   if (!isSpreadDensityPointInPlot(point, plot)) return;
 
-  canvas.setPointerCapture(event.pointerId);
-  state.dragStartX = point.x;
-  state.dragCurrentX = point.x;
+  if (!beginChartPointerInteraction(state, event, canvas, point.x)) return;
+
   hideSpreadDensityTooltip();
   drawSpreadDensityChart();
 }
@@ -610,9 +586,17 @@ function handleSpreadDensityPointerMove(event) {
   const point = getSpreadDensityPointerPosition(event, canvas);
 
   if (state.dragStartX !== null) {
-    state.dragCurrentX = clampSpreadDensityX(point.x, plot);
-    hideSpreadDensityTooltip();
-    drawSpreadDensityChart();
+    if (state.dragButton === 0) {
+      updateChartPointerPan(
+        state,
+        point.x,
+        plot,
+        getSpreadDensityEndTime(getSpreadDensityChartResults())
+      );
+      state.hoverTime = null;
+      hideSpreadDensityTooltip();
+      drawSpreadDensityChart();
+    }
     return;
   }
 
@@ -635,23 +619,18 @@ function handleSpreadDensityPointerUp(event) {
   if (!canvas || !plot || state.dragStartX === null) return;
 
   const point = getSpreadDensityPointerPosition(event, canvas);
-  const distance = Math.abs(point.x - state.dragStartX);
+  const interaction = finishChartPointerInteraction(
+    state,
+    event,
+    canvas,
+    point.x
+  );
 
-  if (distance >= 8) {
-    const startTime = spreadDensityXToTime(state.dragStartX, plot);
-    const endTime = spreadDensityXToTime(point.x, plot);
-    state.viewStart = Math.max(0, Math.min(startTime, endTime));
-    state.viewEnd = Math.min(
-      getSpreadDensityEndTime(getSpreadDensityChartResults()),
-      Math.max(startTime, endTime)
-    );
-  } else {
+  if (interaction?.button === 2 && interaction.distance < 8) {
     const time = spreadDensityXToTime(point.x, plot);
     window.location.href = `osu://edit/${msToTimestamp(Math.round(time))}`;
   }
 
-  state.dragStartX = null;
-  state.dragCurrentX = null;
   state.hoverTime = null;
   hideSpreadDensityTooltip();
   drawSpreadDensityChart();
@@ -659,8 +638,7 @@ function handleSpreadDensityPointerUp(event) {
 
 function handleSpreadDensityPointerCancel() {
   const state = spreadDensityChartState;
-  state.dragStartX = null;
-  state.dragCurrentX = null;
+  resetChartPointerInteraction(state, state.dom?.spreadDensityChart);
   hideSpreadDensityTooltip();
   drawSpreadDensityChart();
 }
@@ -672,6 +650,31 @@ function handleSpreadDensityPointerLeave() {
   state.hoverTime = null;
   hideSpreadDensityTooltip();
   drawSpreadDensityChart();
+}
+
+function handleSpreadDensityWheel(event) {
+  const state = spreadDensityChartState;
+  const canvas = state.dom?.spreadDensityChart;
+  const plot = canvas?._spreadDensityPlot;
+  if (!canvas || !plot) return;
+
+  const point = getSpreadDensityPointerPosition(event, canvas);
+  if (!isSpreadDensityPointInPlot(point, plot)) return;
+
+  event.preventDefault();
+  if (
+    updateChartViewForWheel(
+      state,
+      event,
+      point.x,
+      plot,
+      getSpreadDensityEndTime(getSpreadDensityChartResults())
+    )
+  ) {
+    state.hoverTime = null;
+    hideSpreadDensityTooltip();
+    drawSpreadDensityChart();
+  }
 }
 
 function showSpreadDensityTooltip(point, time) {

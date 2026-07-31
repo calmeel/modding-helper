@@ -1074,8 +1074,8 @@ Kantan is treated as SR 1, Futsuu as SR 2, Muzukashii as SR 3, Oni as SR 4,
 and Inner Oni as SR 5. Each higher difficulty increases the virtual SR by 1.
 These values do not represent actual calculated Star Ratings.<br><br>
 
-Drag across the graph to zoom into a time range, and use <code>Reset zoom</code> to return to the full view.
-Clicking the graph opens that timestamp in osu!editor.
+Use the mouse wheel to zoom around the cursor position and left-drag to move the visible time range horizontally.
+Right-clicking the graph opens that timestamp in osu!editor.
 </div>
 </section>
 
@@ -2196,7 +2196,7 @@ The value is <code>speed after - speed before</code>, and the vertical axis can 
 Accelerations appear above the zero line and decelerations below it. Thin connecting lines are visual guides for following the progression.<br>
 Hovering near a point shows the before/after speeds, change amount, ratio, and interval between the adjacent objects.<br><br>
 
-Both graphs can be dragged to zoom into a time range, and clicking a graph opens that timestamp in osu!editor.<br>
+Both graphs support mouse-wheel zoom around the cursor position and left-dragging to move the visible time range horizontally. Right-clicking a graph opens that timestamp in osu!editor.<br>
 Enabling <code>Show detailed hover information</code> displays more information than the simple hover view.<br><br>
 
 The graphs provide the following four display options:
@@ -2641,7 +2641,7 @@ The current visual style does not use separate high or mid frequency fills; it m
 Barlines are generated from red timing point time, <code>beatLength</code>, and meter values in <code>[TimingPoints]</code>.<br>
 Between one red timing point and the next, the current BPM and meter are used to calculate measure length, and generated barlines are drawn on top of the audio waveform.<br><br>
 
-Dragging on the waveform zooms the visible range. If the interaction is treated as a short click, the clicked position is treated as the selected peak, and the gap to the nearest generated barline is displayed.<br>
+Use the mouse wheel over the waveform to zoom around the cursor position and left-drag to move the visible time range horizontally. A right-click selects that position as the peak and displays its gap to the nearest generated barline.<br>
 The recommended offset position is calculated as <code>clicked peak - 28.7 ms</code>, and the difference from the current generated barline is also displayed.<br><br>
 
 The <code>-28.7 ms</code> idea is inspired by Timing Analyzer v0.32.4 by

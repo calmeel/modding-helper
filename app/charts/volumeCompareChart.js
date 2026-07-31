@@ -9,6 +9,7 @@ const volumeCompareChartState = {
   hoverTime: null,
   dragStartX: null,
   dragCurrentX: null,
+  dragButton: null,
   initialized: false,
   resizeObserver: null
 };
@@ -80,7 +81,6 @@ function initializeVolumeCompareChart() {
   if (state.initialized || !state.dom?.volumeCompareChart) return;
 
   const canvas = state.dom.volumeCompareChart;
-  const resetButton = state.dom.volumeCompareResetZoom;
   const backgroundToggles = [
     state.dom.volumeCompareShowDifferences,
     state.dom.volumeCompareShowKiai,
@@ -92,6 +92,8 @@ function initializeVolumeCompareChart() {
   canvas.addEventListener("pointerup", handleVolumeComparePointerUp);
   canvas.addEventListener("pointercancel", handleVolumeComparePointerCancel);
   canvas.addEventListener("pointerleave", handleVolumeComparePointerLeave);
+  canvas.addEventListener("wheel", handleVolumeCompareWheel, { passive: false });
+  canvas.addEventListener("contextmenu", preventChartContextMenu);
 
   for (const toggle of backgroundToggles) {
     if (toggle) {
@@ -107,19 +109,6 @@ function initializeVolumeCompareChart() {
         drawVolumeCompareChart();
       });
     }
-  }
-
-  if (resetButton) {
-    resetButton.addEventListener("click", () => {
-      const result = state.result;
-      if (!result) return;
-
-      state.viewStart = 0;
-      state.viewEnd = getVolumeCompareChartEndTime(result);
-      state.hoverTime = null;
-      hideVolumeCompareTooltip();
-      drawVolumeCompareChart();
-    });
   }
 
   if (typeof ResizeObserver !== "undefined" && state.dom.volumeCompareChartWrap) {
@@ -380,18 +369,6 @@ function drawVolumeCompareChart() {
     ctx.stroke();
   }
 
-  if (state.dragStartX !== null && state.dragCurrentX !== null) {
-    const startX = clampVolumeCompareX(state.dragStartX, plot);
-    const endX = clampVolumeCompareX(state.dragCurrentX, plot);
-    ctx.fillStyle = "rgba(159, 220, 255, 0.16)";
-    ctx.fillRect(
-      Math.min(startX, endX),
-      plot.top,
-      Math.abs(endX - startX),
-      plot.height
-    );
-  }
-
   ctx.restore();
 
   canvas._volumeComparePlot = plot;
@@ -647,9 +624,8 @@ function handleVolumeComparePointerDown(event) {
   const plot = canvas._volumeComparePlot;
   if (!isVolumeComparePointInPlot(point, plot)) return;
 
-  canvas.setPointerCapture(event.pointerId);
-  state.dragStartX = point.x;
-  state.dragCurrentX = point.x;
+  if (!beginChartPointerInteraction(state, event, canvas, point.x)) return;
+
   hideVolumeCompareTooltip();
   drawVolumeCompareChart();
 }
@@ -663,8 +639,17 @@ function handleVolumeComparePointerMove(event) {
   const point = getVolumeComparePointerPosition(event, canvas);
 
   if (state.dragStartX !== null) {
-    state.dragCurrentX = point.x;
-    drawVolumeCompareChart();
+    if (state.dragButton === 0) {
+      updateChartPointerPan(
+        state,
+        point.x,
+        plot,
+        getVolumeCompareChartEndTime(state.result)
+      );
+      state.hoverTime = null;
+      hideVolumeCompareTooltip();
+      drawVolumeCompareChart();
+    }
     return;
   }
 
@@ -687,23 +672,18 @@ function handleVolumeComparePointerUp(event) {
   if (!canvas || !plot || state.dragStartX === null) return;
 
   const point = getVolumeComparePointerPosition(event, canvas);
-  const distance = Math.abs(point.x - state.dragStartX);
+  const interaction = finishChartPointerInteraction(
+    state,
+    event,
+    canvas,
+    point.x
+  );
 
-  if (distance >= 8) {
-    const startTime = volumeCompareXToTime(state.dragStartX, plot);
-    const endTime = volumeCompareXToTime(point.x, plot);
-    state.viewStart = Math.max(0, Math.min(startTime, endTime));
-    state.viewEnd = Math.min(
-      getVolumeCompareChartEndTime(state.result),
-      Math.max(startTime, endTime)
-    );
-  } else {
+  if (interaction?.button === 2 && interaction.distance < 8) {
     const time = volumeCompareXToTime(point.x, plot);
     window.location.href = `osu://edit/${msToTimestamp(Math.round(time))}`;
   }
 
-  state.dragStartX = null;
-  state.dragCurrentX = null;
   state.hoverTime = null;
   hideVolumeCompareTooltip();
   drawVolumeCompareChart();
@@ -711,8 +691,8 @@ function handleVolumeComparePointerUp(event) {
 
 function handleVolumeComparePointerCancel() {
   const state = volumeCompareChartState;
-  state.dragStartX = null;
-  state.dragCurrentX = null;
+  resetChartPointerInteraction(state, state.dom?.volumeCompareChart);
+  hideVolumeCompareTooltip();
   drawVolumeCompareChart();
 }
 
@@ -723,6 +703,31 @@ function handleVolumeComparePointerLeave() {
   state.hoverTime = null;
   hideVolumeCompareTooltip();
   drawVolumeCompareChart();
+}
+
+function handleVolumeCompareWheel(event) {
+  const state = volumeCompareChartState;
+  const canvas = state.dom?.volumeCompareChart;
+  const plot = canvas?._volumeComparePlot;
+  if (!canvas || !plot) return;
+
+  const point = getVolumeComparePointerPosition(event, canvas);
+  if (!isVolumeComparePointInPlot(point, plot)) return;
+
+  event.preventDefault();
+  if (
+    updateChartViewForWheel(
+      state,
+      event,
+      point.x,
+      plot,
+      getVolumeCompareChartEndTime(state.result)
+    )
+  ) {
+    state.hoverTime = null;
+    hideVolumeCompareTooltip();
+    drawVolumeCompareChart();
+  }
 }
 
 function getVolumeComparePointerPosition(event, canvas) {

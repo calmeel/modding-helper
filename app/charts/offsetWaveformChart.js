@@ -16,6 +16,7 @@ const offsetWaveformChartState = {
   hoverTime: null,
   dragStartX: null,
   dragCurrentX: null,
+  dragButton: null,
   manualOffsetResult: null,
   initialized: false,
   resizeObserver: null
@@ -56,18 +57,8 @@ function initializeOffsetWaveformChart() {
   canvas.addEventListener("pointerup", handleOffsetWaveformPointerUp);
   canvas.addEventListener("pointercancel", handleOffsetWaveformPointerCancel);
   canvas.addEventListener("pointerleave", handleOffsetWaveformPointerLeave);
-
-  if (state.dom.offsetWaveformResetZoom) {
-    state.dom.offsetWaveformResetZoom.addEventListener("click", () => {
-      const duration = getOffsetWaveformDurationMs();
-      if (duration <= 0) return;
-      state.viewStart = 0;
-      state.viewEnd = duration;
-      state.hoverTime = null;
-      hideOffsetWaveformTooltip();
-      drawOffsetWaveformChart();
-    });
-  }
+  canvas.addEventListener("wheel", handleOffsetWaveformWheel, { passive: false });
+  canvas.addEventListener("contextmenu", preventChartContextMenu);
 
   if (
     typeof ResizeObserver !== "undefined" &&
@@ -323,18 +314,6 @@ function drawOffsetWaveformChart() {
     ctx.moveTo(x, plot.top);
     ctx.lineTo(x, plot.bottom);
     ctx.stroke();
-  }
-
-  if (state.dragStartX !== null && state.dragCurrentX !== null) {
-    const startX = clampOffsetWaveformX(state.dragStartX, plot);
-    const endX = clampOffsetWaveformX(state.dragCurrentX, plot);
-    ctx.fillStyle = "rgba(159, 220, 255, 0.16)";
-    ctx.fillRect(
-      Math.min(startX, endX),
-      plot.top,
-      Math.abs(endX - startX),
-      plot.height
-    );
   }
 
   ctx.restore();
@@ -623,10 +602,12 @@ function handleOffsetWaveformPointerDown(event) {
   const plot = state.dom?.offsetWaveformCanvas?._offsetWaveformPlot;
   if (!plot) return;
 
-  state.dragStartX = clampOffsetWaveformX(event.offsetX, plot);
-  state.dragCurrentX = state.dragStartX;
+  const x = clampOffsetWaveformX(event.offsetX, plot);
+  if (!beginChartPointerInteraction(state, event, state.dom.offsetWaveformCanvas, x)) {
+    return;
+  }
+
   hideOffsetWaveformTooltip();
-  state.dom.offsetWaveformCanvas.setPointerCapture?.(event.pointerId);
   drawOffsetWaveformChart();
 }
 
@@ -640,8 +621,17 @@ function handleOffsetWaveformPointerMove(event) {
   const time = offsetWaveformTimeForX(x, plot);
 
   if (state.dragStartX !== null) {
-    state.dragCurrentX = x;
-    drawOffsetWaveformChart();
+    if (state.dragButton === 0) {
+      updateChartPointerPan(
+        state,
+        event.offsetX,
+        plot,
+        getOffsetWaveformDurationMs()
+      );
+      state.hoverTime = null;
+      hideOffsetWaveformTooltip();
+      drawOffsetWaveformChart();
+    }
     return;
   }
 
@@ -658,23 +648,21 @@ function handleOffsetWaveformPointerUp(event) {
     return;
   }
 
-  const startX = clampOffsetWaveformX(state.dragStartX, plot);
-  const endX = clampOffsetWaveformX(state.dragCurrentX, plot);
+  const canvas = state.dom?.offsetWaveformCanvas;
+  const endX = clampOffsetWaveformX(event.offsetX, plot);
+  const interaction = finishChartPointerInteraction(
+    state,
+    event,
+    canvas,
+    endX
+  );
 
-  if (Math.abs(startX - endX) >= 4) {
-    const startTime = Math.round(offsetWaveformTimeForX(Math.min(startX, endX), plot));
-    const endTime = Math.round(offsetWaveformTimeForX(Math.max(startX, endX), plot));
-
-    if (endTime > startTime) {
-      state.viewStart = startTime;
-      state.viewEnd = endTime;
-    }
-  } else {
+  if (interaction?.button === 2 && interaction.distance < 4) {
     handleOffsetWaveformManualPeakClick(endX);
   }
 
-  state.dom?.offsetWaveformCanvas?.releasePointerCapture?.(event.pointerId);
-  resetOffsetWaveformDrag();
+  state.hoverTime = null;
+  hideOffsetWaveformTooltip();
   drawOffsetWaveformChart();
 }
 
@@ -727,7 +715,6 @@ function findNearestOffsetWaveformBarline(barlines, time) {
 }
 
 function handleOffsetWaveformPointerCancel(event) {
-  offsetWaveformChartState.dom?.offsetWaveformCanvas?.releasePointerCapture?.(event.pointerId);
   resetOffsetWaveformDrag();
   hideOffsetWaveformTooltip();
   drawOffsetWaveformChart();
@@ -743,8 +730,38 @@ function handleOffsetWaveformPointerLeave() {
 
 function resetOffsetWaveformDrag() {
   const state = offsetWaveformChartState;
-  state.dragStartX = null;
-  state.dragCurrentX = null;
+  resetChartPointerInteraction(state, state.dom?.offsetWaveformCanvas);
+}
+
+function handleOffsetWaveformWheel(event) {
+  const state = offsetWaveformChartState;
+  const canvas = state.dom?.offsetWaveformCanvas;
+  const plot = canvas?._offsetWaveformPlot;
+  if (!canvas || !plot) return;
+
+  if (
+    event.offsetX < plot.left ||
+    event.offsetX > plot.right ||
+    event.offsetY < plot.top ||
+    event.offsetY > plot.bottom
+  ) {
+    return;
+  }
+
+  event.preventDefault();
+  if (
+    updateChartViewForWheel(
+      state,
+      event,
+      event.offsetX,
+      plot,
+      getOffsetWaveformDurationMs()
+    )
+  ) {
+    state.hoverTime = null;
+    hideOffsetWaveformTooltip();
+    drawOffsetWaveformChart();
+  }
 }
 
 function offsetWaveformTimeForX(x, plot) {

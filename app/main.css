@@ -227,6 +227,10 @@ body {
   touch-action: none;
 }
 
+canvas.is-panning {
+  cursor: grabbing !important;
+}
+
 .spread-scroll-chart-section {
   box-sizing: border-box;
   width: 100%;
@@ -978,10 +982,6 @@ body {
   .volume-compare-chart-header {
     align-items: stretch;
     flex-direction: column;
-  }
-
-  .volume-compare-chart-header .doc-btn {
-    align-self: flex-end;
   }
 
   .spread-scroll-header-actions {

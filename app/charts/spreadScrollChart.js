@@ -12,6 +12,7 @@ const spreadScrollChartState = {
   hoverTime: null,
   dragStartX: null,
   dragCurrentX: null,
+  dragButton: null,
   dragCanvas: null,
   initialized: false,
   resizeObserver: null
@@ -96,7 +97,6 @@ function initializeSpreadScrollChart() {
 
   const canvas = state.dom.spreadScrollChart;
   const deltaCanvas = state.dom.spreadScrollDeltaChart;
-  const resetButton = state.dom.spreadScrollResetZoom;
   const displayToggles = [
     state.dom.spreadScrollShowLimits,
     state.dom.spreadScrollShowRapidChanges,
@@ -139,22 +139,6 @@ function initializeSpreadScrollChart() {
   if (visualBpmToggle) {
     visualBpmToggle.addEventListener("change", () => {
       updateSpreadScrollDisplayTitles();
-      hideSpreadScrollTooltips();
-      drawSpreadScrollCharts();
-    });
-  }
-
-  if (resetButton) {
-    resetButton.addEventListener("click", () => {
-      const endTime = getSpreadScrollEndTime(getSpreadScrollChartResults());
-      if (endTime <= 0) return;
-
-      state.viewStart = 0;
-      state.viewEnd = endTime;
-      state.hoverTime = null;
-      state.dragStartX = null;
-      state.dragCurrentX = null;
-      state.dragCanvas = null;
       hideSpreadScrollTooltips();
       drawSpreadScrollCharts();
     });
@@ -321,12 +305,16 @@ function initializeSpreadScrollCanvas(canvas) {
   canvas.addEventListener("pointerup", event =>
     handleSpreadScrollPointerUp(event, canvas)
   );
-  canvas.addEventListener("pointercancel", () =>
-    handleSpreadScrollPointerCancel()
+  canvas.addEventListener("pointercancel", event =>
+    handleSpreadScrollPointerCancel(event, canvas)
   );
   canvas.addEventListener("pointerleave", () =>
     handleSpreadScrollPointerLeave()
   );
+  canvas.addEventListener("wheel", event =>
+    handleSpreadScrollWheel(event, canvas),
+  { passive: false });
+  canvas.addEventListener("contextmenu", preventChartContextMenu);
 }
 
 function getSpreadScrollOrderedResults(results, diffOrder) {
@@ -560,18 +548,6 @@ function drawSpreadScrollChart() {
     ctx.stroke();
   }
 
-  if (state.dragStartX !== null && state.dragCurrentX !== null) {
-    const startX = clampSpreadScrollX(state.dragStartX, plot);
-    const endX = clampSpreadScrollX(state.dragCurrentX, plot);
-    ctx.fillStyle = "rgba(159, 220, 255, 0.16)";
-    ctx.fillRect(
-      Math.min(startX, endX),
-      plot.top,
-      Math.abs(endX - startX),
-      plot.height
-    );
-  }
-
   ctx.restore();
 
   canvas._spreadScrollPlot = plot;
@@ -717,18 +693,6 @@ function drawSpreadScrollDeltaChart() {
     ctx.moveTo(x, plot.top);
     ctx.lineTo(x, plot.bottom);
     ctx.stroke();
-  }
-
-  if (state.dragStartX !== null && state.dragCurrentX !== null) {
-    const startX = clampSpreadScrollX(state.dragStartX, plot);
-    const endX = clampSpreadScrollX(state.dragCurrentX, plot);
-    ctx.fillStyle = "rgba(159, 220, 255, 0.16)";
-    ctx.fillRect(
-      Math.min(startX, endX),
-      plot.top,
-      Math.abs(endX - startX),
-      plot.height
-    );
   }
 
   ctx.restore();
@@ -1222,10 +1186,8 @@ function handleSpreadScrollPointerDown(event, canvas) {
   const point = getSpreadScrollPointerPosition(event, canvas);
   if (!isSpreadScrollPointInPlot(point, plot)) return;
 
-  canvas.setPointerCapture(event.pointerId);
-  state.dragStartX = point.x;
-  state.dragCurrentX = point.x;
-  state.dragCanvas = canvas;
+  if (!beginChartPointerInteraction(state, event, canvas, point.x)) return;
+
   hideSpreadScrollTooltips();
   drawSpreadScrollCharts();
 }
@@ -1238,8 +1200,17 @@ function handleSpreadScrollPointerMove(event, canvas) {
   const point = getSpreadScrollPointerPosition(event, canvas);
 
   if (state.dragStartX !== null && state.dragCanvas === canvas) {
-    state.dragCurrentX = point.x;
-    drawSpreadScrollCharts();
+    if (state.dragButton === 0) {
+      updateChartPointerPan(
+        state,
+        point.x,
+        plot,
+        getSpreadScrollEndTime(getSpreadScrollChartResults())
+      );
+      state.hoverTime = null;
+      hideSpreadScrollTooltips();
+      drawSpreadScrollCharts();
+    }
     return;
   }
 
@@ -1283,34 +1254,28 @@ function handleSpreadScrollPointerUp(event, canvas) {
   }
 
   const point = getSpreadScrollPointerPosition(event, canvas);
-  const distance = Math.abs(point.x - state.dragStartX);
+  const interaction = finishChartPointerInteraction(
+    state,
+    event,
+    canvas,
+    point.x
+  );
 
-  if (distance >= 8) {
-    const startTime = spreadScrollXToTime(state.dragStartX, plot);
-    const endTime = spreadScrollXToTime(point.x, plot);
-    state.viewStart = Math.max(0, Math.min(startTime, endTime));
-    state.viewEnd = Math.min(
-      getSpreadScrollEndTime(getSpreadScrollChartResults()),
-      Math.max(startTime, endTime)
-    );
-  } else {
+  if (interaction?.button === 2 && interaction.distance < 8) {
     const time = spreadScrollXToTime(point.x, plot);
     window.location.href = `osu://edit/${msToTimestamp(Math.round(time))}`;
   }
 
-  state.dragStartX = null;
-  state.dragCurrentX = null;
-  state.dragCanvas = null;
   state.hoverTime = null;
   hideSpreadScrollTooltips();
   drawSpreadScrollCharts();
 }
 
-function handleSpreadScrollPointerCancel() {
+function handleSpreadScrollPointerCancel(event, canvas) {
   const state = spreadScrollChartState;
-  state.dragStartX = null;
-  state.dragCurrentX = null;
-  state.dragCanvas = null;
+  if (state.dragCanvas !== canvas) return;
+
+  resetChartPointerInteraction(state, canvas);
   hideSpreadScrollTooltips();
   drawSpreadScrollCharts();
 }
@@ -1322,6 +1287,30 @@ function handleSpreadScrollPointerLeave() {
   state.hoverTime = null;
   hideSpreadScrollTooltips();
   drawSpreadScrollCharts();
+}
+
+function handleSpreadScrollWheel(event, canvas) {
+  const state = spreadScrollChartState;
+  const plot = canvas?._spreadScrollPlot;
+  if (!canvas || !plot) return;
+
+  const point = getSpreadScrollPointerPosition(event, canvas);
+  if (!isSpreadScrollPointInPlot(point, plot)) return;
+
+  event.preventDefault();
+  if (
+    updateChartViewForWheel(
+      state,
+      event,
+      point.x,
+      plot,
+      getSpreadScrollEndTime(getSpreadScrollChartResults())
+    )
+  ) {
+    state.hoverTime = null;
+    hideSpreadScrollTooltips();
+    drawSpreadScrollCharts();
+  }
 }
 
 function showSpreadScrollTooltip(point, time) {

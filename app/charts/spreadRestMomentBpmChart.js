@@ -10,6 +10,7 @@ const spreadRestMomentBpmChartState = {
   hoverTime: null,
   dragStartX: null,
   dragCurrentX: null,
+  dragButton: null,
   initialized: false,
   resizeObserver: null
 };
@@ -73,21 +74,8 @@ function initializeSpreadRestMomentBpmChart() {
   canvas.addEventListener("pointerup", handleSpreadRestMomentPointerUp);
   canvas.addEventListener("pointercancel", handleSpreadRestMomentPointerCancel);
   canvas.addEventListener("pointerleave", handleSpreadRestMomentPointerLeave);
-
-  if (state.dom.spreadRestResetZoom) {
-    state.dom.spreadRestResetZoom.addEventListener("click", () => {
-      const endTime = getSpreadRestMomentChartEndTime(
-        getSpreadRestMomentChartResults()
-      );
-      if (endTime <= 0) return;
-
-      state.viewStart = 0;
-      state.viewEnd = endTime;
-      state.hoverTime = null;
-      hideSpreadRestMomentTooltip();
-      drawSpreadRestMomentBpmChart();
-    });
-  }
+  canvas.addEventListener("wheel", handleSpreadRestMomentWheel, { passive: false });
+  canvas.addEventListener("contextmenu", preventChartContextMenu);
 
   if (
     typeof ResizeObserver !== "undefined" &&
@@ -219,18 +207,6 @@ function drawSpreadRestMomentBpmChart() {
     ctx.moveTo(x, plot.top);
     ctx.lineTo(x, plot.bottom);
     ctx.stroke();
-  }
-
-  if (state.dragStartX !== null && state.dragCurrentX !== null) {
-    const startX = clampSpreadRestMomentX(state.dragStartX, plot);
-    const endX = clampSpreadRestMomentX(state.dragCurrentX, plot);
-    ctx.fillStyle = "rgba(159, 220, 255, 0.16)";
-    ctx.fillRect(
-      Math.min(startX, endX),
-      plot.top,
-      Math.abs(endX - startX),
-      plot.height
-    );
   }
 
   ctx.restore();
@@ -440,9 +416,8 @@ function handleSpreadRestMomentPointerDown(event) {
   const point = getSpreadRestMomentPointerPosition(event, canvas);
   if (!isSpreadRestMomentPointInPlot(point, plot)) return;
 
-  canvas.setPointerCapture(event.pointerId);
-  state.dragStartX = point.x;
-  state.dragCurrentX = point.x;
+  if (!beginChartPointerInteraction(state, event, canvas, point.x)) return;
+
   hideSpreadRestMomentTooltip();
   drawSpreadRestMomentBpmChart();
 }
@@ -456,9 +431,17 @@ function handleSpreadRestMomentPointerMove(event) {
   const point = getSpreadRestMomentPointerPosition(event, canvas);
 
   if (state.dragStartX !== null) {
-    state.dragCurrentX = clampSpreadRestMomentX(point.x, plot);
-    hideSpreadRestMomentTooltip();
-    drawSpreadRestMomentBpmChart();
+    if (state.dragButton === 0) {
+      updateChartPointerPan(
+        state,
+        point.x,
+        plot,
+        getSpreadRestMomentChartEndTime(getSpreadRestMomentChartResults())
+      );
+      state.hoverTime = null;
+      hideSpreadRestMomentTooltip();
+      drawSpreadRestMomentBpmChart();
+    }
     return;
   }
 
@@ -481,23 +464,18 @@ function handleSpreadRestMomentPointerUp(event) {
   if (!canvas || !plot || state.dragStartX === null) return;
 
   const point = getSpreadRestMomentPointerPosition(event, canvas);
-  const distance = Math.abs(point.x - state.dragStartX);
+  const interaction = finishChartPointerInteraction(
+    state,
+    event,
+    canvas,
+    point.x
+  );
 
-  if (distance >= 8) {
-    const startTime = spreadRestMomentXToTime(state.dragStartX, plot);
-    const endTime = spreadRestMomentXToTime(point.x, plot);
-    state.viewStart = Math.max(0, Math.min(startTime, endTime));
-    state.viewEnd = Math.min(
-      getSpreadRestMomentChartEndTime(getSpreadRestMomentChartResults()),
-      Math.max(startTime, endTime)
-    );
-  } else {
+  if (interaction?.button === 2 && interaction.distance < 8) {
     const time = spreadRestMomentXToTime(point.x, plot);
     window.location.href = `osu://edit/${msToTimestamp(Math.round(time))}`;
   }
 
-  state.dragStartX = null;
-  state.dragCurrentX = null;
   state.hoverTime = null;
   hideSpreadRestMomentTooltip();
   drawSpreadRestMomentBpmChart();
@@ -505,8 +483,7 @@ function handleSpreadRestMomentPointerUp(event) {
 
 function handleSpreadRestMomentPointerCancel() {
   const state = spreadRestMomentBpmChartState;
-  state.dragStartX = null;
-  state.dragCurrentX = null;
+  resetChartPointerInteraction(state, state.dom?.spreadRestChart);
   hideSpreadRestMomentTooltip();
   drawSpreadRestMomentBpmChart();
 }
@@ -518,6 +495,31 @@ function handleSpreadRestMomentPointerLeave() {
   state.hoverTime = null;
   hideSpreadRestMomentTooltip();
   drawSpreadRestMomentBpmChart();
+}
+
+function handleSpreadRestMomentWheel(event) {
+  const state = spreadRestMomentBpmChartState;
+  const canvas = state.dom?.spreadRestChart;
+  const plot = canvas?._spreadRestMomentPlot;
+  if (!canvas || !plot) return;
+
+  const point = getSpreadRestMomentPointerPosition(event, canvas);
+  if (!isSpreadRestMomentPointInPlot(point, plot)) return;
+
+  event.preventDefault();
+  if (
+    updateChartViewForWheel(
+      state,
+      event,
+      point.x,
+      plot,
+      getSpreadRestMomentChartEndTime(getSpreadRestMomentChartResults())
+    )
+  ) {
+    state.hoverTime = null;
+    hideSpreadRestMomentTooltip();
+    drawSpreadRestMomentBpmChart();
+  }
 }
 
 function showSpreadRestMomentTooltip(point, time) {

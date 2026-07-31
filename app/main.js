@@ -21,7 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const kiaiCompareChart = document.getElementById("kiaiCompareChart");
   const kiaiCompareChartTooltip = document.getElementById("kiaiCompareChartTooltip");
   const kiaiCompareChartEmpty = document.getElementById("kiaiCompareChartEmpty");
-  const kiaiCompareResetZoom = document.getElementById("kiaiCompareResetZoom");
   const kiaiSnapOutput = document.getElementById("kiaiSnapOutput");
   const svVolumeOutput = document.getElementById("svVolumeOutput");
   const svVolumeThreshold = document.getElementById("svVolumeThreshold");
@@ -34,7 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const volumeCompareChartTooltip = document.getElementById("volumeCompareChartTooltip");
   const volumeCompareChartEmpty = document.getElementById("volumeCompareChartEmpty");
   const volumeCompareDiffToggles = document.getElementById("volumeCompareDiffToggles");
-  const volumeCompareResetZoom = document.getElementById("volumeCompareResetZoom");
   const volumeCompareShowDifferences = document.getElementById("volumeCompareShowDifferences");
   const volumeCompareShowKiai = document.getElementById("volumeCompareShowKiai");
   const volumeCompareShowBreaks = document.getElementById("volumeCompareShowBreaks");
@@ -62,7 +60,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const spreadDensityChartTooltip = document.getElementById("spreadDensityChartTooltip");
   const spreadDensityChartEmpty = document.getElementById("spreadDensityChartEmpty");
   const spreadDensityDiffToggles = document.getElementById("spreadDensityDiffToggles");
-  const spreadDensityResetZoom = document.getElementById("spreadDensityResetZoom");
   const spreadDensityShowInversions = document.getElementById("spreadDensityShowInversions");
   const spreadRestMomentsOutput = document.getElementById("spreadRestMomentsOutput");
   const spreadRestThresholdTable = document.getElementById("spreadRestThresholdTable");
@@ -71,7 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const spreadRestChart = document.getElementById("spreadRestChart");
   const spreadRestChartTooltip = document.getElementById("spreadRestChartTooltip");
   const spreadRestChartEmpty = document.getElementById("spreadRestChartEmpty");
-  const spreadRestResetZoom = document.getElementById("spreadRestResetZoom");
   const spreadRestHighBpmEnabled = document.getElementById("spreadRestHighBpmEnabled");
   const spreadRestHighBpmThreshold = document.getElementById("spreadRestHighBpmThreshold");
   const spreadRestHighBpmScale = document.getElementById("spreadRestHighBpmScale");
@@ -95,7 +91,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const spreadScrollDeltaChartTooltip = document.getElementById("spreadScrollDeltaChartTooltip");
   const spreadScrollChartEmpty = document.getElementById("spreadScrollChartEmpty");
   const spreadScrollDiffToggles = document.getElementById("spreadScrollDiffToggles");
-  const spreadScrollResetZoom = document.getElementById("spreadScrollResetZoom");
   const spreadScrollDetailedTooltip = document.getElementById("spreadScrollDetailedTooltip");
   const spreadScrollVisualBpm = document.getElementById("spreadScrollVisualBpm");
   const spreadScrollGraphTitle = document.getElementById("spreadScrollGraphTitle");
@@ -109,7 +104,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const offsetWaveformCanvas = document.getElementById("offsetWaveformCanvas");
   const offsetWaveformTooltip = document.getElementById("offsetWaveformTooltip");
   const offsetWaveformEmpty = document.getElementById("offsetWaveformEmpty");
-  const offsetWaveformResetZoom = document.getElementById("offsetWaveformResetZoom");
   const offsetWaveformInfo = document.getElementById("offsetWaveformInfo");
   const offsetWaveformEstimate = document.getElementById("offsetWaveformEstimate");
   const srCalculatorOutput = document.getElementById("srCalculatorOutput");
@@ -168,7 +162,6 @@ document.addEventListener("DOMContentLoaded", () => {
     kiaiCompareChart,
     kiaiCompareChartTooltip,
     kiaiCompareChartEmpty,
-    kiaiCompareResetZoom,
     kiaiSnapOutput,
     svVolumeOutput,
     svVolumeThreshold,
@@ -182,7 +175,6 @@ document.addEventListener("DOMContentLoaded", () => {
     volumeCompareChartTooltip,
     volumeCompareChartEmpty,
     volumeCompareDiffToggles,
-    volumeCompareResetZoom,
     volumeCompareShowDifferences,
     volumeCompareShowKiai,
     volumeCompareShowBreaks,
@@ -209,7 +201,6 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadDensityChartTooltip,
     spreadDensityChartEmpty,
     spreadDensityDiffToggles,
-    spreadDensityResetZoom,
     spreadDensityShowInversions,
     spreadRestMomentsOutput,
     spreadRestThresholdTable,
@@ -218,7 +209,6 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadRestChart,
     spreadRestChartTooltip,
     spreadRestChartEmpty,
-    spreadRestResetZoom,
     spreadRestHighBpmEnabled,
     spreadRestHighBpmThreshold,
     spreadRestHighBpmScale,
@@ -242,7 +232,6 @@ document.addEventListener("DOMContentLoaded", () => {
     spreadScrollDeltaChartTooltip,
     spreadScrollChartEmpty,
     spreadScrollDiffToggles,
-    spreadScrollResetZoom,
     spreadScrollDetailedTooltip,
     spreadScrollVisualBpm,
     spreadScrollGraphTitle,
@@ -256,7 +245,6 @@ document.addEventListener("DOMContentLoaded", () => {
     offsetWaveformCanvas,
     offsetWaveformTooltip,
     offsetWaveformEmpty,
-    offsetWaveformResetZoom,
     offsetWaveformInfo,
     offsetWaveformEstimate,
     srCalculatorOutput,

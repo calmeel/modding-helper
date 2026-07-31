@@ -8,6 +8,7 @@ const kiaiCompareChartState = {
   hoverTime: null,
   dragStartX: null,
   dragCurrentX: null,
+  dragButton: null,
   initialized: false,
   resizeObserver: null
 };
@@ -58,26 +59,14 @@ function initializeKiaiCompareChart() {
   if (state.initialized || !state.dom?.kiaiCompareChart) return;
 
   const canvas = state.dom.kiaiCompareChart;
-  const resetButton = state.dom.kiaiCompareResetZoom;
 
   canvas.addEventListener("pointerdown", handleKiaiComparePointerDown);
   canvas.addEventListener("pointermove", handleKiaiComparePointerMove);
   canvas.addEventListener("pointerup", handleKiaiComparePointerUp);
   canvas.addEventListener("pointercancel", handleKiaiComparePointerCancel);
   canvas.addEventListener("pointerleave", handleKiaiComparePointerLeave);
-
-  if (resetButton) {
-    resetButton.addEventListener("click", () => {
-      const endTime = getKiaiCompareEndTime();
-      if (endTime <= 0) return;
-
-      state.viewStart = 0;
-      state.viewEnd = endTime;
-      state.hoverTime = null;
-      hideKiaiCompareTooltip();
-      drawKiaiCompareChart();
-    });
-  }
+  canvas.addEventListener("wheel", handleKiaiCompareWheel, { passive: false });
+  canvas.addEventListener("contextmenu", preventChartContextMenu);
 
   if (typeof ResizeObserver !== "undefined" && state.dom.kiaiCompareChartWrap) {
     state.resizeObserver = new ResizeObserver(() => {
@@ -177,18 +166,6 @@ function drawKiaiCompareChart() {
     ctx.moveTo(x, plot.top);
     ctx.lineTo(x, plot.bottom);
     ctx.stroke();
-  }
-
-  if (state.dragStartX !== null && state.dragCurrentX !== null) {
-    const startX = clampKiaiCompareX(state.dragStartX, plot);
-    const endX = clampKiaiCompareX(state.dragCurrentX, plot);
-    ctx.fillStyle = "rgba(159, 220, 255, 0.18)";
-    ctx.fillRect(
-      Math.min(startX, endX),
-      plot.top,
-      Math.abs(endX - startX),
-      plot.height
-    );
   }
 
   ctx.restore();
@@ -320,9 +297,8 @@ function handleKiaiComparePointerDown(event) {
   const point = getKiaiComparePointerPosition(event, canvas);
   if (!isKiaiComparePointInPlot(point, plot)) return;
 
-  canvas.setPointerCapture(event.pointerId);
-  state.dragStartX = point.x;
-  state.dragCurrentX = point.x;
+  if (!beginChartPointerInteraction(state, event, canvas, point.x)) return;
+
   hideKiaiCompareTooltip();
   drawKiaiCompareChart();
 }
@@ -336,8 +312,17 @@ function handleKiaiComparePointerMove(event) {
   const point = getKiaiComparePointerPosition(event, canvas);
 
   if (state.dragStartX !== null) {
-    state.dragCurrentX = point.x;
-    drawKiaiCompareChart();
+    if (state.dragButton === 0) {
+      updateChartPointerPan(
+        state,
+        point.x,
+        plot,
+        getKiaiCompareEndTime()
+      );
+      state.hoverTime = null;
+      hideKiaiCompareTooltip();
+      drawKiaiCompareChart();
+    }
     return;
   }
 
@@ -360,20 +345,18 @@ function handleKiaiComparePointerUp(event) {
   if (!canvas || !plot || state.dragStartX === null) return;
 
   const point = getKiaiComparePointerPosition(event, canvas);
-  const distance = Math.abs(point.x - state.dragStartX);
+  const interaction = finishChartPointerInteraction(
+    state,
+    event,
+    canvas,
+    point.x
+  );
 
-  if (distance >= 8) {
-    const startTime = kiaiCompareXToTime(state.dragStartX, plot);
-    const endTime = kiaiCompareXToTime(point.x, plot);
-    state.viewStart = Math.max(0, Math.min(startTime, endTime));
-    state.viewEnd = Math.min(getKiaiCompareEndTime(), Math.max(startTime, endTime));
-  } else {
+  if (interaction?.button === 2 && interaction.distance < 8) {
     const time = kiaiCompareXToTime(point.x, plot);
     window.location.href = `osu://edit/${msToTimestamp(Math.round(time))}`;
   }
 
-  state.dragStartX = null;
-  state.dragCurrentX = null;
   state.hoverTime = null;
   hideKiaiCompareTooltip();
   drawKiaiCompareChart();
@@ -381,8 +364,7 @@ function handleKiaiComparePointerUp(event) {
 
 function handleKiaiComparePointerCancel() {
   const state = kiaiCompareChartState;
-  state.dragStartX = null;
-  state.dragCurrentX = null;
+  resetChartPointerInteraction(state, state.dom?.kiaiCompareChart);
   hideKiaiCompareTooltip();
   drawKiaiCompareChart();
 }
@@ -394,6 +376,31 @@ function handleKiaiComparePointerLeave() {
   state.hoverTime = null;
   hideKiaiCompareTooltip();
   drawKiaiCompareChart();
+}
+
+function handleKiaiCompareWheel(event) {
+  const state = kiaiCompareChartState;
+  const canvas = state.dom?.kiaiCompareChart;
+  const plot = canvas?._kiaiComparePlot;
+  if (!canvas || !plot) return;
+
+  const point = getKiaiComparePointerPosition(event, canvas);
+  if (!isKiaiComparePointInPlot(point, plot)) return;
+
+  event.preventDefault();
+  if (
+    updateChartViewForWheel(
+      state,
+      event,
+      point.x,
+      plot,
+      getKiaiCompareEndTime()
+    )
+  ) {
+    state.hoverTime = null;
+    hideKiaiCompareTooltip();
+    drawKiaiCompareChart();
+  }
 }
 
 function showKiaiCompareTooltip(point, time) {

@@ -1963,13 +1963,13 @@
           requestAnimationFrame(refreshPlayheads);
           setTimeout(function() { refreshPlayheads(); nudgeStaleCharts(); }, 200);
         };
-        /* タブ・サブタブ・ズームリセットのクリックで再生ヘッドを再適用 */
+        /* タブ・サブタブのクリックで再生ヘッドを再適用 */
         document.addEventListener('click', function(e) {
           if (!e.target || !e.target.closest) return;
-          if (!e.target.closest('.tab-button, .spread-subtab-button, .bn-subtab-button, [id$="ResetZoom"]')) return;
+          if (!e.target.closest('.tab-button, .spread-subtab-button, .bn-subtab-button')) return;
           schedulePlayheadRefresh();
         });
-        /* グラフ上のドラッグでズームした直後にも再配置（表示範囲 viewStart/viewEnd が変わるため） */
+        /* グラフを左ドラッグで移動した直後にも再配置（表示範囲 viewStart/viewEnd が変わるため） */
         document.addEventListener('mouseup', function(e) {
           if (!e.target || !e.target.id) return;
           if (playheadChartIds.indexOf(e.target.id) < 0) return;

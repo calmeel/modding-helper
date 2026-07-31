@@ -283,9 +283,8 @@
           <div class="volume-compare-chart-header">
             <div>
               <h3 data-i18n="kiaiCompareGraphTitle">Kiai timeline</h3>
-              <p data-i18n="kiaiCompareGraphHelp">Drag to zoom. Click the graph to open that timestamp in osu!.</p>
+              <p data-i18n="kiaiCompareGraphHelp">Use the mouse wheel to zoom. Left-drag to move horizontally. Right-click the graph to open that timestamp in osu!.</p>
             </div>
-            <button class="doc-btn" id="kiaiCompareResetZoom" type="button" data-i18n="volumeCompareResetZoom">Reset zoom</button>
           </div>
 
           <div class="kiai-compare-chart-wrap" id="kiaiCompareChartWrap">
@@ -367,9 +366,8 @@
           <div class="volume-compare-chart-header">
             <div>
               <h3 data-i18n="volumeCompareGraphTitle">Volume graph</h3>
-              <p data-i18n="volumeCompareGraphGuide">Drag to zoom. Click a point on the graph to open that timestamp in osu!.</p>
+              <p data-i18n="volumeCompareGraphGuide">Use the mouse wheel to zoom. Left-drag to move horizontally. Right-click a point on the graph to open that timestamp in osu!.</p>
             </div>
-            <button id="volumeCompareResetZoom" class="doc-btn" type="button" data-i18n="volumeCompareResetZoom">Reset zoom</button>
           </div>
 
           <div class="volume-compare-background-toggles">
@@ -531,12 +529,9 @@
               <div>
                 <h3 data-i18n="spreadDensityGraphTitle">Note density graph</h3>
                 <p data-i18n="spreadDensityGraphHelp">
-                  This graph shows the number of notes in each measure.
+                  This graph shows the number of notes in each measure. Use the mouse wheel to zoom and left-drag to move horizontally.
                 </p>
               </div>
-              <button class="doc-btn" id="spreadDensityResetZoom" type="button" data-i18n="volumeCompareResetZoom">
-                Reset zoom
-              </button>
             </div>
 
             <div class="spread-density-chart-options">
@@ -575,12 +570,9 @@
               <div>
                 <h3 data-i18n="spreadRestBpmGraphTitle">Rest moment BPM graph</h3>
                 <p class="spread-rest-graph-help" data-i18n="spreadRestBpmGraphHelp">
-                  This graph shows original BPM and converted BPM used for rest moment checks.
+                  This graph shows original BPM and converted BPM used for rest moment checks. Use the mouse wheel to zoom and left-drag to move horizontally.
                 </p>
               </div>
-              <button class="doc-btn" id="spreadRestResetZoom" type="button" data-i18n="volumeCompareResetZoom">
-                Reset zoom
-              </button>
             </div>
 
             <div class="spread-rest-legend">
@@ -656,7 +648,7 @@
                 <h3 id="spreadScrollGraphTitle" data-i18n="spreadScrollGraphTitle">Scroll speed graph (px/s)</h3>
                 <p>
                   <span data-i18n="spreadScrollGraphHelp">This graph shows the effective scroll speed at each note.</span><br>
-                  <span data-i18n="spreadScrollGraphControls">Drag to zoom. Click the graph to open that timestamp in osu!.</span>
+                  <span data-i18n="spreadScrollGraphControls">Use the mouse wheel to zoom. Left-drag to move horizontally. Right-click the graph to open that timestamp in osu!.</span>
                 </p>
               </div>
               <div class="spread-scroll-header-actions">
@@ -668,9 +660,6 @@
                   <input type="checkbox" id="spreadScrollVisualBpm" checked>
                   <span data-i18n="spreadScrollVisualBpm">Convert to visual BPM</span>
                 </label>
-                <button class="doc-btn" id="spreadScrollResetZoom" type="button" data-i18n="volumeCompareResetZoom">
-                  Reset zoom
-                </button>
               </div>
             </div>
 
@@ -757,12 +746,9 @@
             <div>
               <h3 data-i18n="offsetWaveformGraphTitle">Audio waveform</h3>
               <p data-i18n="offsetWaveformGraphHelp">
-                This graph shows the audio waveform and generated barlines from the selected difficulty. Drag to zoom.
+                This graph shows the audio waveform and generated barlines from the selected difficulty. Use the mouse wheel to zoom and left-drag to move horizontally.
               </p>
             </div>
-            <button class="doc-btn" id="offsetWaveformResetZoom" type="button" data-i18n="volumeCompareResetZoom">
-              Reset zoom
-            </button>
           </div>
 
           <div class="offset-waveform-controls">
@@ -1042,6 +1028,7 @@
   <script src="app/formatters/tools/timeline.js"></script>
   <script src="app/formatters/tools/bnCompare.js"></script>
 
+  <script src="app/charts/chartNavigation.js"></script>
   <script src="app/charts/kiaiCompareChart.js"></script>
   <script src="app/charts/volumeCompareChart.js"></script>
   <script src="app/charts/spreadDensityChart.js"></script>

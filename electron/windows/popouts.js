@@ -103,25 +103,20 @@ function injectChartPopout(pop, chartId) {
     html, body { height:100%; margin:0; overflow:hidden; background:#1e1e1e; }
     body { font-family: Arial,"Meiryo","Yu Gothic UI","Hiragino Sans",sans-serif; color:#ddd; }
     .app { height:100vh; max-width:none !important; width:100% !important; margin:0 !important; padding:0 !important; box-sizing:border-box; display:flex; flex-direction:column; overflow:hidden; }
-    /* 見出しと説明文はウィンドウのタイトルバーで足りるので出さない。
-       「ズームをリセット」だけ右上に小さく浮かせて、グラフ用の高さを空ける。 */
-    .volume-compare-chart-header h3, .volume-compare-chart-header p { display:none !important; }
+    /* 見出しと説明文はウィンドウのタイトルバーで足りるので出さない。 */
     .volume-compare-chart-header {
-      position:absolute !important; top:4px; right:6px; z-index:10;
-      margin:0 !important; padding:0 !important; gap:0 !important; width:auto !important;
+      display:none !important;
     }
-    .volume-compare-chart-header .doc-btn {
-      font-size:11px !important; padding:2px 8px !important; opacity:0.55; transition:opacity 0.15s;
-    }
-    .volume-compare-chart-header .doc-btn:hover { opacity:1; }
     /* スクロール速度系だけは見出し行に操作用チェックボックスが入っているので、
-       右上に浮かせると下の警告トグル行と重なる。ここだけ通常の行として並べる。 */
+       ここだけ通常の行として表示する。 */
     #spreadScrollChartSection .volume-compare-chart-header {
+      display:flex !important;
       position:static !important; width:auto !important;
       margin:0 0 4px !important; padding:0 !important; gap:12px !important;
       justify-content:flex-end;
     }
-    #spreadScrollChartSection .volume-compare-chart-header .doc-btn { opacity:1; }
+    #spreadScrollChartSection .volume-compare-chart-header h3,
+    #spreadScrollChartSection .volume-compare-chart-header p { display:none !important; }
     /* グラフを囲む枠・背景・余白（＝グラフの周りの1色）を消してウィンドウに密着させる */
     .tab-panel.active > section, .tab-panel.active .spread-subtab-panel > section {
       margin:0 !important; padding:0 !important; border:none !important;
@@ -190,8 +185,7 @@ function injectChartPopout(pop, chartId) {
           parent.style.flex = '1 1 auto';
           node = parent;
         }
-        /* グラフを囲む枠・背景・余白を消す（クラス名がグラフごとに違うので実要素に直接指定）。
-           position:relative は右上に浮かせた「ズームをリセット」の基準にもなる。 */
+        /* グラフを囲む枠・背景・余白を消す（クラス名がグラフごとに違うので実要素に直接指定）。 */
         section.style.margin = '0';
         section.style.padding = '0';
         section.style.border = 'none';
