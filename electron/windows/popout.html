@@ -112,6 +112,7 @@
             row('Artist',           data.artist) +
             row('Title (Unicode)',  data.titleUnicode,  'unicode') +
             row('Title',            data.title) +
+            row('Creator',          data.creator, '', true) +
             row('Source',           data.source, 'source', true) +
             tagsHtml;
           /* 譜面(タグ)が変わったらチェック状態をリセット。同一譜面なら維持して再適用 */
