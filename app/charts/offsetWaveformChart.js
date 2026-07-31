@@ -1,5 +1,6 @@
 const OFFSET_WAVEFORM_ESTIMATE_DISPLAY_ENABLED = false;
 const OFFSET_WAVEFORM_MANUAL_PEAK_OFFSET_MS = 28.7;
+const OFFSET_WAVEFORM_FILL_COLOUR = "rgba(120, 215, 255, 0.9)";
 
 const offsetWaveformChartState = {
   sources: null,
@@ -377,43 +378,29 @@ function drawOffsetWaveformData(ctx, waveformData, plot, viewStart, viewEnd) {
 
   const separation = plot.width / (points.length - 1);
 
-  for (let i = 0; i < points.length - 1; i++) {
-    const point = points[i];
-    const next = points[i + 1];
-    const x1 = plot.left + i * separation;
-    const x2 = plot.left + (i + 1) * separation;
-    const colour = getOffsetWaveformPointColour(point, resampled);
-
-    ctx.fillStyle = colour;
-    ctx.beginPath();
-    ctx.moveTo(x1, centerY - point.amplitudeLeft * halfHeight);
-    ctx.lineTo(x2, centerY - next.amplitudeLeft * halfHeight);
-    ctx.lineTo(x2, centerY + next.amplitudeRight * halfHeight);
-    ctx.lineTo(x1, centerY + point.amplitudeRight * halfHeight);
-    ctx.closePath();
-    ctx.fill();
-  }
-}
-
-function getOffsetWaveformPointColour(point, resampled) {
-  const amplitude = Math.max(point.amplitudeLeft, point.amplitudeRight);
-  const amount = Math.max(0, Math.min(1, amplitude));
-  const colour = mixOffsetWaveformColour(
-    [58, 160, 210],
-    [132, 222, 255],
-    amount
+  ctx.fillStyle = OFFSET_WAVEFORM_FILL_COLOUR;
+  ctx.beginPath();
+  ctx.moveTo(
+    plot.left,
+    centerY - points[0].amplitudeLeft * halfHeight
   );
 
-  return `rgba(${Math.round(colour[0])}, ${Math.round(colour[1])}, ${Math.round(colour[2])}, 0.9)`;
-}
+  for (let i = 1; i < points.length; i++) {
+    ctx.lineTo(
+      plot.left + i * separation,
+      centerY - points[i].amplitudeLeft * halfHeight
+    );
+  }
 
-function mixOffsetWaveformColour(from, to, ratio) {
-  const amount = Math.max(0, Math.min(1, ratio));
-  return [
-    from[0] + (to[0] - from[0]) * amount,
-    from[1] + (to[1] - from[1]) * amount,
-    from[2] + (to[2] - from[2]) * amount
-  ];
+  for (let i = points.length - 1; i >= 0; i--) {
+    ctx.lineTo(
+      plot.left + i * separation,
+      centerY + points[i].amplitudeRight * halfHeight
+    );
+  }
+
+  ctx.closePath();
+  ctx.fill();
 }
 
 function drawOffsetWaveformBarlines(ctx, barlines, plot, viewStart, viewEnd, xForTime) {
