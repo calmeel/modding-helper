@@ -235,6 +235,7 @@ function getTaikoMeasureBeat(red, time) {
 //   受け口は左端から165px、プレイフィールド長 = 600×アスペクト比 − 165（16:9 で約901px）
 const OSU_TAIKO_PX_PER_BEAT = 175;
 const OSU_TAIKO_PLAYFIELD_PX = 600 * (16 / 9) - 165; // ≒901.7（16:9基準）
+const TAIKO_TIMING_INFO_WIDTH = 82;
 // 通常ノーツの直径(800x600換算)。位置と同じ縮尺で描くことで実機と同じ見え方になる。
 // 実機と見比べて調整可能（大きい=詰まって見える / 小さい=まばらに見える）。
 const OSU_TAIKO_NOTE_PX = 65;
@@ -272,10 +273,11 @@ function getTaikoDominantBpm(red, endTime) {
 
 // SliderMultiplier 1.4 / SV x1.0 の実機速度を、現在のプレビュー幅へ換算する。
 // drawTaikoSpread のラベル幅・Test表示の縮尺と同じ式を使う。
-function getTaikoEqualSpeedPxPerMs(dominantBpm, canvasWidth) {
+function getTaikoEqualSpeedPxPerMs(dominantBpm, canvasWidth, showTimingInfo) {
   if (!Number.isFinite(dominantBpm) || dominantBpm <= 0) return null;
   const cssW = Math.max(360, Number.isFinite(canvasWidth) ? canvasWidth : 800);
-  const labelW = Math.round(Math.min(190, Math.max(120, cssW * 0.15)));
+  const diffLabelW = Math.round(Math.min(190, Math.max(120, cssW * 0.15)));
+  const labelW = diffLabelW + (showTimingInfo ? TAIKO_TIMING_INFO_WIDTH : 0);
   const playWidth = cssW - labelW;
   const previewScale = (playWidth / 2) / OSU_TAIKO_PLAYFIELD_PX;
   const osuPxPerMs = OSU_TAIKO_PX_PER_BEAT * 1.4 * dominantBpm / 60000;
@@ -469,6 +471,79 @@ function parseTaikoTimelineMarks(text) {
   return { sv, bpm, kiai, preview, bookmarks, omitBarline, breaks };
 }
 
+// Diff名の横へ表示するBPM / SV / Volume用にTiming Pointを一度だけ解析する。
+// 同時刻の行はファイル順を保ち、後の行が最終状態になるようにする。
+function parseTaikoTimingInfoPoints(text) {
+  const lines = text.split(/\r?\n/);
+  let inSection = false;
+  const points = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line === "[TimingPoints]") { inSection = true; continue; }
+    if (!inSection) continue;
+    if (line.startsWith("[")) break;
+    if (!line || line.startsWith("//")) continue;
+
+    const parts = line.split(",");
+    if (parts.length < 7) continue;
+    const time = Math.round(parseFloat(parts[0]));
+    const beatLength = parseFloat(parts[1]);
+    const volume = parseInt(parts[5], 10);
+    const uninherited = parseInt(parts[6], 10);
+    if (
+      !Number.isFinite(time) ||
+      !Number.isFinite(beatLength) ||
+      !Number.isFinite(volume) ||
+      (uninherited !== 0 && uninherited !== 1)
+    ) continue;
+    points.push({ time, beatLength, volume, uninherited, order: i });
+  }
+  points.sort((a, b) => (a.time - b.time) || (a.order - b.order));
+  let activeBeatLength = null;
+  let activeSv = null;
+  let activeVolume = null;
+  for (const point of points) {
+    activeVolume = Math.max(0, Math.min(100, point.volume));
+    if (point.uninherited === 1) {
+      if (point.beatLength > 0) activeBeatLength = point.beatLength;
+      activeSv = 1;
+    } else if (point.beatLength < 0) {
+      activeSv = -100 / point.beatLength;
+    }
+    const bpm = activeBeatLength > 0 ? 60000 / activeBeatLength : null;
+    point.activeBpm = Number.isFinite(bpm) && bpm > 0 ? bpm : null;
+    point.activeSv = Number.isFinite(activeSv) && activeSv > 0 ? activeSv : null;
+    point.activeVolume = activeVolume;
+  }
+  return points;
+}
+
+function getTaikoTimingInfoAt(points, currentTime) {
+  if (!Array.isArray(points) || !points.length || !Number.isFinite(currentTime)) return null;
+  let lo = 0;
+  let hi = points.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (points[mid].time <= currentTime) lo = mid + 1;
+    else hi = mid;
+  }
+  if (lo === 0) return null;
+  const point = points[lo - 1];
+  return {
+    bpm: point.activeBpm,
+    sv: point.activeSv,
+    volume: point.activeVolume
+  };
+}
+
+function formatTaikoTimingBpm(bpm) {
+  if (!Number.isFinite(bpm) || bpm <= 0) return "—";
+  const rounded = Math.round(bpm * 100) / 100;
+  return (Math.abs(rounded - Math.round(rounded)) < 1e-9
+    ? String(Math.round(rounded))
+    : rounded.toFixed(2).replace(/0+$/, "").replace(/\.$/, "")) + " BPM";
+}
+
 // 休憩時間の帯を描くための区間を求める。TaikoEditor の ObjectView.java と同じ考え方:
 //   ・濃い部分 = .osu に書かれた break 区間そのもの [breakStart, breakEnd]
 //   ・薄い部分 = その前後。直前ノーツの「終わり」〜break開始 と、break終了〜次ノーツの頭
@@ -527,11 +602,22 @@ function drawTaikoProgressBar(canvas, marks, durationMs, curMs) {
   const axisY = Math.round(cssH * 2 / 3) + 0.5;    // 中段と下段の境界（時間軸）
   const kiaiHalf = Math.max(2, Math.round(cssH / 6)); // kiai 帯の上下の厚み
   const vseg = (t, color, w, y0, y1) => {
-    ctx.strokeStyle = color; ctx.lineWidth = w || 1;
-    const x = Math.round(xOf(t)) + 0.5;
-    ctx.beginPath();
-    ctx.moveTo(x, y0); ctx.lineTo(x, y1);
-    ctx.stroke();
+    /* CSS座標の +0.5 はDPI 125%/150%で物理ピクセル中央から外れるため、
+       物理ピクセルへ変換した同一の整数矩形として描く。 */
+    const deviceWidth = Math.max(1, Math.round((w || 1) * dpr));
+    const deviceLeft = Math.round(xOf(t) * dpr - deviceWidth / 2);
+    const deviceTop = Math.round(y0 * dpr);
+    const deviceBottom = Math.round(y1 * dpr);
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = color;
+    ctx.fillRect(
+      Math.max(0, Math.min(canvas.width - deviceWidth, deviceLeft)),
+      deviceTop,
+      deviceWidth,
+      Math.max(1, deviceBottom - deviceTop)
+    );
+    ctx.restore();
   };
 
   // kiai: 中段と下段の境界線の周囲だけをオレンジで塗る（全高は塗らない）
@@ -558,7 +644,7 @@ function drawTaikoProgressBar(canvas, marks, durationMs, curMs) {
       vseg(t, "rgba(240,70,70,1)", 1, 1, axisY);
     }
     if (marks.sv) for (const t of marks.sv) {
-      vseg(t, "rgba(80,220,120,0.95)", 1, upperY, axisY);
+      vseg(t, "rgba(80,220,120,1)", 1, upperY, axisY);
     }
     // 下段: Bookmark(青) / プレビューポイント(黄)
     if (marks.bookmarks) for (const t of marks.bookmarks) {
@@ -959,9 +1045,10 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
   ctx.fillStyle = "#1a1a1f";
   ctx.fillRect(0, 0, cssW, cssH);
 
-  /* 左の難易度名カラム幅。長い難易度名（例: "Charlotte's Inner Oni"）も読めるよう
-     画面幅に応じて広げる（120〜190px）。折り返し表示と併用する。 */
-  const labelW = Math.round(Math.min(190, Math.max(120, cssW * 0.15)));
+  /* 左の難易度名カラム幅。情報表示ON時は、その右へTiming Point情報カラムを足す。 */
+  const diffLabelW = Math.round(Math.min(190, Math.max(120, cssW * 0.15)));
+  const timingInfoW = opts.showTimingInfo ? TAIKO_TIMING_INFO_WIDTH : 0;
+  const labelW = diffLabelW + timingInfoW;
   const playX0 = labelW;
   const playX1 = cssW;
   /* 判定ラインの位置（プレイフィールド幅に対する割合）。既定 0.5＝中央。
@@ -1310,10 +1397,13 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(cssW, y); ctx.stroke();
   }
 
-  // 左の難易度名カラム（ノーツの上に被せる）
+  // 左の難易度名・Timing Point情報カラム（ノーツの上に被せる）
   ctx.fillStyle = "#16161b";
   ctx.fillRect(0, 0, labelW, cssH);
   ctx.strokeStyle = "#2a2a33"; ctx.lineWidth = 1;
+  if (timingInfoW > 0) {
+    ctx.beginPath(); ctx.moveTo(diffLabelW, 0); ctx.lineTo(diffLabelW, cssH); ctx.stroke();
+  }
   ctx.beginPath(); ctx.moveTo(labelW, 0); ctx.lineTo(labelW, cssH); ctx.stroke();
   ctx.font = "11px sans-serif";
   ctx.textAlign = "left"; ctx.textBaseline = "middle";
@@ -1328,18 +1418,44 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
       ctx.fillRect(0, yTop, labelW, laneH);
       ctx.fillStyle = "#6ee79a";
       ctx.fillRect(0, yTop, 3, laneH);
-      ctx.beginPath(); ctx.arc(labelW - 8, yMid, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(diffLabelW - 8, yMid, 3, 0, Math.PI * 2); ctx.fill();
     }
     ctx.fillStyle = isSound ? "#dffbe8" : "#cfcfe0";
     /* テキストは x=10 から。右側は余白（効果音レーンは丸印ぶん多め）を空ける。
        レーンの高さに収まる行数だけ折り返し、縦中央に配置する。 */
-    const textMaxW = labelW - 10 - (isSound ? 14 : 6);
+    const textMaxW = diffLabelW - 10 - (isSound ? 14 : 6);
     const maxLines = Math.max(1, Math.floor((laneH - 2) / labelLineH));
     const lines = taikoWrapLines(ctx, diffs[i].name || "Diff " + (i + 1), textMaxW, maxLines);
     let ty = yMid - ((lines.length - 1) * labelLineH) / 2;
     for (let li = 0; li < lines.length; li++) {
       ctx.fillText(lines[li], 10, ty);
       ty += labelLineH;
+    }
+
+    if (timingInfoW > 0) {
+      const info = getTaikoTimingInfoAt(diffs[i].timingInfoPoints, currentTime);
+      const segments = [
+        { text: info ? formatTaikoTimingBpm(info.bpm) : "—", color: "#ff7777" },
+        { text: info && info.sv != null ? "x" + info.sv.toFixed(2) : "—", color: "#75df91" },
+        { text: info && info.volume != null ? Math.round(info.volume) + "%" : "—", color: "#a799ff" }
+      ];
+      const compactLineH = Math.max(7, Math.min(14, (laneH - 2) / 3));
+      const infoFontPx = Math.max(7, Math.min(12, Math.floor(compactLineH - 1)));
+      const infoLineH = Math.max(
+        infoFontPx,
+        Math.min(16, (laneH - infoFontPx - 2) / 2)
+      );
+      const tx = diffLabelW + timingInfoW / 2;
+      let infoY = yMid - infoLineH;
+      ctx.font = infoFontPx + "px sans-serif";
+      ctx.textAlign = "center";
+      for (const segment of segments) {
+        ctx.fillStyle = segment.color;
+        ctx.fillText(segment.text, tx, infoY);
+        infoY += infoLineH;
+      }
+      ctx.font = "11px sans-serif";
+      ctx.textAlign = "left";
     }
   }
 
@@ -1489,6 +1605,8 @@ if (typeof window !== "undefined") {
   window.parseTaikoRedTiming = parseTaikoRedTiming;
   window.getTaikoMeasureBeat = getTaikoMeasureBeat;
   window.parseTaikoTimelineMarks = parseTaikoTimelineMarks;
+  window.parseTaikoTimingInfoPoints = parseTaikoTimingInfoPoints;
+  window.getTaikoTimingInfoAt = getTaikoTimingInfoAt;
   window.getTaikoDominantBpm = getTaikoDominantBpm;
   window.getTaikoEqualSpeedPxPerMs = getTaikoEqualSpeedPxPerMs;
   window.applyTaikoNoteVelocities = applyTaikoNoteVelocities;

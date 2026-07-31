@@ -431,11 +431,12 @@
               360,
               spCanvas.clientWidth || (spCanvas.parentElement && spCanvas.parentElement.clientWidth) || 800
             );
-            var key = (bpm == null ? 'fallback' : bpm.toFixed(6)) + ':' + Math.round(canvasWidth);
+            var key = (bpm == null ? 'fallback' : bpm.toFixed(6)) + ':' +
+              Math.round(canvasWidth) + ':' + (spShowTimingInfo ? 'info' : 'plain');
             if (key === spBaseSpeedKey) return;
             spBaseSpeedKey = key;
             var calculated = window.getTaikoEqualSpeedPxPerMs
-              ? window.getTaikoEqualSpeedPxPerMs(bpm, canvasWidth)
+              ? window.getTaikoEqualSpeedPxPerMs(bpm, canvasWidth, spShowTimingInfo)
               : null;
             spBasePxPerMs = Number.isFinite(calculated) && calculated > 0
               ? calculated
@@ -520,12 +521,14 @@
 
           /* 効果音（ドン/カツ）: ON のとき、選択レーンのノーツを再生に合わせて鳴らす */
           var spHitSounds = false;   // 効果音 ON/OFF
-          /* Kiai強調とNCシンバル小節線は既定ON。明示的にOFF保存された時だけ無効。 */
+          /* Kiai/NCは既定ON、BPM/SV/Volume情報は既定OFF。 */
           var spHighlightKiai = true;
           var spShowNc = true;
+          var spShowTimingInfo = false;
           try {
             if (localStorage.getItem('moddingHelperPreviewKiaiHighlight') === '0') spHighlightKiai = false;
             if (localStorage.getItem('moddingHelperPreviewNcCymbal') === '0') spShowNc = false;
+            if (localStorage.getItem('moddingHelperPreviewTimingInfo') === '1') spShowTimingInfo = true;
           } catch (e) {}
           var spSynth = null;        // Web Audio シンセ/サンプルキット
           var spSoundLane = 0;       // 効果音を鳴らすレーン（0=最上=最難）。クリックで変更
@@ -799,6 +802,23 @@
                     );
                   } catch (e) {}
                 }
+              },
+              {
+                id: 'etb-preview-timing-info-cb',
+                textId: 'etb-preview-timing-info-text',
+                key: 'electronShowPreviewTimingInfo',
+                checked: spShowTimingInfo,
+                change: function(checked) {
+                  spShowTimingInfo = checked;
+                  /* 情報カラム分だけプレイフィールド幅が変わるため基準ズームも再計算する。 */
+                  spBaseSpeedKey = '';
+                  try {
+                    localStorage.setItem(
+                      'moddingHelperPreviewTimingInfo',
+                      checked ? '1' : '0'
+                    );
+                  } catch (e) {}
+                }
               }
             ].forEach(function(opt) {
               var lb = document.createElement('label');
@@ -1008,6 +1028,8 @@
               }
               var marks = window.parseTaikoTimelineMarks
                 ? window.parseTaikoTimelineMarks(d.text) : null;
+              var timingInfoPoints = window.parseTaikoTimingInfoPoints
+                ? window.parseTaikoTimingInfoPoints(d.text) : [];
               var lastNoteEnd = null;
               if (notes.length) {
                 var lastNote = notes[notes.length - 1];
@@ -1033,6 +1055,7 @@
                 red: red,
                 dominantBpm: dominantBpm,
                 barlines: barlines,
+                timingInfoPoints: timingInfoPoints,
                 /* 進捗バー用マーカー(kiai/SV/BPM/PreviewTime/Bookmarks)を1回だけ解析 */
                 marks: marks
               };
@@ -1813,6 +1836,7 @@
               judgeFrac: spJudgeFrac,
               highlightKiai: spHighlightKiai,
               showNcCymbal: spShowNc,
+              showTimingInfo: spShowTimingInfo,
               isSelected: spSelNotes.length ? spIsSelected : null,
               marquee: spMarquee,
               emptyText: isEn ? 'No beatmap loaded' : '譜面が読み込まれていません',
@@ -2458,6 +2482,7 @@
           set('etb-preview-other-title', 'electronOtherSettings');
           set('etb-preview-kiai-text',   'electronHighlightKiai');
           set('etb-preview-nc-text',     'electronHighlightNcBarlines');
+          set('etb-preview-timing-info-text', 'electronShowPreviewTimingInfo');
           set('etb-sfx-settings-title',  'electronHitSoundSet');
           set('etb-sfx-vol-label',       'electronHitSoundVolume');
           set('etb-music-vol-label',     'electronMusicVolume');
