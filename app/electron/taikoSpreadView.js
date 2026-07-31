@@ -712,12 +712,22 @@ function getTaikoKiaiGlowImage() {
     : null;
 }
 
-function isTaikoKiaiAt(marks, time) {
-  if (!marks?.kiai?.length || !Number.isFinite(time)) return false;
-  return marks.kiai.some(interval =>
-    time >= interval.start &&
-    (interval.end == null || time < interval.end)
-  );
+const TAIKO_KIAI_GLOW_FADE_OUT_MS = 300;
+
+function taikoKiaiGlowAlphaAt(marks, time) {
+  if (!marks?.kiai?.length || !Number.isFinite(time)) return 0;
+  let alpha = 0;
+  for (const interval of marks.kiai) {
+    if (time >= interval.start && (interval.end == null || time < interval.end)) return 1;
+    if (interval.end == null || time < interval.end) continue;
+    const progress = (time - interval.end) / TAIKO_KIAI_GLOW_FADE_OUT_MS;
+    if (progress >= 1) continue;
+    /* smoothstep の逆。Kiai終了時から300msかけて自然に透明化する。 */
+    const clamped = Math.max(0, progress);
+    const fade = 1 - clamped * clamped * (3 - 2 * clamped);
+    alpha = Math.max(alpha, fade);
+  }
+  return alpha;
 }
 
 function drawTaikoKiaiBands(
@@ -760,7 +770,8 @@ function drawTaikoKiaiGlow(
   laneH,
   bigRadius,
   playX0,
-  playX1
+  playX1,
+  fadeAlpha
 ) {
   const size = Math.min(
     laneH * 1.3,
@@ -775,7 +786,7 @@ function drawTaikoKiaiGlow(
 
   if (image) {
     ctx.globalCompositeOperation = "lighter";
-    ctx.globalAlpha = 0.56;
+    ctx.globalAlpha = 0.56 * fadeAlpha;
     ctx.drawImage(
       image,
       judgmentX - size / 2,
@@ -784,6 +795,7 @@ function drawTaikoKiaiGlow(
       size
     );
   } else {
+    ctx.globalAlpha = fadeAlpha;
     const radius = Math.max(bigRadius * 1.35, laneH * 0.42);
     const gradient = ctx.createRadialGradient(
       judgmentX,
@@ -992,7 +1004,10 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
       }
       /* ゲーム画面表示: 判定枠（受け口）。ノーツより先に描いて背面にする */
       if (svMode) {
-        if (highlightKiai && isTaikoKiaiAt(diff.marks, currentTime)) {
+        const kiaiGlowAlpha = highlightKiai
+          ? taikoKiaiGlowAlphaAt(diff.marks, currentTime)
+          : 0;
+        if (kiaiGlowAlpha > 0) {
           drawTaikoKiaiGlow(
             ctx,
             judgmentX,
@@ -1001,7 +1016,8 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
             laneH,
             bigR,
             playX0,
-            playX1
+            playX1,
+            kiaiGlowAlpha
           );
         }
         ctx.beginPath();
