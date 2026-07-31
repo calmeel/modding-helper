@@ -29,6 +29,36 @@ const srCalculator = createSrCalculatorService({ app, root });
 const iconUrl  = 'file:///' + path.join(root, 'images', 'icon.png').replace(/\\/g, '/');
 const docsPath = path.join(root, 'docs', 'docs.html');
 
+function parseOsuId(text, key) {
+  const match = String(text || '').match(new RegExp('^\\s*' + key + '\\s*:\\s*(-?\\d+)\\s*$', 'mi'));
+  if (!match) return null;
+  const value = Number.parseInt(match[1], 10);
+  return Number.isSafeInteger(value) ? value : null;
+}
+
+// 現在 osu! で開いている譜面に対するタイトルバー操作の対象を返す。
+// renderer にはパス自体を渡さず、操作の可否だけを公開する。
+function getCurrentBeatmapActionTarget() {
+  const osuPath = osuWatcher.getCurrentOsuPath();
+  if (!osuPath) return null;
+
+  const folder = path.dirname(osuPath);
+  let beatmapSetId = null;
+  let beatmapId = null;
+  try {
+    const text = fs.readFileSync(osuPath, 'utf8');
+    beatmapSetId = parseOsuId(text, 'BeatmapSetID');
+    beatmapId = parseOsuId(text, 'BeatmapID');
+  } catch (_) {}
+
+  return {
+    folder,
+    canOpenFolder: fs.existsSync(folder),
+    beatmapSetId: beatmapSetId > 0 ? beatmapSetId : null,
+    beatmapId: beatmapId > 0 ? beatmapId : null,
+  };
+}
+
 // ── renderer への注入コード ──
 // 巨大な文字列を main.js に埋めると編集も構文チェックもできないため、
 // electron/inject/ に実ファイルとして置き、実行時に読み込んで注入する。
@@ -213,6 +243,37 @@ app.whenReady().then(() => {
   });
   ipcMain.on('win-close',     () => { if (mainWin) mainWin.close(); });
   ipcMain.on('win-open-docs', () => { shell.openExternal('file:///' + docsPath.replace(/\\/g, '/')); });
+
+  ipcMain.handle('osu-get-current-map-actions', () => {
+    const target = getCurrentBeatmapActionTarget();
+    return {
+      canOpenFolder: !!(target && target.canOpenFolder),
+      canOpenBeatmapPage: !!(target && target.beatmapSetId),
+    };
+  });
+
+  ipcMain.handle('osu-open-current-folder', async () => {
+    const target = getCurrentBeatmapActionTarget();
+    if (!target || !target.canOpenFolder) return false;
+    try {
+      return (await shell.openPath(target.folder)) === '';
+    } catch (_) {
+      return false;
+    }
+  });
+
+  ipcMain.handle('osu-open-current-beatmap-page', async () => {
+    const target = getCurrentBeatmapActionTarget();
+    if (!target || !target.beatmapSetId) return false;
+    let url = 'https://osu.ppy.sh/beatmapsets/' + target.beatmapSetId;
+    if (target.beatmapId) url += '#taiko/' + target.beatmapId;
+    try {
+      await shell.openExternal(url);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  });
 
   // パネルを別ウィンドウに分離（メタデータは現在のチェック状態を引き継ぐ）
   ipcMain.on('detach-panel', (e, name, lang, checked) => {

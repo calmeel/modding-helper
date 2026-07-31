@@ -34,6 +34,8 @@
         var svgRes  = '<svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="0.6" width="8.4" height="8.4" rx="0.5"/><path d="M0.6 3.5v7.4a.5.5 0 0 0 .5.5h7.4"/></svg>';
         var svgX    = '<svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="1.5" y1="1.5" x2="10.5" y2="10.5"/><line x1="10.5" y1="1.5" x2="1.5" y2="10.5"/></svg>';
         var svgDetach = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>';
+        var svgFolder = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z"/></svg>';
+        var svgExternal = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M10 14 21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg>';
 
         /* ── タイトルバー生成 ── */
         var titlebar = document.createElement('div');
@@ -48,6 +50,14 @@
           '<div id="etb-nav"></div>' +
           '<div id="etb-spacer"></div>' +
           '<div id="etb-controls">' +
+            '<div id="etb-map-actions">' +
+              '<button class="etb-map-action" id="etb-open-map-folder" type="button" disabled ' +
+                'data-i18n-title="electronOpenBeatmapFolder" title="' + electronText('electronOpenBeatmapFolder') + '" ' +
+                'aria-label="' + electronText('electronOpenBeatmapFolder') + '">' + svgFolder + '</button>' +
+              '<button class="etb-map-action" id="etb-open-map-page" type="button" disabled ' +
+                'data-i18n-title="electronOpenBeatmapPage" title="' + electronText('electronOpenBeatmapPage') + '" ' +
+                'aria-label="' + electronText('electronOpenBeatmapPage') + '">' + svgExternal + '</button>' +
+            '</div>' +
             '<button class="etb-ctrl" id="etb-min">' + svgMin + '</button>' +
             '<button class="etb-ctrl" id="etb-max">' + svgMax + '</button>' +
             '<button class="etb-ctrl" id="etb-close">' + svgX + '</button>' +
@@ -237,6 +247,40 @@
         appEl.insertBefore(titlebar, appEl.firstChild);
         appEl.appendChild(layout);
         tabsSec.remove();
+
+        /* 現在 osu! で開いている譜面に対するタイトルバー操作 */
+        var mapFolderButton = document.getElementById('etb-open-map-folder');
+        var mapPageButton = document.getElementById('etb-open-map-page');
+        var mapActionRefreshId = 0;
+        var setMapActionState = function(state) {
+          if (mapFolderButton) mapFolderButton.disabled = !(state && state.canOpenFolder);
+          if (mapPageButton) mapPageButton.disabled = !(state && state.canOpenBeatmapPage);
+        };
+        var refreshMapActionState = function() {
+          var refreshId = ++mapActionRefreshId;
+          if (!window.electronAPI || typeof window.electronAPI.getCurrentMapActions !== 'function') {
+            setMapActionState(null);
+            return;
+          }
+          window.electronAPI.getCurrentMapActions().then(function(state) {
+            if (refreshId === mapActionRefreshId) setMapActionState(state);
+          }).catch(function() {
+            if (refreshId === mapActionRefreshId) setMapActionState(null);
+          });
+        };
+        if (mapFolderButton) mapFolderButton.addEventListener('click', function() {
+          if (!window.electronAPI || typeof window.electronAPI.openCurrentMapFolder !== 'function') return;
+          window.electronAPI.openCurrentMapFolder().then(function(ok) {
+            if (!ok) refreshMapActionState();
+          }).catch(refreshMapActionState);
+        });
+        if (mapPageButton) mapPageButton.addEventListener('click', function() {
+          if (!window.electronAPI || typeof window.electronAPI.openCurrentBeatmapPage !== 'function') return;
+          window.electronAPI.openCurrentBeatmapPage().then(function(ok) {
+            if (!ok) refreshMapActionState();
+          }).catch(refreshMapActionState);
+        });
+        refreshMapActionState();
 
         /* 設定項目を各カードへ移設:
            - チェック対象選択(#osuSourceSettings) → 譜面読み込み設定カード
@@ -2527,6 +2571,12 @@
           setTitle('etb-sb-play',      'electronPlay');
           setTitle('etb-sb-pause',     'electronPause');
           setTitle('etb-sb-stop',      'electronStop');
+          setTitle('etb-open-map-folder', 'electronOpenBeatmapFolder');
+          setTitle('etb-open-map-page',   'electronOpenBeatmapPage');
+          var mapFolderLabel = document.getElementById('etb-open-map-folder');
+          var mapPageLabel = document.getElementById('etb-open-map-page');
+          if (mapFolderLabel) mapFolderLabel.setAttribute('aria-label', electronText('electronOpenBeatmapFolder'));
+          if (mapPageLabel) mapPageLabel.setAttribute('aria-label', electronText('electronOpenBeatmapPage'));
 
           document.querySelectorAll('.etb-detach-btn, .etb-chart-detach')
             .forEach(function(el) {
@@ -2853,6 +2903,8 @@
 
           /* ── osu! マップ情報 IPC（osu モードのみ反映） ── */
           window.electronAPI.onOsuMapInfo(function(data) {
+            /* タイトルバー操作は表示モードに関係なく、現在の osu! 譜面に追従する。 */
+            refreshMapActionState();
             if (panelMode !== 'osu') return;
             currentDiffFile = data && data.diffFileName ? data.diffFileName : null;
             renderMapPanel(data);

@@ -162,6 +162,38 @@
         margin-left: auto;   /* spacer が潰れても常に右端へ寄せる */
       }
 
+      #etb-map-actions {
+        display: flex;
+        align-items: stretch;
+        padding: 0 4px;
+        border-right: 1px solid #363636;
+        margin-right: 2px;
+      }
+
+      .etb-map-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        padding: 0;
+        background: transparent;
+        border: none;
+        color: #888;
+        cursor: pointer;
+        -webkit-app-region: no-drag;
+        transition: background 0.1s, color 0.1s;
+      }
+
+      .etb-map-action:hover:not(:disabled) {
+        background: rgba(91,155,213,0.16);
+        color: #5b9bd5;
+      }
+
+      .etb-map-action:disabled {
+        color: #4d4d55;
+        cursor: default;
+      }
+
       /* 幅が足りなくなる順に、影響の小さいものから隠していく
          （Chromium 91 のためコンテナクエリは使えずビューポート幅で判定） */
       @media (max-width: 1000px) { #etb-title-suffix { display: none; } }
