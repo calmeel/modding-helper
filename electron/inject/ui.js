@@ -388,6 +388,9 @@
           try { if (localStorage.getItem('moddingHelperPreviewDiffDesc') === '0') spDiffDesc = false; } catch (e) {}
           /* 非表示にする Diff（fileName→true）。localStorage に永続化 */
           var spHiddenDiffs = Object.create(null);
+          var spVisibleDiffsRef = null;
+          var spVisibleDiffs = [];
+          var spVisibleDiffsDirty = true;
           try {
             var hd0 = JSON.parse(localStorage.getItem('moddingHelperPreviewHiddenDiffs') || '{}');
             if (hd0 && typeof hd0 === 'object') for (var hk in hd0) if (hd0[hk]) spHiddenDiffs[hk] = true;
@@ -402,6 +405,9 @@
           var spZoomRatio = 1;
           var spPxPerMs = spBasePxPerMs;
           var spBaseSpeedKey = '';
+          var spBaseSpeedDiffsRef = null;
+          var spBaseSpeedCanvasWidth = -1;
+          var spBaseSpeedTimingInfo = null;
           var updateSpZoomLabel = function () {
             var l = document.getElementById('etb-spread-zoomlabel');
             if (l) l.textContent = Math.round(spZoomRatio * 100) + '%';
@@ -426,11 +432,17 @@
             return bpms.length % 2 ? bpms[mid] : (bpms[mid - 1] + bpms[mid]) / 2;
           };
           var updateSpreadBaseSpeed = function (diffs) {
-            var bpm = getSpreadRepresentativeBpm(diffs);
             var canvasWidth = Math.max(
               360,
               spCanvas.clientWidth || (spCanvas.parentElement && spCanvas.parentElement.clientWidth) || 800
             );
+            if (spBaseSpeedDiffsRef === diffs &&
+                spBaseSpeedCanvasWidth === canvasWidth &&
+                spBaseSpeedTimingInfo === spShowTimingInfo) return;
+            spBaseSpeedDiffsRef = diffs;
+            spBaseSpeedCanvasWidth = canvasWidth;
+            spBaseSpeedTimingInfo = spShowTimingInfo;
+            var bpm = getSpreadRepresentativeBpm(diffs);
             var key = (bpm == null ? 'fallback' : bpm.toFixed(6)) + ':' +
               Math.round(canvasWidth) + ':' + (spShowTimingInfo ? 'info' : 'plain');
             if (key === spBaseSpeedKey) return;
@@ -645,6 +657,7 @@
                 spDiffDesc = opt.desc;
                 try { localStorage.setItem('moddingHelperPreviewDiffDesc', spDiffDesc ? '1' : '0'); } catch (e) {}
                 if (spCacheDiffs && spCacheDiffs.length) sortSpreadDiffs(spCacheDiffs); // 即時反映
+                spVisibleDiffsDirty = true;
               });
               var txt = document.createElement('span');
               txt.id = opt.id; txt.textContent = electronText(opt.key);
@@ -755,6 +768,7 @@
                 cb.addEventListener('change', function () {
                   if (cb.checked) delete spHiddenDiffs[d.fileName];
                   else spHiddenDiffs[d.fileName] = true;
+                  spVisibleDiffsDirty = true;
                   saveHiddenDiffs();
                 });
                 lb.appendChild(cb);
@@ -1075,6 +1089,13 @@
             spreadTimeRange = minT <= maxT ? [minT - 2000, maxT + 2000] : null;
             return spCacheDiffs;
           };
+          var getVisibleSpreadDiffs = function (allDiffs) {
+            if (!spVisibleDiffsDirty && spVisibleDiffsRef === allDiffs) return spVisibleDiffs;
+            spVisibleDiffsRef = allDiffs;
+            spVisibleDiffs = allDiffs.filter(function (d) { return !spHiddenDiffs[d.fileName]; });
+            spVisibleDiffsDirty = false;
+            return spVisibleDiffs;
+          };
 
           /* ── 手動シーク（osu! には同期しない） ── */
           var setSpreadManual = function (t) {
@@ -1197,7 +1218,7 @@
             /* ドラッグ開始位置のレーン（=難易度）に選択を閉じ込める */
             var geom = spCanvas.__spreadGeom;
             var laneIdx = geom && geom.laneH ? Math.floor((p.y - geom.topPad) / geom.laneH) : -1;
-            var diffs = getSpreadDiffs().filter(function (d) { return !spHiddenDiffs[d.fileName]; });
+            var diffs = getVisibleSpreadDiffs(getSpreadDiffs());
             spSelDragDiff = (laneIdx >= 0 && laneIdx < diffs.length) ? diffs[laneIdx] : null;
             /* Ctrl+ドラッグでの追加は、既存の選択と同じ難易度の時だけ（選択は 1 譜面に限定） */
             spSelBase = ((e.ctrlKey || e.metaKey) && spSelDiff && spSelDiff === spSelDragDiff)
@@ -1605,13 +1626,23 @@
             if (spSelNotes.length) { spClearSelection(); e.preventDefault(); }
           });
           /* 毎フレーム: 時間・％・進捗バーを更新 */
+          var spBottomLastTimeText = '';
+          var spBottomLastPctText = '';
           var updateSpreadBottom = function (diffs, curMs) {
             var dur = getSpreadDuration();
             var t = (curMs != null && isFinite(curMs)) ? curMs : 0;
             var te = document.getElementById('etb-sb-time');
-            if (te) te.textContent = fmtSpreadTime(t);
+            var timeText = fmtSpreadTime(t);
+            if (te && timeText !== spBottomLastTimeText) {
+              te.textContent = timeText;
+              spBottomLastTimeText = timeText;
+            }
             var pe = document.getElementById('etb-sb-pct');
-            if (pe) pe.textContent = (dur > 0 ? (Math.max(0, Math.min(1, t / dur)) * 100).toFixed(1) : '0.0') + '%';
+            var pctText = (dur > 0 ? (Math.max(0, Math.min(1, t / dur)) * 100).toFixed(1) : '0.0') + '%';
+            if (pe && pctText !== spBottomLastPctText) {
+              pe.textContent = pctText;
+              spBottomLastPctText = pctText;
+            }
             if (spProgCanvas && window.drawTaikoProgressBar) {
               /* マーカーは「選択中のレーン」の譜面のものを表示 */
               var d = diffs[Math.min(spSoundLane, diffs.length - 1)];
@@ -1819,7 +1850,7 @@
             updateSpreadBaseSpeed(allDiffs);
             updateSpreadMeterUi(allDiffs, curTime);
             /* 非表示Diffを除外（レーンは上に詰まる）。両処理・描画で同じ配列を使う */
-            var diffs = allDiffs.filter(function (d) { return !spHiddenDiffs[d.fileName]; });
+            var diffs = getVisibleSpreadDiffs(allDiffs);
             /* 効果音（音楽再生中のみ、先読みスケジュール） */
             scheduleSpreadHitSounds(diffs, spreadAudioPlaying && !spAudio.paused);
             var isEn = false;
@@ -2738,7 +2769,7 @@
           };
 
           /* ── osu! タイミング情報 IPC（osu モードのみ反映） ── */
-          window.electronAPI.onTimingInfo(function(data) {
+          var applyTimingInfo = function(data) {
             /* file モードでは、別の譜面を再生中の osu! の時刻を
                プレビューやグラフへ一切流さない。 */
             if (panelMode !== 'osu') return;
@@ -2774,11 +2805,11 @@
             if (!timing) return;
 
             if (!data) {
-              timing.textContent = '--:--:---';
-              bpm.textContent    = '---';
-              sv.textContent     = '---';
-              vbpm.textContent   = '---';
-              vol.textContent    = '---';
+              if (timing.textContent !== '--:--:---') timing.textContent = '--:--:---';
+              if (bpm.textContent !== '---') bpm.textContent = '---';
+              if (sv.textContent !== '---') sv.textContent = '---';
+              if (vbpm.textContent !== '---') vbpm.textContent = '---';
+              if (vol.textContent !== '---') vol.textContent = '---';
               return;
             }
 
@@ -2786,13 +2817,38 @@
             var m   = Math.floor(ms / 60000);
             var s   = Math.floor((ms % 60000) / 1000);
             var mil = ms % 1000;
-            timing.textContent = String(m).padStart(2, '0') + ':' +
-                                  String(s).padStart(2, '0') + ':' +
-                                  String(mil).padStart(3, '0');
-            bpm.textContent  = data.bpm   !== null ? data.bpm.toFixed(2)  : '---';
-            sv.textContent   = data.sv    !== null ? data.sv.toFixed(2)   : '---';
-            vbpm.textContent = data.vbpm  !== null ? data.vbpm.toFixed(2) : '---';
-            vol.textContent  = data.volume !== null ? data.volume + '%'   : '---';
+            var timingText = String(m).padStart(2, '0') + ':' +
+                             String(s).padStart(2, '0') + ':' +
+                             String(mil).padStart(3, '0');
+            var bpmText  = data.bpm   !== null ? data.bpm.toFixed(2)  : '---';
+            var svText   = data.sv    !== null ? data.sv.toFixed(2)   : '---';
+            var vbpmText = data.vbpm  !== null ? data.vbpm.toFixed(2) : '---';
+            var volText  = data.volume !== null ? data.volume + '%'   : '---';
+            if (timing.textContent !== timingText) timing.textContent = timingText;
+            if (bpm.textContent !== bpmText) bpm.textContent = bpmText;
+            if (sv.textContent !== svText) sv.textContent = svText;
+            if (vbpm.textContent !== vbpmText) vbpm.textContent = vbpmText;
+            if (vol.textContent !== volText) vol.textContent = volText;
+          };
+
+          /* PowerShell側は低遅延のため約125Hzで時刻を送る。IPCごとにDOM・グラフを
+             更新せず、最新値だけを次の描画フレームへ渡して最大1回に集約する。 */
+          var pendingTimingInfo = null;
+          var pendingTimingInfoSet = false;
+          var timingInfoRaf = null;
+          window.electronAPI.onTimingInfo(function(data) {
+            if (panelMode !== 'osu') return;
+            pendingTimingInfo = data;
+            pendingTimingInfoSet = true;
+            if (timingInfoRaf != null) return;
+            timingInfoRaf = requestAnimationFrame(function() {
+              timingInfoRaf = null;
+              if (!pendingTimingInfoSet) return;
+              var latest = pendingTimingInfo;
+              pendingTimingInfoSet = false;
+              pendingTimingInfo = null;
+              applyTimingInfo(latest);
+            });
           });
 
           /* ── osu! マップ情報 IPC（osu モードのみ反映） ── */

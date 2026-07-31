@@ -157,13 +157,19 @@ function taikoDrumRollTickSpacing(startTime, redTP, sliderTickRate) {
 function taikoDrumRollTickTimes(note) {
   const spacing = note.tickSpacing;
   const end = note.endTime != null ? note.endTime : note.time;
+  const cached = note._drumRollTickCache;
+  if (cached && cached.spacing === spacing && cached.end === end) return cached.times;
   const out = [];
-  if (!(spacing > 0)) return out;
+  if (!(spacing > 0)) {
+    note._drumRollTickCache = { spacing, end, times: out };
+    return out;
+  }
   const limit = end + spacing / 2;
   // osu! と同じく加算で進める（誤差の出方まで揃える）。
   // 極端に短い間隔で無限ループにならないよう回数に上限を設ける。
   let t = note.time;
   for (let i = 0; i < 4096 && t < limit; i++, t += spacing) out.push(t);
+  note._drumRollTickCache = { spacing, end, times: out };
   return out;
 }
 
@@ -213,11 +219,14 @@ function parseTaikoRedTiming(text) {
 function getTaikoMeasureBeat(red, time) {
   if (!Array.isArray(red) || !red.length || !Number.isFinite(time)) return null;
 
-  let point = red[0];
-  for (let i = 1; i < red.length; i++) {
-    if (red[i].time > time) break;
-    point = red[i];
+  let lo = 0;
+  let hi = red.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (red[mid].time <= time) lo = mid + 1;
+    else hi = mid;
   }
+  const point = red[Math.max(0, lo - 1)];
   if (!Number.isFinite(point.time) || !(point.beatLength > 0)) return null;
 
   const meter = Number.isFinite(point.meter) && point.meter > 0
@@ -582,11 +591,11 @@ function resolveTaikoBreakRegions(notes, breaks) {
 //   中段: BPM(赤) + SV(緑、赤より前面)
 //   下段: Bookmark(青) + プレビューポイント(黄)
 // 中段と下段の境界を白い時間軸とし、その周囲に kiai のオレンジ帯を表示する。
-function drawTaikoProgressBar(canvas, marks, durationMs, curMs) {
+function paintTaikoProgressStatic(canvas, marks, durationMs, forcedCssW, forcedCssH, forcedDpr) {
   const wrap = canvas.parentElement || canvas;
-  const cssW = Math.max(40, canvas.clientWidth || wrap.clientWidth || 300);
-  const cssH = Math.max(12, canvas.clientHeight || 27);
-  const dpr = window.devicePixelRatio || 1;
+  const cssW = forcedCssW || Math.max(40, canvas.clientWidth || wrap.clientWidth || 300);
+  const cssH = forcedCssH || Math.max(12, canvas.clientHeight || 27);
+  const dpr = forcedDpr || window.devicePixelRatio || 1;
   if (canvas.width  !== Math.round(cssW * dpr)) canvas.width  = Math.round(cssW * dpr);
   if (canvas.height !== Math.round(cssH * dpr)) canvas.height = Math.round(cssH * dpr);
 
@@ -658,11 +667,66 @@ function drawTaikoProgressBar(canvas, marks, durationMs, curMs) {
   ctx.strokeStyle = "#2a2a33"; ctx.lineWidth = 1;
   ctx.strokeRect(0.5, 0.5, cssW - 1, cssH - 1);
 
-  // 再生位置（全高の白線）
+}
+
+function drawTaikoProgressBar(canvas, marks, durationMs, curMs) {
+  const wrap = canvas.parentElement || canvas;
+  const cssW = Math.max(40, canvas.clientWidth || wrap.clientWidth || 300);
+  const cssH = Math.max(12, canvas.clientHeight || wrap.clientHeight || 27);
+  const dpr = window.devicePixelRatio || 1;
+  const pixelW = Math.round(cssW * dpr);
+  const pixelH = Math.round(cssH * dpr);
+  if (canvas.width !== pixelW) canvas.width = pixelW;
+  if (canvas.height !== pixelH) canvas.height = pixelH;
+
+  const dur = durationMs > 0 ? durationMs : 0;
+  let staticCache = canvas.__taikoProgressStatic;
+  const canCache = typeof document !== "undefined" && document.createElement;
+  if (canCache && (
+    !staticCache ||
+    staticCache.marks !== marks ||
+    staticCache.duration !== dur ||
+    staticCache.cssW !== cssW ||
+    staticCache.cssH !== cssH ||
+    staticCache.dpr !== dpr
+  )) {
+    const staticCanvas = document.createElement("canvas");
+    staticCanvas.width = pixelW;
+    staticCanvas.height = pixelH;
+    paintTaikoProgressStatic(staticCanvas, marks, dur, cssW, cssH, dpr);
+    staticCache = { canvas: staticCanvas, marks, duration: dur, cssW, cssH, dpr };
+    canvas.__taikoProgressStatic = staticCache;
+  }
+
+  const ctx = canvas.getContext("2d");
+  if (staticCache && staticCache.canvas) {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cssW, cssH);
+    ctx.drawImage(
+      staticCache.canvas,
+      0,
+      0,
+      staticCache.canvas.width,
+      staticCache.canvas.height,
+      0,
+      0,
+      cssW,
+      cssH
+    );
+  } else {
+    paintTaikoProgressStatic(canvas, marks, dur);
+  }
+
+  // 再生位置（全高の白線）だけを毎回描く。
   if (dur > 0 && curMs != null && Number.isFinite(curMs)) {
-    ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2;
-    const x = Math.round(xOf(curMs)) + 0.5;
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, cssH); ctx.stroke();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 2;
+    const x = Math.round(Math.max(0, Math.min(cssW, (curMs / dur) * cssW))) + 0.5;
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, cssH);
+    ctx.stroke();
   }
 }
 
@@ -893,6 +957,19 @@ function drawTaikoGrid(ctx, red, currentTime, judgmentX, pxPerMs, x0, x1, y0, y1
   }
 }
 
+// 昇順のノーツから time 以下の最後の要素の「次」を返す。
+// 等速表示で曲末から全ノーツを毎フレーム走査しないために使う。
+function upperBoundTaikoNoteTime(notes, time) {
+  let lo = 0;
+  let hi = notes.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (notes[mid].time <= time) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
 let taikoKiaiGlowImage = null;
 let taikoKiaiGlowLoadStarted = false;
 
@@ -1062,7 +1139,11 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
   const isSelected = typeof opts.isSelected === "function" ? opts.isSelected : null; // 選択中判定
   const showNcCymbal = !!opts.showNcCymbal;   // NCシンバル位置(major小節線)の強調
   const highlightKiai = opts.highlightKiai !== false; // Kiai背景・判定枠の炎
-  const hits = [];                            // クリック判定用に描いたノーツの位置を溜める
+  /* クリック判定配列と要素は毎フレーム再利用する。密度の高い譜面で大量の短命
+     オブジェクトを作り、周期的なGC停止を起こすことを避ける。 */
+  const spreadGeom = canvas.__spreadGeom || {};
+  const hits = Array.isArray(spreadGeom.hits) ? spreadGeom.hits : [];
+  let hitCount = 0;
   const svMode  = !!opts.svMode;              // true = ゲーム画面表示（SV/BPM適用）
   /* osu!px → 画面px の換算。判定点→右端の到達時間が実機と一致するように、
      「このビューの接近距離 ÷ osu!のプレイフィールド長」で縮尺を決める（ズーム非依存）。
@@ -1073,6 +1154,13 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
 
   const n = diffs.length;
   if (n === 0) {
+    hits.length = 0;
+    spreadGeom.topPad = 0;
+    spreadGeom.laneH = 0;
+    spreadGeom.n = 0;
+    spreadGeom.hits = hits;
+    spreadGeom.playX0 = playX0;
+    canvas.__spreadGeom = spreadGeom;
     ctx.fillStyle = "#666"; ctx.font = "13px sans-serif";
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText(opts.emptyText || "譜面が読み込まれていません", cssW / 2, cssH / 2);
@@ -1242,7 +1330,13 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
       /* 時刻の降順で描く＝時間的に先（判定ラインに近い側）のノーツが後から塗られて前面に来る。
          osu! と同じく「早いオブジェクトが遅いオブジェクトを隠す」。
          連打と円で描画パスを分けると、時刻に関係なく円が前面になってしまうので分けない。 */
-      for (let k = notes.length - 1; k >= 0; k--) {
+      /* 等速表示では右端より未来のノーツを二分探索で丸ごと飛ばす。
+         従来は常に曲末から逆走査していたため、曲前半ほど全譜面の大半を
+         毎フレーム読み飛ばしていた。SV表示は時刻順と画面順が一致しないため従来どおり。 */
+      const firstDrawIndex = svMode
+        ? notes.length - 1
+        : upperBoundTaikoNoteTime(notes, currentTime + futCut) - 1;
+      for (let k = firstDrawIndex; k >= 0; k--) {
         const note = notes[k];
         const dt = note.time - currentTime;            // head
         const isDen = note.kind === "denden";
@@ -1379,8 +1473,19 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
         }
         /* クリック判定用に、実際に描いた位置と大きさを残す
            （描画順のまま push するので、後ろの要素ほど前面） */
-        hits.push({ note: note, diff: diff, lane: i,
-                    x: x, x2: isRoll ? x2 : x, y: yMid, r: r });
+        let hit = hits[hitCount];
+        if (!hit) {
+          hit = {};
+          hits[hitCount] = hit;
+        }
+        hit.note = note;
+        hit.diff = diff;
+        hit.lane = i;
+        hit.x = x;
+        hit.x2 = isRoll ? x2 : x;
+        hit.y = yMid;
+        hit.r = r;
+        hitCount++;
       }
     }
   }
@@ -1425,7 +1530,14 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
        レーンの高さに収まる行数だけ折り返し、縦中央に配置する。 */
     const textMaxW = diffLabelW - 10 - (isSound ? 14 : 6);
     const maxLines = Math.max(1, Math.floor((laneH - 2) / labelLineH));
-    const lines = taikoWrapLines(ctx, diffs[i].name || "Diff " + (i + 1), textMaxW, maxLines);
+    const labelText = diffs[i].name || "Diff " + (i + 1);
+    const labelKey = labelText + "|" + textMaxW + "|" + maxLines;
+    let labelCache = diffs[i]._spreadLabelCache;
+    if (!labelCache || labelCache.key !== labelKey) {
+      labelCache = { key: labelKey, lines: taikoWrapLines(ctx, labelText, textMaxW, maxLines) };
+      diffs[i]._spreadLabelCache = labelCache;
+    }
+    const lines = labelCache.lines;
     let ty = yMid - ((lines.length - 1) * labelLineH) / 2;
     for (let li = 0; li < lines.length; li++) {
       ctx.fillText(lines[li], 10, ty);
@@ -1434,11 +1546,6 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
 
     if (timingInfoW > 0) {
       const info = getTaikoTimingInfoAt(diffs[i].timingInfoPoints, currentTime);
-      const segments = [
-        { text: info ? formatTaikoTimingBpm(info.bpm) : "—", color: "#ff7777" },
-        { text: info && info.sv != null ? "x" + info.sv.toFixed(2) : "—", color: "#75df91" },
-        { text: info && info.volume != null ? Math.round(info.volume) + "%" : "—", color: "#a799ff" }
-      ];
       const compactLineH = Math.max(7, Math.min(14, (laneH - 2) / 3));
       const infoFontPx = Math.max(7, Math.min(12, Math.floor(compactLineH - 1)));
       const infoLineH = Math.max(
@@ -1449,11 +1556,14 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
       let infoY = yMid - infoLineH;
       ctx.font = infoFontPx + "px sans-serif";
       ctx.textAlign = "center";
-      for (const segment of segments) {
-        ctx.fillStyle = segment.color;
-        ctx.fillText(segment.text, tx, infoY);
-        infoY += infoLineH;
-      }
+      ctx.fillStyle = "#ff7777";
+      ctx.fillText(info ? formatTaikoTimingBpm(info.bpm) : "—", tx, infoY);
+      infoY += infoLineH;
+      ctx.fillStyle = "#75df91";
+      ctx.fillText(info && info.sv != null ? "x" + info.sv.toFixed(2) : "—", tx, infoY);
+      infoY += infoLineH;
+      ctx.fillStyle = "#a799ff";
+      ctx.fillText(info && info.volume != null ? Math.round(info.volume) + "%" : "—", tx, infoY);
       ctx.font = "11px sans-serif";
       ctx.textAlign = "left";
     }
@@ -1479,7 +1589,13 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
   /* クリック判定用のジオメトリを保存（レーン選択・ノーツ選択の両方で使う）。
      playX0 = プレイフィールドの左端。ここより左は難易度名のラベル列で、
      ノーツの上に被せて描いている＝見えていないので、ノーツ判定から除外させる。 */
-  canvas.__spreadGeom = { topPad: topPad, laneH: laneH, n: n, hits: hits, playX0: playX0 };
+  hits.length = hitCount;
+  spreadGeom.topPad = topPad;
+  spreadGeom.laneH = laneH;
+  spreadGeom.n = n;
+  spreadGeom.hits = hits;
+  spreadGeom.playX0 = playX0;
+  canvas.__spreadGeom = spreadGeom;
 }
 
 // 太鼓の効果音（ドン/カツ）を Web Audio で合成する。音源ファイル不要。
