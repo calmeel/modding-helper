@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>osu!stable / osu!lazer Taiko Spinner Required Hit Calculation</title>
+  <style>
+    :root{color-scheme:dark;--bg:#111;--panel:#181818;--strong:#202020;--border:#2a2a2a;--border2:#333;--text:#eee;--soft:#ccc;--muted:#aaa;--blue:#9fdcff;--yellow:#ffd580;--green:#9ff2b2;--red:#ffb3b3;--purple:#c9b6ff}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:sans-serif;font-size:14px;line-height:1.65;max-width:1200px;margin:40px auto;padding:0 20px 64px;background:var(--bg);color:var(--text)}
+    h1{color:var(--blue);border-bottom:2px solid var(--border2);padding-bottom:10px;margin-bottom:22px;line-height:1.3}h2{margin-top:48px;color:var(--blue);border-bottom:1px solid var(--border2);padding-bottom:6px;line-height:1.4}h3{margin-top:30px;color:var(--yellow);line-height:1.4}
+    p,li{color:var(--soft)}a{color:var(--blue)}code{background:#222;padding:2px 6px;border-radius:4px;color:#f2f2f2}pre{margin:14px 0 0;padding:14px 16px;overflow-x:auto;background:#0d0d0d;border:1px solid var(--border);border-radius:6px;color:#e9f6ff;line-height:1.55}pre code{padding:0;background:transparent;color:inherit}
+    table{width:100%;border-collapse:collapse;margin-top:16px;background:var(--panel);border:1px solid var(--border);font-size:13px}th{background:var(--strong);color:var(--blue);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border2);white-space:nowrap}td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}tr:hover{background:#1d1d1d}
+    .doc-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px}.doc-parent-link{color:var(--muted);font-size:13px}.doc-parent-link a{color:var(--blue);text-decoration:none}.doc-parent-link a:hover{text-decoration:underline}.lead{max-width:900px;font-size:15px}
+    .section{margin-top:20px;padding:16px 18px;background:var(--panel);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:6px}.section-yellow{border-left-color:var(--yellow)}.section-green{border-left-color:var(--green)}.section-red{border-left-color:var(--red)}
+    .summary-grid,.source-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:18px}.summary-card,.source-card{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px 16px}.summary-label,.source-label{color:var(--muted);font-size:12px}.summary-value{margin-top:5px;color:#fff;font-size:18px;font-weight:bold}.summary-description{margin-top:7px;color:var(--soft);font-size:13px}.source-title{margin-top:4px;color:var(--yellow);font-size:16px;font-weight:bold}
+    .table-wrap{overflow-x:auto;margin-top:12px}.toc{margin-top:24px;padding:16px 18px;background:var(--panel);border:1px solid var(--border);border-radius:6px}.toc strong{color:var(--yellow)}.toc ol{columns:2;column-gap:36px;margin-bottom:0;padding-left:22px}.toc li{break-inside:avoid;margin:5px 0}.toc a{text-decoration:none}.toc a:hover{text-decoration:underline}
+    .tag{display:inline-block;margin-right:6px;padding:2px 7px;border:1px solid var(--border2);border-radius:999px;color:var(--muted);font-size:11px;vertical-align:1px}.good{color:var(--green);font-weight:bold}.difference{color:var(--red);font-weight:bold}.muted{color:var(--muted)}.formula-title{color:var(--purple);font-weight:bold}
+    .example-result{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-top:14px}.example-result div{padding:10px 12px;background:#121212;border:1px solid var(--border);border-radius:5px}.example-result span{display:block;color:var(--muted);font-size:12px}.example-result strong{display:block;margin-top:3px;font-size:17px}
+    .notes{margin-top:34px;padding:14px 16px;background:var(--panel);border-left:4px solid var(--yellow)}.notes-title{color:var(--yellow);font-weight:bold;margin-bottom:8px}
+    @media(max-width:720px){body{margin-top:24px;padding-inline:14px}.toc ol{columns:1}th,td{padding:9px 10px}}
+  </style>
+</head>
+<body>
+<h1>osu!stable / osu!lazer Taiko Spinner Required Hit Calculation</h1>
+
+<div class="doc-header">
+  <div class="doc-parent-link">This page is a technical reference for the <a href="docs-en.html">Modding Helper documentation</a>. For appearance timing, see <a href="spinnerTiming.en.html">Taiko Spinner Appearance Timing</a>.</div>
+</div>
+
+<p class="lead">
+  osu!taiko spinners (Swells / balloons) use different required-hit calculations and completion conditions in osu!stable and osu!lazer.
+  In particular, even when stable's calculated minimum is <code>1</code>, the spinner actually requires <strong>two alternating centre and rim inputs</strong> to be cleared.
+  This page separately explains the base value derived from OD and duration, the order of integer conversion, the minimum number of inputs, and input validation.
+</p>
+
+<div class="summary-grid">
+  <div class="summary-card"><div class="summary-label">Shared</div><div class="summary-value">Uses OD and duration</div><div class="summary-description">A base number of half-spins per second is derived from OD, then the Taiko-specific <code>1.65</code> multiplier is applied.</div></div>
+  <div class="summary-card"><div class="summary-label">osu!stable</div><div class="summary-value">Minimum 2 inputs</div><div class="summary-description">One final hit is required to exceed the half-spin completion threshold.</div></div>
+  <div class="summary-card"><div class="summary-label">osu!lazer</div><div class="summary-value">Minimum 1 input</div><div class="summary-description">The spinner completes as soon as the number of inputs reaches <code>RequiredHits</code>.</div></div>
+</div>
+
+<nav class="toc" aria-label="Table of contents"><strong>Table of contents</strong><ol>
+  <li><a href="#sources">Investigation and sources</a></li>
+  <li><a href="#scope">Scope and terminology</a></li>
+  <li><a href="#rate">Base rate derived from OD</a></li>
+  <li><a href="#stable">osu!stable calculation</a></li>
+  <li><a href="#lazer">osu!lazer calculation</a></li>
+  <li><a href="#input">Alternating-input validation</a></li>
+  <li><a href="#comparison">stable / lazer comparison</a></li>
+  <li><a href="#examples">Worked examples</a></li>
+</ol></nav>
+
+<h2 id="sources">1. Investigation and sources</h2>
+<div class="source-grid">
+  <div class="source-card">
+    <div class="source-label">osu!stable</div><div class="source-title">Analysis of osu!.exe and lazer's stable-compatible logic</div>
+    <p>In osu!stable, a spinner completes when its progress value <strong>exceeds</strong> the required number of half-spins. lazer's legacy score simulation also reproduces this behaviour: after calculating stable's required value, it uses an inclusive <code>i &lt;= required</code> loop to generate <code>required + 1</code> SwellTicks.</p>
+    <div class="table-wrap"><table><tbody>
+      <tr><th>FileVersion</th><td><code>1.3.3.8</code></td></tr>
+      <tr><th>Last modified</th><td><code>2026-07-11 16:31:18</code></td></tr>
+      <tr><th>SHA-256</th><td><code>6E182C10D1813209D12753DBC70B3A5BBA00FEF4ECF64BC42051870E6DFE4B7D</code></td></tr>
+    </tbody></table></div>
+    <p class="muted">The obfuscated type and method names are specific to the analysed build, so this page names them according to their observed behaviour.</p>
+  </div>
+  <div class="source-card">
+    <div class="source-label">osu!lazer</div><div class="source-title">Official GitHub source code</div>
+    <p>The following links are pinned to commit <code>83b8a64bec19e1463353645c2d6d10c75e275b43</code>, which was used for this investigation.</p>
+    <ul>
+      <li><a href="https://github.com/ppy/osu/blob/83b8a64bec19e1463353645c2d6d10c75e275b43/osu.Game.Rulesets.Taiko/Beatmaps/TaikoBeatmapConverter.cs#L145-L176" target="_blank" rel="noopener noreferrer">TaikoBeatmapConverter.cs</a> — lazer's required-hit calculation</li>
+      <li><a href="https://github.com/ppy/osu/blob/83b8a64bec19e1463353645c2d6d10c75e275b43/osu.Game.Rulesets.Taiko/Objects/Swell.cs#L20-L40" target="_blank" rel="noopener noreferrer">Swell.cs</a> — generating <code>RequiredHits</code> SwellTicks</li>
+      <li><a href="https://github.com/ppy/osu/blob/83b8a64bec19e1463353645c2d6d10c75e275b43/osu.Game.Rulesets.Taiko/Objects/Drawables/DrawableSwell.cs#L109-L154" target="_blank" rel="noopener noreferrer">DrawableSwell.cs</a> — per-input validation and the completion condition</li>
+      <li><a href="https://github.com/ppy/osu/blob/83b8a64bec19e1463353645c2d6d10c75e275b43/osu.Game.Rulesets.Taiko.Tests/Judgements/TestSceneSwellJudgements.cs#L200-L230" target="_blank" rel="noopener noreferrer">TestSceneSwellJudgements.cs</a> — a lazer test that completes with one hit</li>
+      <li><a href="https://github.com/ppy/osu/blob/83b8a64bec19e1463353645c2d6d10c75e275b43/osu.Game.Rulesets.Taiko/Difficulty/TaikoLegacyScoreSimulator.cs#L118-L138" target="_blank" rel="noopener noreferrer">TaikoLegacyScoreSimulator.cs</a> — stable's inclusive loop</li>
+      <li><a href="https://github.com/ppy/osu/blob/83b8a64bec19e1463353645c2d6d10c75e275b43/osu.Game.Rulesets.Taiko/Replays/TaikoAutoGenerator.cs#L42-L75" target="_blank" rel="noopener noreferrer">TaikoAutoGenerator.cs</a> — lazer's automatic input count</li>
+    </ul>
+  </div>
+</div>
+
+<h2 id="scope">2. Scope and terminology</h2>
+<div class="section section-yellow"><strong>Scope:</strong> this page covers only osu!taiko <code>Swells</code> (balloons / denden). Although they use spinner-type HitObjects in an .osu file, their gameplay and judgement classes are different from osu!standard's circular-motion spinners.</div>
+<div class="table-wrap"><table><thead><tr><th>Symbol</th><th>Meaning</th></tr></thead><tbody>
+  <tr><td><code>D</code></td><td>Spinner duration in milliseconds</td></tr>
+  <tr><td><code>OD</code></td><td>The final Overall Difficulty value</td></tr>
+  <tr><td><code>R(OD)</code></td><td>The base number of half-spins per second derived from OD</td></tr>
+  <tr><td><code>Hbase</code></td><td>The base half-spin count that stable converts to an integer before applying the <code>1.65</code> multiplier</td></tr>
+  <tr><td><code>Hstable</code></td><td>stable's completion threshold</td></tr>
+  <tr><td><code>Nstable</code></td><td>The actual number of inputs required to complete the spinner in stable</td></tr>
+  <tr><td><code>Nlazer</code></td><td>lazer's <code>RequiredHits</code>, which is also the actual number of inputs</td></tr>
+</tbody></table></div>
+<p>One input here means one centre or rim hit. The required alternation is between the centre and rim input types, not between the left and right sides.</p>
+
+<h2 id="rate">3. Base rate derived from OD</h2>
+<p>The base rate used by both clients varies from <code>3</code> to <code>7.5</code> according to OD.</p>
+<pre><code>OD &lt; 5:
+    R(OD) = 5 - 2 × (5 - OD) / 5
+
+OD = 5:
+    R(OD) = 5
+
+OD &gt; 5:
+    R(OD) = 5 + 2.5 × (OD - 5) / 5</code></pre>
+<div class="example-result">
+  <div><span>OD 0</span><strong>3.0 / second</strong></div>
+  <div><span>OD 5</span><strong>5.0 / second</strong></div>
+  <div><span>OD 10</span><strong>7.5 / second</strong></div>
+</div>
+<p>Taiko applies the legacy-derived <code>1.65</code> multiplier to this base value. However, stable and lazer differ in <strong>where the value is converted to an integer</strong>.</p>
+
+<h2 id="stable">4. osu!stable required hit count</h2>
+<h3><span class="tag">stable 1</span>Convert the base half-spin count first</h3>
+<pre><code>Hbase = trunc(D / 1000 × R(OD))
+
+Hstable = trunc(max(1, Hbase × 1.65))</code></pre>
+<p><code>trunc</code> means truncation toward zero. Because the value derived from duration and OD is converted to an integer before the <code>1.65</code> multiplier is applied, this does not match lazer's calculation, which multiplies all factors before truncating once at the end.</p>
+
+<h3><span class="tag">stable 2</span>The final hit that exceeds the threshold</h3>
+<p><code>Hstable</code> is a completion threshold rather than the actual input count. Inputs must continue until the progress value exceeds that threshold.</p>
+<pre><code>Nstable = Hstable + 1</code></pre>
+<p>lazer's stable-compatible score simulation reproduces this with the following inclusive loop.</p>
+<pre><code>for (i = 0; i &lt;= Hstable; i++):
+    add one SwellTick
+
+number generated = Hstable + 1</code></pre>
+<div class="section section-red"><strong>Why the minimum is two hits:</strong> the minimum value of <code>Hstable</code> is <code>1</code>, but this requires input number <code>0</code> and input number <code>1</code>. A single centre or rim hit therefore cannot clear the spinner; it completes after centre → rim or rim → centre.</div>
+
+<h2 id="lazer">5. osu!lazer required hit count</h2>
+<p>lazer multiplies OD, duration, and <code>1.65</code> together, then performs a single integer conversion at the end.</p>
+<pre><code>hitsPerSecond = R(OD) × 1.65
+
+Nlazer = trunc(max(1,
+                   D / 1000 × hitsPerSecond))</code></pre>
+<p><code>Swell</code> generates <code>Nlazer</code> <code>SwellTicks</code>. Each valid input completes one unjudged SwellTick, and the spinner completes when the number of successful ticks equals <code>RequiredHits</code>.</p>
+<pre><code>for each input:
+    complete the next SwellTick
+    numHits = number of successful SwellTicks
+
+    if numHits == RequiredHits:
+        complete the spinner</code></pre>
+<div class="section section-green"><strong>lazer really does have a one-hit minimum:</strong> the official tests include a Taiko Swell with <code>RequiredHits = 1</code> that receives one <code>LeftRim</code> input and completes with <code>LargeBonus</code>. This is not an osu!standard spinner test.</div>
+
+<h2 id="input">6. Alternating centre and rim inputs</h2>
+<p>During normal play, neither client advances the spinner when the same input type is repeated. The required alternation is not left and right; it is <strong>centre and rim</strong>.</p>
+<pre><code>Valid:
+    centre → rim → centre → rim ...
+    rim → centre → rim → centre ...
+
+Invalid consecutive inputs:
+    centre → centre
+    rim → rim</code></pre>
+<p>lazer's <code>DrawableSwell</code> remembers whether the previous input was a centre hit and does not advance a SwellTick when the same type is repeated. Relax removes this alternating-input restriction.</p>
+<div class="section section-yellow"><strong>About key names:</strong> the physical keys used for centre and rim hits depend on the player's key bindings. Describing “dk / kd” as valid assumes that those keys are assigned to one centre and one rim input respectively.</div>
+
+<h2 id="comparison">7. osu!stable and osu!lazer comparison</h2>
+<div class="table-wrap"><table><thead><tr><th>Item</th><th>osu!stable</th><th>osu!lazer</th></tr></thead><tbody>
+  <tr><td>Object</td><td>Taiko spinner / denden</td><td>Taiko <code>Swell</code></td></tr>
+  <tr><td>OD base value</td><td><code>R(OD) = 3–7.5</code></td><td><code>R(OD) = 3–7.5</code></td></tr>
+  <tr><td>Taiko multiplier</td><td><code>1.65</code></td><td><code>1.65</code></td></tr>
+  <tr><td>Integer-conversion order</td><td>Truncate <code>D × R(OD)</code> first, then apply <code>1.65</code></td><td>Calculate <code>D × R(OD) × 1.65</code>, then truncate once at the end</td></tr>
+  <tr><td>Meaning of the result</td><td>Completion threshold</td><td>Required input count, <code>RequiredHits</code></td></tr>
+  <tr><td>Completion condition</td><td>Progress exceeds the threshold</td><td><code>numHits == RequiredHits</code></td></tr>
+  <tr><td>Actual input count</td><td><code>Hstable + 1</code></td><td><code>Nlazer</code></td></tr>
+  <tr><td>Minimum input count</td><td><strong class="difference">2 hits</strong></td><td><strong class="good">1 hit</strong></td></tr>
+  <tr><td>Input types</td><td>Alternate centre and rim</td><td>Alternate centre and rim</td></tr>
+</tbody></table></div>
+<div class="section section-yellow"><strong>Important:</strong> converting lazer's value to stable is not as simple as always adding <code>1</code>. The clients also convert to integers at different points relative to the <code>1.65</code> multiplier, so the difference can be 0, +1, −1, or another value depending on the spinner duration.</div>
+
+<h2 id="examples">8. Worked examples</h2>
+<h3>OD 5, no rate-changing mods</h3>
+<div class="section section-yellow"><span class="formula-title">Shared conditions</span><pre><code>R(5) = 5
+Taiko multiplier = 1.65</code></pre></div>
+<div class="table-wrap"><table><thead><tr><th>Duration</th><th>stable base <code>Hbase</code></th><th>stable threshold</th><th>stable inputs</th><th>lazer inputs</th></tr></thead><tbody>
+  <tr><td>100 ms</td><td><code>trunc(0.5) = 0</code></td><td><code>1</code></td><td class="difference"><strong>2</strong></td><td><strong>1</strong></td></tr>
+  <tr><td>250 ms</td><td><code>trunc(1.25) = 1</code></td><td><code>trunc(1.65) = 1</code></td><td><strong>2</strong></td><td><strong>2</strong></td></tr>
+  <tr><td>400 ms</td><td><code>trunc(2.0) = 2</code></td><td><code>trunc(3.3) = 3</code></td><td class="difference"><strong>4</strong></td><td><strong>3</strong></td></tr>
+  <tr><td>500 ms</td><td><code>trunc(2.5) = 2</code></td><td><code>trunc(3.3) = 3</code></td><td><strong>4</strong></td><td><strong>4</strong></td></tr>
+  <tr><td>750 ms</td><td><code>trunc(3.75) = 3</code></td><td><code>trunc(4.95) = 4</code></td><td><strong>5</strong></td><td class="difference"><strong>6</strong></td></tr>
+  <tr><td>1000 ms</td><td><code>trunc(5.0) = 5</code></td><td><code>trunc(8.25) = 8</code></td><td class="difference"><strong>9</strong></td><td><strong>8</strong></td></tr>
+</tbody></table></div>
+
+<h3>Minimum-value comparison</h3>
+<pre><code>stable:
+    Hbase = 0
+    Hstable = max(1, 0 × 1.65) = 1
+    Nstable = 1 + 1 = 2 hits
+
+lazer:
+    Nlazer = max(1, calculated value) = 1 hit</code></pre>
+<div class="example-result">
+  <div><span>osu!stable minimum</span><strong class="difference">2 hits</strong></div>
+  <div><span>osu!lazer minimum</span><strong>1 hit</strong></div>
+  <div><span>Shortest-spinner difference</span><strong class="difference">1 hit</strong></div>
+</div>
+
+<h3>Rate-changing mods</h3>
+<p>stable also applies a rate-changing mod multiplier to the required half-spin threshold. The official legacy-compatible code describes this as <code>DT = 0.75</code> and <code>HT = 1.5</code>. The table on this page assumes NM; the preview's 25%–150% playback speeds are separate from in-game mods.</p>
+
+<div class="notes"><div class="notes-title">Summary</div>
+  osu!stable's minimum value of <code>1</code> is a completion threshold, so a second hit is required to exceed it.<br>
+  osu!lazer's <code>RequiredHits</code> is the actual input count, so a minimum value of <code>1</code> completes after one hit.<br>
+</div>
+</body>
+</html>

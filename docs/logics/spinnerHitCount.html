@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>osu!stable / osu!lazer Taikoスピナー必要打数の計算</title>
+  <style>
+    :root{color-scheme:dark;--bg:#111;--panel:#181818;--strong:#202020;--border:#2a2a2a;--border2:#333;--text:#eee;--soft:#ccc;--muted:#aaa;--blue:#9fdcff;--yellow:#ffd580;--green:#9ff2b2;--red:#ffb3b3;--purple:#c9b6ff}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:sans-serif;font-size:14px;line-height:1.65;max-width:1200px;margin:40px auto;padding:0 20px 64px;background:var(--bg);color:var(--text)}
+    h1{color:var(--blue);border-bottom:2px solid var(--border2);padding-bottom:10px;margin-bottom:22px;line-height:1.3}h2{margin-top:48px;color:var(--blue);border-bottom:1px solid var(--border2);padding-bottom:6px;line-height:1.4}h3{margin-top:30px;color:var(--yellow);line-height:1.4}
+    p,li{color:var(--soft)}a{color:var(--blue)}code{background:#222;padding:2px 6px;border-radius:4px;color:#f2f2f2}pre{margin:14px 0 0;padding:14px 16px;overflow-x:auto;background:#0d0d0d;border:1px solid var(--border);border-radius:6px;color:#e9f6ff;line-height:1.55}pre code{padding:0;background:transparent;color:inherit}
+    table{width:100%;border-collapse:collapse;margin-top:16px;background:var(--panel);border:1px solid var(--border);font-size:13px}th{background:var(--strong);color:var(--blue);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border2);white-space:nowrap}td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}tr:hover{background:#1d1d1d}
+    .doc-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px}.doc-parent-link{color:var(--muted);font-size:13px}.doc-parent-link a{color:var(--blue);text-decoration:none}.doc-parent-link a:hover{text-decoration:underline}.lead{max-width:900px;font-size:15px}
+    .section{margin-top:20px;padding:16px 18px;background:var(--panel);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:6px}.section-yellow{border-left-color:var(--yellow)}.section-green{border-left-color:var(--green)}.section-red{border-left-color:var(--red)}
+    .summary-grid,.source-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:18px}.summary-card,.source-card{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px 16px}.summary-label,.source-label{color:var(--muted);font-size:12px}.summary-value{margin-top:5px;color:#fff;font-size:18px;font-weight:bold}.summary-description{margin-top:7px;color:var(--soft);font-size:13px}.source-title{margin-top:4px;color:var(--yellow);font-size:16px;font-weight:bold}
+    .table-wrap{overflow-x:auto;margin-top:12px}.toc{margin-top:24px;padding:16px 18px;background:var(--panel);border:1px solid var(--border);border-radius:6px}.toc strong{color:var(--yellow)}.toc ol{columns:2;column-gap:36px;margin-bottom:0;padding-left:22px}.toc li{break-inside:avoid;margin:5px 0}.toc a{text-decoration:none}.toc a:hover{text-decoration:underline}
+    .tag{display:inline-block;margin-right:6px;padding:2px 7px;border:1px solid var(--border2);border-radius:999px;color:var(--muted);font-size:11px;vertical-align:1px}.good{color:var(--green);font-weight:bold}.difference{color:var(--red);font-weight:bold}.muted{color:var(--muted)}.formula-title{color:var(--purple);font-weight:bold}
+    .example-result{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-top:14px}.example-result div{padding:10px 12px;background:#121212;border:1px solid var(--border);border-radius:5px}.example-result span{display:block;color:var(--muted);font-size:12px}.example-result strong{display:block;margin-top:3px;font-size:17px}
+    .notes{margin-top:34px;padding:14px 16px;background:var(--panel);border-left:4px solid var(--yellow)}.notes-title{color:var(--yellow);font-weight:bold;margin-bottom:8px}
+    @media(max-width:720px){body{margin-top:24px;padding-inline:14px}.toc ol{columns:1}th,td{padding:9px 10px}}
+  </style>
+</head>
+<body>
+<h1>osu!stable / osu!lazer Taikoスピナー必要打数の計算</h1>
+
+<div class="doc-header">
+  <div class="doc-parent-link">このページは <a href="docs.html">Modding Helper 説明書</a> の技術資料です。表示タイミングについては <a href="spinnerTiming.html">スピナー出現時間の計算</a> を参照してください。</div>
+</div>
+
+<p class="lead">
+  osu!taikoのスピナー（Swell／風船）は、osu!stableとosu!lazerで必要打数の計算と完了条件が異なります。
+  特にstableでは、計算結果の最低値が<code>1</code>でも、実際に割るには<strong>中央打・縁打を交互に2回</strong>入力する必要があります。
+  このページでは、ODと長さから求める基礎値、整数化の順序、最低入力数、入力判定を分けて整理します。
+</p>
+
+<div class="summary-grid">
+  <div class="summary-card"><div class="summary-label">共通</div><div class="summary-value">ODと長さを使用</div><div class="summary-description">ODから毎秒の基礎half-spin数を求め、Taiko固有の<code>1.65</code>倍を適用します。</div></div>
+  <div class="summary-card"><div class="summary-label">osu!stable</div><div class="summary-value">最低2入力</div><div class="summary-description">必要half-spin閾値を越える最後の1打が必要です。</div></div>
+  <div class="summary-card"><div class="summary-label">osu!lazer</div><div class="summary-value">最低1入力</div><div class="summary-description"><code>RequiredHits</code>個の入力へ到達した時点で完了します。</div></div>
+</div>
+
+<nav class="toc" aria-label="目次"><strong>目次</strong><ol>
+  <li><a href="#sources">調査方法と情報源</a></li>
+  <li><a href="#scope">対象と用語</a></li>
+  <li><a href="#rate">ODから求める基礎速度</a></li>
+  <li><a href="#stable">osu!stableの計算</a></li>
+  <li><a href="#lazer">osu!lazerの計算</a></li>
+  <li><a href="#input">交互入力の判定</a></li>
+  <li><a href="#comparison">stable / lazerの比較</a></li>
+  <li><a href="#examples">計算例</a></li>
+  <li><a href="#implementation">プレビューへの実装方針</a></li>
+</ol></nav>
+
+<h2 id="sources">1. 調査方法と情報源</h2>
+<div class="source-grid">
+  <div class="source-card">
+    <div class="source-label">osu!stable</div><div class="source-title">osu!.exeの解析とlazerのstable互換処理</div>
+    <p>osu!stableでは、スピナーの進行値が必要half-spin数を<strong>越えた時</strong>に完了します。lazer側のlegacy score再現コードも、stable用の必要数を求めた後、<code>i &lt;= required</code>の包含ループで<code>required + 1</code>個のSwellTickを生成しています。</p>
+    <div class="table-wrap"><table><tbody>
+      <tr><th>FileVersion</th><td><code>1.3.3.8</code></td></tr>
+      <tr><th>更新日時</th><td><code>2026-07-11 16:31:18</code></td></tr>
+      <tr><th>SHA-256</th><td><code>6E182C10D1813209D12753DBC70B3A5BBA00FEF4ECF64BC42051870E6DFE4B7D</code></td></tr>
+    </tbody></table></div>
+    <p class="muted">難読化された型名・メソッド名は解析対象build固有です。本文では処理内容に沿った名前を使用します。</p>
+  </div>
+  <div class="source-card">
+    <div class="source-label">osu!lazer</div><div class="source-title">公式GitHubソースコード</div>
+    <p>次のリンクは、今回確認したcommit <code>83b8a64bec19e1463353645c2d6d10c75e275b43</code>へ固定しています。</p>
+    <ul>
+      <li><a href="https://github.com/ppy/osu/blob/83b8a64bec19e1463353645c2d6d10c75e275b43/osu.Game.Rulesets.Taiko/Beatmaps/TaikoBeatmapConverter.cs#L145-L176" target="_blank" rel="noopener noreferrer">TaikoBeatmapConverter.cs</a> — lazerの必要打数計算</li>
+      <li><a href="https://github.com/ppy/osu/blob/83b8a64bec19e1463353645c2d6d10c75e275b43/osu.Game.Rulesets.Taiko/Objects/Swell.cs#L20-L40" target="_blank" rel="noopener noreferrer">Swell.cs</a> — <code>RequiredHits</code>個のSwellTick生成</li>
+      <li><a href="https://github.com/ppy/osu/blob/83b8a64bec19e1463353645c2d6d10c75e275b43/osu.Game.Rulesets.Taiko/Objects/Drawables/DrawableSwell.cs#L109-L154" target="_blank" rel="noopener noreferrer">DrawableSwell.cs</a> — 入力ごとの判定と完了条件</li>
+      <li><a href="https://github.com/ppy/osu/blob/83b8a64bec19e1463353645c2d6d10c75e275b43/osu.Game.Rulesets.Taiko.Tests/Judgements/TestSceneSwellJudgements.cs#L200-L230" target="_blank" rel="noopener noreferrer">TestSceneSwellJudgements.cs</a> — 1打で完了するlazerのテスト</li>
+      <li><a href="https://github.com/ppy/osu/blob/83b8a64bec19e1463353645c2d6d10c75e275b43/osu.Game.Rulesets.Taiko/Difficulty/TaikoLegacyScoreSimulator.cs#L118-L138" target="_blank" rel="noopener noreferrer">TaikoLegacyScoreSimulator.cs</a> — stable用の包含ループ</li>
+      <li><a href="https://github.com/ppy/osu/blob/83b8a64bec19e1463353645c2d6d10c75e275b43/osu.Game.Rulesets.Taiko/Replays/TaikoAutoGenerator.cs#L42-L75" target="_blank" rel="noopener noreferrer">TaikoAutoGenerator.cs</a> — lazerの自動入力数</li>
+    </ul>
+  </div>
+</div>
+
+<h2 id="scope">2. 対象と用語</h2>
+<div class="section section-yellow"><strong>対象：</strong>このページはosu!taikoの<code>Swell</code>（風船／denden）だけを扱います。.osuファイルではspinner型のHitObjectを使いますが、osu!standardの円運動スピナーとはゲームプレイも判定クラスも異なります。</div>
+<div class="table-wrap"><table><thead><tr><th>記号</th><th>意味</th></tr></thead><tbody>
+  <tr><td><code>D</code></td><td>スピナーの長さ（ms）</td></tr>
+  <tr><td><code>OD</code></td><td>最終的なOverall Difficulty</td></tr>
+  <tr><td><code>R(OD)</code></td><td>ODから求める毎秒の基礎half-spin数</td></tr>
+  <tr><td><code>Hbase</code></td><td>stableが<code>1.65</code>倍の前に整数化する基礎half-spin数</td></tr>
+  <tr><td><code>Hstable</code></td><td>stableの完了閾値</td></tr>
+  <tr><td><code>Nstable</code></td><td>stableで完了に必要な実入力数</td></tr>
+  <tr><td><code>Nlazer</code></td><td>lazerの<code>RequiredHits</code>。そのまま実入力数</td></tr>
+</tbody></table></div>
+<p>ここでいう1入力は、中央打または縁打のどちらか1回です。左右の区別ではなく、中央・縁の種類を交互にする必要があります。</p>
+
+<h2 id="rate">3. ODから求める基礎速度</h2>
+<p>両クライアントの基礎となる速度は、ODに応じて<code>3</code>から<code>7.5</code>まで変化します。</p>
+<pre><code>OD &lt; 5:
+    R(OD) = 5 - 2 × (5 - OD) / 5
+
+OD = 5:
+    R(OD) = 5
+
+OD &gt; 5:
+    R(OD) = 5 + 2.5 × (OD - 5) / 5</code></pre>
+<div class="example-result">
+  <div><span>OD 0</span><strong>3.0 /秒</strong></div>
+  <div><span>OD 5</span><strong>5.0 /秒</strong></div>
+  <div><span>OD 10</span><strong>7.5 /秒</strong></div>
+</div>
+<p>Taikoでは、この基礎値へlegacy由来の<code>1.65</code>倍が適用されます。ただし、stableとlazerでは<strong>整数化する位置</strong>が異なります。</p>
+
+<h2 id="stable">4. osu!stableの必要打数</h2>
+<h3><span class="tag">stable 1</span>先に基礎half-spin数を整数化</h3>
+<pre><code>Hbase = trunc(D / 1000 × R(OD))
+
+Hstable = trunc(max(1, Hbase × 1.65))</code></pre>
+<p><code>trunc</code>は0方向への切り捨てです。長さとODから得た値を一度整数へ落としてから<code>1.65</code>倍するため、lazerのように全要素を掛けてから最後に切り捨てる式とは一致しません。</p>
+
+<h3><span class="tag">stable 2</span>閾値を越える最後の1打</h3>
+<p><code>Hstable</code>は実入力数そのものではなく、完了判定の閾値です。進行値がこの閾値を越えるまで入力が必要です。</p>
+<pre><code>Nstable = Hstable + 1</code></pre>
+<p>lazerのstable互換スコア計算でも、次の包含ループとして再現されています。</p>
+<pre><code>for (i = 0; i &lt;= Hstable; i++):
+    SwellTickを1個加算
+
+生成数 = Hstable + 1</code></pre>
+<div class="section section-red"><strong>最低2打になる理由：</strong><code>Hstable</code>の最低値は<code>1</code>ですが、入力は<code>0</code>回目と<code>1</code>回目の2回が必要です。そのため、中央打1回または縁打1回だけでは割れず、中央→縁または縁→中央の2入力で完了します。</div>
+
+<h2 id="lazer">5. osu!lazerの必要打数</h2>
+<p>lazerはOD、長さ、<code>1.65</code>をまとめて掛け、最後に1回だけ整数化します。</p>
+<pre><code>hitsPerSecond = R(OD) × 1.65
+
+Nlazer = trunc(max(1,
+                   D / 1000 × hitsPerSecond))</code></pre>
+<p><code>Swell</code>は<code>Nlazer</code>個の<code>SwellTick</code>を生成します。有効な入力1回につき未判定のSwellTickを1個成功させ、成功数が<code>RequiredHits</code>と等しくなった時点で完了します。</p>
+<pre><code>入力ごとに:
+    次のSwellTickを成功させる
+    numHits = 成功したSwellTick数
+
+    if numHits == RequiredHits:
+        スピナー完了</code></pre>
+<div class="section section-green"><strong>lazerでは本当に最低1打：</strong>公式テストには<code>RequiredHits = 1</code>のTaiko Swellへ<code>LeftRim</code>を1回入力し、<code>LargeBonus</code>で完了するケースがあります。これはosu!standardのスピナーテストではありません。</div>
+
+<h2 id="input">6. 中央打・縁打の交互入力</h2>
+<p>通常プレイでは、両クライアントとも同じ種類を連続入力するだけでは進みません。必要なのは左右交互ではなく、<strong>中央打と縁打の交互入力</strong>です。</p>
+<pre><code>有効:
+    中央 → 縁 → 中央 → 縁 ...
+    縁 → 中央 → 縁 → 中央 ...
+
+無効になる連続入力:
+    中央 → 中央
+    縁 → 縁</code></pre>
+<p>lazerの<code>DrawableSwell</code>は直前の入力が中央だったかを保持し、同じ種類が続いた場合はSwellTickを進めません。Relaxではこの交互制限が解除されます。</p>
+<div class="section section-yellow"><strong>キー名について：</strong>どの物理キーが中央・縁になるかはキーバインド次第です。「dk / kd」が有効という説明は、それぞれが中央・縁へ割り当てられている場合に対応します。</div>
+
+<h2 id="comparison">7. osu!stableとosu!lazerの違い</h2>
+<div class="table-wrap"><table><thead><tr><th>項目</th><th>osu!stable</th><th>osu!lazer</th></tr></thead><tbody>
+  <tr><td>対象オブジェクト</td><td>Taiko spinner / denden</td><td>Taiko <code>Swell</code></td></tr>
+  <tr><td>OD基礎値</td><td><code>R(OD) = 3～7.5</code></td><td><code>R(OD) = 3～7.5</code></td></tr>
+  <tr><td>Taiko倍率</td><td><code>1.65</code></td><td><code>1.65</code></td></tr>
+  <tr><td>整数化の順序</td><td><code>D × R(OD)</code>を先に切り捨て、その後<code>1.65</code>倍</td><td><code>D × R(OD) × 1.65</code>をまとめて最後に切り捨て</td></tr>
+  <tr><td>計算値の意味</td><td>完了閾値</td><td>必要入力数<code>RequiredHits</code></td></tr>
+  <tr><td>完了条件</td><td>進行値が閾値を越える</td><td><code>numHits == RequiredHits</code></td></tr>
+  <tr><td>実入力数</td><td><code>Hstable + 1</code></td><td><code>Nlazer</code></td></tr>
+  <tr><td>最低入力数</td><td><strong class="difference">2打</strong></td><td><strong class="good">1打</strong></td></tr>
+  <tr><td>入力種類</td><td>中央・縁を交互</td><td>中央・縁を交互</td></tr>
+</tbody></table></div>
+<div class="section section-yellow"><strong>重要：</strong>stableの打数へ単純に常時<code>+1</code>すればlazerから変換できるわけではありません。両者は<code>1.65</code>倍の前後で整数化する位置も異なるため、長さによって差が0、+1、-1などに変化します。</div>
+
+<h2 id="examples">8. 計算例</h2>
+<h3>OD 5、速度変更Modなし</h3>
+<div class="section section-yellow"><span class="formula-title">共通条件</span><pre><code>R(5) = 5
+Taiko倍率 = 1.65</code></pre></div>
+<div class="table-wrap"><table><thead><tr><th>長さ</th><th>stable基礎値<code>Hbase</code></th><th>stable閾値</th><th>stable実入力</th><th>lazer実入力</th></tr></thead><tbody>
+  <tr><td>100 ms</td><td><code>trunc(0.5) = 0</code></td><td><code>1</code></td><td class="difference"><strong>2</strong></td><td><strong>1</strong></td></tr>
+  <tr><td>250 ms</td><td><code>trunc(1.25) = 1</code></td><td><code>trunc(1.65) = 1</code></td><td><strong>2</strong></td><td><strong>2</strong></td></tr>
+  <tr><td>400 ms</td><td><code>trunc(2.0) = 2</code></td><td><code>trunc(3.3) = 3</code></td><td class="difference"><strong>4</strong></td><td><strong>3</strong></td></tr>
+  <tr><td>500 ms</td><td><code>trunc(2.5) = 2</code></td><td><code>trunc(3.3) = 3</code></td><td><strong>4</strong></td><td><strong>4</strong></td></tr>
+  <tr><td>750 ms</td><td><code>trunc(3.75) = 3</code></td><td><code>trunc(4.95) = 4</code></td><td><strong>5</strong></td><td class="difference"><strong>6</strong></td></tr>
+  <tr><td>1000 ms</td><td><code>trunc(5.0) = 5</code></td><td><code>trunc(8.25) = 8</code></td><td class="difference"><strong>9</strong></td><td><strong>8</strong></td></tr>
+</tbody></table></div>
+
+<h3>最低値の比較</h3>
+<pre><code>stable:
+    Hbase = 0
+    Hstable = max(1, 0 × 1.65) = 1
+    Nstable = 1 + 1 = 2打
+
+lazer:
+    Nlazer = max(1, 計算値) = 1打</code></pre>
+<div class="example-result">
+  <div><span>osu!stable 最低入力</span><strong class="difference">2打</strong></div>
+  <div><span>osu!lazer 最低入力</span><strong>1打</strong></div>
+  <div><span>最短スピナーの差</span><strong class="difference">1打</strong></div>
+</div>
+
+<h3>速度変更Mod</h3>
+<p>stableの必要half-spin閾値には速度変更Modによる倍率もあり、公式のlegacy互換コードでは<code>DT = 0.75</code>、<code>HT = 1.5</code>と説明されています。本ページの表はNMを前提としており、プレビューの25%～150%再生はゲームModとは別の操作として扱います。</p>
+
+<div class="notes"><div class="notes-title">まとめ</div>
+  osu!stableの最低値<code>1</code>は完了閾値であり、実際にはそれを越える2打目が必要です。<br>
+  osu!lazerの<code>RequiredHits</code>は実入力数そのもので、最低値<code>1</code>なら1打で完了します。<br>
+</div>
+</body>
+</html>

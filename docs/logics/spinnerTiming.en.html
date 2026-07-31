@@ -251,29 +251,6 @@ L(S) = trunc(10 × 250 / 1.96)
   <tr><td>Input</td><td>Valid from <code>S</code></td><td>Valid from <code>S</code></td></tr>
 </tbody></table></div>
 
-<h2 id="implementation">8. Implementation proposal for the Modding Helper preview</h2>
-<p>The current game-style Test view moves the spinner from the right at the same speed as other notes, then holds it at the hit target after its start. Accurately matching the clients requires the individual display stages to be modelled separately.</p>
-<div class="source-grid">
-  <div class="source-card">
-    <div class="source-label">lazer-compatible</div><div class="source-title">Scrolling plus a 100 ms layer switch</div>
-    <ol>
-      <li>Scroll the spinner using its local <code>M(S)</code>.</li>
-      <li>Switch to the top-level display at <code>S - 100</code>.</li>
-      <li>Reach the hit target at <code>S</code> and remain there.</li>
-    </ol>
-  </div>
-  <div class="source-card">
-    <div class="source-label">stable-compatible</div><div class="source-title">Separate warning and main body</div>
-    <ol>
-      <li>Calculate <code>P</code> from a timing-point list that preserves original ordering.</li>
-      <li>Calculate <code>L(S)</code> from the timing active at the spinner.</li>
-      <li>Show the warning from <code>S - min(P, L(S))</code>.</li>
-      <li>Fade the main body from <code>S - 1</code> through <code>S + 200</code>.</li>
-    </ol>
-  </div>
-</div>
-<div class="section section-yellow"><strong>Implementation note:</strong> reproducing stable's inherited-first bug and the ordering of uninherited and inherited points at the same timestamp requires one unified timing-point list that preserves file order and the inherited flag. Separately parsed red and green arrays are not sufficient.</div>
-
 <div class="notes"><div class="notes-title">Summary</div>
   In lazer, the normal Taiko scrolling formula determines when a spinner enters the screen, and its content moves to the top-level layer 100 ms before the start.<br>
   In stable, the per-spinner display lifetime <code>L(S)</code> is combined with a shared preempt value <code>P</code> calculated from the first timing point in the beatmap.<br>
