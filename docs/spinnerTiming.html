@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>osu!stable / osu!lazer Taikoスピナー出現時間の計算</title>
+  <style>
+    :root{color-scheme:dark;--bg:#111;--panel:#181818;--strong:#202020;--border:#2a2a2a;--border2:#333;--text:#eee;--soft:#ccc;--muted:#aaa;--blue:#9fdcff;--yellow:#ffd580;--green:#9ff2b2;--red:#ffb3b3;--purple:#c9b6ff}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:sans-serif;font-size:14px;line-height:1.65;max-width:1200px;margin:40px auto;padding:0 20px 64px;background:var(--bg);color:var(--text)}
+    h1{color:var(--blue);border-bottom:2px solid var(--border2);padding-bottom:10px;margin-bottom:22px;line-height:1.3}h2{margin-top:48px;color:var(--blue);border-bottom:1px solid var(--border2);padding-bottom:6px;line-height:1.4}h3{margin-top:30px;color:var(--yellow);line-height:1.4}
+    p,li{color:var(--soft)}a{color:var(--blue)}code{background:#222;padding:2px 6px;border-radius:4px;color:#f2f2f2}pre{margin:14px 0 0;padding:14px 16px;overflow-x:auto;background:#0d0d0d;border:1px solid var(--border);border-radius:6px;color:#e9f6ff;line-height:1.55}pre code{padding:0;background:transparent;color:inherit}
+    table{width:100%;border-collapse:collapse;margin-top:16px;background:var(--panel);border:1px solid var(--border);font-size:13px}th{background:var(--strong);color:var(--blue);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border2);white-space:nowrap}td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}tr:hover{background:#1d1d1d}
+    .doc-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px}.doc-parent-link{color:var(--muted);font-size:13px}.doc-parent-link a{color:var(--blue);text-decoration:none}.doc-parent-link a:hover{text-decoration:underline}.lead{max-width:900px;font-size:15px}
+    .section{margin-top:20px;padding:16px 18px;background:var(--panel);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:6px}.section-yellow{border-left-color:var(--yellow)}.section-green{border-left-color:var(--green)}.section-red{border-left-color:var(--red)}
+    .summary-grid,.source-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:18px}.summary-card,.source-card{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px 16px}.summary-label,.source-label{color:var(--muted);font-size:12px}.summary-value{margin-top:5px;color:#fff;font-size:18px;font-weight:bold}.summary-description{margin-top:7px;color:var(--soft);font-size:13px}.source-title{margin-top:4px;color:var(--yellow);font-size:16px;font-weight:bold}
+    .table-wrap{overflow-x:auto;margin-top:12px}.toc{margin-top:24px;padding:16px 18px;background:var(--panel);border:1px solid var(--border);border-radius:6px}.toc strong{color:var(--yellow)}.toc ol{columns:2;column-gap:36px;margin-bottom:0;padding-left:22px}.toc li{break-inside:avoid;margin:5px 0}.toc a{text-decoration:none}.toc a:hover{text-decoration:underline}
+    .tag{display:inline-block;margin-right:6px;padding:2px 7px;border:1px solid var(--border2);border-radius:999px;color:var(--muted);font-size:11px;vertical-align:1px}.good{color:var(--green);font-weight:bold}.difference{color:var(--red);font-weight:bold}.muted{color:var(--muted)}.formula-title{color:var(--purple);font-weight:bold}
+    .example-result{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-top:14px}.example-result div{padding:10px 12px;background:#121212;border:1px solid var(--border);border-radius:5px}.example-result span{display:block;color:var(--muted);font-size:12px}.example-result strong{display:block;margin-top:3px;font-size:17px}
+    .notes{margin-top:34px;padding:14px 16px;background:var(--panel);border-left:4px solid var(--yellow)}.notes-title{color:var(--yellow);font-weight:bold;margin-bottom:8px}
+    @media(max-width:720px){body{margin-top:24px;padding-inline:14px}.toc ol{columns:1}th,td{padding:9px 10px}}
+  </style>
+</head>
+<body>
+<h1>osu!stable / osu!lazer Taikoスピナー出現時間の計算</h1>
+
+<div class="doc-header">
+  <div class="doc-parent-link">このページは <a href="docs.html">Modding Helper 説明書</a> の技術資料です。</div>
+</div>
+
+<p class="lead">
+  osu!taikoのスピナー（Swell／風船）は、osu!stableとosu!lazerで表示処理が異なります。
+  特にstableは、<strong>譜面の最初のタイミングポイントから予告時間を計算するlegacy挙動</strong>を持ち、
+  最初のポイントが緑線の場合には通常と異なるフォールバックへ入ります。
+  このページでは、画面右側から見え始める時刻、予告表示、本体表示、入力開始を分けて整理します。
+</p>
+
+<div class="summary-grid">
+  <div class="summary-card"><div class="summary-label">osu!lazer</div><div class="summary-value">スピナー位置の速度を使用</div><div class="summary-description">通常のスクロール式で画面へ入り、開始100 ms前に上位レイヤーへ切り替わります。</div></div>
+  <div class="summary-card"><div class="summary-label">osu!stable</div><div class="summary-value">先頭Timing Pointも使用</div><div class="summary-description">スピナー自身の表示寿命に加え、譜面先頭から共通の予告時間を計算します。</div></div>
+  <div class="summary-card"><div class="summary-label">stable固有</div><div class="summary-value">最初が緑線なら別計算</div><div class="summary-description">赤線検索の初期インデックスが先頭の緑線を参照し、速度のフォールバックが使われます。</div></div>
+</div>
+
+<nav class="toc" aria-label="目次"><strong>目次</strong><ol>
+  <li><a href="#sources">調査方法と情報源</a></li>
+  <li><a href="#terms">記号と表示段階</a></li>
+  <li><a href="#lazer">osu!lazerの計算</a></li>
+  <li><a href="#stable">osu!stableの計算</a></li>
+  <li><a href="#first-point">stableの先頭Timing Point依存</a></li>
+  <li><a href="#example">計算例</a></li>
+  <li><a href="#comparison">stable / lazerの比較</a></li>
+  <li><a href="#implementation">プレビューへの実装方針</a></li>
+</ol></nav>
+
+<h2 id="sources">1. 調査方法と情報源</h2>
+<div class="source-grid">
+  <div class="source-card">
+    <div class="source-label">osu!stable</div><div class="source-title">osu!.exeのリバースエンジニアリング</div>
+    <p>osu!stableはソースコードが公開されていないため、解析対象のosu!.exeをIL逆コンパイルし、TaikoのHitObjectManager、Swell、Timing Point検索、フェード変換を追跡しました。</p>
+    <div class="table-wrap"><table><tbody>
+      <tr><th>FileVersion</th><td><code>1.3.3.8</code></td></tr>
+      <tr><th>更新日時</th><td><code>2026-07-11 16:31:18</code></td></tr>
+      <tr><th>SHA-256</th><td><code>6E182C10D1813209D12753DBC70B3A5BBA00FEF4ECF64BC42051870E6DFE4B7D</code></td></tr>
+    </tbody></table></div>
+    <p class="muted">難読化された型名・メソッド名は解析対象build固有のため、このページでは処理内容に沿った名称で説明します。</p>
+  </div>
+  <div class="source-card">
+    <div class="source-label">osu!lazer</div><div class="source-title">公式GitHubソースコード</div>
+    <ul>
+      <li><a href="https://github.com/ppy/osu/blob/master/osu.Game.Rulesets.Taiko/Objects/Drawables/DrawableSwell.cs" target="_blank" rel="noopener noreferrer">DrawableSwell.cs</a> — 100 ms前のレイヤー切替と判定位置での停止</li>
+      <li><a href="https://github.com/ppy/osu/blob/master/osu.Game.Rulesets.Taiko/Objects/Drawables/DrawableTaikoHitObject.cs" target="_blank" rel="noopener noreferrer">DrawableTaikoHitObject.cs</a> — 通常レイヤーと上位レイヤーの切替</li>
+      <li><a href="https://github.com/ppy/osu/blob/master/osu.Game.Rulesets.Taiko/UI/DrawableTaikoRuleset.cs" target="_blank" rel="noopener noreferrer">DrawableTaikoRuleset.cs</a> — Taikoのスクロール方式とTimeRange</li>
+      <li><a href="https://github.com/ppy/osu/blob/master/osu.Game/Rulesets/UI/Scrolling/Algorithms/OverlappingScrollAlgorithm.cs" target="_blank" rel="noopener noreferrer">OverlappingScrollAlgorithm.cs</a> — 位置と表示開始時刻の式</li>
+      <li><a href="https://github.com/ppy/osu/blob/master/osu.Game/Rulesets/UI/Scrolling/ScrollingHitObjectContainer.cs" target="_blank" rel="noopener noreferrer">ScrollingHitObjectContainer.cs</a> — 表示余白とLifetimeStartの計算</li>
+      <li><a href="https://github.com/ppy/osu/blob/master/osu.Game/Rulesets/Timing/MultiplierControlPoint.cs" target="_blank" rel="noopener noreferrer">MultiplierControlPoint.cs</a> — BPM、SliderMultiplier、SVの合成</li>
+      <li><a href="https://github.com/ppy/osu/blob/master/osu.Game.Rulesets.Taiko/UI/TaikoPlayfieldAdjustmentContainer.cs" target="_blank" rel="noopener noreferrer">TaikoPlayfieldAdjustmentContainer.cs</a> — stable互換のスクロール距離</li>
+      <li><a href="https://github.com/ppy/osu/blob/master/osu.Game.Rulesets.Taiko/Beatmaps/TaikoBeatmapConverter.cs" target="_blank" rel="noopener noreferrer">TaikoBeatmapConverter.cs</a> — Taiko内部の速度倍率<code>1.4</code></li>
+    </ul>
+  </div>
+</div>
+
+<h2 id="terms">2. 記号と表示段階</h2>
+<div class="table-wrap"><table><thead><tr><th>記号</th><th>意味</th></tr></thead><tbody>
+  <tr><td><code>S</code></td><td>スピナーの開始時刻（ms）</td></tr>
+  <tr><td><code>SM</code></td><td><code>[Difficulty]</code>の<code>SliderMultiplier</code></td></tr>
+  <tr><td><code>B(t)</code></td><td>時刻<code>t</code>で有効な赤線のbeat length（ms）</td></tr>
+  <tr><td><code>SV(t)</code></td><td>時刻<code>t</code>で有効なスクロール速度倍率</td></tr>
+  <tr><td><code>G(t)</code></td><td>時刻<code>t</code>で有効な緑線の負のbeat length</td></tr>
+  <tr><td><code>A</code></td><td>プレイ画面のアスペクト比</td></tr>
+  <tr><td><code>W</code></td><td>スクロール領域の長さ</td></tr>
+  <tr><td><code>o</code></td><td>オブジェクトの外形を考慮した表示余白</td></tr>
+</tbody></table></div>
+
+<div class="section section-yellow"><strong>「出現」の区別：</strong>このページでは、右側からレーンへ入る時刻、スピナーの予告表示、本体の表示、入力を受け付ける開始時刻を別々に扱います。単一の「出現時刻」だけでは両クライアントの挙動を表せません。</div>
+
+<h2 id="lazer">3. osu!lazerの計算</h2>
+<h3><span class="tag">lazer 1</span>TaikoのTimeRange</h3>
+<p>lazerはTaikoプレイフィールドのアスペクト比を<code>5:4</code>から<code>16:9</code>へ制限し、stableのスクロール距離を再現するTimeRangeを求めます。</p>
+<pre><code>A' = clamp(A, 5 / 4, 16 / 9)
+
+T = ((480 × A' - 160) / 100 × 1000) / 1.4</code></pre>
+<p>定数<code>480</code>はstableのゲームフィールド高さ、<code>160</code>は判定位置、<code>1.4</code>はTaiko変換時の内部速度倍率です。実装と由来は<a href="https://github.com/ppy/osu/blob/master/osu.Game.Rulesets.Taiko/UI/TaikoPlayfieldAdjustmentContainer.cs" target="_blank" rel="noopener noreferrer">TaikoPlayfieldAdjustmentContainer.ComputeTimeRange()</a>に記載されています。</p>
+
+<h3><span class="tag">lazer 2</span>スピナー位置の速度倍率</h3>
+<p>lazerはタイミングポイントとEffect Pointを統合した<code>MultiplierControlPoint</code>を作ります。</p>
+<pre><code>M(S) = SM × SV(S) × 1000 / B(S)</code></pre>
+<p>公式コード上では、<code>Velocity × EffectPoint.ScrollSpeed × BaseBeatLength / TimingPoint.BeatLength</code>として実装されています。<a href="https://github.com/ppy/osu/blob/master/osu.Game/Rulesets/Timing/MultiplierControlPoint.cs#L20" target="_blank" rel="noopener noreferrer">MultiplierControlPoint.Multiplier</a></p>
+
+<h3><span class="tag">lazer 3</span>レーンへ入り始める時刻</h3>
+<p>Taikoは、各オブジェクトが自分の開始時刻で有効な速度を持つ<code>Overlapping</code>方式です。</p>
+<pre><code>D_lazer = ((W + o) / W) × T / M(S)
+
+laneAppearanceTime = S - D_lazer</code></pre>
+<ul>
+  <li><code>(W + o) / W</code>は、円の半径などを含め、オブジェクト全体が画面外から入るための余白です。</li>
+  <li>表示開始時刻はスピナー位置の<code>B(S)</code>と<code>SV(S)</code>で決まり、譜面先頭のTiming Pointを特別扱いしません。</li>
+  <li>位置は<code>(S - currentTime) / T × M(S) × W</code>に相当する式で更新されます。</li>
+</ul>
+<p>表示開始式は<a href="https://github.com/ppy/osu/blob/master/osu.Game/Rulesets/UI/Scrolling/Algorithms/OverlappingScrollAlgorithm.cs#L18-L23" target="_blank" rel="noopener noreferrer">GetDisplayStartTime()</a>、位置計算は同ファイルの<a href="https://github.com/ppy/osu/blob/master/osu.Game/Rulesets/UI/Scrolling/Algorithms/OverlappingScrollAlgorithm.cs#L31-L32" target="_blank" rel="noopener noreferrer">PositionAt()</a>で確認できます。</p>
+
+<h3><span class="tag">lazer 4</span>100 ms前の上位レイヤー切替</h3>
+<pre><code>ringAppearOffset = 100
+proxyTime = S - ringAppearOffset</code></pre>
+<p><a href="https://github.com/ppy/osu/blob/master/osu.Game.Rulesets.Taiko/Objects/Drawables/DrawableSwell.cs#L20-L24" target="_blank" rel="noopener noreferrer">DrawableSwell</a>は<code>ring_appear_offset = 100</code>を定義し、現在時刻が<code>S - 100</code>以上になると<code>ProxyContent()</code>を呼びます。これはスピナーを初めて生成する処理ではなく、通常のHitObjectレイヤーから、マスクされない上位レイヤーへ内容を移す処理です。</p>
+<pre><code>if currentTime &gt;= S - 100:
+    ProxyContent()
+else:
+    UnproxyContent()
+
+X = max(0, X)</code></pre>
+<p>開始後は<code>X = max(0, X)</code>により判定位置より左へ進みません。入力受付は別条件で、<code>currentTime &lt; S</code>の入力は無視されます。</p>
+<div class="section section-green"><strong>lazerの要点：</strong>右側から見え始める時刻は通常のスクロール式、上位レイヤーへの切替は開始100 ms前、入力受付は開始時刻からです。</div>
+
+<h2 id="stable">4. osu!stableの計算</h2>
+<h3><span class="tag">stable 1</span>Taiko内部のSliderMultiplier</h3>
+<pre><code>SM_taiko = SM × 1.4</code></pre>
+<p>stableはTaiko用HitObjectManagerの初期化時に、譜面のSliderMultiplierへ<code>1.4</code>を掛けます。lazer側にも同じ互換定数が<a href="https://github.com/ppy/osu/blob/master/osu.Game.Rulesets.Taiko/Beatmaps/TaikoBeatmapConverter.cs#L19-L28" target="_blank" rel="noopener noreferrer"><code>VELOCITY_MULTIPLIER</code></a>として残っています。</p>
+
+<h3><span class="tag">stable 2</span>赤線と緑線から有効beat lengthを求める</h3>
+<p>通常範囲では、有効beat lengthは赤線のbeat lengthをSVで割った値です。</p>
+<pre><code>E(t) = B(t) / SV(t)</code></pre>
+<p>生の緑線値を使ったstableの処理をそのまま書くと、次の式です。</p>
+<pre><code>q(G) = clamp(-G(t), 10, 10000) / 100
+
+if 有効な緑線が赤線より後にある:
+    E(t) = B(t) × q(G)
+else:
+    E(t) = B(t)</code></pre>
+<p>通常の<code>G = -100 / SV</code>では<code>q(G) = 1 / SV</code>となります。</p>
+
+<h3><span class="tag">stable 3</span>オブジェクトごとの表示先行時間</h3>
+<pre><code>V(t) = 100000 × SM_taiko / E(t)
+
+L(t) = trunc(600 / V(t) / 0.6000000238418579 × 1000)
+     ≒ trunc(1000000 / V(t))
+     ≒ trunc(10 × E(t) / SM_taiko)</code></pre>
+<p>スピナー自身が描画対象になる開始時刻は、概ね次です。</p>
+<pre><code>objectLifetimeStart = S - L(S)</code></pre>
+<p><code>L(S)</code>はスピナー位置の赤線・緑線から求めます。これは通常ノーツや連打にも使われる、画面外から判定位置までの移動時間に相当します。</p>
+
+<h3><span class="tag">stable 4</span>予告表示と本体表示</h3>
+<p>stableのSwellクラスでは、予告用スプライトとスピナー本体が異なる変換を持ちます。</p>
+<pre><code>予告表示:
+    fadeStart    = S - P
+    fadeComplete = S - trunc(0.6 × P)
+
+本体表示:
+    fadeStart    = S - 1
+    fadeComplete = S + 200
+
+入力受付:
+    S から</code></pre>
+<p>予告用スプライトのフェードは共通プリエンプト<code>P</code>を使いますが、HitObject自体は<code>S - L(S)</code>より前には描画対象になりません。したがって、予告が実際に見え始める最早時刻は概ね次です。</p>
+<pre><code>actualWarningStart = S - min(P, L(S))</code></pre>
+
+<h2 id="first-point">5. stableの先頭Timing Point依存</h2>
+<h3><span class="tag">stable legacy</span>共通プリエンプトの計算</h3>
+<p>stableのTaiko HitObjectManagerは、譜面を読み込む際に<strong>最初のタイミングポイントの時刻</strong>で速度を取得し、共通プリエンプトを一度だけ計算します。</p>
+<pre><code>t_first = 最初のTiming Pointの時刻
+
+P = trunc(min(5000,
+              600 / V(t_first)
+              / 0.6000000238418579
+              × 1000))
+
+  ≒ trunc(min(5000,
+              10 × E(t_first) / SM_taiko))</code></pre>
+<p>この値が、stableのスピナー予告表示などに使われます。そのため、スピナー位置のタイミングが同じでも、譜面先頭の赤線を変えると予告時間が変わる場合があります。</p>
+
+<h3><span class="tag">stable bug</span>最初のポイントが緑線の場合</h3>
+<p>タイミングポイント検索では、最新の赤線を示すインデックスと最新の緑線を示すインデックスが、どちらも<code>0</code>で初期化されています。</p>
+<pre><code>redIndex = 0
+greenIndex = 0
+
+for point in TimingPoints:
+    if point.time &lt;= queryTime:
+        if point is red:
+            redIndex = point.index
+        else:
+            greenIndex = point.index</code></pre>
+<p>先頭が緑線の場合、赤線が一度も見つかっていないにもかかわらず、<code>redIndex = 0</code>のまま先頭の緑線を赤線側からも参照します。結果の有効beat lengthは負値となり、速度計算がフォールバックへ入ります。</p>
+<pre><code>V_fallback = 100 × SM_taiko
+
+P_greenFirst
+    = trunc(min(5000, 1000000 / V_fallback))
+    = trunc(min(5000, 10000 / SM_taiko))</code></pre>
+<div class="section section-red"><strong>判断：</strong>「最初の緑線を基準に正しくSVを計算している」のではなく、赤線検索の初期値が先頭要素を指したままになることでフォールバックへ入ります。意図的な仕様より、stable固有のバグが互換挙動として残ったものと考えるのが自然です。</div>
+
+<h2 id="example">6. 計算例</h2>
+<div class="section section-yellow">
+  <span class="formula-title">共通条件</span>
+  <pre><code>SliderMultiplier = 1.4
+SM_taiko = 1.4 × 1.4 = 1.96</code></pre>
+</div>
+
+<h3>最初が500 msの赤線</h3>
+<pre><code>P = trunc(min(5000,
+              10 × 500 / 1.96))
+  = trunc(2551.0204...)
+  = 2551 ms</code></pre>
+
+<h3>最初が緑線</h3>
+<pre><code>P = trunc(min(5000,
+              10000 / 1.96))
+  = trunc(min(5000, 5102.0408...))
+  = 5000 ms</code></pre>
+
+<h3>スピナー位置が500 ms、SV 2.0</h3>
+<pre><code>E(S) = 500 / 2 = 250
+
+L(S) = trunc(10 × 250 / 1.96)
+     = 1275 ms</code></pre>
+<p>先頭が緑線で<code>P = 5000</code>になっていても、オブジェクト自体は<code>S - 1275</code>まで描画対象になりません。</p>
+<pre><code>actualWarningStart
+    = S - min(5000, 1275)
+    = S - 1275 ms</code></pre>
+<div class="example-result">
+  <div><span>先頭が500 ms赤線</span><strong>2551 ms前</strong></div>
+  <div><span>先頭が緑線</span><strong class="difference">5000 ms前</strong></div>
+  <div><span>SV 2.0での実表示制限</span><strong>1275 ms前</strong></div>
+</div>
+
+<h2 id="comparison">7. osu!stableとosu!lazerの比較</h2>
+<div class="table-wrap"><table><thead><tr><th>項目</th><th>osu!stable</th><th>osu!lazer</th></tr></thead><tbody>
+  <tr><td>基本スクロール</td><td>オブジェクト時刻の赤線・緑線から個別速度を計算</td><td><code>OverlappingScrollAlgorithm</code>でオブジェクト時刻のMultiplierを使用</td></tr>
+  <tr><td>Taiko内部倍率</td><td><code>SliderMultiplier × 1.4</code></td><td>TimeRange側で<code>1.4</code>を考慮</td></tr>
+  <tr><td>画面へ入り始める時刻</td><td><code>S - L(S)</code></td><td><code>S - D_lazer</code></td></tr>
+  <tr><td>先頭Timing Point</td><td>共通プリエンプト<code>P</code>の計算に使用</td><td>スピナー専用の先頭依存なし</td></tr>
+  <tr><td>先頭が緑線</td><td>フォールバック速度となるlegacy quirk</td><td>最初のControl Pointとして通常処理</td></tr>
+  <tr><td>予告表示</td><td><code>S-P</code>からフェード</td><td>stableと同じ独立した予告時間は持たない</td></tr>
+  <tr><td>本体／上位表示</td><td>本体は<code>S-1</code>から<code>S+200</code>へフェードイン</td><td><code>S-100</code>で上位レイヤーへ切替</td></tr>
+  <tr><td>入力受付</td><td><code>S</code>から</td><td><code>S</code>から</td></tr>
+</tbody></table></div>
+
+<h2 id="implementation">8. Modding Helperプレビューへの実装方針</h2>
+<p>現在のゲーム画面風Testでは、スピナーを通常ノーツと同じ速度で右から移動させ、開始後は判定枠に留めています。各クライアントを正確に再現するには、表示段階を個別に扱う必要があります。</p>
+<div class="source-grid">
+  <div class="source-card">
+    <div class="source-label">lazer互換</div><div class="source-title">スクロール＋100 ms前のレイヤー切替</div>
+    <ol>
+      <li>スピナー位置の<code>M(S)</code>を使用してスクロールさせる。</li>
+      <li><code>S - 100</code>で上位レイヤー表示へ切り替える。</li>
+      <li><code>S</code>で判定枠へ到達し、その位置に留める。</li>
+    </ol>
+  </div>
+  <div class="source-card">
+    <div class="source-label">stable互換</div><div class="source-title">予告表示と本体表示を分離</div>
+    <ol>
+      <li>ファイル上の順序を保ったTiming Point一覧から<code>P</code>を計算する。</li>
+      <li>スピナー位置で有効なタイミングから<code>L(S)</code>を計算する。</li>
+      <li><code>S - min(P, L(S))</code>から予告表示を開始する。</li>
+      <li><code>S - 1</code>から<code>S + 200</code>にかけて本体をフェードインする。</li>
+    </ol>
+  </div>
+</div>
+<div class="section section-yellow"><strong>実装上の注意：</strong>stableの「最初が緑線」のバグや、同時刻にある赤線・緑線の順序を再現するには、ファイル上の順序とinheritedフラグを保持した単一のTiming Point一覧が必要です。赤線と緑線を別々の配列へ分けて解析するだけでは足りません。</div>
+
+<div class="notes"><div class="notes-title">まとめ</div>
+  lazerでは、スピナーが画面へ入る時刻は通常のTaikoスクロール式で決まり、開始100 ms前に内容を上位レイヤーへ移します。<br>
+  stableでは、スピナー自身のタイミングから求める表示寿命<code>L(S)</code>に加え、譜面先頭のTiming Pointから共通プリエンプト<code>P</code>を計算します。<br>
+  最初が緑線の場合は赤線検索の初期インデックスが先頭の緑線を参照するため、通常のSV計算ではなくフォールバック速度となります。<br>
+  プレビューで正確に再現する場合は、「レーンへの出現」「予告表示」「本体表示」「入力開始」を分離し、stable / lazerを別プロファイルとして扱う必要があります。
+</div>
+</body>
+</html>
