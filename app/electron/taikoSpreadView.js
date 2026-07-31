@@ -83,15 +83,20 @@ function taikoDifficultyRange(difficulty, min, mid, max) {
   return mid;
 }
 
-// 風船(スピナー/Swell)に必要な打数。
-//   1秒あたりの必要打数 = DifficultyRange(OD, 3, 5, 7.5) × 1.65
-//     （1.65 は「太鼓の風船は osu! のスピナーより簡単だから」の補正係数）
-//   必要打数 = (int)max(1, 長さ秒 × 1秒あたりの必要打数)   ※小数は切り捨て
-//   出典: osu.Game.Rulesets.Taiko/Beatmaps/TaikoBeatmapConverter.cs
+// osu!stable の風船(スピナー/Swell)に必要な実入力数。
+//   1. 長さ秒 × DifficultyRange(OD, 3, 5, 7.5) を先に整数化する。
+//   2. その基礎 half-spin 数へ 1.65f を掛け、最低1の完了閾値を求める。
+//   3. stable は進行値が閾値を「越えた」時に完了するため、最後の1打を加える。
+//   この順序は lazer の RequiredHits 計算とは異なり、最短でも実入力は2打になる。
+//   参考: docs/spinnerHitCount.html
 function taikoSwellRequiredHits(durationMs, overallDifficulty) {
+  const duration = Number.isFinite(durationMs) ? Math.max(0, durationMs) : 0;
   const od = Number.isFinite(overallDifficulty) ? overallDifficulty : 5;
-  const perSecond = taikoDifficultyRange(od, 3, 5, 7.5) * 1.65;
-  return Math.trunc(Math.max(1, (durationMs / 1000) * perSecond));
+  const halfSpinsPerSecond = taikoDifficultyRange(od, 3, 5, 7.5);
+  const baseHalfSpins = Math.trunc((duration / 1000) * halfSpinsPerSecond);
+  const scaledHalfSpins = Math.fround(baseHalfSpins * Math.fround(1.65));
+  const completionThreshold = Math.trunc(Math.max(1, scaledHalfSpins));
+  return completionThreshold + 1;
 }
 
 // プレビューで風船の必要打数を自動演奏する時刻。
@@ -101,10 +106,10 @@ function taikoSwellHitTimes(note) {
   const start = note && Number.isFinite(note.time) ? note.time : 0;
   const end = note && Number.isFinite(note.endTime) ? Math.max(start, note.endTime) : start;
   const requiredHits = note && Number.isFinite(note.requiredHits)
-    ? Math.max(1, Math.trunc(note.requiredHits))
-    : 1;
+    ? Math.max(2, Math.trunc(note.requiredHits))
+    : 2;
   const duration = end - start;
-  if (!(duration > 0) || requiredHits === 1) return [start];
+  if (!(duration > 0)) return Array(requiredHits).fill(start);
 
   const spacing = duration / requiredHits;
   const times = [];
@@ -116,8 +121,8 @@ function taikoSwellHitTimes(note) {
 // taikoSwellHitTimes と同じ時刻列を使うため、効果音と表示のカウントが一致する。
 function taikoSwellRemainingHits(note, currentTime) {
   const requiredHits = note && Number.isFinite(note.requiredHits)
-    ? Math.max(1, Math.trunc(note.requiredHits))
-    : 1;
+    ? Math.max(2, Math.trunc(note.requiredHits))
+    : 2;
   if (!Number.isFinite(currentTime)) return requiredHits;
 
   if (!note._swellHitTimes) note._swellHitTimes = taikoSwellHitTimes(note);
@@ -608,8 +613,8 @@ function taikoTruncate(ctx, text, maxW) {
 // 個別にフェードインする。終了後のフェードアウトはプレビュー独自の自然な遷移。
 function drawTaikoGameSwell(ctx, x, y, radius, laneH, note, currentTime) {
   const requiredHits = Number.isFinite(note.requiredHits)
-    ? Math.max(1, Math.trunc(note.requiredHits))
-    : 1;
+    ? Math.max(2, Math.trunc(note.requiredHits))
+    : 2;
   const remaining = taikoSwellRemainingHits(note, currentTime);
   const completion = Math.max(0, Math.min(1, 1 - remaining / requiredHits));
   const start = note.time;
