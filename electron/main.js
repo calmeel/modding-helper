@@ -283,6 +283,14 @@ app.whenReady().then(() => {
 
   // グラフを別ウィンドウに分離
   ipcMain.on('detach-chart', (e, chartId, lang) => popouts.openChartPopout(chartId, lang));
+  ipcMain.on('chart-source-file', (event, source) => {
+    if (!mainWin || mainWin.isDestroyed() || event.sender !== mainWin.webContents) return;
+    popouts.setChartSourceFile(source);
+  });
+  ipcMain.on('chart-source-mode', (event, mode) => {
+    if (!mainWin || mainWin.isDestroyed() || event.sender !== mainWin.webContents) return;
+    popouts.setChartSourceMode(mode);
+  });
 
   /* 「osu! で開いている譜面」へ切り替えた直後など、レンダラーから現在の譜面情報を要求する。
      監視は譜面が変わった時しか送らないので、これが無いと切替時に空のままになる。 */

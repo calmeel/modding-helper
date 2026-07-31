@@ -318,6 +318,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     await handleFile(file);
   };
+  // グラフ分離ウィンドウでも、通常画面と同じ読込処理を再利用する。
+  window.__loadModdingHelperFile = userFileHandler;
   setupFileInput(fileInput, userFileHandler);
   setupDropArea(dropArea, userFileHandler);
 
@@ -934,6 +936,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // file モードのときは読み込んだファイルのメタデータを左パネルに表示
       lastLoadedFileForMeta = file;
       if (osuSourceMode === "file") {
+        publishChartSourceFile(file);
         await renderFileMetaToPanel(file);
       }
     } catch (err) {
@@ -954,6 +957,37 @@ document.addEventListener("DOMContentLoaded", () => {
   let osuStatusKey         = "";
   let osuStatusCls         = "";
   let lastLoadedFileForMeta = null;  // file モードで左パネルに出すため最後に読んだ File を保持
+  let chartSourcePublishId = 0;
+
+  async function publishChartSourceFile(file) {
+    const publishId = ++chartSourcePublishId;
+    if (!window.electronAPI || typeof window.electronAPI.setChartSourceFile !== "function") return;
+    if (!file) {
+      window.electronAPI.setChartSourceFile(null);
+      return;
+    }
+
+    try {
+      // Electron 13 のファイル選択・ドロップでは File.path が利用できる。
+      // パスがないFileにも対応できるよう、ArrayBufferをフォールバックにする。
+      const filePath = typeof file.path === "string" ? file.path : "";
+      let source;
+      if (filePath) {
+        source = { name: file.name, type: file.type || "", path: filePath };
+      } else {
+        source = {
+          name: file.name,
+          type: file.type || "",
+          buffer: await file.arrayBuffer()
+        };
+      }
+      if (publishId === chartSourcePublishId) {
+        window.electronAPI.setChartSourceFile(source);
+      }
+    } catch (_) {
+      if (publishId === chartSourcePublishId) window.electronAPI.setChartSourceFile(null);
+    }
+  }
 
   // .osu テキストからメタデータを取り出す
   function metaFromOsuText(text, bgDataUrl) {
@@ -1047,11 +1081,15 @@ document.addEventListener("DOMContentLoaded", () => {
   function applyOsuSourceMode(mode) {
     osuSourceMode = (mode === "osu") ? "osu" : "file";
     try { localStorage.setItem("moddingHelperCheckSource", osuSourceMode); } catch {}
+    if (window.electronAPI && typeof window.electronAPI.setChartSourceMode === "function") {
+      window.electronAPI.setChartSourceMode(osuSourceMode);
+    }
 
     const reloadBtn = document.getElementById("osuReloadBtn");
     if (reloadBtn) reloadBtn.hidden = (osuSourceMode !== "osu");
 
     if (osuSourceMode === "file") setOsuStatus("", "");
+    if (osuSourceMode === "osu") publishChartSourceFile(null);
 
     // 左パネル（メタ/タイミング）のモードを連動。osu モードはリアルタイム表示、
     // file モードは読み込んだファイルのメタデータ表示に切り替える。
@@ -1060,6 +1098,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // file モードに切り替えた際、既に読み込み済みのファイルがあれば即反映
       if (osuSourceMode === "file" && lastLoadedFileForMeta) {
         renderFileMetaToPanel(lastLoadedFileForMeta);
+        publishChartSourceFile(lastLoadedFileForMeta);
       }
     }
   }

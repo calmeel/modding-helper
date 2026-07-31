@@ -3,6 +3,7 @@
 // メインウィンドウから切り離した小窓を開き、osu! のデータを配信する。
 // mainWin は main.js 側が持つので init({getMainWin}) で参照方法だけ受け取る。
 const { BrowserWindow, shell, screen } = require('electron');
+const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '..', '..');
@@ -17,7 +18,99 @@ const popoutWindows = { metadata: null, timing: null };
 const chartPopouts = {};  // chartId -> BrowserWindow（グラフ分離窓）
 let lastMapInfo = null;
 let lastTimingInfo = null;
+let lastChartSource = null;
+let chartSourceMode = 'file';
 let popoutMetaChecked = [];  // メタデータ分離窓と同期する Tags チェック状態（タグ文字列の配列）
+
+function chartSourceBuffer(value) {
+  if (Buffer.isBuffer(value)) return Buffer.from(value);
+  if (value instanceof ArrayBuffer) return Buffer.from(value);
+  if (ArrayBuffer.isView(value)) {
+    return Buffer.from(value.buffer, value.byteOffset, value.byteLength);
+  }
+  if (value && value.type === 'Buffer' && Array.isArray(value.data)) {
+    return Buffer.from(value.data);
+  }
+  return null;
+}
+
+function normalizeChartSource(source) {
+  if (!source || typeof source !== 'object') return null;
+
+  const sourcePath = typeof source.path === 'string' ? source.path : '';
+  if (sourcePath && path.isAbsolute(sourcePath) && /\.(osu|osz)$/i.test(sourcePath)) {
+    try {
+      if (fs.statSync(sourcePath).isFile()) {
+        return {
+          path: sourcePath,
+          name: path.basename(sourcePath),
+          type: typeof source.type === 'string' ? source.type : '',
+        };
+      }
+    } catch (_) {}
+  }
+
+  const name = path.basename(typeof source.name === 'string' ? source.name : '');
+  const buffer = chartSourceBuffer(source.buffer);
+  if (!name || !/\.(osu|osz)$/i.test(name) || !buffer) return null;
+  return {
+    path: null,
+    name,
+    type: typeof source.type === 'string' ? source.type : '',
+    buffer,
+  };
+}
+
+function materializeChartSource() {
+  if (!lastChartSource) return null;
+  try {
+    const buffer = lastChartSource.path
+      ? fs.readFileSync(lastChartSource.path)
+      : Buffer.from(lastChartSource.buffer);
+    return { name: lastChartSource.name, type: lastChartSource.type, buffer };
+  } catch (_) {
+    return null;
+  }
+}
+
+function sendChartSourceToWindow(win) {
+  if (!win || win.isDestroyed()) return;
+  const payload = materializeChartSource();
+  if (!payload) return;
+  try { win.webContents.send('chart-source-file', payload); } catch (_) {}
+}
+
+function setChartSourceFile(source) {
+  lastChartSource = normalizeChartSource(source);
+  if (!lastChartSource) return;
+  for (const id in chartPopouts) sendChartSourceToWindow(chartPopouts[id]);
+}
+
+function sendChartSourceModeToWindow(win) {
+  if (!win || win.isDestroyed()) return;
+  try { win.webContents.send('chart-source-mode', chartSourceMode); } catch (_) {}
+}
+
+function setChartSourceMode(mode) {
+  chartSourceMode = mode === 'osu' ? 'osu' : 'file';
+  if (chartSourceMode === 'osu') lastChartSource = null;
+  for (const id in chartPopouts) {
+    const win = chartPopouts[id];
+    if (!win || win.isDestroyed()) continue;
+    sendChartSourceModeToWindow(win);
+    if (chartSourceMode === 'file') {
+      try {
+        win.webContents.send('osu-map-info', null);
+        win.webContents.send('osu-timing-info', null);
+      } catch (_) {}
+    } else {
+      try {
+        win.webContents.send('osu-map-info', lastMapInfo);
+        win.webContents.send('osu-timing-info', lastTimingInfo);
+      } catch (_) {}
+    }
+  }
+}
 
 // osu! データをメインウィンドウ＋開いているポップアウトへ配信し、最新値をキャッシュする
 function broadcastOsuData(channel, data) {
@@ -25,7 +118,9 @@ function broadcastOsuData(channel, data) {
   if (channel === 'osu-map-info')        { lastMapInfo    = data; targets.push(popoutWindows.metadata); }
   else if (channel === 'osu-timing-info') { lastTimingInfo = data; targets.push(popoutWindows.timing); }
   // グラフ分離窓は譜面追従(osu-map-info)と再生ヘッド(osu-timing-info)の両方を受ける
-  for (const id in chartPopouts) { if (chartPopouts[id]) targets.push(chartPopouts[id]); }
+  if (chartSourceMode === 'osu') {
+    for (const id in chartPopouts) { if (chartPopouts[id]) targets.push(chartPopouts[id]); }
+  }
   for (const w of targets) {
     if (w && !w.isDestroyed()) {
       try { w.webContents.send(channel, data); } catch (_) {}
@@ -89,8 +184,13 @@ function openChartPopout(chartId, lang) {
          受け手(onOsuMapInfo / onTimingInfo)は注入したコードが登録するので、
          先に送ると誰も受け取れず、osu! 側が動くまで
          「再生ヘッドが出ない」「Diff との交点マーカーが出ない」状態になる。 */
-      pop.webContents.send('osu-map-info', lastMapInfo);
-      pop.webContents.send('osu-timing-info', lastTimingInfo);
+      sendChartSourceModeToWindow(pop);
+      if (chartSourceMode === 'file') {
+        sendChartSourceToWindow(pop);
+      } else {
+        pop.webContents.send('osu-map-info', lastMapInfo);
+        pop.webContents.send('osu-timing-info', lastTimingInfo);
+      }
     });
   });
 
@@ -225,9 +325,37 @@ function injectChartPopout(pop, chartId) {
       setTimeout(isolateChart, 400);
       setTimeout(isolateChart, 1200);
 
+      /* fileモードのメイン画面で読み込んだ .osu/.osz を、このRendererでも解析する。 */
+      var chartSourceLoadId = 0;
+      if (window.electronAPI && window.electronAPI.onChartSourceFile) {
+        window.electronAPI.onChartSourceFile(function(source) {
+          if (!source || !source.buffer || !source.name) return;
+          var loadId = ++chartSourceLoadId;
+          var bytes = source.buffer;
+          if (bytes && bytes.type === 'Buffer' && Array.isArray(bytes.data)) {
+            bytes = new Uint8Array(bytes.data);
+          }
+          var file = new File([bytes], source.name, { type: source.type || 'application/octet-stream' });
+          var loadWhenReady = function(attempt) {
+            if (loadId !== chartSourceLoadId) return;
+            if (typeof window.__loadModdingHelperFile !== 'function') {
+              if (attempt < 20) setTimeout(function() { loadWhenReady(attempt + 1); }, 50);
+              return;
+            }
+            Promise.resolve(window.__loadModdingHelperFile(file)).then(function() {
+              if (loadId !== chartSourceLoadId) return;
+              isolateChart();
+              requestAnimationFrame(isolateChart);
+            }).catch(function() {});
+          };
+          loadWhenReady(0);
+        });
+      }
+
       /* 再生ヘッド＋現 Diff 交点マーカー */
       var phEl = null, mkEl = null;
       var currentDiffFile = null;
+      var chartSourceMode = null;
       var ensureEls = function() {
         var cv = document.getElementById(chartId);
         if (!cv || !cv.parentElement) return null;
@@ -295,14 +423,39 @@ function injectChartPopout(pop, chartId) {
       setTimeout(hookGeom, 400);
       setTimeout(hookGeom, 1200);
 
+      if (window.electronAPI && window.electronAPI.onChartSourceMode) {
+        window.electronAPI.onChartSourceMode(function(mode) {
+          var previousMode = chartSourceMode;
+          chartSourceMode = mode === 'osu' ? 'osu' : 'file';
+          if (chartSourceMode === 'file') {
+            lastMs = -1;
+            currentDiffFile = null;
+            updatePh(-1);
+          } else if (previousMode === 'file') {
+            /* file用に解析した状態を残さず、osu!追従の通常読込へ戻す。 */
+            location.reload();
+          }
+        });
+      }
+
       if (window.electronAPI && window.electronAPI.onTimingInfo) {
         window.electronAPI.onTimingInfo(function(data) {
+          if (chartSourceMode !== 'osu') {
+            lastMs = -1;
+            updatePh(lastMs);
+            return;
+          }
           lastMs = (data && typeof data.time === 'number') ? data.time : -1;
           updatePh(lastMs);
         });
       }
       if (window.electronAPI && window.electronAPI.onOsuMapInfo) {
         window.electronAPI.onOsuMapInfo(function(data) {
+          if (chartSourceMode !== 'osu') {
+            currentDiffFile = null;
+            updatePh(-1);
+            return;
+          }
           currentDiffFile = data && data.diffFileName ? data.diffFileName : null;
           /* 対象 Diff が変わったら交点マーカーを描き直す。
              osu! が一時停止中は次の時刻が来ないので、ここで更新しないと出ないまま。 */
@@ -401,6 +554,8 @@ function closeAll() {
 module.exports = {
   init,
   broadcastOsuData,
+  setChartSourceFile,
+  setChartSourceMode,
   openPopout,
   openChartPopout,
   setMetaChecked,
