@@ -311,6 +311,76 @@ function applyTaikoNoteVelocities(notes, red, green, sliderMultiplier) {
   }
 }
 
+// osu!stable の Taiko スピナー表示タイミングを各風船へ付与する。
+// stable は赤線・緑線を別配列にせず、ファイル順を保持した単一の Timing Point 一覧を使う。
+// これにより、先頭が緑線の時に赤線検索の初期 index=0 が同じ緑線を指し、
+// 速度が fallback へ入る legacy 挙動も再現できる。
+const TAIKO_STABLE_VELOCITY_MULTIPLIER = 1.4;
+const TAIKO_STABLE_SCROLL_FACTOR = 0.6000000238418579;
+const TAIKO_STABLE_MAX_PREEMPT_MS = 5000;
+
+function taikoStableVelocityAt(timingPoints, time, taikoSliderMultiplier) {
+  const fallback = 100 * taikoSliderMultiplier;
+  if (!Array.isArray(timingPoints) || timingPoints.length === 0) return fallback;
+
+  let redIndex = 0;
+  let greenIndex = 0;
+  for (let i = 0; i < timingPoints.length; i++) {
+    const point = timingPoints[i];
+    if (point.time > time) break;
+    if (point.uninherited === 1) redIndex = i;
+    else greenIndex = i;
+  }
+
+  const redPoint = timingPoints[redIndex];
+  let effectiveBeatLength = redPoint && redPoint.beatLength;
+  if (greenIndex > redIndex) {
+    const greenPoint = timingPoints[greenIndex];
+    const rawGreen = greenPoint && greenPoint.beatLength;
+    if (Number.isFinite(rawGreen)) {
+      const inheritedMultiplier = Math.max(10, Math.min(10000, -rawGreen)) / 100;
+      effectiveBeatLength *= inheritedMultiplier;
+    }
+  }
+
+  const velocity = 100000 * taikoSliderMultiplier / effectiveBeatLength;
+  return Number.isFinite(velocity) && velocity > 0 ? velocity : fallback;
+}
+
+function taikoStableObjectLifetime(velocity) {
+  if (!(velocity > 0) || !Number.isFinite(velocity)) return 0;
+  return Math.max(0, Math.trunc(
+    600 / velocity / TAIKO_STABLE_SCROLL_FACTOR * 1000
+  ));
+}
+
+function applyTaikoStableSwellTimings(notes, text, sliderMultiplier) {
+  if (!Array.isArray(notes) || notes.length === 0) return;
+  const timingPoints = typeof parseTimingPointsDetailed === "function"
+    ? parseTimingPointsDetailed(text).filter(point =>
+      Number.isFinite(point.time) &&
+      Number.isFinite(point.beatLength) &&
+      (point.uninherited === 0 || point.uninherited === 1)
+    )
+    : [];
+  const sm = Number.isFinite(sliderMultiplier) && sliderMultiplier > 0
+    ? sliderMultiplier : 1.4;
+  const taikoSm = sm * TAIKO_STABLE_VELOCITY_MULTIPLIER;
+  const firstTime = timingPoints.length ? timingPoints[0].time : 0;
+  const preempt = Math.min(
+    TAIKO_STABLE_MAX_PREEMPT_MS,
+    taikoStableObjectLifetime(taikoStableVelocityAt(timingPoints, firstTime, taikoSm))
+  );
+
+  for (const note of notes) {
+    if (note.kind !== "denden") continue;
+    note.stableSwellPreemptMs = preempt;
+    note.stableSwellLifetimeMs = taikoStableObjectLifetime(
+      taikoStableVelocityAt(timingPoints, note.time, taikoSm)
+    );
+  }
+}
+
 // osu!stable と同じ手順で小節線を生成し、速度も付与する。
 // 生成時刻は共通の barlineTiming.js に任せることで、負時刻開始、
 // 赤線境界、反復加算誤差、conv.i4 相当の整数化、omit first barline を再現する。
@@ -533,7 +603,9 @@ function taikoTruncate(ctx, text, maxW) {
   return s + "…";
 }
 
-// ゲーム画面表示用の風船。開始後は判定枠に留まり、残り打数を中央に表示する。
+// ゲーム画面表示用の風船。
+// stable と同じく、予告リングは S-P ～ S-trunc(0.6P)、本体は S-1 ～ S+200 で
+// 個別にフェードインする。終了後のフェードアウトはプレビュー独自の自然な遷移。
 function drawTaikoGameSwell(ctx, x, y, radius, laneH, note, currentTime) {
   const requiredHits = Number.isFinite(note.requiredHits)
     ? Math.max(1, Math.trunc(note.requiredHits))
@@ -545,6 +617,15 @@ function drawTaikoGameSwell(ctx, x, y, radius, laneH, note, currentTime) {
   const duration = Math.max(1, end - start);
   const timeProgress = Math.max(0, Math.min(1, (currentTime - start) / duration));
   const active = currentTime >= start;
+  const preempt = Number.isFinite(note.stableSwellPreemptMs)
+    ? Math.max(0, note.stableSwellPreemptMs) : 0;
+  const warningFadeStart = start - preempt;
+  const warningFadeComplete = start - Math.trunc(0.6 * preempt);
+  const warningFadeDuration = warningFadeComplete - warningFadeStart;
+  const warningAlpha = warningFadeDuration > 0
+    ? Math.max(0, Math.min(1, (currentTime - warningFadeStart) / warningFadeDuration))
+    : (currentTime >= start ? 1 : 0);
+  const bodyAlpha = Math.max(0, Math.min(1, (currentTime - (start - 1)) / 201));
   const fadeProgress = Math.max(0, Math.min(1, (currentTime - end) / TAIKO_SWELL_FADE_OUT_MS));
   /* smoothstep の逆。終点では不透明のまま、300msかけて両端が滑らかに減衰する。 */
   const fadeAlpha = 1 - fadeProgress * fadeProgress * (3 - 2 * fadeProgress);
@@ -554,10 +635,10 @@ function drawTaikoGameSwell(ctx, x, y, radius, laneH, note, currentTime) {
   );
 
   ctx.save();
-  ctx.globalAlpha = fadeAlpha;
 
-  /* lazer の expanding ring に相当。打数が進むほど少し外へ広がる。 */
+  /* 打数が進むほど少し外へ広がる進捗リング。 */
   if (active && completion > 0) {
+    ctx.globalAlpha = bodyAlpha * fadeAlpha;
     const progressRingR = Math.min(
       laneH * 0.48,
       outerR + radius * completion * 0.28
@@ -569,13 +650,16 @@ function drawTaikoGameSwell(ctx, x, y, radius, laneH, note, currentTime) {
     ctx.stroke();
   }
 
-  /* 区間の残り時間に合わせて縮む接近リング。 */
+  /* stable の予告スプライトに相当する接近リング。 */
+  ctx.globalAlpha = warningAlpha * fadeAlpha;
   ctx.beginPath();
   ctx.arc(x, y, outerR, 0, Math.PI * 2);
   ctx.strokeStyle = TAIKO_COLORS.swellRing;
   ctx.lineWidth = Math.max(1.5, radius * 0.13);
   ctx.stroke();
 
+  /* stable のスピナー本体。開始直前から開始後200msまでフェードインする。 */
+  ctx.globalAlpha = bodyAlpha * fadeAlpha;
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, Math.PI * 2);
   ctx.fillStyle = TAIKO_COLORS.swellFill;
@@ -1080,10 +1164,22 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
              各ノーツの x 範囲で可視判定する。 */
           const vel = (note.vel != null && Number.isFinite(note.vel) && note.vel > 0) ? note.vel : 0.3;
           if (isDen) {
-            /* lazer と同じく、開始後の風船は判定枠より左へ進ませず終了まで留める。
-               Test表示では尾を描かず、単一の円形オブジェクトとして扱う。 */
+            /* stable の表示寿命 L(S) と共通プリエンプト P から実際の予告開始を決める。
+               S-L(S) で右端へ入り、S で判定枠へ到達して終了まで留まる。
+               P<L(S) の場合は、画面内へ入っていても S-P まで透明のまま。 */
             if (currentTime >= endT + TAIKO_SWELL_FADE_OUT_MS) continue;
-            x = Math.max(judgmentX, judgmentX + dt * vel * svHScale);
+            const stableLifetime = Number.isFinite(note.stableSwellLifetimeMs)
+              ? Math.max(0, note.stableSwellLifetimeMs)
+              : Math.max(0, (playX1 - judgmentX) / (vel * svHScale));
+            const stablePreempt = Number.isFinite(note.stableSwellPreemptMs)
+              ? Math.max(0, note.stableSwellPreemptMs)
+              : stableLifetime;
+            const warningStart = note.time - Math.min(stablePreempt, stableLifetime);
+            if (currentTime < warningStart) continue;
+            const approach = stableLifetime > 0
+              ? Math.max(0, Math.min(1, dt / stableLifetime))
+              : 0;
+            x = judgmentX + approach * (playX1 - judgmentX);
             x2 = x;
           } else {
             x  = judgmentX + dt * vel * svHScale;
@@ -1393,6 +1489,7 @@ if (typeof window !== "undefined") {
   window.getTaikoDominantBpm = getTaikoDominantBpm;
   window.getTaikoEqualSpeedPxPerMs = getTaikoEqualSpeedPxPerMs;
   window.applyTaikoNoteVelocities = applyTaikoNoteVelocities;
+  window.applyTaikoStableSwellTimings = applyTaikoStableSwellTimings;
   window.buildTaikoBarlines = buildTaikoBarlines;
   window.drawTaikoProgressBar = drawTaikoProgressBar;
   window.drawTaikoSpread = drawTaikoSpread;

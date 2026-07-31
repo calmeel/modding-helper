@@ -1001,6 +1001,11 @@
               if (window.applyTaikoNoteVelocities) {
                 window.applyTaikoNoteVelocities(notes, red, green, sm);
               }
+              /* Test画面のスピナーは osu!stable の表示タイミングを再現する。
+                 単一のTiming Point一覧を使うため、先頭が緑線のlegacy挙動も保持される。 */
+              if (window.applyTaikoStableSwellTimings) {
+                window.applyTaikoStableSwellTimings(notes, d.text, sm);
+              }
               var marks = window.parseTaikoTimelineMarks
                 ? window.parseTaikoTimelineMarks(d.text) : null;
               var lastNoteEnd = null;
