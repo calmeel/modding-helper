@@ -450,11 +450,10 @@ function drawSpreadDensityGrid(
     plot.top - 4
   );
 
-  const xTickCount = Math.max(3, Math.min(8, Math.floor(plot.width / 110)));
-  for (let i = 0; i <= xTickCount; i++) {
-    const ratio = i / xTickCount;
-    const time = viewStart + (viewEnd - viewStart) * ratio;
+  const timeTicks = getChartTimeTicks(viewStart, viewEnd, plot.width);
+  for (const time of timeTicks.values) {
     const x = xForTime(time);
+    const label = formatChartTimeTick(time, timeTicks.step);
 
     ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
     ctx.beginPath();
@@ -463,9 +462,9 @@ function drawSpreadDensityGrid(
     ctx.stroke();
 
     ctx.fillStyle = "#aeb8c8";
-    ctx.textAlign = i === 0 ? "left" : i === xTickCount ? "right" : "center";
+    ctx.textAlign = getChartTimeTickTextAlign(ctx, label, x, plot);
     ctx.textBaseline = "top";
-    ctx.fillText(formatSpreadDensityTime(time), x, plot.bottom + 10);
+    ctx.fillText(label, x, plot.bottom + 10);
   }
 }
 
@@ -799,11 +798,4 @@ function spreadDensityXToTime(x, plot) {
   const state = spreadDensityChartState;
   const ratio = (clampSpreadDensityX(x, plot) - plot.left) / plot.width;
   return state.viewStart + ratio * (state.viewEnd - state.viewStart);
-}
-
-function formatSpreadDensityTime(ms) {
-  const totalSeconds = Math.max(0, Math.round(ms / 1000));
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }

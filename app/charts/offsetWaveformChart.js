@@ -339,9 +339,10 @@ function drawOffsetWaveformGrid(ctx, plot, viewStart, viewEnd, xForTime) {
   ctx.lineTo(plot.right, centerY);
   ctx.stroke();
 
-  const ticks = getOffsetWaveformTimeTicks(viewStart, viewEnd, 8);
-  for (const tick of ticks) {
+  const timeTicks = getChartTimeTicks(viewStart, viewEnd, plot.width);
+  for (const tick of timeTicks.values) {
     const x = xForTime(tick);
+    const label = formatChartTimeTick(tick, timeTicks.step);
     ctx.strokeStyle = "rgba(255, 255, 255, 0.09)";
     ctx.beginPath();
     ctx.moveTo(x, plot.top);
@@ -349,9 +350,9 @@ function drawOffsetWaveformGrid(ctx, plot, viewStart, viewEnd, xForTime) {
     ctx.stroke();
 
     ctx.fillStyle = "rgba(221, 231, 255, 0.82)";
-    ctx.textAlign = "center";
+    ctx.textAlign = getChartTimeTickTextAlign(ctx, label, x, plot);
     ctx.textBaseline = "top";
-    ctx.fillText(msToTimestamp(tick).slice(0, 8), x, plot.bottom + 10);
+    ctx.fillText(label, x, plot.bottom + 10);
   }
 
   ctx.fillStyle = "rgba(221, 231, 255, 0.82)";
@@ -779,20 +780,6 @@ function clampOffsetWaveformX(x, plot) {
 function getOffsetWaveformDurationMs() {
   const buffer = offsetWaveformChartState.audioBuffer;
   return buffer ? Math.floor(buffer.duration * 1000) : 0;
-}
-
-function getOffsetWaveformTimeTicks(start, end, maxTicks) {
-  const span = Math.max(1, end - start);
-  const steps = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 30000, 60000];
-  const step = steps.find(value => span / value <= maxTicks) ?? 120000;
-  const first = Math.ceil(start / step) * step;
-  const ticks = [];
-
-  for (let time = first; time <= end; time += step) {
-    ticks.push(time);
-  }
-
-  return ticks;
 }
 
 function showOffsetWaveformTooltip(event, time) {

@@ -836,11 +836,10 @@ function drawSpreadScrollDeltaGrid(
     plot.top - 4
   );
 
-  const xTickCount = Math.max(3, Math.min(8, Math.floor(plot.width / 110)));
-  for (let i = 0; i <= xTickCount; i++) {
-    const ratio = i / xTickCount;
-    const time = viewStart + (viewEnd - viewStart) * ratio;
+  const timeTicks = getChartTimeTicks(viewStart, viewEnd, plot.width);
+  for (const time of timeTicks.values) {
     const x = xForTime(time);
+    const label = formatChartTimeTick(time, timeTicks.step);
 
     ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
     ctx.lineWidth = 1;
@@ -850,9 +849,9 @@ function drawSpreadScrollDeltaGrid(
     ctx.stroke();
 
     ctx.fillStyle = "#aeb8c8";
-    ctx.textAlign = i === 0 ? "left" : i === xTickCount ? "right" : "center";
+    ctx.textAlign = getChartTimeTickTextAlign(ctx, label, x, plot);
     ctx.textBaseline = "top";
-    ctx.fillText(formatSpreadScrollAxisTime(time), x, plot.bottom + 10);
+    ctx.fillText(label, x, plot.bottom + 10);
   }
 }
 
@@ -1017,11 +1016,10 @@ function drawSpreadScrollGrid(
     plot.top - 4
   );
 
-  const xTickCount = Math.max(3, Math.min(8, Math.floor(plot.width / 110)));
-  for (let i = 0; i <= xTickCount; i++) {
-    const ratio = i / xTickCount;
-    const time = viewStart + (viewEnd - viewStart) * ratio;
+  const timeTicks = getChartTimeTicks(viewStart, viewEnd, plot.width);
+  for (const time of timeTicks.values) {
     const x = xForTime(time);
+    const label = formatChartTimeTick(time, timeTicks.step);
 
     ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
     ctx.beginPath();
@@ -1030,9 +1028,9 @@ function drawSpreadScrollGrid(
     ctx.stroke();
 
     ctx.fillStyle = "#aeb8c8";
-    ctx.textAlign = i === 0 ? "left" : i === xTickCount ? "right" : "center";
+    ctx.textAlign = getChartTimeTickTextAlign(ctx, label, x, plot);
     ctx.textBaseline = "top";
-    ctx.fillText(formatSpreadScrollAxisTime(time), x, plot.bottom + 10);
+    ctx.fillText(label, x, plot.bottom + 10);
   }
 }
 
@@ -1769,11 +1767,4 @@ function spreadScrollXToTime(x, plot) {
   const ratio =
     (clampSpreadScrollX(x, plot) - plot.left) / Math.max(1, plot.width);
   return state.viewStart + ratio * (state.viewEnd - state.viewStart);
-}
-
-function formatSpreadScrollAxisTime(time) {
-  const totalSeconds = Math.max(0, Math.round(time / 1000));
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }

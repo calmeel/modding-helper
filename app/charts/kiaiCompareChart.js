@@ -247,12 +247,11 @@ function drawKiaiCompareRows(
 }
 
 function drawKiaiCompareTimeGrid(ctx, plot, viewStart, viewEnd, xForTime) {
-  const tickCount = Math.max(3, Math.min(8, Math.floor(plot.width / 110)));
+  const timeTicks = getChartTimeTicks(viewStart, viewEnd, plot.width);
 
-  for (let i = 0; i <= tickCount; i++) {
-    const ratio = i / tickCount;
-    const time = viewStart + (viewEnd - viewStart) * ratio;
+  for (const time of timeTicks.values) {
     const x = xForTime(time);
+    const label = formatChartTimeTick(time, timeTicks.step);
 
     ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
     ctx.lineWidth = 1;
@@ -262,9 +261,9 @@ function drawKiaiCompareTimeGrid(ctx, plot, viewStart, viewEnd, xForTime) {
     ctx.stroke();
 
     ctx.fillStyle = "#aeb8c8";
-    ctx.textAlign = i === 0 ? "left" : i === tickCount ? "right" : "center";
+    ctx.textAlign = getChartTimeTickTextAlign(ctx, label, x, plot);
     ctx.textBaseline = "top";
-    ctx.fillText(formatKiaiCompareAxisTime(time), x, plot.bottom + 10);
+    ctx.fillText(label, x, plot.bottom + 10);
   }
 }
 
@@ -496,11 +495,4 @@ function getKiaiCompareResultDisplayEndTime(results) {
       result.displayEndTime ?? result.audioDurationMs ?? result.endTime ?? 0
     )
   );
-}
-
-function formatKiaiCompareAxisTime(time) {
-  const totalSeconds = Math.max(0, Math.round(time / 1000));
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
