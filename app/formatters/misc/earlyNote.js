@@ -163,14 +163,12 @@ function formatEarlyNoteIssueDetail(result, t) {
       : "result-warn";
 
   lines.push(`${t("earlyNoteFirstNote")}: ${formatTimestampLink(result.firstHitTime)}`);
+  lines.push("");
 
   if (result.reason === "firstNoteBeforeFirstRedLine") {
     lines.push(
       `<span class="${cls}">${escapeHtml(t("earlyNoteBeforeFirstRedLine"))}</span>`
     );
-    lines.push(`BPM: N/A`);
-    lines.push(`SV: N/A`);
-    lines.push(`${t("earlyNoteEstimatedVisibleTime")}: N/A`);
     lines.push(`${t("earlyNotePosition")}: N/A`);
     lines.push("");
     lines.push(
@@ -179,10 +177,6 @@ function formatEarlyNoteIssueDetail(result, t) {
 
     return lines.join("\n");
   }
-
-  lines.push(`${t("earlyNoteBpm")}: ${result.bpm === null ? "N/A" : result.bpm.toFixed(3)}`);
-  lines.push(`${t("earlyNoteSv")}: ${result.sv === null ? "N/A" : result.sv.toFixed(3)}`);
-  lines.push(`${t("earlyNoteEstimatedVisibleTime")}: ${result.visibleTime === null ? "N/A" : `${Math.round(result.visibleTime)} ms`}`);
 
   const positionText =
     result.positionPercent === null
