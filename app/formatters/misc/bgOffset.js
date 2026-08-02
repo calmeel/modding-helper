@@ -35,9 +35,6 @@ function formatBgOffsetResult(results, t) {
 
   const lines = [];
 
-  lines.push(t("bgOffsetComparison"));
-  lines.push("");
-
   lines.push(formatBgOffsetTable(rows));
 
   if (!issueGroups.length) {

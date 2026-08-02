@@ -301,7 +301,6 @@ const i18n = {
 
     tabBgOffset: "BG",
     bgOffsetTitle: "BG",
-    bgOffsetComparison: "Background comparison",
     bgOffsetNoBackgrounds: "No background events were found.",
     bgOffsetNoIssues: "No BG issues were found.",
     bgOffsetDifferentOffsets: "has different offsets between difficulties.",
@@ -877,7 +876,6 @@ const i18n = {
 
     tabBgOffset: "BG",
     bgOffsetTitle: "BG",
-    bgOffsetComparison: "Background 比較",
     bgOffsetNoBackgrounds: "Background event が見つかりませんでした。",
     bgOffsetNoIssues: "BGの問題は見つかりませんでした。",
     bgOffsetDifferentOffsets: "は difficulty 間で異なるオフセットを使用しています。",
