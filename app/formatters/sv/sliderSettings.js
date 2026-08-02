@@ -35,11 +35,30 @@ function formatSliderSettingsSummaryTable(results, t) {
   const rows = results.map(result => {
     const diff = getDifficultyNameText(result.fileName);
     const ratio = `${(result.tripletRatio * 100).toFixed(1)}%`;
-    const sm = `${formatSliderSettingValue(result.sliderMultiplier)} (${t("expected")}: 1.4)`;
-    const str = `${formatSliderSettingValue(result.sliderTickRate)} (${t("expected")}: ${result.expectedTickRate})`;
+    const smValue = formatSliderSettingValue(result.sliderMultiplier);
+    const smSuffix = ` (${t("expected")}: 1.4)`;
+    const sm = `${smValue}${smSuffix}`;
+    const strValue = formatSliderSettingValue(result.sliderTickRate);
+    const strSuffix = ` (${t("expected")}: ${result.expectedTickRate})`;
+    const str = `${strValue}${strSuffix}`;
+    const hasSmIssue = result.issues.some(issue => issue.type === "sliderMultiplier");
+    const hasStrIssue = result.issues.some(issue => issue.type === "sliderTickRate");
     const status = result.issues.length ? t("warning") : "OK";
 
-    return { result, diff, ratio, sm, str, status };
+    return {
+      result,
+      diff,
+      ratio,
+      sm,
+      smValue,
+      smSuffix,
+      hasSmIssue,
+      str,
+      strValue,
+      strSuffix,
+      hasStrIssue,
+      status
+    };
   });
 
   const headers = {
@@ -84,17 +103,39 @@ function formatSliderSettingsSummaryTable(results, t) {
     const statusText = row.result.issues.length
       ? `<span class="result-warn">${escapeHtml(statusPadded)}</span>`
       : `<span class="ok">${escapeHtml(statusPadded)}</span>`;
+    const smText = formatSliderSettingsSummaryValue(
+      row.smValue,
+      row.smSuffix,
+      widths.sm,
+      row.hasSmIssue
+    );
+    const strText = formatSliderSettingsSummaryValue(
+      row.strValue,
+      row.strSuffix,
+      widths.str,
+      row.hasStrIssue
+    );
 
     lines.push(
       `${diffText} | ` +
       `${padStartVisual(row.ratio, widths.ratio)} | ` +
-      `${padStartVisual(row.sm, widths.sm)} | ` +
-      `${padStartVisual(row.str, widths.str)} | ` +
+      `${smText} | ` +
+      `${strText} | ` +
       `${statusText}`
     );
   }
 
   return lines.join("\n");
+}
+
+function formatSliderSettingsSummaryValue(value, suffix, width, isWarning) {
+  const plainText = `${value}${suffix}`;
+  const padding = " ".repeat(Math.max(0, width - visibleWidth(plainText)));
+  const valueText = isWarning
+    ? `<span class="result-warn">${escapeHtml(value)}</span>`
+    : escapeHtml(value);
+
+  return `${padding}${valueText}${escapeHtml(suffix)}`;
 }
 
 function formatSliderSettingsIssueDetail(result, t) {
