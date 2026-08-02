@@ -420,29 +420,29 @@ function formatTagRelatedResult(result, t, group = null) {
 
   for (const item of result.relatedSuggestions) {
     const present = item.present
-      .map(tag => `<code>${escapeHtml(tag)}</code>`)
+      .map(tag => escapeHtml(tag))
       .join(" ");
 
     const alreadyIncluded = (item.presentSuggestions ?? [])
-      .map(tag => `<code>${escapeHtml(tag)}</code>`)
+      .map(tag => escapeHtml(tag))
       .join(" ");
 
     const alreadyIncludedInSource = (item.presentSourceSuggestions ?? [])
-      .map(tag => `<code>${escapeHtml(tag)}</code>`)
+      .map(tag => escapeHtml(tag))
       .join(" ");
 
     const suggestions = item.suggestions
       .map(tag => `<code>${escapeHtml(tag)}</code>`)
       .join(" ");
 
-    lines.push(`<span class="result-warn">${escapeHtml(t("tagRelatedTrigger"))}:</span> ${present}`);
+    lines.push(`${escapeHtml(t("tagRelatedTrigger"))}: ${present}`);
 
     if (alreadyIncluded) {
-      lines.push(`<span class="result-warn">${escapeHtml(t("tagAlreadyIncluded"))}:</span> ${alreadyIncluded}`);
+      lines.push(`${escapeHtml(t("tagAlreadyIncluded"))}: ${alreadyIncluded}`);
     }
     if (alreadyIncludedInSource) {
       lines.push(
-        `<span class="result-warn">${escapeHtml(t("tagAlreadyIncludedInSource"))}:</span> ${alreadyIncludedInSource}`
+        `${escapeHtml(t("tagAlreadyIncludedInSource"))}: ${alreadyIncludedInSource}`
       );
     }
 
@@ -532,14 +532,14 @@ function formatTagMetadataSuggestionGroup(group, t) {
 
   lines.push("");
   lines.push(
-    `<span class="result-warn">${escapeHtml(t("tagMetadataFields"))}:</span> ` +
+    `${escapeHtml(t("tagMetadataFields"))}: ` +
     group.fields
-      .map(field => `<code>${escapeHtml(field)}</code>`)
+      .map(field => escapeHtml(field))
       .join(" ")
   );
   lines.push(
-    `<span class="result-warn">${escapeHtml(t("tagMetadataMarker"))}:</span> ` +
-    `<code>${escapeHtml(group.marker)}</code>`
+    `${escapeHtml(t("tagMetadataMarker"))}: ` +
+    escapeHtml(group.marker)
   );
   lines.push(
     `<span class="result-warn">${escapeHtml(t("tagSuggestedAdditions"))}:</span> ` +
@@ -563,15 +563,15 @@ function formatTagSourceSuggestionGroup(group, t) {
   lines.push("");
 
   lines.push(
-    `<span class="result-warn">${escapeHtml(t("tagSource"))}:</span> ` +
-    `<code>${escapeHtml(group.source)}</code>`
+    `${escapeHtml(t("tagSource"))}: ` +
+    escapeHtml(group.source)
   );
 
   if (group.alreadyIncluded?.length) {
     lines.push(
-      `<span class="result-warn">${escapeHtml(t("tagAlreadyIncluded"))}:</span> ` +
+      `${escapeHtml(t("tagAlreadyIncluded"))}: ` +
       group.alreadyIncluded
-        .map(tag => `<code>${escapeHtml(tag)}</code>`)
+        .map(tag => escapeHtml(tag))
         .join(" ")
     );
   }
