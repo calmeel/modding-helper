@@ -293,11 +293,19 @@ const TAG_RELATED_RULES = [
   },
   {
     trigger: ["ブルーアーカイブ", "ブルアカ", "buruaka", "blueaka"],
-    suggestGroup: ["ブルアカ", "buruaka", "blueaka", "yostar", "nexon", "games"]
+    suggestGroup: ["-Blue", "Archive-", "ブルアカ", "buruaka", "blueaka", "yostar", "nexon", "games"]
   },
   {
     triggerAll: ["-Blue", "Archive-"],
     suggestGroup: ["ブルーアーカイブ", "ブルアカ", "buruaka", "blueaka", "yostar", "nexon", "games"]
+  },
+  {
+    trigger: ["ウマ娘", "プリティーダービー", "umamusume", "blueaka"],
+    suggestGroup: ["ウマ娘", "プリティーダービー-", "umamusume", "uma", "musume", "pretty", "derby", "horse", "girls", "cygames"]
+  },
+  {
+    triggerAll: ["uma", "musume"],
+    suggestGroup: ["ウマ娘", "プリティーダービー-", "umamusume", "pretty", "derby", "horse", "girls", "cygames"]
   },
 ];
 
@@ -358,6 +366,10 @@ const TAG_SOURCE_RULES = [
     source: ["ブルーアーカイブ -Blue Archive-"],
     tags: ["ブルアカ", "buruaka", "blueaka", "yostar", "nexon", "games"]
   },
+  {
+    source: ["ウマ娘 プリティーダービー"],
+    tags: ["umamusume", "uma", "musume", "pretty", "derby", "horse", "girls", "cygames"]
+  }
 ];
 
 function runTagCheck(text, fileName) {
