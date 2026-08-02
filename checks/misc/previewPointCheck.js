@@ -8,7 +8,7 @@ function runPreviewPointCheck(text, fileName, options = {}) {
   if (previewTime === null) {
     return {
       fileName,
-      level: "warn",
+      level: "error",
       previewTime: null,
       snap: null,
       diff: null,
@@ -76,7 +76,7 @@ function parsePreviewTime(text) {
 
       if (trimmed.startsWith("PreviewTime:")) {
         const value = parseInt(trimmed.slice(trimmed.indexOf(":") + 1), 10);
-        return Number.isFinite(value) ? value : null;
+        return Number.isFinite(value) && value >= 0 ? value : null;
       }
     }
   }

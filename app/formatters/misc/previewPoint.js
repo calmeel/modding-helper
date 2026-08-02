@@ -12,25 +12,11 @@ function formatPreviewPointResult(results, t) {
 
   lines.push(formatSectionTitle(t("previewPointConsistencyTitle")));
 
-  if (missingResults.length) {
-    lines.push(`<span class="result-warn">${escapeHtml(t("previewPointMissingWarning"))}</span>`);
-    lines.push(
-      missingResults
-        .map(result => getDifficultyName(result.fileName))
-        .join(" ")
-    );
-  }
-
   if (!validResults.length) {
-    lines.push("");
-    lines.push(formatSeparator());
-    lines.push(formatSectionTitle(t("previewPointSnapTitle")));
-    lines.push(t("previewPointNotFound"));
-    appendPreviewPointAudioSection(lines, audioWarnings, t);
-    return lines.join("\n").trimEnd();
-  }
-
-  if (groups.length === 1 && !missingResults.length) {
+    lines.push(t("previewPointConsistencyUnavailable"));
+  } else if (validResults.length === 1) {
+    lines.push(t("previewPointConsistencySingle"));
+  } else if (groups.length === 1) {
     lines.push(t("previewPointConsistencyOk"));
   } else if (groups.length > 1) {
     lines.push(`<span class="result-error">${escapeHtml(t("previewPointMismatch"))}</span>`);
@@ -45,6 +31,16 @@ function formatPreviewPointResult(results, t) {
   lines.push("");
   lines.push(formatSeparator());
   lines.push(formatSectionTitle(t("previewPointSnapTitle")));
+
+  if (missingResults.length) {
+    lines.push(`<span class="result-error">${escapeHtml(t("previewPointMissingError"))}</span>`);
+    lines.push(
+      missingResults
+        .map(result => getDifficultyName(result.fileName))
+        .join(" ")
+    );
+    lines.push("");
+  }
 
   for (const group of groupPreviewPointSnapResults(validResults)) {
     lines.push(formatPreviewPointSingleResult(group.items[0], t));
