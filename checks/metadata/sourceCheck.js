@@ -106,6 +106,26 @@ const TOUHOU_SOURCE_LIST = [
   {
     name: "バレットフィリア達の闇市場　〜 100th Black Market.",
     link: "https://touhou-project.news/titles/th185/"
+  },
+  {
+    name: "東方靈異伝　～ Highly Responsive to Prayers",
+    link: "http://thwiki.info/"
+  },
+  {
+    name: "東方封魔録　～ the Story of Eastern Wonderland",
+    link: "http://thwiki.info/"
+  },
+  {
+    name: "東方夢時空　～ Phantasmagoria of Dim.Dream",
+    link: "http://thwiki.info/th/yume/"
+  },
+  {
+    name: "東方幻想郷　～ Lotus Land Story",
+    link: "http://thwiki.info/"
+  },
+  {
+    name: "東方怪綺談　～ Mystic Square",
+    link: "http://thwiki.info/"
   }
 ];
 
