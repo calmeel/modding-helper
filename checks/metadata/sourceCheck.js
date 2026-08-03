@@ -130,6 +130,39 @@ const TOUHOU_SOURCE_LIST = [
 ];
 
 const BLUE_ARCHIVE_SOURCE = "ブルーアーカイブ -Blue Archive-";
+const PROJECT_SEKAI_SOURCE = "プロジェクトセカイ カラフルステージ！";
+const UMA_MUSUME_SOURCE = "ウマ娘 プリティーダービー";
+
+function findSourceFormattingSuggestion(source) {
+  const normalized = String(source ?? "").trim();
+  const lower = normalized.toLowerCase();
+
+  if (
+    normalized !== BLUE_ARCHIVE_SOURCE &&
+    (normalized === "ブルーアーカイブ" || lower === "blue archive")
+  ) {
+    return { expected: BLUE_ARCHIVE_SOURCE };
+  }
+
+  if (
+    normalized !== PROJECT_SEKAI_SOURCE &&
+    (
+      normalized.includes("プロジェクトセカイ") ||
+      lower.includes("project sekai")
+    )
+  ) {
+    return { expected: PROJECT_SEKAI_SOURCE };
+  }
+
+  if (
+    normalized !== UMA_MUSUME_SOURCE &&
+    normalized.includes("ウマ娘")
+  ) {
+    return { expected: UMA_MUSUME_SOURCE };
+  }
+
+  return null;
+}
 
 function normalizeTouhouSourceLoose(source) {
   return String(source ?? "")
@@ -152,39 +185,27 @@ function runSourceCheck(text, fileName) {
   }
 
   const normalized = source.trim();
+  const sourceFormatting = findSourceFormattingSuggestion(normalized);
+  const finalize = result => {
+    if (!sourceFormatting) return result;
 
-  if (normalized === BLUE_ARCHIVE_SOURCE) {
     return {
-      fileName,
-      level: "ok",
-      source,
-      type: "exact"
+      ...result,
+      level: result.level === "error" ? "error" : "warn",
+      sourceFormatting
     };
-  }
-
-  if (
-    normalized === "ブルーアーカイブ" ||
-    normalized.toLowerCase() === "blue archive"
-  ) {
-    return {
-      fileName,
-      level: "warn",
-      source,
-      type: "recommended",
-      expected: BLUE_ARCHIVE_SOURCE
-    };
-  }
+  };
 
   const looseNormalized = normalizeTouhouSourceLoose(normalized);
 
   // 汎用ワードだけ
   if (/^(東方|東方project|東方 project|touhou|touhou project)$/i.test(normalized)) {
-    return {
+    return finalize({
       fileName,
       level: "warn",
       source,
       type: "generic"
-    };
+    });
   }
 
   // 完全一致
@@ -193,13 +214,13 @@ function runSourceCheck(text, fileName) {
   );
 
   if (exact) {
-    return {
+    return finalize({
       fileName,
       level: "ok",
       source,
       type: "exact",
       link: exact.link
-    };
+    });
   }
 
   // ゆるい一致
@@ -208,14 +229,14 @@ function runSourceCheck(text, fileName) {
   );
 
   if (partial) {
-    return {
+    return finalize({
       fileName,
       level: "error",
       source,
       type: "partial",
       expected: partial.name,
       link: partial.link
-    };
+    });
   }
 
   // 東方っぽい文字列 or 東方作品候補
@@ -231,20 +252,21 @@ function runSourceCheck(text, fileName) {
     });
 
   if (!looksTouhou) {
-    return {
+    return finalize({
       fileName,
       level: "none",
-      source
-    };
+      source,
+      type: "notTouhou"
+    });
   }
 
   // 不明な東方作品っぽい
-  return {
+  return finalize({
     fileName,
     level: "warn",
     source,
     type: "unknown"
-  };
+  });
 }
 
 function parseSource(text) {

@@ -1361,15 +1361,20 @@ Source を東方作品名のリストと照合します。<br>
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ 検出内容 2：その他のチェック項目</span><br>
-Source が <code>ブルーアーカイブ</code> または <code>Blue Archive</code> の場合は、
-推奨表記として <code>ブルーアーカイブ -Blue Archive-</code> を表示します。
+<span class="label label-detect">■ 検出内容 2：ソースの表記チェック</span><br>
+東方作品名のチェックとは別に、次のSource表記候補を表示します。
+<ul>
+  <li><code>ブルーアーカイブ</code> または <code>Blue Archive</code>：<code>ブルーアーカイブ -Blue Archive-</code></li>
+  <li><code>プロジェクトセカイ</code> を含む、または大文字小文字を問わず <code>Project Sekai</code> を含む：<code>プロジェクトセカイ カラフルステージ！</code></li>
+  <li><code>ウマ娘</code> を含む：<code>ウマ娘 プリティーダービー</code></li>
+</ul>
+正規表記と完全一致している場合は候補を表示しません。
 </div>
 
 <div class="section section-warning">
 <span class="label label-warning">■ 注意点</span><br>
 このチェックは、特定作品の Source 表記を補助的に確認するための機能です。<br>
-上記の検出対象に該当しない Source はチェック対象外として扱います。<br><br>
+東方チェックの検出対象に該当しない Source は、東方作品名チェックの対象外として扱います。<br><br>
 
 また、未知の東方作品名や、ゲーム作品以外の東方関連作品、特殊な表記については正しく判定できない場合があります。その場合は、表示された結果だけで判断せず、公式サイトや beatmap submission の内容を確認してください。
 </div>

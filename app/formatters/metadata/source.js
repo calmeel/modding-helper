@@ -38,6 +38,23 @@ function formatMultipleSourceResults(results, t) {
 
   lines.push("");
   lines.push(formatSeparator());
+  lines.push(formatSectionTitle(t("sourceFormattingCheck")));
+  lines.push("");
+
+  const formattingGroups = groupSourceFormattingResults(sortedResults);
+
+  if (!formattingGroups.length) {
+    lines.push(t("noSourceFormattingIssues"));
+  } else {
+    lines.push(
+      formattingGroups
+        .map(group => formatSourceFormattingGroup(group, t))
+        .join("\n\n" + formatSeparator() + "\n\n")
+    );
+  }
+
+  lines.push("");
+  lines.push(formatSeparator());
   lines.push(formatSectionTitle(t("sourceCheckTitle")));
   lines.push("");
 
@@ -54,6 +71,51 @@ function formatMultipleSourceResults(results, t) {
   }
 
   return lines.join("\n").trimEnd();
+}
+
+function groupSourceFormattingResults(results) {
+  const groups = new Map();
+
+  for (const result of results) {
+    const expected = result.sourceFormatting?.expected;
+    if (!expected) continue;
+
+    const key = [result.source ?? "", expected].join("::");
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        source: result.source ?? "",
+        expected,
+        fileNames: []
+      });
+    }
+
+    groups.get(key).fileNames.push(result.fileName);
+  }
+
+  return [...groups.values()];
+}
+
+function formatSourceFormattingGroup(group, t) {
+  const lines = [];
+
+  lines.push(
+    group.fileNames
+      .map(name => getDifficultyNameText(name))
+      .join(", ")
+  );
+  lines.push("");
+  lines.push(`Source: <code>${escapeHtml(group.source)}</code>`);
+  lines.push("");
+  lines.push(
+    `<span class="result-warn">${escapeHtml(t("sourceRecommendedFormatting"))}</span>`
+  );
+  lines.push(
+    `${escapeHtml(t("sourceExpected"))}: ` +
+    `<code>${escapeHtml(group.expected)}</code>`
+  );
+
+  return lines.join("\n");
 }
 
 function groupSourceResults(results) {
@@ -107,7 +169,7 @@ function formatSourceGroupResult(group, t) {
   lines.push("");
 
   if (result.source) {
-    const sourceValue = result.level === "none"
+    const sourceValue = result.type === "notTouhou" || result.level === "none"
       ? escapeHtml(result.source)
       : `<code>${escapeHtml(result.source)}</code>`;
 
@@ -129,17 +191,6 @@ function formatSourceGroupResult(group, t) {
 
   if (result.type === "generic") {
     lines.push(`<span class="result-warn">${escapeHtml(t("sourceGenericTouhou"))}</span>`);
-    return lines.join("\n");
-  }
-
-  if (result.type === "recommended") {
-    lines.push(
-      `<span class="result-warn">${escapeHtml(t("sourceRecommendedFormatting"))}</span>`
-    );
-    lines.push(
-      `${escapeHtml(t("sourceExpected"))}: ` +
-      `<code>${escapeHtml(result.expected)}</code>`
-    );
     return lines.join("\n");
   }
 

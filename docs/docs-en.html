@@ -1418,15 +1418,20 @@ since they may lack a sufficiently specific work title.
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ Detection 2: Other Checks</span><br>
-If the Source is <code>ブルーアーカイブ</code> or <code>Blue Archive</code>,
-the recommended formatting <code>ブルーアーカイブ -Blue Archive-</code> is displayed.
+<span class="label label-detect">■ Detection 2: Source Formatting Check</span><br>
+Separately from the Touhou title check, the following Source formatting suggestions are displayed:
+<ul>
+  <li><code>ブルーアーカイブ</code> or <code>Blue Archive</code>: <code>ブルーアーカイブ -Blue Archive-</code></li>
+  <li>Text containing <code>プロジェクトセカイ</code>, or <code>Project Sekai</code> regardless of letter case: <code>プロジェクトセカイ カラフルステージ！</code></li>
+  <li>Text containing <code>ウマ娘</code>: <code>ウマ娘 プリティーダービー</code></li>
+</ul>
+No suggestion is displayed when the Source already exactly matches the recommended formatting.
 </div>
 
 <div class="section section-warning">
 <span class="label label-warning">■ Notes</span><br>
 This check is intended as a helper for verifying Source formatting for specific works.<br>
-Sources that do not match the detection targets above are treated as outside the scope of this check.<br><br>
+Sources that do not match the Touhou detection targets are treated as outside the scope of the Touhou title check.<br><br>
 
 In addition, unknown Touhou titles, non-game Touhou-related works, or unusual formatting styles may not always be detected correctly.
 In such cases, do not rely solely on the displayed result — please also verify the official source material and beatmap submission details.

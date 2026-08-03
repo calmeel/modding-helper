@@ -272,6 +272,8 @@ const i18n = {
 
     sourceCheckTitle: "Source",
     sourceConsistencyCheck: "Source consistency check",
+    sourceFormattingCheck: "Source formatting check",
+    noSourceFormattingIssues: "No Source formatting issues found.",
     sourceNoMismatch: "Sources are consistent across all difficulties.",
     sourceMismatchFound: "Source mismatches were found across difficulties.",
     sourceBase: "Base Source",
@@ -849,6 +851,8 @@ const i18n = {
 
     sourceCheckTitle: "ソース",
     sourceConsistencyCheck: "全diffのSource一致チェック",
+    sourceFormattingCheck: "ソースの表記チェック",
+    noSourceFormattingIssues: "Sourceの表記に問題は見つかりませんでした。",
     sourceNoMismatch: "全diffでSourceは一致しています。",
     sourceMismatchFound: "diff間でSourceの不一致が見つかりました。",
     sourceBase: "基準Source",
