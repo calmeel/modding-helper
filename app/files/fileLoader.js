@@ -195,7 +195,7 @@ async function analyzeOszFile(file) {
 
     bgOffsetResults.push(bgOffsetResult);
 
-    epilepsyWarningResults.push(runEpilepsyWarningCheck(text, entry.name));
+    epilepsyWarningResults.push(runKiaiFlashCheck(text, entry.name));
 
     spreadResults.push({
       ...runSpreadCheck(text, entry.name),
@@ -323,7 +323,7 @@ async function processFile(file) {
         runBgOffsetCheck(text, file.name)
       ],
       epilepsyWarning: [
-        runEpilepsyWarningCheck(text, file.name)
+        runKiaiFlashCheck(text, file.name)
       ],
       spread: [
         {

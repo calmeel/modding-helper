@@ -315,6 +315,7 @@ const i18n = {
     epilepsyKiaiFlashIssues: "Kiai flash frequency:",
     epilepsyHighBpmKiaiIssues: "High-BPM kiai sections:",
     epilepsyWarningNotice:"Flashing effects above 3 Hz may be a concern from a photosensitive epilepsy perspective.",
+    epilepsyWarningToggleNote: "* However, the epilepsy warning toggle is intended for videos and storyboards, so it does not need to be turned on for this result.",
 
     tabSpread: "Spread Compare",
     spreadAutoOrder: "Auto order",
@@ -894,6 +895,7 @@ const i18n = {
     epilepsyKiaiFlashIssues: "Kiai flash 頻度:",
     epilepsyHighBpmKiaiIssues: "高BPM Kiai 区間:",
     epilepsyWarningNotice: "3 Hz以上の点滅は、photosensitive epilepsy の観点から注意対象とされています。",
+    epilepsyWarningToggleNote: "※ただし epilepsy warning はビデオ・ストーリーボード用のものである為、toggle を ON にする必要はありません。",
 
     tagConsistencyCheck: "全diffのTags一致チェック",
     tagNoMismatch: "全diffでTagsは一致しています。",

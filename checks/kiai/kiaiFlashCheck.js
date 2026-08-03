@@ -1,25 +1,25 @@
-const EPILEPSY_KIAI_FLASH_CAUTION_HZ = 2;
-const EPILEPSY_KIAI_FLASH_WARNING_HZ = 3;
+const KIAI_FLASH_CAUTION_HZ = 2;
+const KIAI_FLASH_WARNING_HZ = 3;
 
-const EPILEPSY_KIAI_BPM_CAUTION = 300;
-const EPILEPSY_KIAI_BPM_WARNING = 360;
+const KIAI_FLASH_BPM_CAUTION = 300;
+const KIAI_FLASH_BPM_WARNING = 360;
 
-function runEpilepsyWarningCheck(text, fileName) {
+function runKiaiFlashCheck(text, fileName) {
   const timingPoints = parseAllTimingPoints(text);
   const redTimingPoints = parseTimingPoints(text);
   const endTime = getLastHitObjectTime(text);
 
-  const switchPoints = collectEpilepsyKiaiSwitchPoints(timingPoints);
+  const switchPoints = collectKiaiSwitchPoints(timingPoints);
   const kiaiIntervals = buildKiaiIntervals(timingPoints, endTime);
 
   return {
     fileName,
-    flashIssues: detectEpilepsyKiaiFlashIssues(switchPoints),
-    bpmIssues: detectEpilepsyHighBpmKiaiIssues(kiaiIntervals, redTimingPoints)
+    flashIssues: detectKiaiFlashIssues(switchPoints),
+    bpmIssues: detectHighBpmKiaiIssues(kiaiIntervals, redTimingPoints)
   };
 }
 
-function collectEpilepsyKiaiSwitchPoints(timingPoints) {
+function collectKiaiSwitchPoints(timingPoints) {
   const points = [];
   let prevKiai = false;
 
@@ -38,7 +38,7 @@ function collectEpilepsyKiaiSwitchPoints(timingPoints) {
   return points;
 }
 
-function detectEpilepsyKiaiFlashIssues(switchPoints) {
+function detectKiaiFlashIssues(switchPoints) {
   const onPoints = switchPoints
     .filter(point => point.kiai)
     .sort((a, b) => a.time - b.time);
@@ -54,21 +54,21 @@ function detectEpilepsyKiaiFlashIssues(switchPoints) {
 
     const hz = 1000 / intervalMs;
 
-    if (hz < EPILEPSY_KIAI_FLASH_CAUTION_HZ) continue;
+    if (hz < KIAI_FLASH_CAUTION_HZ) continue;
 
     issues.push({
       time: cur.time,
       prevTime: prev.time,
       intervalMs,
       hz,
-      level: hz >= EPILEPSY_KIAI_FLASH_WARNING_HZ ? "warn" : "caution"
+      level: hz >= KIAI_FLASH_WARNING_HZ ? "warn" : "caution"
     });
   }
 
   return issues;
 }
 
-function detectEpilepsyHighBpmKiaiIssues(kiaiIntervals, redTimingPoints) {
+function detectHighBpmKiaiIssues(kiaiIntervals, redTimingPoints) {
   const issues = [];
 
   for (const interval of kiaiIntervals) {
@@ -78,19 +78,19 @@ function detectEpilepsyHighBpmKiaiIssues(kiaiIntervals, redTimingPoints) {
       const bpm = beatLengthToBpm(segment.beatLength);
       if (bpm === null) continue;
 
-      if (bpm < EPILEPSY_KIAI_BPM_CAUTION) continue;
+      if (bpm < KIAI_FLASH_BPM_CAUTION) continue;
 
       issues.push({
         start: segment.start,
         end: segment.end,
         bpm,
         hz: bpm / 60,
-        level: bpm >= EPILEPSY_KIAI_BPM_WARNING ? "warn" : "caution"
+        level: bpm >= KIAI_FLASH_BPM_WARNING ? "warn" : "caution"
       });
     }
   }
 
-  return mergeEpilepsyHighBpmKiaiIssues(issues);
+  return mergeHighBpmKiaiIssues(issues);
 }
 
 function splitKiaiIntervalByRedTimingPoints(interval, redTimingPoints) {
@@ -124,7 +124,7 @@ function beatLengthToBpm(beatLength) {
   return 60000 / beatLength;
 }
 
-function mergeEpilepsyHighBpmKiaiIssues(issues) {
+function mergeHighBpmKiaiIssues(issues) {
   if (!issues.length) return [];
 
   const merged = [];

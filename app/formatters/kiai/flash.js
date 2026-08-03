@@ -26,6 +26,12 @@ function formatEpilepsyWarningResult(result, t) {
     `${t("epilepsyWarningNotice")}` +
     `</span>`
   );
+  lines.push(
+    `<span class="note-subtext">` +
+    `${t("epilepsyWarningToggleNote")}` +
+    `</span>`
+  );
+  lines.push("");
 
   if (flashIssues.length) {
     lines.push(t("epilepsyKiaiFlashIssues"));
