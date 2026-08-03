@@ -124,8 +124,9 @@ function formatBarlineDetachedBarlineLine(item, t) {
   return (
     `<span class="result-warn">` +
     `${formatBarlineClientScope(item, t)}` +
-    `${formatBarlineTimestampLink(item.barlineTime)} -> ${formatTimestampLink(item.noteTime)} | ` +
+    `${formatBarlineTimestampLink(item.barlineTime)} ` +
     `${escapeHtml(t("barlineGeneratedBarline"))}: ${formatBarlineSpeed(item.barlineSpeed)} px/s | ` +
+    `${formatTimestampLink(item.noteTime)} ` +
     `${escapeHtml(objectLabel)}: ${formatBarlineSpeed(item.noteSpeed)} px/s | ` +
     `${escapeHtml(t("barlineDelta"))}: ${deltaSign}${formatBarlineSpeed(item.delta)} px/s` +
     `</span>`

@@ -972,7 +972,7 @@ lazer が保持する小数の生成時刻も <code>Math.trunc()</code> で整�
 <code>omit first barline</code> は各クライアントの生成処理で先に適用されるため、実際には描画されない小節線を基準にした誤検出は行いません。<br><br>
 見た目のスクロール速度は、スプレッド比較の「スクロール速度」サブタブと同じ考え方で、現在の BPM、現在の SV、<code>SliderMultiplier</code> から計算します。<br><br>
 例：<br>
-<code>[osu!stable のみ] 02:45:635 -> 02:45:636 | 小節線: 934.18 px/s | ノーツ: 935.08 px/s | 差分: +0.9 px/s</code>
+<code>[osu!stable のみ] 02:45:635 小節線: 934.18 px/s | 02:45:636 ノーツ: 935.08 px/s | 差分: +0.9 px/s</code>
 </div>
 
 <div class="section section-bg">
@@ -1063,7 +1063,7 @@ SV線（緑線）は、その時刻以降のノーツや小節線に適用され
 該当するSV線がある場合、ノーツにそのSVが適用されていない可能性があるため、黄色の警告として表示します。<br><br>
 
 出力例：<br>
-<code>00:01:000 -> 00:01:003 | +3 ms | ノーツSV x1 -> 直後SV x1.25 (SV差 +0.25)</code>
+<code>00:01:000 ノーツSV x1 | 00:01:003 (+3 ms) 直後SV x1.25 | SV差 +0.25</code>
 </div>
 
 <div class="section section-detect">
@@ -1073,7 +1073,7 @@ osu!stable と osu!lazer で実際に生成される小節線位置を別々に�
 該当するSV線がある場合、小節線にそのSVが適用されていない可能性があるため、黄色の警告として表示します。結果には <code>[osu!stable, osu!lazer]</code>、<code>[osu!stable のみ]</code>、<code>[osu!lazer のみ]</code> のいずれかを表示します。<br><br>
 
 出力例：<br>
-<code>[osu!stable, osu!lazer] 02:33:864 -> 02:33:865 | +1 ms | 小節線SV x1 -> 直後SV x0.5 (SV差 -0.5)</code>
+<code>[osu!stable, osu!lazer] 02:33:864 小節線SV x1 | 02:33:865 (+1 ms) 直後SV x0.5 | SV差 -0.5</code>
 </div>
 
 <div class="section section-warning">

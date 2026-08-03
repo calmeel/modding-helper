@@ -992,7 +992,7 @@ Lazer's fractional generation time is converted to integer milliseconds with <co
 <code>omit first barline</code> is applied during each client's generation process, so the check does not use a barline that would not actually be drawn.<br><br>
 The visual scroll speed is calculated using the same idea as the Spread Comparison / Scroll Speed subtab, based on the current BPM, current SV, and <code>SliderMultiplier</code>.<br><br>
 Example:<br>
-<code>[osu!stable only] 02:45:635 -> 02:45:636 | Generated barline: 934.18 px/s | Note: 935.08 px/s | Delta: +0.9 px/s</code>
+<code>[osu!stable only] 02:45:635 Generated barline: 934.18 px/s | 02:45:636 Note: 935.08 px/s | Delta: +0.9 px/s</code>
 </div>
 
 <div class="section section-bg">
@@ -1097,7 +1097,7 @@ For each HitObject time <code>T</code>, this check looks for SV lines between <c
 If such an SV line exists, the tool displays a yellow warning because the SV may not be applied to that note.<br><br>
 
 Example output:<br>
-<code>00:01:000 -> 00:01:003 | +3 ms | Note SV x1 -> Following SV x1.25 (SV delta +0.25)</code>
+<code>00:01:000 Note SV x1 | 00:01:003 (+3 ms) Following SV x1.25 | SV delta +0.25</code>
 </div>
 
 <div class="section section-detect">
@@ -1107,7 +1107,7 @@ For this check, lazer's fractional generation time is converted to integer milli
 If such an SV line exists, the tool displays a yellow warning because the SV may not be applied to that barline. Each result is labeled <code>[osu!stable, osu!lazer]</code>, <code>[osu!stable only]</code>, or <code>[osu!lazer only]</code>.<br><br>
 
 Example output:<br>
-<code>[osu!stable, osu!lazer] 02:33:864 -> 02:33:865 | +1 ms | Barline SV x1 -> Following SV x0.5 (SV delta -0.5)</code>
+<code>[osu!stable, osu!lazer] 02:33:864 Barline SV x1 | 02:33:865 (+1 ms) Following SV x0.5 | SV delta -0.5</code>
 </div>
 
 <div class="section section-warning">

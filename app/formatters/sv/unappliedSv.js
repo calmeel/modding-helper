@@ -58,7 +58,6 @@ function formatUnappliedSvIssueLine(issue, t) {
   const targetSvText = `${targetSvLabel} x${formatUnappliedSvNumber(targetSv)}`;
   const followingSvText = `${t("unappliedSvFollowingSvLabel")} x${formatUnappliedSvNumber(followingSv)}`;
   const deltaText = `${t("unappliedSvDeltaLabel")} ${formatUnappliedSvDelta(followingSv - targetSv)}`;
-  const svText = `${targetSvText} -> ${followingSvText} (${deltaText})`;
   const offsetText = `+${formatBarlinePreciseNumber(issue.offset)} ms`;
   const clientScope = issue.targetType === "barline"
     ? formatBarlineClientScope(issue, t)
@@ -68,10 +67,10 @@ function formatUnappliedSvIssueLine(issue, t) {
     : formatTimestampLink(issue.targetTime);
 
   return `<span class="result-warn">` +
-    `${clientScope}${targetTimeLink} -> ` +
-    `${formatTimestampLink(issue.greenTime)} | ` +
-    `${offsetText} | ` +
-    `${escapeHtml(svText)}` +
+    `${clientScope}${targetTimeLink} ${escapeHtml(targetSvText)} | ` +
+    `${formatTimestampLink(issue.greenTime)} (${escapeHtml(offsetText)}) ` +
+    `${escapeHtml(followingSvText)} | ` +
+    `${escapeHtml(deltaText)}` +
     `</span>`;
 }
 
