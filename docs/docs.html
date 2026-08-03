@@ -1490,7 +1490,9 @@ osu-web 上でプレビューポイントの再生位置が意図した位置か
 <span class="label label-detect">■ 検出内容</span><br>
 
 <code>PreviewTime</code> が snap からずれている場合、warning として表示します<br>
-（この検出は AiMod や Mapset Verifier では行えません）。<br><br>
+（この検出は AiMod や Mapset Verifier では行えません）。<br>
+snap時刻は、osu!stable の「すべてのノーツを再スナップする」と同じ計算方法で判定します。<br>
+タイムライングリッドの時刻は別の計算方法で生成されるため、判定結果がタイムライングリッドと一致しない場合があります。<br><br>
 
 また、以下の内容も検出します：
 

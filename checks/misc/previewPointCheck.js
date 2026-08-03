@@ -17,7 +17,7 @@ function runPreviewPointCheck(text, fileName, options = {}) {
   }
 
   const redTimingPoints = parseTimingPoints(text);
-  const currentRed = findCurrentRedTimingPoint(redTimingPoints, previewTime);
+  const currentRed = findCurrentTimingPoint(redTimingPoints, previewTime);
 
   if (!currentRed) {
     return {
@@ -30,15 +30,14 @@ function runPreviewPointCheck(text, fileName, options = {}) {
     };
   }
 
-  const snap = detectSnapAtTime(
+  const snap = findNearestStableSnapDiff(
     previewTime,
     currentRed.time,
     currentRed.beatLength,
-    PREVIEW_POINT_SNAP_CANDIDATES,
-    PREVIEW_POINT_SNAP_TOLERANCE_MS
+    PREVIEW_POINT_SNAP_CANDIDATES
   );
 
-  if (!snap) {
+  if (!snap || Math.abs(snap.diff) > PREVIEW_POINT_SNAP_TOLERANCE_MS) {
     return {
       fileName,
       level: "warn",

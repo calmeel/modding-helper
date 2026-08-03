@@ -1573,7 +1573,9 @@ because osu-web may calculate the playback position differently for that format.
 
 If <code>PreviewTime</code> is unsnapped,
 the tool displays a warning<br>
-(this check is not performed by AiMod or Mapset Verifier).<br><br>
+(this check is not performed by AiMod or Mapset Verifier).<br>
+Snap times are calculated using the same method as osu!stable's "Resnap all notes" command.<br>
+Timeline grid times are generated using a different calculation, so the detected snap result may not match the timeline grid.<br><br>
 
 The following checks are also performed:
 

@@ -294,7 +294,6 @@ function findNearestSnapDiff(
   beatSnaps
 ) {
   let lazerBest = null;
-  let stableBest = null;
 
   for (const beatSnap of beatSnaps) {
     const lazerTime = getLazerOffsetSnapTime(
@@ -308,19 +307,14 @@ function findNearestSnapDiff(
     if (isBetterOffsetSnapCandidate(lazerCandidate, lazerBest)) {
       lazerBest = lazerCandidate;
     }
-
-    const stableTime = getStableResnapInteger(
-      time,
-      redTime,
-      beatLength,
-      beatSnap
-    );
-    const stableCandidate = createOffsetSnapCandidate(time, stableTime, beatSnap);
-
-    if (isBetterOffsetSnapCandidate(stableCandidate, stableBest)) {
-      stableBest = stableCandidate;
-    }
   }
+
+  const stableBest = findNearestStableSnapDiff(
+    time,
+    redTime,
+    beatLength,
+    beatSnaps
+  );
 
   if (!lazerBest || !stableBest) return lazerBest || stableBest;
 
@@ -362,6 +356,35 @@ function findNearestSnapDiff(
     lazerRawDiff: lazerBest.rawDiff,
     compatibility: null
   };
+}
+
+function findNearestStableSnapDiff(
+  time,
+  redTime,
+  beatLength,
+  beatSnaps
+) {
+  let stableBest = null;
+
+  for (const beatSnap of beatSnaps) {
+    const stableTime = getStableResnapInteger(
+      time,
+      redTime,
+      beatLength,
+      beatSnap
+    );
+    const stableCandidate = createOffsetSnapCandidate(
+      time,
+      stableTime,
+      beatSnap
+    );
+
+    if (isBetterOffsetSnapCandidate(stableCandidate, stableBest)) {
+      stableBest = stableCandidate;
+    }
+  }
+
+  return stableBest;
 }
 
 function findStableWheelSeekDifference(
