@@ -107,7 +107,11 @@ function formatSourceGroupResult(group, t) {
   lines.push("");
 
   if (result.source) {
-    lines.push(`Source: <code>${escapeHtml(result.source)}</code>`);
+    const sourceValue = result.level === "none"
+      ? escapeHtml(result.source)
+      : `<code>${escapeHtml(result.source)}</code>`;
+
+    lines.push(`Source: ${sourceValue}`);
     lines.push("");
   }
 
@@ -174,9 +178,7 @@ function formatSourceGroupResult(group, t) {
   }
 
   // 東方作品ではない場合
-  lines.push(
-    `<span class="result-info">${escapeHtml(t("sourceNotTouhou"))}</span>`
-  );
+  lines.push(escapeHtml(t("sourceNotTouhou")));
 
   return lines.join("\n");
 }
