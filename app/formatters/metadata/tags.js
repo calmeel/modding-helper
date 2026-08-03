@@ -390,13 +390,13 @@ function formatTagMetadataDuplicateGroup(group, t) {
 
   lines.push("");
   lines.push(
-    `<span class="result-warn">${escapeHtml(t("tagMetadataDuplicateFound"))}:</span> ` +
-    `<code>${escapeHtml(group.tag)}</code>`
+    `${escapeHtml(t("tagMetadataDuplicateFound"))}: ` +
+    escapeHtml(group.tag)
   );
   lines.push(
-    `<span class="result-warn">${escapeHtml(t("tagMetadataFields"))}:</span> ` +
+    `${escapeHtml(t("tagMetadataFields"))}: ` +
     group.fields
-      .map(field => `<code>${escapeHtml(field)}</code>`)
+      .map(field => escapeHtml(field))
       .join(" ")
   );
 
