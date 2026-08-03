@@ -342,6 +342,9 @@ function formatSpreadOdHpTable(results, t, diffOrder = null, manualCategories = 
     );
   }
 
+  lines.push("");
+  lines.push(escapeHtml(t("spreadOdHpHpFootnote")));
+
   return lines.join("\n");
 }
 
