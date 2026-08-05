@@ -16,11 +16,16 @@ function formatFileCheckResult(results, t) {
 
   for (const result of issues) {
     lines.push(`<span class="result-warn">${escapeHtml(t("osuFileNameMismatch"))}</span>`);
-    lines.push(`${escapeHtml(t("osuFileNameActual"))}: ${escapeHtml(result.actualFileName)}`);
 
     if (result.expectedFileName) {
-      lines.push(`${escapeHtml(t("osuFileNameExpected"))}: ${escapeHtml(result.expectedFileName)}`);
+      const difference = formatOsuFileNameDiffPair(
+        result.actualFileName,
+        result.expectedFileName
+      );
+      lines.push(`${escapeHtml(t("osuFileNameActual"))}: ${difference.actual}`);
+      lines.push(`${escapeHtml(t("osuFileNameExpected"))}: ${difference.expected}`);
     } else {
+      lines.push(`${escapeHtml(t("osuFileNameActual"))}: ${escapeHtml(result.actualFileName)}`);
       const fields = result.missingFields
         .map(field => t(`osuFileNameField_${field}`))
         .join(", ");
@@ -31,6 +36,76 @@ function formatFileCheckResult(results, t) {
   }
 
   return lines.join("\n").trimEnd();
+}
+
+function formatOsuFileNameDiffPair(actualValue, expectedValue) {
+  const actualChars = [...String(actualValue ?? "")];
+  const expectedChars = [...String(expectedValue ?? "")];
+  const actualMatched = new Array(actualChars.length).fill(false);
+  const expectedMatched = new Array(expectedChars.length).fill(false);
+  const lcs = Array.from(
+    { length: actualChars.length + 1 },
+    () => new Uint16Array(expectedChars.length + 1)
+  );
+
+  for (let i = actualChars.length - 1; i >= 0; i--) {
+    for (let j = expectedChars.length - 1; j >= 0; j--) {
+      lcs[i][j] = actualChars[i] === expectedChars[j]
+        ? lcs[i + 1][j + 1] + 1
+        : Math.max(lcs[i + 1][j], lcs[i][j + 1]);
+    }
+  }
+
+  let actualIndex = 0;
+  let expectedIndex = 0;
+
+  while (
+    actualIndex < actualChars.length &&
+    expectedIndex < expectedChars.length
+  ) {
+    if (actualChars[actualIndex] === expectedChars[expectedIndex]) {
+      actualMatched[actualIndex] = true;
+      expectedMatched[expectedIndex] = true;
+      actualIndex++;
+      expectedIndex++;
+    } else if (
+      lcs[actualIndex + 1][expectedIndex] >=
+      lcs[actualIndex][expectedIndex + 1]
+    ) {
+      actualIndex++;
+    } else {
+      expectedIndex++;
+    }
+  }
+
+  return {
+    actual: formatOsuFileNameDiffValue(actualChars, actualMatched),
+    expected: formatOsuFileNameDiffValue(expectedChars, expectedMatched)
+  };
+}
+
+function formatOsuFileNameDiffValue(chars, matched) {
+  const parts = [];
+  let start = 0;
+
+  while (start < chars.length) {
+    const isDifferent = !matched[start];
+    let end = start + 1;
+
+    while (end < chars.length && !matched[end] === isDifferent) {
+      end++;
+    }
+
+    const text = escapeHtml(chars.slice(start, end).join(""));
+    parts.push(
+      isDifferent
+        ? `<span class="result-warn">${text}</span>`
+        : text
+    );
+    start = end;
+  }
+
+  return parts.join("");
 }
 
 function formatOsuFileNameSummaryTable(results, t) {
