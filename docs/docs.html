@@ -586,6 +586,7 @@
     <button class="doc-tab-button" data-doc-tab="previewPoint">プレビューポイント</button>
     <button class="doc-tab-button" data-doc-tab="earlyNote">プチフリ</button>
     <button class="doc-tab-button" data-doc-tab="bgOffset">BG</button>
+    <button class="doc-tab-button" data-doc-tab="fileCheck">ファイル</button>
   </details>
 
   <details class="doc-tab-group">
@@ -1586,6 +1587,56 @@ background event で参照されている背景画像ファイルの拡張子を
 
 また、同じ background file で offset が異なる場合でも、意図的な演出である可能性があります。<br>
 warning が出た場合は、修正漏れか意図的な差分かを確認してください。
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="fileCheck">
+<h2>その他：ファイル</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ 背景</span><br>
+osu! の <code>.osu</code> ファイルは、通常、次の命名規則で作成されます。<br><br>
+
+<code>Artist - Title (Creator) [Diff name].osu</code><br><br>
+
+ただし、ファイルを生成した後に osu! editor で Artist や Title を変更した場合や、
+mapper が osu! のユーザー名を変更した場合、既存のファイル名へ変更内容が反映されないことがあります。<br><br>
+
+また、他の mapper から Guest Difficulty を受け取った際に、ブラウザや OS が付けた
+<code>(1)</code> や <code>- コピー</code> などの文字がファイル名に残る場合があります。
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ 検出内容1：.osu ファイル名の表記チェック</span><br>
+各 <code>.osu</code> ファイルの <code>[Metadata]</code> セクションから、次の値を読み取ります。
+
+<ul>
+  <li><code>Artist</code></li>
+  <li><code>Title</code></li>
+  <li><code>Creator</code></li>
+  <li><code>Version</code>（Diff name）</li>
+</ul>
+
+これらから正しいファイル名を組み立て、実際のファイル名と完全一致するか確認します。<br>
+大文字・小文字の違い、古い Artist / Title / Creator、<code>(1)</code> や
+<code>- コピー</code> などの余分な文字も不一致として検出し、warning を表示します。<br><br>
+
+<code>.osz</code> に複数の太鼓 difficulty が含まれる場合は、すべての <code>.osu</code> ファイルを個別にチェックします。
+結果には、Diff名・現在の <code>.osu</code> ファイル名・ステータスを一覧表で表示します。<br>
+不一致があるファイルについては、表の下に現在のファイル名と正しいファイル名も表示します。
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ 使用できない文字について</span><br>
+Windows のファイル名に使用できない
+<code>\</code>、<code>/</code>、<code>:</code>、<code>*</code>、<code>?</code>、<code>&quot;</code>、
+<code>&lt;</code>、<code>&gt;</code>、<code>|</code> は、正しいファイル名を作成する際に省略して判定します。<br><br>
+
+例えば Title が <code>Song: &lt;Special&gt;</code> の場合、ファイル名では
+<code>Song Special</code> として比較します。<br><br>
+
+このチェックはファイル名を自動変更しません。warning が出た場合は、表示された正しいファイル名を確認し、
+必要に応じて osu! editor またはエクスプローラー上で修正してください。
 </div>
 </section>
 

@@ -586,6 +586,7 @@
     <button class="doc-tab-button" data-doc-tab="previewPoint">Preview Point</button>
     <button class="doc-tab-button" data-doc-tab="earlyNote">First Note Lag</button>
     <button class="doc-tab-button" data-doc-tab="bgOffset">BG</button>
+    <button class="doc-tab-button" data-doc-tab="fileCheck">File</button>
   </details>
 
   <details class="doc-tab-group">
@@ -1673,6 +1674,56 @@ they are treated as separate background images, so differing offsets will not tr
 
 Additionally, differing offsets for the same background file may sometimes be intentional.<br>
 If a warning appears, check whether it is an unintended inconsistency or a deliberate visual difference.
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="fileCheck">
+<h2>Misc: File</h2>
+
+<div class="section section-bg">
+<span class="label label-bg">■ Background</span><br>
+osu! normally creates <code>.osu</code> files using the following naming convention:<br><br>
+
+<code>Artist - Title (Creator) [Diff name].osu</code><br><br>
+
+However, if Artist or Title is changed in the osu! editor after the file has been created,
+or if the mapper changes their osu! username, the existing file name may retain the old value.<br><br>
+
+When receiving a Guest Difficulty from another mapper, the file name may also retain suffixes added by the browser or operating system,
+such as <code>(1)</code> or <code>- Copy</code>.
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ Detection 1: .osu file name formatting</span><br>
+For each <code>.osu</code> file, the tool reads the following values from the <code>[Metadata]</code> section:
+
+<ul>
+  <li><code>Artist</code></li>
+  <li><code>Title</code></li>
+  <li><code>Creator</code></li>
+  <li><code>Version</code> (Diff name)</li>
+</ul>
+
+The expected file name is built from these values and compared with the actual file name using an exact match.<br>
+Differences in capitalization, outdated Artist / Title / Creator values, and extra text such as
+<code>(1)</code> or <code>- Copy</code> are detected and displayed as warnings.<br><br>
+
+If an <code>.osz</code> contains multiple osu!taiko difficulties, every <code>.osu</code> file is checked separately.
+The results list the difficulty name, current <code>.osu</code> file name, and status in a plain-text table.<br>
+For each mismatch, the current and expected file names are also displayed below the table.
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Unsupported file name characters</span><br>
+Characters that cannot be used in Windows file names—
+<code>\</code>, <code>/</code>, <code>:</code>, <code>*</code>, <code>?</code>, <code>&quot;</code>,
+<code>&lt;</code>, <code>&gt;</code>, and <code>|</code>—are omitted when building the expected file name.<br><br>
+
+For example, if the Title is <code>Song: &lt;Special&gt;</code>, it is compared as
+<code>Song Special</code> in the file name.<br><br>
+
+This check does not rename files automatically. If a warning appears, review the expected file name shown by the tool
+and rename the file in the osu! editor or File Explorer when necessary.
 </div>
 </section>
 

@@ -72,6 +72,13 @@ function updateTabIssueStates(state) {
   setTabIssueLevel("bgOffset", getBgOffsetIssueLevel(state.bgOffset));
   setTabIssueLevel("spread", getSpreadIssueLevel(state.spread));
   setTabIssueLevel("contentPermission", getContentPermissionIssueLevel(state.contentPermission));
+  setTabIssueLevel("fileCheck", getFileCheckIssueLevel(state.fileCheck));
+}
+
+function getFileCheckIssueLevel(results) {
+  return results?.some(result => !result.matches)
+    ? TAB_LEVEL_WARN
+    : TAB_LEVEL_NONE;
 }
 
 function getClapWhistleIssueLevel(results) {

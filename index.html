@@ -148,6 +148,11 @@
         </label>
 
         <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="fileCheck" checked>
+          <span data-i18n="tabFile">File</span>
+        </label>
+
+        <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="earlyNote" checked>
           <span data-i18n="tabEarlyNote">Early notes</span>
         </label>
@@ -240,6 +245,7 @@
           <button class="tab-button" data-tab="previewPoint" data-i18n="tabPreviewPoint">Preview point</button>
           <button class="tab-button" data-tab="earlyNote" data-i18n="tabEarlyNote">Early notes</button>
           <button class="tab-button" data-tab="bgOffset" data-i18n="tabBgOffset">BG</button>
+          <button class="tab-button" data-tab="fileCheck" data-i18n="tabFile">File</button>
         </div>
 
         <div class="tab-group">
@@ -472,6 +478,10 @@
 
       <section class="tab-panel" id="tab-bgOffset">
         <pre id="bgOffsetOutput" data-i18n="noFileLoaded">No file loaded.</pre>
+      </section>
+
+      <section class="tab-panel" id="tab-fileCheck">
+        <pre id="fileCheckOutput" data-i18n="noFileLoaded">No file loaded.</pre>
       </section>
 
       <section class="tab-panel" id="tab-spread">
@@ -973,6 +983,7 @@
   <script src="checks/misc/previewPointCheck.js"></script>
   <script src="checks/misc/earlyNoteCheck.js"></script>
   <script src="checks/misc/bgOffsetCheck.js"></script>
+  <script src="checks/misc/fileNameCheck.js"></script>
 
   <!-- Checks: Tools -->
   <script src="checks/tools/offsetWaveformCheck.js"></script>
@@ -1023,6 +1034,7 @@
   <script src="app/formatters/misc/bgOffset.js"></script>
   <script src="app/formatters/misc/previewPoint.js"></script>
   <script src="app/formatters/misc/earlyNote.js"></script>
+  <script src="app/formatters/misc/file.js"></script>
 
   <!-- Formatters: Tools -->
   <script src="app/formatters/tools/timeline.js"></script>

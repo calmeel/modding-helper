@@ -397,6 +397,17 @@ function renderSpreadResultFromResults(spreadState, dom, t) {
   });
 }
 
+function renderFileCheckResultFromResults(results, dom, t) {
+  if (!dom.fileCheckOutput) return;
+
+  if (!results) {
+    dom.fileCheckOutput.textContent = t("noFileLoaded");
+    return;
+  }
+
+  dom.fileCheckOutput.innerHTML = formatFileCheckResult(results, t);
+}
+
 /** その他タブ：プレビューポイント */
 function renderPreviewPointResultFromResults(results, dom, t) {
   if (!dom.previewPointOutput) return;

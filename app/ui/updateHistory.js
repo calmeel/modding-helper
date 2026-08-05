@@ -258,6 +258,18 @@ const updateHistoryEntries = [
       ]
     }
   },
+  {
+    date: "2026/08/05",
+    type: "update",
+    items: {
+      en: [
+        "Added a check related to .osu files."
+      ],
+      ja: [
+        ".osu ファイルに関するチェックを追加"
+      ]
+    }
+  },
 ];
 
 const updateHistoryTypeLabels = {
