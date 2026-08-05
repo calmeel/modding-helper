@@ -38,12 +38,12 @@ function formatOsuFileNameSummaryTable(results, t) {
     result,
     diff: getDifficultyNameText(result.fileName),
     fileName: result.actualFileName,
-    status: result.matches ? t("sourceOk") : t("warning")
+    status: result.matches ? "OK" : "Warning"
   }));
   const headers = {
     diff: "Diff",
-    fileName: t("osuFileNameColumn"),
-    status: t("status")
+    fileName: ".osu File Name",
+    status: "Status"
   };
   const widths = {
     diff: Math.max(4, visibleWidth(headers.diff), ...rows.map(row => visibleWidth(row.diff))),

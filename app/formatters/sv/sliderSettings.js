@@ -36,14 +36,14 @@ function formatSliderSettingsSummaryTable(results, t) {
     const diff = getDifficultyNameText(result.fileName);
     const ratio = `${(result.tripletRatio * 100).toFixed(1)}%`;
     const smValue = formatSliderSettingValue(result.sliderMultiplier);
-    const smSuffix = ` (${t("expected")}: 1.4)`;
+    const smSuffix = " (Expected: 1.4)";
     const sm = `${smValue}${smSuffix}`;
     const strValue = formatSliderSettingValue(result.sliderTickRate);
-    const strSuffix = ` (${t("expected")}: ${result.expectedTickRate})`;
+    const strSuffix = ` (Expected: ${result.expectedTickRate})`;
     const str = `${strValue}${strSuffix}`;
     const hasSmIssue = result.issues.some(issue => issue.type === "sliderMultiplier");
     const hasStrIssue = result.issues.some(issue => issue.type === "sliderTickRate");
-    const status = result.issues.length ? t("warning") : "OK";
+    const status = result.issues.length ? "Warning" : "OK";
 
     return {
       result,
@@ -63,10 +63,10 @@ function formatSliderSettingsSummaryTable(results, t) {
 
   const headers = {
     diff: "Diff",
-    ratio: t("tripletSnapRatio"),
+    ratio: "Triplet Ratio",
     sm: "SliderMultiplier",
     str: "SliderTickRate",
-    status: t("status")
+    status: "Status"
   };
 
   const widths = {
