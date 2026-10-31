@@ -586,7 +586,7 @@
     <button class="doc-tab-button" data-doc-tab="previewPoint">プレビューポイント</button>
     <button class="doc-tab-button" data-doc-tab="earlyNote">プチフリ</button>
     <button class="doc-tab-button" data-doc-tab="bgOffset">BG</button>
-    <button class="doc-tab-button" data-doc-tab="fileCheck">ファイル</button>
+    <button class="doc-tab-button" data-doc-tab="fileCheck">ファイル名</button>
   </details>
 
   <details class="doc-tab-group">
@@ -660,16 +660,14 @@
 
     <div class="section section-bg">
       <span class="label label-bg">■ 概要</span><br>
-      このツールは、ranked譜面を作成する mapper や、modding を行う Beatmap Nominator 向けの osu!taiko modding 支援ツールです。<br>
-      また、一部には BN evaluation を行う NAT 向けの機能も実装しています。
+      このツールは、ranked譜面を作成する mapper や、modding を行う Beatmap Nominator 向けの osu!taiko modding 支援ツールです。
     </div>
 
     <div class="section section-bg">
       <span class="label label-bg">■ 背景</span><br>
       Ranked譜面を作成する際には、一般的に
       <a href="https://osu.ppy.sh/wiki/en/Client/Beatmap_editor/AiMod" target="_blank" rel="noopener noreferrer">AiMod</a>、
-      <a href="https://github.com/Naxesss/MapsetVerifier" target="_blank" rel="noopener noreferrer">Mapset Verifier</a>、
-      <a href="https://github.com/Hiviexd/MVTaikoChecks" target="_blank" rel="noopener noreferrer">Mapset Verifier MVTaikoChecks</a>
+      <a href="https://github.com/Naxesss/MapsetVerifier" target="_blank" rel="noopener noreferrer">Mapset Verifier</a>
       などのチェックツールを使用します。しかし、これらのツールで検出できる内容は完全ではありません。<br><br>
 
       例えば <code>Taiko Checklist V1.2 by iRedi</code> を見ると、これらのツールでは検出できないチェック項目も存在することが分かります。<br><br>
@@ -1591,7 +1589,7 @@ warning が出た場合は、修正漏れか意図的な差分かを確認して
 </section>
 
 <section class="doc-tab-panel" data-doc-tab-panel="fileCheck">
-<h2>その他：ファイル</h2>
+<h2>その他：ファイル名</h2>
 
 <div class="section section-bg">
 <span class="label label-bg">■ 背景</span><br>
@@ -1600,7 +1598,7 @@ osu! の <code>.osu</code> ファイルは、通常、次の命名規則で作�
 <code>Artist - Title (Creator) [Diff name].osu</code><br><br>
 
 ただし、ファイルを生成した後に osu! editor で Artist や Title を変更した場合や、
-mapper が osu! のユーザー名を変更した場合、既存のファイル名へ変更内容が反映されないことがあります。<br><br>
+mapper が osu! のユーザー名を変更した場合、などでは既存のファイル名へ変更内容が反映されないことがあります。<br><br>
 
 また、他の mapper から Guest Difficulty を受け取った際に、ブラウザや OS が付けた
 <code>(1)</code> や <code>- コピー</code> などの文字がファイル名に残る場合があります。
@@ -1622,21 +1620,53 @@ mapper が osu! のユーザー名を変更した場合、既存のファイル�
 <code>- コピー</code> などの余分な文字も不一致として検出し、warning を表示します。<br><br>
 
 <code>.osz</code> に複数の太鼓 difficulty が含まれる場合は、すべての <code>.osu</code> ファイルを個別にチェックします。
-結果には、Diff名・現在の <code>.osu</code> ファイル名・ステータスを一覧表で表示します。<br>
-不一致があるファイルについては、表の下に現在のファイル名と正しいファイル名も表示します。
 </div>
 
 <div class="section section-warning">
-<span class="label label-warning">■ 使用できない文字について</span><br>
-Windows のファイル名に使用できない
+<span class="label label-warning">■ 注意事項：.osu ファイル名で使用できない文字</span><br>
 <code>\</code>、<code>/</code>、<code>:</code>、<code>*</code>、<code>?</code>、<code>&quot;</code>、
-<code>&lt;</code>、<code>&gt;</code>、<code>|</code> は、正しいファイル名を作成する際に省略して判定します。<br><br>
+<code>&lt;</code>、<code>&gt;</code>、<code>|</code> は、Windows のファイル名に使用できないため省略されます。<br><br>
 
-例えば Title が <code>Song: &lt;Special&gt;</code> の場合、ファイル名では
-<code>Song Special</code> として比較します。<br><br>
+例：<br>
+<code>Xeveir and Xeron - > Fateless War Machine < (komasy) [Mechanical Resolve].osu</code><br>
+→ <code>Xeveir and Xeron -  Fateless War Machine  (komasy) [Mechanical Resolve].osu</code>
+</div>
 
-このチェックはファイル名を自動変更しません。warning が出た場合は、表示された正しいファイル名を確認し、
-必要に応じて osu! editor またはエクスプローラー上で修正してください。
+<div class="section section-detect">
+<span class="label label-detect">■ 検出内容2：song フォルダ名の表記チェック</span><br>
+song フォルダ名が、譜面の <code>BeatmapSetID</code>、<code>Artist</code>、<code>Title</code> から作られる
+次の命名規則と一致するか確認します。<br><br>
+
+提出済みの map：<br>
+<code>BeatmapSetID Artist - Title</code><br><br>
+
+未提出の map（<code>BeatmapSetID</code> が空、<code>0</code>、または負数）：<br>
+<code>Artist - Title</code><br><br>
+
+大文字・小文字の違い、末尾の <code>[no video]</code>、<code>(1)</code> などの余分な文字も
+不一致として検出し、warning を表示します。<br><br>
+
+フォルダ名は、デスクトップ版で単体の <code>.osu</code> ファイルを読み込んだ場合、または
+「osu! で開いている譜面」を使用した場合に確認できます。<br>
+<code>.osz</code> ファイルを読み込んだ場合は、ブラウザ版・デスクトップ版ともに、ファイル名の末尾の <code>.osz</code> を除いた名前を song フォルダ名としてチェックします。<br><br>
+ブラウザ版で単体の <code>.osu</code> ファイルを読み込んだ場合は、song フォルダ名を取得できないため、このチェックを省略します。
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ 注意事項：song フォルダで使用できない文字</span><br>
+<code>.</code> は省略されます。<br>
+<code>\</code>、<code>/</code>、<code>:</code>、<code>*</code>、<code>?</code>、<code>&quot;</code>、
+<code>&lt;</code>、<code>&gt;</code>、<code>|</code> は <code>_</code> に変換されます。<br><br>
+
+例：<br>
+<code>2518995 ryo (supercell) feat. Kaguya (CV_ Yuko Natsuyoshi) - Melt CPK! Remix (Kaguya Ver.)</code><br>
+→ <code>2518995 ryo (supercell) feat Kaguya (CV: Yuko Natsuyoshi) - Melt CPK! Remix (Kaguya Ver)</code>
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ 注意事項：.osz ファイル名に基づくチェック</span><br>
+<code>.osz</code> ファイルでは、作成元の song フォルダの実名ではなく、読み込んだファイル名を基に判定します。<br>
+後から <code>.osz</code> のファイル名が変更された場合は、元の song フォルダ名が正しくても警告を表示する可能性があります。
 </div>
 </section>
 

@@ -586,7 +586,7 @@
     <button class="doc-tab-button" data-doc-tab="previewPoint">Preview Point</button>
     <button class="doc-tab-button" data-doc-tab="earlyNote">First Note Lag</button>
     <button class="doc-tab-button" data-doc-tab="bgOffset">BG</button>
-    <button class="doc-tab-button" data-doc-tab="fileCheck">File</button>
+    <button class="doc-tab-button" data-doc-tab="fileCheck">File Name</button>
   </details>
 
   <details class="doc-tab-group">
@@ -660,8 +660,7 @@
 
     <div class="section section-bg">
       <span class="label label-bg">■ Overview</span><br>
-      This tool is an osu!taiko modding support tool for mappers creating ranked beatmaps and Beatmap Nominators performing modding.<br>
-      It also includes several features intended for NAT members performing BN evaluations.
+      This tool is an osu!taiko modding support tool for mappers creating ranked beatmaps and Beatmap Nominators performing modding.
     </div>
 
     <div class="section section-bg">
@@ -669,9 +668,7 @@
 
       When creating ranked beatmaps, mappers generally use checking tools such as
       <a href="https://osu.ppy.sh/wiki/en/Client/Beatmap_editor/AiMod" target="_blank" rel="noopener noreferrer">AiMod</a>,
-      <a href="https://github.com/Naxesss/MapsetVerifier" target="_blank" rel="noopener noreferrer">Mapset Verifier</a>,
-      and
-      <a href="https://github.com/Hiviexd/MVTaikoChecks" target="_blank" rel="noopener noreferrer">Mapset Verifier MVTaikoChecks</a>.
+      and <a href="https://github.com/Naxesss/MapsetVerifier" target="_blank" rel="noopener noreferrer">Mapset Verifier</a>
       However, these tools do not cover every possible issue.<br><br>
 
       For example, the document <code>Taiko Checklist V1.2 by iRedi</code> contains many checks that cannot currently be detected automatically by existing tools.<br><br>
@@ -1678,7 +1675,7 @@ If a warning appears, check whether it is an unintended inconsistency or a delib
 </section>
 
 <section class="doc-tab-panel" data-doc-tab-panel="fileCheck">
-<h2>Misc: File</h2>
+<h2>Misc: File Name</h2>
 
 <div class="section section-bg">
 <span class="label label-bg">■ Background</span><br>
@@ -1709,21 +1706,54 @@ Differences in capitalization, outdated Artist / Title / Creator values, and ext
 <code>(1)</code> or <code>- Copy</code> are detected and displayed as warnings.<br><br>
 
 If an <code>.osz</code> contains multiple osu!taiko difficulties, every <code>.osu</code> file is checked separately.
-The results list the difficulty name, current <code>.osu</code> file name, and status in a plain-text table.<br>
-For each mismatch, the current and expected file names are also displayed below the table.
 </div>
 
 <div class="section section-warning">
-<span class="label label-warning">■ Unsupported file name characters</span><br>
+<span class="label label-warning">■ Unsupported .osu file name characters</span><br>
 Characters that cannot be used in Windows file names—
 <code>\</code>, <code>/</code>, <code>:</code>, <code>*</code>, <code>?</code>, <code>&quot;</code>,
 <code>&lt;</code>, <code>&gt;</code>, and <code>|</code>—are omitted when building the expected file name.<br><br>
 
-For example, if the Title is <code>Song: &lt;Special&gt;</code>, it is compared as
-<code>Song Special</code> in the file name.<br><br>
+Example:<br>
+<code>Xeveir and Xeron - > Fateless War Machine < (komasy) [Mechanical Resolve].osu</code><br>
+→ <code>Xeveir and Xeron -  Fateless War Machine  (komasy) [Mechanical Resolve].osu</code>
+</div>
 
-This check does not rename files automatically. If a warning appears, review the expected file name shown by the tool
-and rename the file in the osu! editor or File Explorer when necessary.
+<div class="section section-detect">
+<span class="label label-detect">■ Detection 2: Song folder name formatting</span><br>
+This check verifies that the song folder name matches the following naming convention built from
+<code>BeatmapSetID</code>, <code>Artist</code>, and <code>Title</code> in the beatmap metadata.<br><br>
+
+Submitted map:<br>
+<code>BeatmapSetID Artist - Title</code><br><br>
+
+Unsubmitted map (the <code>BeatmapSetID</code> is empty, <code>0</code>, or negative):<br>
+<code>Artist - Title</code><br><br>
+
+Differences in capitalization and extra suffixes such as <code>[no video]</code> or <code>(1)</code>
+are treated as mismatches and displayed as warnings.<br><br>
+
+The folder name is available in the desktop app when loading a standalone <code>.osu</code> file or using
+the “beatmap open in osu!” source.<br>
+When an <code>.osz</code> file is loaded in either the browser or desktop app, its file name without the trailing <code>.osz</code> extension is checked as the song folder name.<br><br>
+This check is skipped when loading a standalone <code>.osu</code> file in the browser app because the song folder name is unavailable.
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Song folder character conversion</span><br>
+Periods (<code>.</code>) are omitted when building the expected song folder name.<br>
+The characters <code>\</code>, <code>/</code>, <code>:</code>, <code>*</code>, <code>?</code>, <code>&quot;</code>,
+<code>&lt;</code>, <code>&gt;</code>, and <code>|</code> are converted to <code>_</code>.<br><br>
+
+Example:<br>
+<code>2518995 ryo (supercell) feat. Kaguya (CV_ Yuko Natsuyoshi) - Melt CPK! Remix (Kaguya Ver.)</code><br>
+→ <code>2518995 ryo (supercell) feat Kaguya (CV: Yuko Natsuyoshi) - Melt CPK! Remix (Kaguya Ver)</code>
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Checking names from .osz files</span><br>
+For <code>.osz</code> files, this check uses the loaded file name rather than the actual song folder name on the creator's computer.<br>
+If the <code>.osz</code> file is renamed afterwards, a warning may be displayed even when the original song folder name is correct.
 </div>
 </section>
 
