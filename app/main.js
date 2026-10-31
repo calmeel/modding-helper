@@ -288,6 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
     previewPoint: null,
     bgOffset: null,
     fileCheck: null,
+    songFolderCheck: null,
     epilepsyWarning: null,
     spread: {
       results: null,
@@ -729,7 +730,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderFileCheckResult() {
-    renderFileCheckResultFromResults(state.fileCheck, dom, t);
+    renderFileCheckResultFromResults(
+      state.fileCheck,
+      state.songFolderCheck,
+      dom,
+      t
+    );
   }
 
   function renderEpilepsyWarningResult() {
@@ -847,7 +853,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderSpreadResult: renderSpreadResultAndUpdateTabs,
   });
 
-  async function handleFile(file) {
+  async function handleFile(file, processOptions = {}) {
     if (!file) return;
 
     prepareSrCalculation([], state.srCalculator, srCalculatorOutput, t);
@@ -859,7 +865,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      const result = await processFile(file);
+      const result = await processFile(file, processOptions);
 
       state.clapWhistle = result.clapWhistle;
       state.offsetSources = result.offsetSources;
@@ -902,6 +908,7 @@ document.addEventListener("DOMContentLoaded", () => {
       state.previewPoint = result.previewPoint;
       state.bgOffset = result.bgOffset;
       state.fileCheck = result.fileCheck;
+      state.songFolderCheck = result.songFolderCheck;
       state.epilepsyWarning = result.epilepsyWarning;
       state.spread.results = result.spread;
       state.spread.diffOrder = createSpreadDiffOrder(result.spread);
@@ -1142,7 +1149,11 @@ document.addEventListener("DOMContentLoaded", () => {
     osuLastLoadedFolder = res.folder;
     try {
       const file = new File([res.buffer], res.name, { type: "application/octet-stream" });
-      await handleFile(file);
+      const songFolderName = String(res.folder ?? "")
+        .split(/[\\/]/)
+        .filter(Boolean)
+        .pop() ?? "";
+      await handleFile(file, { songFolderName });
       // フォルダ監視による再解析では osu! 側のファイルパス自体は変わらないため、
       // osuWatcher はメタデータを自動では読み直さない。現在開いている .osu を
       // 明示的に再読込し、メタデータカード（分離窓を含む）とTiming情報を更新する。

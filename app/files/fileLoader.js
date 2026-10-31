@@ -29,7 +29,8 @@ function createEmptyProcessResult() {
     epilepsyWarning: [],
     spread: [],
     contentPermission: [],
-    fileCheck: []
+    fileCheck: [],
+    songFolderCheck: null
   };
 }
 
@@ -53,7 +54,7 @@ function registerDifficultyName(fileName, text) {
   return difficultyName;
 }
 
-async function analyzeOszFile(file) {
+async function analyzeOszFile(file, options = {}) {
   const zip = await loadOszZip(file);
 
   const clapWhistleResults = [];
@@ -80,6 +81,7 @@ async function analyzeOszFile(file) {
   const spreadResults = [];
   const contentPermissionResults = [];
   const fileCheckResults = [];
+  let songFolderCheckResult = null;
 
   const osuFiles = Object.values(zip.files)
     .filter(entry => !entry.dir && entry.name.toLowerCase().endsWith(".osu"));
@@ -206,6 +208,20 @@ async function analyzeOszFile(file) {
 
     contentPermissionResults.push(runContentPermissionCheck(text, entry.name));
     fileCheckResults.push(runOsuFileNameCheck(text, entry.name));
+
+    if (songFolderCheckResult === null) {
+      songFolderCheckResult = runSongFolderNameCheck(
+        text,
+        options.songFolderName || String(file.name ?? "").replace(/\.osz$/i, "")
+      );
+      if (!options.songFolderName) {
+        songFolderCheckResult.nameSource = "osz";
+        songFolderCheckResult.actualFileName = String(file.name ?? "");
+        songFolderCheckResult.expectedFileName = songFolderCheckResult.expectedFolderName
+          ? `${songFolderCheckResult.expectedFolderName}.osz`
+          : "";
+      }
+    }
   }
 
   return {
@@ -232,11 +248,12 @@ async function analyzeOszFile(file) {
     epilepsyWarningResults,
     spreadResults,
     contentPermissionResults,
-    fileCheckResults
+    fileCheckResults,
+    songFolderCheckResult
   };
 }
 
-async function processFile(file) {
+async function processFile(file, options = {}) {
   if (!file) return null;
 
   resetDifficultyNameRegistry();
@@ -341,11 +358,15 @@ async function processFile(file) {
       fileCheck: [
         runOsuFileNameCheck(text, file.name)
       ],
+      songFolderCheck: runSongFolderNameCheck(
+        text,
+        options.songFolderName || getParentFolderNameFromFilePath(file.path)
+      ),
     };
   }
 
   if (lowerName.endsWith(".osz")) {
-    const analyzed = await analyzeOszFile(file);
+    const analyzed = await analyzeOszFile(file, options);
 
     return {
       clapWhistle: analyzed.clapWhistleResults,
@@ -373,10 +394,19 @@ async function processFile(file) {
       spread: analyzed.spreadResults,
       contentPermission: analyzed.contentPermissionResults,
       fileCheck: analyzed.fileCheckResults,
+      songFolderCheck: analyzed.songFolderCheckResult,
     };
   }
 
   throw new Error("invalidFile");
+}
+
+function getParentFolderNameFromFilePath(filePath) {
+  const parts = String(filePath ?? "")
+    .split(/[\\/]/)
+    .filter(Boolean);
+
+  return parts.length >= 2 ? parts[parts.length - 2] : "";
 }
 
 async function attachBgImageTypesFromOsz(result, zip, osuEntryName, cache) {

@@ -72,11 +72,17 @@ function updateTabIssueStates(state) {
   setTabIssueLevel("bgOffset", getBgOffsetIssueLevel(state.bgOffset));
   setTabIssueLevel("spread", getSpreadIssueLevel(state.spread));
   setTabIssueLevel("contentPermission", getContentPermissionIssueLevel(state.contentPermission));
-  setTabIssueLevel("fileCheck", getFileCheckIssueLevel(state.fileCheck));
+  setTabIssueLevel(
+    "fileCheck",
+    getFileCheckIssueLevel(state.fileCheck, state.songFolderCheck)
+  );
 }
 
-function getFileCheckIssueLevel(results) {
-  return results?.some(result => !result.matches)
+function getFileCheckIssueLevel(results, songFolderResult) {
+  return (
+    results?.some(result => !result.matches) ||
+    (songFolderResult?.checked && !songFolderResult.matches)
+  )
     ? TAB_LEVEL_WARN
     : TAB_LEVEL_NONE;
 }

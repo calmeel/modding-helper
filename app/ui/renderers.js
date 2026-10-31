@@ -397,7 +397,7 @@ function renderSpreadResultFromResults(spreadState, dom, t) {
   });
 }
 
-function renderFileCheckResultFromResults(results, dom, t) {
+function renderFileCheckResultFromResults(results, songFolderResult, dom, t) {
   if (!dom.fileCheckOutput) return;
 
   if (!results) {
@@ -405,7 +405,11 @@ function renderFileCheckResultFromResults(results, dom, t) {
     return;
   }
 
-  dom.fileCheckOutput.innerHTML = formatFileCheckResult(results, t);
+  dom.fileCheckOutput.innerHTML = formatFileCheckResult(
+    results,
+    songFolderResult,
+    t
+  );
 }
 
 /** その他タブ：プレビューポイント */

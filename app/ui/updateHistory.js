@@ -259,14 +259,16 @@ const updateHistoryEntries = [
     }
   },
   {
-    date: "2026/08/05",
+    date: "2026/11/01",
     type: "update",
     items: {
       en: [
-        "Added a check related to .osu files."
+        "Added a check for .osu / .osz file names",
+        "Fixed an issue related to tag suggestions"
       ],
       ja: [
-        ".osu ファイルに関するチェックを追加"
+        ".osu / .osz ファイル名のチェックを追加",
+        "タグの提案に関する不具合を修正"
       ]
     }
   },

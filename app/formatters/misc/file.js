@@ -1,4 +1,4 @@
-function formatFileCheckResult(results, t) {
+function formatFileCheckResult(results, songFolderResult, t) {
   if (!results || !results.length) return t("noOsuFiles");
 
   const sortedResults = sortResultsForDisplay(results);
@@ -7,35 +7,107 @@ function formatFileCheckResult(results, t) {
 
   lines.push(formatOsuFileNameSummaryTable(sortedResults, t));
   lines.push("");
-  lines.push(formatSeparator());
-
+  lines.push("");
+  
   if (!issues.length) {
     lines.push(t("osuFileNameNoIssues"));
-    return lines.join("\n");
-  }
+  } else {
+    for (const result of issues) {
+      lines.push(`<span class="result-warn">${escapeHtml(t("osuFileNameMismatch"))}</span>`);
 
-  for (const result of issues) {
-    lines.push(`<span class="result-warn">${escapeHtml(t("osuFileNameMismatch"))}</span>`);
+      if (result.expectedFileName) {
+        const difference = formatOsuFileNameDiffPair(
+          result.actualFileName,
+          result.expectedFileName
+        );
+        lines.push(`${escapeHtml(t("osuFileNameActual"))}: ${difference.actual}`);
+        lines.push(`${escapeHtml(t("osuFileNameExpected"))}: ${difference.expected}`);
+      } else {
+        lines.push(`${escapeHtml(t("osuFileNameActual"))}: ${escapeHtml(result.actualFileName)}`);
+        const fields = result.missingFields
+          .map(field => t(`osuFileNameField_${field}`))
+          .join(", ");
+        lines.push(`${escapeHtml(t("osuFileNameMetadataMissing"))}: ${escapeHtml(fields)}`);
+      }
 
-    if (result.expectedFileName) {
-      const difference = formatOsuFileNameDiffPair(
-        result.actualFileName,
-        result.expectedFileName
-      );
-      lines.push(`${escapeHtml(t("osuFileNameActual"))}: ${difference.actual}`);
-      lines.push(`${escapeHtml(t("osuFileNameExpected"))}: ${difference.expected}`);
-    } else {
-      lines.push(`${escapeHtml(t("osuFileNameActual"))}: ${escapeHtml(result.actualFileName)}`);
-      const fields = result.missingFields
-        .map(field => t(`osuFileNameField_${field}`))
-        .join(", ");
-      lines.push(`${escapeHtml(t("osuFileNameMetadataMissing"))}: ${escapeHtml(fields)}`);
+      lines.push("");
     }
-
-    lines.push("");
   }
+
+  appendSongFolderNameResult(lines, songFolderResult, t);
 
   return lines.join("\n").trimEnd();
+}
+
+function appendSongFolderNameResult(lines, result, t) {
+  const isOsz = result?.nameSource === "osz";
+  const messagePrefix = isOsz ? "oszFileName" : "songFolderName";
+  const actualName = isOsz ? result.actualFileName : result?.actualFolderName;
+  const expectedName = isOsz ? result.expectedFileName : result?.expectedFolderName;
+  lines.push("");
+  lines.push(formatSeparator());
+  lines.push(formatSectionTitle(t(`${messagePrefix}CheckTitle`)));
+
+  if (!result?.checked) {
+    lines.push(t("songFolderNameUnavailable"));
+    return;
+  }
+
+  lines.push(formatSongFolderNameSummaryTable(result));
+  lines.push("");
+  lines.push("");
+
+  if (result.matches) {
+    lines.push(t(`${messagePrefix}NoIssues`));
+    return;
+  }
+
+  lines.push(`<span class="result-warn">${escapeHtml(t(`${messagePrefix}Mismatch`))}</span>`);
+
+  if (expectedName) {
+    const difference = formatOsuFileNameDiffPair(
+      actualName,
+      expectedName
+    );
+    lines.push(`${escapeHtml(t(`${messagePrefix}Actual`))}: ${difference.actual}`);
+    lines.push(`${escapeHtml(t(`${messagePrefix}Expected`))}: ${difference.expected}`);
+    return;
+  }
+
+  lines.push(`${escapeHtml(t(`${messagePrefix}Actual`))}: ${escapeHtml(actualName)}`);
+  const fields = result.missingFields
+    .map(field => t(`songFolderNameField_${field}`))
+    .join(", ");
+  lines.push(`${escapeHtml(t(`${messagePrefix}MetadataMissing`))}: ${escapeHtml(fields)}`);
+}
+
+function formatSongFolderNameSummaryTable(result) {
+  const isOsz = result.nameSource === "osz";
+  const folderName = isOsz ? result.actualFileName : result.actualFolderName;
+  const status = result.matches ? "OK" : "Warning";
+  const headers = {
+    folderName: isOsz ? ".osz File Name" : "Song Folder Name",
+    status: "Status"
+  };
+  const widths = {
+    folderName: Math.max(16, visibleWidth(headers.folderName), visibleWidth(folderName)),
+    status: Math.max(7, visibleWidth(headers.status), visibleWidth(status))
+  };
+  const folderCell = escapeHtml(padEndVisual(folderName, widths.folderName));
+  const statusCell = escapeHtml(padEndVisual(status, widths.status));
+  const formattedFolder = result.matches
+    ? folderCell
+    : `<span class="result-warn">${folderCell}</span>`;
+  const formattedStatus = result.matches
+    ? `<span class="ok">${statusCell}</span>`
+    : `<span class="result-warn">${statusCell}</span>`;
+
+  return [
+    `${padEndVisual(headers.folderName, widths.folderName)} | ` +
+      `${padEndVisual(headers.status, widths.status)}`,
+    `${"-".repeat(widths.folderName)}-+-${"-".repeat(widths.status)}`,
+    `${formattedFolder} | ${formattedStatus}`
+  ].join("\n");
 }
 
 function formatOsuFileNameDiffPair(actualValue, expectedValue) {
