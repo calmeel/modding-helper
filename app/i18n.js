@@ -290,7 +290,7 @@ const i18n = {
 
     tabMisc: "Misc",
     tabPreviewPoint: "Preview point",
-    tabFile: "File",
+    tabFile: "File Name",
     osuFileNameCheckTitle: ".osu filename",
     osuFileNameColumn: ".osu filename",
     osuFileNameNoIssues: "No .osu filename issues were found.",
@@ -897,7 +897,7 @@ const i18n = {
     
     tabMisc: "その他",
     tabPreviewPoint: "プレビューポイント",
-    tabFile: "ファイル",
+    tabFile: "ファイル名",
     osuFileNameCheckTitle: ".osu ファイル名の表記チェック",
     osuFileNameColumn: ".osu ファイル名",
     osuFileNameNoIssues: ".osu ファイル名に問題は見つかりませんでした。",
