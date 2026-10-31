@@ -1292,6 +1292,24 @@ pre {
   background: #2d2d38;
 }
 
+/* Reference links in check results, including visited links. */
+pre a:not(.timestamp-link),
+pre a:not(.timestamp-link):visited {
+  color: #9fdcff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+pre a:not(.timestamp-link):hover,
+pre a:not(.timestamp-link):focus-visible {
+  color: #d9f1ff;
+}
+
+pre a:not(.timestamp-link):focus-visible {
+  outline: 2px solid #9fdcff;
+  outline-offset: 2px;
+}
+
 .timestamp-link {
   color: #9fdcff;
   text-decoration: none;
