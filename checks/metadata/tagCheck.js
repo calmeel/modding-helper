@@ -300,7 +300,7 @@ const TAG_RELATED_RULES = [
     suggestGroup: ["ブルーアーカイブ", "ブルアカ", "buruaka", "blueaka", "yostar", "nexon", "games"]
   },
   {
-    trigger: ["ウマ娘", "プリティーダービー", "umamusume", "blueaka"],
+    trigger: ["ウマ娘", "プリティーダービー", "umamusume"],
     suggestGroup: ["ウマ娘", "プリティーダービー-", "umamusume", "uma", "musume", "pretty", "derby", "horse", "girls", "cygames"]
   },
   {
