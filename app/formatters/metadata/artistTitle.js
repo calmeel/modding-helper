@@ -19,7 +19,7 @@ function formatMultipleArtistResults(results, t) {
   lines.push("");
 
   if (compared.base) {
-    lines.push(`(${t("baseDiff")}: ${getDifficultyNameText(compared.base.fileName)})`);
+    lines.push(`(${t("baseDiff")}: ${escapeHtml(getDifficultyNameText(compared.base.fileName))})`);
     lines.push("");
   }
 
@@ -30,7 +30,7 @@ function formatMultipleArtistResults(results, t) {
     lines.push("");
 
     for (const mismatch of compared.mismatches) {
-      lines.push(getDifficultyNameText(mismatch.fileName));
+      lines.push(escapeHtml(getDifficultyNameText(mismatch.fileName)));
 
       if (mismatch.artistMismatch) {
         lines.push(`  ${escapeHtml(t("baseArtist"))}: <code>${escapeHtml(mismatch.baseArtist)}</code>`);
@@ -88,7 +88,7 @@ function formatMultipleArtistResults(results, t) {
     lines.push(t("artistNoSpacingIssues"));
   } else {
     for (const result of spacingIssueResults) {
-      lines.push(getDifficultyNameText(result.fileName));
+      lines.push(escapeHtml(getDifficultyNameText(result.fileName)));
       lines.push("");
 
       for (const issue of result.spacingIssues) {
@@ -112,7 +112,7 @@ function formatMultipleArtistResults(results, t) {
     lines.push(t("artistNoFormattingIssues"));
   } else {
     for (const result of formattingIssueResults) {
-      lines.push(getDifficultyNameText(result.fileName));
+      lines.push(escapeHtml(getDifficultyNameText(result.fileName)));
       lines.push("");
 
       for (const issue of result.formattingIssues) {
@@ -192,7 +192,7 @@ function formatMultipleTitleResults(results, t) {
   lines.push("");
 
   if (compared.base) {
-    lines.push(`(${t("baseDiff")}: ${getDifficultyNameText(compared.base.fileName)})`);
+    lines.push(`(${t("baseDiff")}: ${escapeHtml(getDifficultyNameText(compared.base.fileName))})`);
     lines.push("");
   }
 
@@ -203,7 +203,7 @@ function formatMultipleTitleResults(results, t) {
     lines.push("");
 
     for (const mismatch of compared.mismatches) {
-      lines.push(getDifficultyNameText(mismatch.fileName));
+      lines.push(escapeHtml(getDifficultyNameText(mismatch.fileName)));
 
       if (mismatch.titleMismatch) {
         lines.push(`  ${escapeHtml(t("baseTitle"))}: <code>${escapeHtml(mismatch.baseTitle)}</code>`);
@@ -269,7 +269,7 @@ function formatMultipleTitleResults(results, t) {
     lines.push(t("titleNoSpacingIssues"));
   } else {
     for (const result of spacingIssueResults) {
-      lines.push(getDifficultyNameText(result.fileName));
+      lines.push(escapeHtml(getDifficultyNameText(result.fileName)));
       lines.push("");
 
       for (const issue of result.spacingIssues) {

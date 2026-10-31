@@ -18,7 +18,7 @@ function formatMultipleSourceResults(results, t) {
   lines.push("");
 
   if (compared.base) {
-    lines.push(`(${t("baseDiff")}: ${getDifficultyNameText(compared.base.fileName)})`);
+    lines.push(`(${t("baseDiff")}: ${escapeHtml(getDifficultyNameText(compared.base.fileName))})`);
     lines.push("");
   }
 
@@ -29,7 +29,7 @@ function formatMultipleSourceResults(results, t) {
     lines.push("");
 
     for (const mismatch of compared.mismatches) {
-      lines.push(`${getDifficultyNameText(mismatch.fileName)}`);
+      lines.push(`${escapeHtml(getDifficultyNameText(mismatch.fileName))}`);
       lines.push(`  ${escapeHtml(t("sourceBase"))}: <code>${escapeHtml(mismatch.baseSource)}</code>`);
       lines.push(`  <span class="result-error">${escapeHtml(t("sourceCurrent"))}:</span> <code>${escapeHtml(mismatch.source)}</code>`);
       lines.push("");
@@ -101,7 +101,7 @@ function formatSourceFormattingGroup(group, t) {
 
   lines.push(
     group.fileNames
-      .map(name => getDifficultyNameText(name))
+      .map(name => escapeHtml(getDifficultyNameText(name)))
       .join(", ")
   );
   lines.push("");
@@ -162,7 +162,7 @@ function formatSourceGroupResult(group, t) {
   // Diff一覧
   lines.push(
     group.fileNames
-      .map(name => getDifficultyNameText(name))
+      .map(name => escapeHtml(getDifficultyNameText(name)))
       .join(", ")
   );
 

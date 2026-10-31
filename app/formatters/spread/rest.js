@@ -280,7 +280,7 @@ function formatSpreadRestMomentsResult(results, t, diffOrder = null, manualCateg
     for (const mismatch of timingMismatches) {
       lines.push(
         `<span class="result-error">` +
-        `${escapeHtml(getDifficultyName(mismatch.fileName))}: ` +
+        `${getDifficultyName(mismatch.fileName)}: ` +
         `${escapeHtml(formatSpreadRestTimingMismatch(mismatch, t))}` +
         `</span>`
       );
@@ -381,7 +381,7 @@ function formatSpreadRestTimingMismatch(mismatch, t) {
 
   return t("spreadRestTimingMismatchLine")
     .replace("{index}", mismatch.index)
-    .replace("{base}", getDifficultyName(mismatch.baseFileName));
+    .replace("{base}", getDifficultyNameText(mismatch.baseFileName));
 }
 
 function formatSpreadRestMomentCategory(category) {
@@ -467,7 +467,7 @@ function formatSpreadFinisherTimeTable(times, sortedResults) {
   lines.push(
     `${padEndVisual("Time", timeWidth)} | ` +
     diffNames.map((name, i) =>
-      padEndVisual(name, colWidths[i])
+      escapeHtml(padEndVisual(name, colWidths[i]))
     ).join(" | ")
   );
 

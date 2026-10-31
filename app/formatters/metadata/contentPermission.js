@@ -67,7 +67,7 @@ function formatMultipleContentPermissionResults(results, t) {
 
       lines.push(
         group.fileNames
-          .map(fileName => getDifficultyNameText(fileName))
+          .map(fileName => escapeHtml(getDifficultyNameText(fileName)))
           .join(", ")
       );
 

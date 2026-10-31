@@ -16,7 +16,7 @@ function formatMultipleTagResults(results, t) {
   lines.push("");
 
   if (compared.base) {
-    lines.push(`(${t("baseDiff")}: ${getDifficultyNameText(compared.base.fileName)})`);
+    lines.push(`(${t("baseDiff")}: ${escapeHtml(getDifficultyNameText(compared.base.fileName))})`);
     lines.push("");
   }
 
@@ -27,7 +27,7 @@ function formatMultipleTagResults(results, t) {
     lines.push("");
 
     for (const mismatch of compared.mismatches) {
-      lines.push(`${getDifficultyNameText(mismatch.fileName)}`);
+      lines.push(`${escapeHtml(getDifficultyNameText(mismatch.fileName))}`);
 
       if (mismatch.removed.length) {
         lines.push(`  <span class="result-error">${escapeHtml(t("tagRemoved"))}:</span> ${mismatch.removed.map(tag => `<code>${escapeHtml(tag)}</code>`).join(" ")}`);
@@ -303,7 +303,7 @@ function groupTagResultsByNormalizedTags(results) {
 }
 
 function formatGroupedTagHeader(group) {
-  const names = group.fileNames.map(fileName => getDifficultyNameText(fileName));
+  const names = group.fileNames.map(fileName => escapeHtml(getDifficultyNameText(fileName)));
 
   if (names.length === 1) {
     return names[0];
@@ -315,7 +315,7 @@ function formatGroupedTagHeader(group) {
 function formatTagSpellingResult(result, t, group = null) {
   const lines = [];
 
-  lines.push(group ? formatGroupedTagHeader(group) : getDifficultyNameText(result.fileName));
+  lines.push(group ? formatGroupedTagHeader(group) : escapeHtml(getDifficultyNameText(result.fileName)));
   lines.push("");
 
   for (const item of result.spellingSuggestions) {
@@ -330,7 +330,7 @@ function formatTagSpellingResult(result, t, group = null) {
 function formatTagDuplicateResult(result, t, group = null) {
   const lines = [];
 
-  lines.push(group ? formatGroupedTagHeader(group) : getDifficultyNameText(result.fileName));
+  lines.push(group ? formatGroupedTagHeader(group) : escapeHtml(getDifficultyNameText(result.fileName)));
   lines.push("");
 
   for (const item of result.duplicateTags ?? []) {
@@ -384,7 +384,7 @@ function formatTagMetadataDuplicateGroup(group, t) {
 
   lines.push(
     group.fileNames
-      .map(fileName => getDifficultyNameText(fileName))
+      .map(fileName => escapeHtml(getDifficultyNameText(fileName)))
       .join(", ")
   );
 
@@ -415,7 +415,7 @@ function formatTagMetadataDuplicateGroup(group, t) {
 function formatTagRelatedResult(result, t, group = null) {
   const lines = [];
 
-  lines.push(group ? formatGroupedTagHeader(group) : getDifficultyNameText(result.fileName));
+  lines.push(group ? formatGroupedTagHeader(group) : escapeHtml(getDifficultyNameText(result.fileName)));
   lines.push("");
 
   for (const item of result.relatedSuggestions) {
@@ -526,7 +526,7 @@ function formatTagMetadataSuggestionGroup(group, t) {
 
   lines.push(
     group.fileNames
-      .map(fileName => getDifficultyNameText(fileName))
+      .map(fileName => escapeHtml(getDifficultyNameText(fileName)))
       .join(", ")
   );
 
@@ -556,7 +556,7 @@ function formatTagSourceSuggestionGroup(group, t) {
 
   lines.push(
     group.fileNames
-      .map(fileName => getDifficultyNameText(fileName))
+      .map(fileName => escapeHtml(getDifficultyNameText(fileName)))
       .join(", ")
   );
 
