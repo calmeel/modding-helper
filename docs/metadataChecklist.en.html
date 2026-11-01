@@ -492,6 +492,12 @@
     <code>(TV size)</code>,
     <code>[Short ver.]</code>
   </p>
+
+  <p>
+    Standalone <code>Ver</code>, <code>Ver.</code>, or <code>Version</code> tokens not covered by existing marker checks trigger a yellow warning, regardless of letter casing:<br>
+    “The (Xxxx Ver.) format is recommended. Please check that an appropriate version marker is being used.”<br>
+    This includes <code>Ver.)</code> and <code>Version)</code>. Partial matches within words such as <code>vertex</code> are excluded. Known allowed formats and locations already flagged by existing checks do not receive this additional warning.
+  </p>
 </div>
 
 <h2>Special Symbols</h2>

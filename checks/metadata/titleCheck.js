@@ -199,6 +199,31 @@ function findTitleMarkerIssues(title, fieldName) {
     }
   }
 
+  const versionPattern = /\b(?:version|ver)\b\.?/gi;
+
+  for (const match of text.matchAll(versionPattern)) {
+    const range = extractTitleMarkerRange(text, match.index, match[0].length);
+    const marker = text.slice(range.start, range.end);
+
+    if (isAllowedStandardTitleMarker(marker, text)) continue;
+
+    // 既存の marker チェックで検出した箇所には重複して警告しない。
+    if (candidates.some(issue =>
+      issue.index < range.end && issue.index + issue.length > range.start
+    )) continue;
+
+    candidates.push({
+      fieldName,
+      type: "titleVersionMarkerReview",
+      severity: "warn",
+      marker,
+      expected: "(Xxxx Ver.)",
+      context: getTitleMarkerIssueContext(text, range.start),
+      index: range.start,
+      length: range.end - range.start
+    });
+  }
+
   return dedupeTitleMarkerIssues(
     keepMostSpecificTitleMarkerIssues(candidates)
   );

@@ -209,6 +209,7 @@ const i18n = {
     titleMarkerCheck: "Title marker check",
     titleNoMarkerIssues: "No title marker issues found.",
     titleMarkerIssue: "Possible title marker issue",
+    titleVersionMarkerReview: "The (Xxxx Ver.) format is recommended. Please check that an appropriate version marker is being used.",
 
     artistSpacingCheck: "Artist spacing check",
     artistNoSpacingIssues: "No artist spacing issues found.",
@@ -845,6 +846,7 @@ const i18n = {
     titleMarkerCheck: "Title markerチェック",
     titleNoMarkerIssues: "Title markerの問題は見つかりませんでした。",
     titleMarkerIssue: "Title markerの問題候補",
+    titleVersionMarkerReview: "(Xxxx Ver.) の形式が推奨されています。適切なバージョンマーカーが使用されているか確認してください",
 
     artistSpacingCheck: "Artistスペースチェック",
     artistNoSpacingIssues: "Artistのスペース問題は見つかりませんでした。",

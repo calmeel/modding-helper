@@ -294,10 +294,17 @@ function formatMultipleTitleResults(results, t) {
       const issue = group.issue;
       const issueClass = issue.severity === "warn" ? "result-warn" : "result-error";
 
-      lines.push(
-        `<span class="${issueClass}">${escapeHtml(t("titleMarkerIssue"))}:</span> ` +
-        `<code>${escapeHtml(issue.marker)}</code> → <code>${escapeHtml(issue.expected)}</code>`
-      );
+      if (issue.type === "titleVersionMarkerReview") {
+        lines.push(
+          `<span class="${issueClass}">${escapeHtml(t("titleVersionMarkerReview"))}</span> ` +
+          `<code>${escapeHtml(issue.marker)}</code>`
+        );
+      } else {
+        lines.push(
+          `<span class="${issueClass}">${escapeHtml(t("titleMarkerIssue"))}:</span> ` +
+          `<code>${escapeHtml(issue.marker)}</code> → <code>${escapeHtml(issue.expected)}</code>`
+        );
+      }
 
       lines.push(
         `  ${escapeHtml(t("field"))}: ` +
