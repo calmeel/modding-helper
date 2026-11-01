@@ -1018,6 +1018,8 @@ document.addEventListener("DOMContentLoaded", () => {
       title:         parseMetadataValue(text, "Title"),
       titleUnicode:  parseMetadataValue(text, "TitleUnicode"),
       creator:       parseMetadataValue(text, "Creator"),
+      beatmapSetId:  parseMetadataValue(text, "BeatmapSetID"),
+      beatmapId:     parseMetadataValue(text, "BeatmapID"),
       source:        parseMetadataValue(text, "Source"),
       tags:          parseMetadataValue(text, "Tags"),
       bgDataUrl:     bgDataUrl || null

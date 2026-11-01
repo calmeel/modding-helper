@@ -28,6 +28,14 @@ const { version } = require('../package.json');
 const srCalculator = createSrCalculatorService({ app, root });
 const iconUrl  = 'file:///' + path.join(root, 'images', 'icon.png').replace(/\\/g, '/');
 const docsPath = path.join(root, 'docs', 'docs.html');
+let beatmapActionMode = 'file';
+let fileBeatmapMeta = null;
+let fileBeatmapPath = null;
+
+function positiveOsuId(value) {
+  const id = Number(value);
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
+}
 
 function parseOsuId(text, key) {
   const match = String(text || '').match(new RegExp('^\\s*' + key + '\\s*:\\s*(-?\\d+)\\s*$', 'mi'));
@@ -36,9 +44,20 @@ function parseOsuId(text, key) {
   return Number.isSafeInteger(value) ? value : null;
 }
 
-// 現在 osu! で開いている譜面に対するタイトルバー操作の対象を返す。
+// 読み込みモードに応じたタイトルバー操作の対象を返す。
 // renderer にはパス自体を渡さず、操作の可否だけを公開する。
 function getCurrentBeatmapActionTarget() {
+  if (beatmapActionMode === 'file') {
+    const folder = fileBeatmapPath && /\.osu$/i.test(fileBeatmapPath)
+      ? path.dirname(fileBeatmapPath)
+      : null;
+    return {
+      folder,
+      canOpenFolder: !!(folder && fs.existsSync(folder)),
+      beatmapSetId: positiveOsuId(fileBeatmapMeta && fileBeatmapMeta.beatmapSetId),
+      beatmapId: positiveOsuId(fileBeatmapMeta && fileBeatmapMeta.beatmapId),
+    };
+  }
   const osuPath = osuWatcher.getCurrentOsuPath();
   if (!osuPath) return null;
 
@@ -53,7 +72,7 @@ function getCurrentBeatmapActionTarget() {
 
   return {
     folder,
-    canOpenFolder: fs.existsSync(folder),
+    canOpenFolder: false,
     beatmapSetId: beatmapSetId > 0 ? beatmapSetId : null,
     beatmapId: beatmapId > 0 ? beatmapId : null,
   };
@@ -285,10 +304,14 @@ app.whenReady().then(() => {
   ipcMain.on('detach-chart', (e, chartId, lang) => popouts.openChartPopout(chartId, lang));
   ipcMain.on('chart-source-file', (event, source) => {
     if (!mainWin || mainWin.isDestroyed() || event.sender !== mainWin.webContents) return;
+    fileBeatmapPath = source && typeof source.path === 'string' && path.isAbsolute(source.path)
+      ? source.path
+      : null;
     popouts.setChartSourceFile(source);
   });
   ipcMain.on('chart-source-mode', (event, mode) => {
     if (!mainWin || mainWin.isDestroyed() || event.sender !== mainWin.webContents) return;
+    beatmapActionMode = mode === 'osu' ? 'osu' : 'file';
     popouts.setChartSourceMode(mode);
   });
 
@@ -303,6 +326,9 @@ app.whenReady().then(() => {
 
   // file モードのメタデータをメタデータ・ポップアウトへ転送（osu モードは osuWatcher 経由）
   ipcMain.on('popout-map-meta', (e, data) => {
+    if (mainWin && !mainWin.isDestroyed() && e.sender === mainWin.webContents) {
+      fileBeatmapMeta = data || null;
+    }
     popouts.sendMapMetaToPopout(data);
   });
 

@@ -248,7 +248,7 @@
         appEl.appendChild(layout);
         tabsSec.remove();
 
-        /* 現在 osu! で開いている譜面に対するタイトルバー操作 */
+        /* 読み込みモードに応じた譜面のタイトルバー操作 */
         var mapFolderButton = document.getElementById('etb-open-map-folder');
         var mapPageButton = document.getElementById('etb-open-map-page');
         var mapActionRefreshId = 0;
@@ -2903,7 +2903,7 @@
 
           /* ── osu! マップ情報 IPC（osu モードのみ反映） ── */
           window.electronAPI.onOsuMapInfo(function(data) {
-            /* タイトルバー操作は表示モードに関係なく、現在の osu! 譜面に追従する。 */
+            /* osu! 側の譜面変更・終了時にボタンの可否も更新する。 */
             refreshMapActionState();
             if (panelMode !== 'osu') return;
             currentDiffFile = data && data.diffFileName ? data.diffFileName : null;
@@ -2914,6 +2914,8 @@
           window.__osuPanel = {
             setMode: function(mode) {
               panelMode = (mode === 'file') ? 'file' : 'osu';
+              setMapActionState(null);
+              refreshMapActionState();
               if (panelMode === 'file') {
                 /* osu モードの最後の位置を残さず、以降の IPC 追従も止める。 */
                 spreadLastTime = null;
@@ -2938,6 +2940,7 @@
               if (window.electronAPI && window.electronAPI.sendMapMetaToPopout) {
                 window.electronAPI.sendMapMetaToPopout(data || null);
               }
+              refreshMapActionState();
             }
           };
         }
