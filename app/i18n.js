@@ -270,7 +270,7 @@ const i18n = {
     tagSuggestedAdditions: "Suggested additions",
     tagAlreadyIncludedInSource: "Already included in Source",
 
-    sourceCheckTitle: "Source",
+    sourceCheckTitle: "Source notation check for Touhou works",
     sourceConsistencyCheck: "Source consistency check",
     sourceFormattingCheck: "Source formatting check",
     noSourceFormattingIssues: "No Source formatting issues found.",
@@ -284,7 +284,7 @@ const i18n = {
     sourceRecommendedFormatting: "The Source does not match the recommended formatting.",
     sourceInvalidTouhou: "The Touhou Source format is incorrect.",
     sourcePartialNote: "If the text looks almost identical, check full-width tilde “～” vs wave dash “〜”, half-width vs full-width spaces, and the final period.",
-    sourceNotTouhou: "This is not a Touhou work, so it is excluded from Source validation.",
+    sourceNotTouhou: "This is not a Touhou work, so it is excluded from this check.",
     sourceExpected: "Expected",
     sourceUnknownTouhou: "This Touhou work was not found in the checklist, so it could not be validated. Please search and verify the correct source manually.",
 
@@ -877,7 +877,7 @@ const i18n = {
     tagSuggestedAdditions: "追加候補",
     tagAlreadyIncludedInSource: "既にSourceに含まれているタグ",
 
-    sourceCheckTitle: "ソース",
+    sourceCheckTitle: "東方作品のソース表記チェック",
     sourceConsistencyCheck: "全diffのSource一致チェック",
     sourceFormattingCheck: "ソースの表記チェック",
     noSourceFormattingIssues: "Sourceの表記に問題は見つかりませんでした。",
@@ -891,7 +891,7 @@ const i18n = {
     sourceRecommendedFormatting: "Sourceが推奨表記と異なります。",
     sourceInvalidTouhou: "東方作品のSource表記が正しくありません。",
     sourcePartialNote: "見た目が似ている場合は、全角チルダ「～」/ 波ダッシュ「〜」、半角スペース / 全角スペース、末尾のピリオドなどを確認してください。",
-    sourceNotTouhou: "東方作品ではないため、Sourceチェックの対象外です。",
+    sourceNotTouhou: "東方作品ではないため、チェックの対象外です。",
     sourceExpected: "推奨表記",
     sourceUnknownTouhou: "チェックリストに該当する東方作品がなかったためチェックできませんでした。\n正しい作品を検索してご自身でご確認ください。",
     
