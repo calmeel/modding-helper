@@ -734,6 +734,7 @@ const TAIKO_COLORS = {
   don: "#f24b4b",
   kat: "#5b9bd5",
   roll: "rgba(245,180,0,0.92)",   // 連打(drumroll): 黄
+  rollOpaque: "rgb(245,180,0)",   // 内部透過時の枠線・始点は不透明
   rollTick: "rgba(140,95,0,0.55)", // 連打のティック（黄と同系のやや暗い琥珀。茶色すぎると浮く）
   denden: "rgba(205,205,212,0.9)", // 風船/スピナー(denden): 薄いグレー（TaikoEditor風）
   dendenText: "#2b2b34",          // 風船に出す必要打数（薄い本体の上なので暗い色）
@@ -1139,6 +1140,7 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
   const isSelected = typeof opts.isSelected === "function" ? opts.isSelected : null; // 選択中判定
   const showNcCymbal = !!opts.showNcCymbal;   // NCシンバル位置(major小節線)の強調
   const highlightKiai = opts.highlightKiai !== false; // Kiai背景・判定枠の炎
+  const transparentSliders = !!opts.transparentSliders;
   /* クリック判定配列と要素は毎フレーム再利用する。密度の高い譜面で大量の短命
      オブジェクトを作り、周期的なGC停止を起こすことを避ける。 */
   const spreadGeom = canvas.__spreadGeom || {};
@@ -1402,8 +1404,16 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
         if (isGameSwell) {
           drawTaikoGameSwell(ctx, x, yMid, r, laneH, note, currentTime);
         } else if (isRoll) {
+          const transparentRoll = transparentSliders && !isDen;
           ctx.fillStyle = isDen ? TAIKO_COLORS.denden : TAIKO_COLORS.roll; // スピナーは薄いグレー
-          taikoCapsule(ctx, x, x2, yMid, r); ctx.fill();
+          taikoCapsule(ctx, x, x2, yMid, r);
+          if (transparentRoll) {
+            ctx.strokeStyle = TAIKO_COLORS.rollOpaque;
+            ctx.lineWidth = Math.max(1.5, r * 0.1);
+            ctx.stroke();
+          } else {
+            ctx.fill();
+          }
           if (isDen) {
             ctx.strokeStyle = "rgba(255,255,255,0.7)"; ctx.lineWidth = 1.5;
             taikoCapsule(ctx, x, x2, yMid, r); ctx.stroke();
@@ -1420,23 +1430,30 @@ function drawTaikoSpread(canvas, diffs, currentTime, opts) {
                  大小はここに自動で反映される（lazer の STRONG_SCALE≒1.538 に相当）。
                  出典: osu.Game.Rulesets.Taiko/Skinning/Default/TickPiece.cs
                        osu.Game.Rulesets.Taiko/Objects/Drawables/DrawableDrumRollTick.cs */
-              const tickR = Math.max(1.2, r * 0.35);
+              const tickR = Math.max(1.2, r * (transparentRoll ? 0.06 : 0.35));
               ctx.fillStyle = TAIKO_COLORS.rollTick;
+              if (transparentRoll) {
+                ctx.strokeStyle = "rgba(255,255,255,0.7)";
+                ctx.lineWidth = 1;
+              }
               for (let ti = 0; ti < times.length; ti++) {
                 const tx = x + ((times[ti] - note.time) / dur) * (x2 - x);
                 if (tx < playX0 - tickR || tx > playX1 + tickR) continue;
                 ctx.beginPath();
                 ctx.arc(tx, yMid, tickR, 0, Math.PI * 2);
-                ctx.fill();
+                if (transparentRoll) ctx.stroke();
+                else ctx.fill();
               }
             }
           }
           /* 始点・終点の円（TaikoEditor 風）。本体とティックの上に重ねて、
              どこが頭でどこが尾かひと目で分かるようにする。 */
-          ctx.fillStyle = isDen ? TAIKO_COLORS.denden : TAIKO_COLORS.roll;
-          ctx.strokeStyle = "rgba(255,255,255,0.9)";
+          ctx.fillStyle = isDen ? TAIKO_COLORS.denden
+            : transparentRoll ? TAIKO_COLORS.rollOpaque : TAIKO_COLORS.roll;
+          ctx.strokeStyle = transparentRoll ? "rgb(255,255,255)" : "rgba(255,255,255,0.9)";
           ctx.lineWidth = 2;
-          for (let cap = 0; cap < 2; cap++) {
+          // 透過時は始点だけを塗り、終点は本体の枠線をそのまま見せる。
+          for (let cap = 0; cap < (transparentRoll ? 1 : 2); cap++) {
             const cx = cap === 0 ? x : x2;
             if (cx < playX0 - r || cx > playX1 + r) continue;
             ctx.beginPath();

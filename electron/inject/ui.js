@@ -589,10 +589,12 @@
           var spHighlightKiai = true;
           var spShowNc = true;
           var spShowTimingInfo = false;
+          var spTransparentSliders = false;
           try {
             if (localStorage.getItem('moddingHelperPreviewKiaiHighlight') === '0') spHighlightKiai = false;
             if (localStorage.getItem('moddingHelperPreviewNcCymbal') === '0') spShowNc = false;
             if (localStorage.getItem('moddingHelperPreviewTimingInfo') === '1') spShowTimingInfo = true;
+            if (localStorage.getItem('moddingHelperPreviewTransparentSliders') === '1') spTransparentSliders = true;
           } catch (e) {}
           var spSynth = null;        // Web Audio シンセ/サンプルキット
           var spSoundLane = 0;       // 効果音を鳴らすレーン（0=最上=最難）。クリックで変更
@@ -830,7 +832,7 @@
             };
             window.__spreadRebuildDiffList = rebuildDiffVisibilityList;
 
-            /* その他の設定: Kiai表示とNCシンバル小節線の強調 */
+            /* その他のプレビュー設定 */
             var otherSection = document.createElement('div');
             otherSection.className = 'etb-sfx-settings';
             var otherTitle = document.createElement('div');
@@ -839,6 +841,21 @@
             otherTitle.textContent = electronText('electronOtherSettings');
             otherSection.appendChild(otherTitle);
             [
+              {
+                id: 'etb-preview-transparent-sliders-cb',
+                textId: 'etb-preview-transparent-sliders-text',
+                key: 'electronTransparentSliders',
+                checked: spTransparentSliders,
+                change: function(checked) {
+                  spTransparentSliders = checked;
+                  try {
+                    localStorage.setItem(
+                      'moddingHelperPreviewTransparentSliders',
+                      checked ? '1' : '0'
+                    );
+                  } catch (e) {}
+                }
+              },
               {
                 id: 'etb-preview-kiai-cb',
                 textId: 'etb-preview-kiai-text',
@@ -1920,6 +1937,7 @@
               highlightKiai: spHighlightKiai,
               showNcCymbal: spShowNc,
               showTimingInfo: spShowTimingInfo,
+              transparentSliders: spTransparentSliders,
               isSelected: spSelNotes.length ? spIsSelected : null,
               marquee: spMarquee,
               emptyText: isEn ? 'No beatmap loaded' : '譜面が読み込まれていません',
@@ -2589,6 +2607,7 @@
           set('etb-preview-kiai-text',   'electronHighlightKiai');
           set('etb-preview-nc-text',     'electronHighlightNcBarlines');
           set('etb-preview-timing-info-text', 'electronShowPreviewTimingInfo');
+          set('etb-preview-transparent-sliders-text', 'electronTransparentSliders');
           set('etb-sfx-settings-title',  'electronHitSoundSet');
           set('etb-sfx-vol-label',       'electronHitSoundVolume');
           set('etb-music-vol-label',     'electronMusicVolume');
