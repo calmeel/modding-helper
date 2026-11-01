@@ -271,6 +271,7 @@ const i18n = {
     tagAlreadyIncludedInSource: "Already included in Source",
 
     sourceCheckTitle: "Source notation check for Touhou works",
+    sourceTabTitle: "Source",
     sourceConsistencyCheck: "Source consistency check",
     sourceFormattingCheck: "Source formatting check",
     noSourceFormattingIssues: "No Source formatting issues found.",
@@ -878,6 +879,7 @@ const i18n = {
     tagAlreadyIncludedInSource: "既にSourceに含まれているタグ",
 
     sourceCheckTitle: "東方作品のソース表記チェック",
+    sourceTabTitle: "ソース",
     sourceConsistencyCheck: "全diffのSource一致チェック",
     sourceFormattingCheck: "ソースの表記チェック",
     noSourceFormattingIssues: "Sourceの表記に問題は見つかりませんでした。",
