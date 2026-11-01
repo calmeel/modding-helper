@@ -50,14 +50,6 @@
           '<div id="etb-nav"></div>' +
           '<div id="etb-spacer"></div>' +
           '<div id="etb-controls">' +
-            '<div id="etb-map-actions">' +
-              '<button class="etb-map-action" id="etb-open-map-folder" type="button" disabled ' +
-                'data-i18n-title="electronOpenBeatmapFolder" title="' + electronText('electronOpenBeatmapFolder') + '" ' +
-                'aria-label="' + electronText('electronOpenBeatmapFolder') + '">' + svgFolder + '</button>' +
-              '<button class="etb-map-action" id="etb-open-map-page" type="button" disabled ' +
-                'data-i18n-title="electronOpenBeatmapPage" title="' + electronText('electronOpenBeatmapPage') + '" ' +
-                'aria-label="' + electronText('electronOpenBeatmapPage') + '">' + svgExternal + '</button>' +
-            '</div>' +
             '<button class="etb-ctrl" id="etb-min">' + svgMin + '</button>' +
             '<button class="etb-ctrl" id="etb-max">' + svgMax + '</button>' +
             '<button class="etb-ctrl" id="etb-close">' + svgX + '</button>' +
@@ -98,6 +90,22 @@
               '<div class="osu-timing-row"><span class="osu-timing-label">Volume</span><span class="osu-timing-value" id="osu-t-vol">---</span></div>' +
             '</div>' +
           '</div>';
+
+        /* 譜面操作はメタデータ見出しの下へ。分離操作とは別の行にする。 */
+        var mapActions = document.createElement('div');
+        mapActions.id = 'etb-map-actions';
+        mapActions.innerHTML =
+          '<button class="etb-map-action" id="etb-open-map-folder" type="button" disabled ' +
+            'data-i18n-title="electronOpenBeatmapFolder" title="' + electronText('electronOpenBeatmapFolder') + '" ' +
+            'aria-label="' + electronText('electronOpenBeatmapFolder') + '">' + svgFolder +
+            '<span id="etb-open-map-folder-label">' + electronText('electronOpenBeatmapFolder') + '</span></button>' +
+          '<button class="etb-map-action" id="etb-open-map-page" type="button" disabled ' +
+            'data-i18n-title="electronOpenBeatmapPage" title="' + electronText('electronOpenBeatmapPage') + '" ' +
+            'aria-label="' + electronText('electronOpenBeatmapPage') + '">' + svgExternal +
+            '<span id="etb-open-map-page-label">' + electronText('electronOpenBeatmapPage') + '</span></button>';
+        var metaCard = futureCol.querySelector('#etb-card-meta');
+        var metaBody = futureCol.querySelector('#etb-meta-body');
+        metaCard.insertBefore(mapActions, metaBody);
 
         /* 譜面ファイルカード（file モードのみ表示。ドロップエリアを内包） */
         var fileCard = document.createElement('div');
@@ -2335,6 +2343,9 @@
         var applyViewModeUi = function() {
           var layoutEl = document.getElementById('electron-layout');
           if (layoutEl) layoutEl.classList.toggle('etb-compact', viewMode === 'compact');
+          /* 同じボタンを移動し、可否・イベントを表示モード間で保持する。 */
+          if (viewMode === 'compact') compactBar.insertBefore(mapActions, document.getElementById('etb-compact-drop'));
+          else metaCard.insertBefore(mapActions, metaBody);
           /* ドロップエリアは1つしか無いので、置き場所ごと移動する
              （複製するとイベントの張り直しが要るため） */
           var slot = document.getElementById('etb-compact-drop');
@@ -2593,6 +2604,8 @@
           setTitle('etb-sb-stop',      'electronStop');
           setTitle('etb-open-map-folder', 'electronOpenBeatmapFolder');
           setTitle('etb-open-map-page',   'electronOpenBeatmapPage');
+          set('etb-open-map-folder-label', 'electronOpenBeatmapFolder');
+          set('etb-open-map-page-label',   'electronOpenBeatmapPage');
           var mapFolderLabel = document.getElementById('etb-open-map-folder');
           var mapPageLabel = document.getElementById('etb-open-map-page');
           if (mapFolderLabel) mapFolderLabel.setAttribute('aria-label', electronText('electronOpenBeatmapFolder'));

@@ -164,21 +164,26 @@
 
       #etb-map-actions {
         display: flex;
-        align-items: stretch;
-        padding: 0 4px;
-        border-right: 1px solid #363636;
-        margin-right: 2px;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 8px;
+        flex: 0 0 auto;
       }
 
       .etb-map-action {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 34px;
-        padding: 0;
-        background: transparent;
-        border: none;
-        color: #888;
+        gap: 5px;
+        min-height: 28px;
+        padding: 4px 8px;
+        background: #2c2c35;
+        border: 1px solid #454550;
+        border-radius: 5px;
+        color: #cfcfe0;
+        font: inherit;
+        font-size: 11px;
+        white-space: nowrap;
         cursor: pointer;
         -webkit-app-region: no-drag;
         transition: background 0.1s, color 0.1s;
@@ -190,7 +195,8 @@
       }
 
       .etb-map-action:disabled {
-        color: #4d4d55;
+        color: #777784;
+        border-color: #383842;
         cursor: default;
       }
 
@@ -250,6 +256,7 @@
          左カラム（メタデータ/リアルタイム/譜面ファイル）を出さず、
          チェックリストとチェック結果を画面いっぱいに使う。 */
       #etb-compact-bar { display: none; }
+      #etb-compact-bar #etb-map-actions { padding: 0; flex-shrink: 1; }
       /* 設定画面は左カラムに置いてあるので、コンパクトでも必ず出す
          （消すと表示モードを戻せなくなる） */
       #electron-layout.etb-compact:not(.etb-settings) #electron-col-future { display: none !important; }
@@ -257,6 +264,7 @@
         display: flex;
         align-items: center;
         gap: 10px;
+        flex-wrap: wrap;
         padding: 5px 12px 0;
         min-height: 0;
         flex: 0 0 auto;
