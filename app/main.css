@@ -63,6 +63,41 @@ body {
   background: #2d2d38;
 }
 
+.web-beatmap-actions {
+  margin-top: 20px;
+}
+
+.beatmap-page-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid #555;
+  border-radius: 6px;
+  background: transparent;
+  color: #ddd;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.beatmap-page-button:hover:not(:disabled) {
+  background: #2d2d38;
+  border-color: #9fdcff;
+  color: #9fdcff;
+}
+
+.beatmap-page-button:focus-visible {
+  outline: 2px solid #9fdcff;
+  outline-offset: 2px;
+}
+
+.beatmap-page-button:disabled {
+  color: #888;
+  border-color: #444;
+  cursor: default;
+}
+
 .tabs {
   position: relative;
   margin-top: 24px;
@@ -70,7 +105,7 @@ body {
 
 .tab-buttons {
   position: fixed;
-  top: 178px;
+  top: 140px;
   left: 32px;
   width: 596px;
   display: flex;
@@ -1258,9 +1293,9 @@ pre {
   justify-content: flex-end;
 }
 
-.app > h1,
-.app > p[data-i18n="subtitle"] {
+.app > h1 {
   margin-right: 400px;
+  font-size: 28px;
 }
 
 @media (max-width: 760px) {
@@ -1270,8 +1305,7 @@ pre {
     margin-bottom: 16px;
   }
 
-  .app > h1,
-  .app > p[data-i18n="subtitle"] {
+  .app > h1 {
     margin-right: 0;
   }
 }

@@ -393,6 +393,20 @@ async function processFile(file, options = {}) {
   throw new Error("invalidFile");
 }
 
+function getBeatmapPageUrlFromSources(sources) {
+  const text = sources?.[0]?.text;
+  if (!text) return null;
+
+  const setId = Number(parseMetadataValue(text, "BeatmapSetID"));
+  if (!Number.isSafeInteger(setId) || setId <= 0) return null;
+
+  const beatmapId = Number(parseMetadataValue(text, "BeatmapID"));
+  const url = `https://osu.ppy.sh/beatmapsets/${setId}`;
+  return Number.isSafeInteger(beatmapId) && beatmapId > 0
+    ? `${url}#taiko/${beatmapId}`
+    : url;
+}
+
 function getParentFolderNameFromFilePath(filePath) {
   const parts = String(filePath ?? "")
     .split(/[\\/]/)

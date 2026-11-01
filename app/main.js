@@ -8,6 +8,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const showClap = document.getElementById("showClap");
   const showWhistle = document.getElementById("showWhistle");
   const fileName = document.getElementById("fileName");
+  const openBeatmapPage = document.getElementById("openBeatmapPage");
+  let beatmapPageUrl = null;
+  let beatmapPageLoadId = 0;
+  if (openBeatmapPage) {
+    openBeatmapPage.addEventListener("click", () => {
+      if (beatmapPageUrl) window.open(beatmapPageUrl, "_blank", "noopener,noreferrer");
+    });
+  }
   const dropArea = document.querySelector(".drop-area");
   const shiftOutput = document.getElementById("shiftOutput");
   const includeAdvancedOffsetSnaps = document.getElementById("includeAdvancedOffsetSnaps");
@@ -856,6 +864,10 @@ document.addEventListener("DOMContentLoaded", () => {
   async function handleFile(file, processOptions = {}) {
     if (!file) return;
 
+    const pageLoadId = ++beatmapPageLoadId;
+    beatmapPageUrl = null;
+    if (openBeatmapPage) openBeatmapPage.disabled = true;
+
     prepareSrCalculation(null, state.srCalculator, srCalculatorOutput, t);
 
     state.selectedFileName = file.name;
@@ -866,6 +878,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const result = await processFile(file, processOptions);
+      if (pageLoadId === beatmapPageLoadId) {
+        beatmapPageUrl = getBeatmapPageUrlFromSources(result.offsetSources);
+        if (openBeatmapPage) openBeatmapPage.disabled = !beatmapPageUrl;
+      }
 
       state.clapWhistle = result.clapWhistle;
       state.offsetSources = result.offsetSources;

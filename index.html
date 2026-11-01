@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>Modding Helper</title>
+  <title>osu!taiko Modding Helper</title>
   <link rel="stylesheet" href="app/main.css" />
   <link rel="icon" type="image/png" href="images/icon.png" />
 
@@ -20,10 +20,9 @@
 <body>
   <main class="app">
     <h1>
-      Modding Helper
+      osu!taiko Modding Helper
       <span class="author">by Vanity8</span>
     </h1>
-    <p data-i18n="subtitle">osu!taiko modding support tool</p>
 
     <div class="top-links">
       <div class="top-links-row">
@@ -48,6 +47,12 @@
         <input id="fileInput" class="file-input" type="file" accept=".osu,.osz" />
       </div>
       <p data-i18n="selectOsu">Select .osu / .osz</p>
+      <div class="web-beatmap-actions">
+        <button id="openBeatmapPage" class="beatmap-page-button" type="button" disabled>
+          <span aria-hidden="true">↗</span>
+          <span data-i18n="openBeatmapPage">Open beatmap page</span>
+        </button>
+      </div>
     </section>
 
     <section class="tab-visibility-settings">
