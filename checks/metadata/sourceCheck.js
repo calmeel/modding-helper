@@ -130,7 +130,7 @@ const TOUHOU_SOURCE_LIST = [
 ];
 
 const BLUE_ARCHIVE_SOURCE = "ブルーアーカイブ -Blue Archive-";
-const PROJECT_SEKAI_SOURCE = "プロジェクトセカイ カラフルステージ！";
+const PROJECT_SEKAI_SOURCE = "プロジェクトセカイ カラフルステージ！ feat. 初音ミク";
 const UMA_MUSUME_SOURCE = "ウマ娘 プリティーダービー";
 
 function findSourceFormattingSuggestion(source) {
