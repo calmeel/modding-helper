@@ -1735,7 +1735,7 @@ are treated as mismatches and displayed as warnings.<br><br>
 
 The folder name is available in the desktop app when loading a standalone <code>.osu</code> file or using
 the “beatmap open in osu!” source.<br>
-When an <code>.osz</code> file is loaded in either the browser or desktop app, its file name without the trailing <code>.osz</code> extension is checked as the song folder name.<br><br>
+When an <code>.osz</code> file is loaded in either the browser or desktop app, its file name is compared with an expected <code>.osz</code> file name generated separately from the metadata.<br><br>
 This check is skipped when loading a standalone <code>.osu</code> file in the browser app because the song folder name is unavailable.
 </div>
 
@@ -1752,6 +1752,9 @@ Example:<br>
 
 <div class="section section-warning">
 <span class="label label-warning">■ Checking names from .osz files</span><br>
+The expected <code>.osz</code> file name is <code>BeatmapSetID Artist - Title.osz</code> for submitted maps and <code>Artist - Title.osz</code> for unsubmitted maps.<br>
+Unlike song folder names, periods (<code>.</code>) in Artist / Title are preserved.<br>
+The unsupported file name characters <code>\</code>, <code>/</code>, <code>:</code>, <code>*</code>, <code>?</code>, <code>&quot;</code>, <code>&lt;</code>, <code>&gt;</code>, and <code>|</code> are converted to <code>_</code>.<br><br>
 For <code>.osz</code> files, this check uses the loaded file name rather than the actual song folder name on the creator's computer.<br>
 If the <code>.osz</code> file is renamed afterwards, a warning may be displayed even when the original song folder name is correct.
 </div>

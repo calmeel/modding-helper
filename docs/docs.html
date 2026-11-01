@@ -1648,7 +1648,7 @@ song フォルダ名が、譜面の <code>BeatmapSetID</code>、<code>Artist</co
 
 フォルダ名は、デスクトップ版で単体の <code>.osu</code> ファイルを読み込んだ場合、または
 「osu! で開いている譜面」を使用した場合に確認できます。<br>
-<code>.osz</code> ファイルを読み込んだ場合は、ブラウザ版・デスクトップ版ともに、ファイル名の末尾の <code>.osz</code> を除いた名前を song フォルダ名としてチェックします。<br><br>
+<code>.osz</code> ファイルを読み込んだ場合は、ブラウザ版・デスクトップ版ともに、メタデータから別途作成する正しい <code>.osz</code> ファイル名と比較します。<br><br>
 ブラウザ版で単体の <code>.osu</code> ファイルを読み込んだ場合は、song フォルダ名を取得できないため、このチェックを省略します。
 </div>
 
@@ -1665,6 +1665,9 @@ song フォルダ名が、譜面の <code>BeatmapSetID</code>、<code>Artist</co
 
 <div class="section section-warning">
 <span class="label label-warning">■ 注意事項：.osz ファイル名に基づくチェック</span><br>
+<code>.osz</code> の正しいファイル名は、提出済みの map では <code>BeatmapSetID Artist - Title.osz</code>、未提出の map では <code>Artist - Title.osz</code> として作成します。<br>
+song フォルダ名とは異なり、Artist / Title 内のピリオド（<code>.</code>）は残します。<br>
+ファイル名に使用できない <code>\</code>、<code>/</code>、<code>:</code>、<code>*</code>、<code>?</code>、<code>&quot;</code>、<code>&lt;</code>、<code>&gt;</code>、<code>|</code> は <code>_</code> に変換します。<br><br>
 <code>.osz</code> ファイルでは、作成元の song フォルダの実名ではなく、読み込んだファイル名を基に判定します。<br>
 後から <code>.osz</code> のファイル名が変更された場合は、元の song フォルダ名が正しくても警告を表示する可能性があります。
 </div>

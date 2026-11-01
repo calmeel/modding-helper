@@ -210,17 +210,9 @@ async function analyzeOszFile(file, options = {}) {
     fileCheckResults.push(runOsuFileNameCheck(text, entry.name));
 
     if (songFolderCheckResult === null) {
-      songFolderCheckResult = runSongFolderNameCheck(
-        text,
-        options.songFolderName || String(file.name ?? "").replace(/\.osz$/i, "")
-      );
-      if (!options.songFolderName) {
-        songFolderCheckResult.nameSource = "osz";
-        songFolderCheckResult.actualFileName = String(file.name ?? "");
-        songFolderCheckResult.expectedFileName = songFolderCheckResult.expectedFolderName
-          ? `${songFolderCheckResult.expectedFolderName}.osz`
-          : "";
-      }
+      songFolderCheckResult = options.songFolderName
+        ? runSongFolderNameCheck(text, options.songFolderName)
+        : runOszFileNameCheck(text, file.name);
     }
   }
 
