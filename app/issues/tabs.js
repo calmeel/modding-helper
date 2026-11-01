@@ -411,11 +411,15 @@ function getTitleIssueLevel(results) {
   const hasMarkerIssues =
     results.some(result => result.markerIssues?.length > 0);
 
-  if (hasMarkerIssues) {
+  const hasMarkerErrors = results.some(result =>
+    result.markerIssues?.some(issue => issue.severity !== "warn")
+  );
+
+  if (hasMarkerErrors) {
     return TAB_LEVEL_ERROR;
   }
 
-  return hasSymbolIssues
+  return hasSymbolIssues || hasMarkerIssues
     ? TAB_LEVEL_WARN
     : TAB_LEVEL_NONE;
 }

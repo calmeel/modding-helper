@@ -292,9 +292,10 @@ function formatMultipleTitleResults(results, t) {
   } else {
     for (const group of markerIssueGroups) {
       const issue = group.issue;
+      const issueClass = issue.severity === "warn" ? "result-warn" : "result-error";
 
       lines.push(
-        `<span class="result-error">${escapeHtml(t("titleMarkerIssue"))}:</span> ` +
+        `<span class="${issueClass}">${escapeHtml(t("titleMarkerIssue"))}:</span> ` +
         `<code>${escapeHtml(issue.marker)}</code> → <code>${escapeHtml(issue.expected)}</code>`
       );
 
@@ -334,6 +335,7 @@ function groupTitleMarkerIssues(results) {
     for (const issue of result.markerIssues ?? []) {
       const key = [
         issue.type,
+        issue.severity,
         issue.marker,
         issue.expected,
         issue.context

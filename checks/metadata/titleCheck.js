@@ -30,6 +30,14 @@ function runTitleCheck(text, fileName) {
 
 const TITLE_MARKER_RULES = [
   {
+    expected: "(Full Ver.)",
+    severity: "warn",
+    exactCasing: true,
+    patterns: [
+      /\bfull\s*(?:version|ver)\b\.?/gi
+    ]
+  },
+  {
     expected: "(TV Size)",
     patterns: [
       /\bTV\s*size\b/gi,
@@ -163,6 +171,7 @@ function findTitleMarkerIssues(title, fieldName) {
           candidates.push({
             fieldName,
             type: "titleMarkerSpacing",
+            severity: rule.severity ?? "error",
             marker,
             expected: " " + marker,
             context: getTitleMarkerIssueContext(text, markerRange.start),
@@ -179,6 +188,7 @@ function findTitleMarkerIssues(title, fieldName) {
         candidates.push({
           fieldName,
           type: "titleMarker",
+          severity: rule.severity ?? "error",
           marker,
           expected: rule.expected,
           context: getTitleMarkerIssueContext(text, markerRange.start),
@@ -215,7 +225,10 @@ function isAllowedStandardTitleMarker(marker, fullText) {
   const casing = getTitleFieldCasing(fullText);
 
   for (const rule of TITLE_MARKER_RULES) {
-    const variants = getAllowedTitleMarkerVariants(rule.expected, casing);
+    const variants = getAllowedTitleMarkerVariants(
+      rule.expected,
+      rule.exactCasing ? "mixed" : casing
+    );
 
     if (variants.includes(marker)) {
       return true;
