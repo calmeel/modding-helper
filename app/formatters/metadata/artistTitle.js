@@ -294,7 +294,7 @@ function formatMultipleTitleResults(results, t) {
       const issue = group.issue;
 
       lines.push(
-        `<span class="result-warn">${escapeHtml(t("titleMarkerIssue"))}:</span> ` +
+        `<span class="result-error">${escapeHtml(t("titleMarkerIssue"))}:</span> ` +
         `<code>${escapeHtml(issue.marker)}</code> → <code>${escapeHtml(issue.expected)}</code>`
       );
 
@@ -321,7 +321,7 @@ function formatArtistFormattingIssue(issue, t) {
     : t("artistFormattingIssue");
 
   return (
-    `<span class="result-warn">${escapeHtml(message)}:</span> ` +
+    `<span class="result-error">${escapeHtml(message)}:</span> ` +
     `<code>${escapeHtml(issue.marker)}</code> → ` +
     `<code>${escapeHtml(issue.expected)}</code>`
   );
