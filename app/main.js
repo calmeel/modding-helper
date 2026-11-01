@@ -856,7 +856,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function handleFile(file, processOptions = {}) {
     if (!file) return;
 
-    prepareSrCalculation([], state.srCalculator, srCalculatorOutput, t);
+    prepareSrCalculation(null, state.srCalculator, srCalculatorOutput, t);
 
     state.selectedFileName = file.name;
 

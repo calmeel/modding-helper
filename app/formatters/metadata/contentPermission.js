@@ -22,6 +22,10 @@ function getContentPermissionCategoryTitle(category, t) {
 }
 
 function formatMultipleContentPermissionResults(results, t) {
+  if (!results.length) {
+    return escapeHtml(t("noOsuFiles"));
+  }
+
   const matchedResults = results.filter(result =>
     result.results?.length
   );

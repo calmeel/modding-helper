@@ -119,6 +119,11 @@ function renderSrCalculator(state, output, t, diffOrder = []) {
     return;
   }
 
+  if (state.status === "noOsuFiles") {
+    output.textContent = t("noOsuFiles");
+    return;
+  }
+
   if (state.status === "ready") {
     output.textContent = t("srCalculatorReady");
     return;
@@ -208,7 +213,7 @@ function prepareSrCalculation(
   sources, state, output, t, diffOrder = [], preserveResults = false
 ) {
   state.requestId++;
-  state.status = (sources || []).length ? "ready" : "idle";
+  state.status = sources ? (sources.length ? "ready" : "noOsuFiles") : "idle";
   state.calculator = null;
   if (!preserveResults) state.results = [];
   state.error = "";

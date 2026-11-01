@@ -32,7 +32,8 @@ function renderOffsetWaveformChart(sources, dom, t) {
   initializeOffsetWaveformChart();
 
   if (!sources || !sources.length) {
-    setOffsetWaveformEmpty(t("noFileLoaded"));
+    state.decodeToken++;
+    setOffsetWaveformEmpty(t(sources ? "noOsuFiles" : "noFileLoaded"));
     return;
   }
 

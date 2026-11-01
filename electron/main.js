@@ -72,7 +72,7 @@ function getCurrentBeatmapActionTarget() {
 
   return {
     folder,
-    canOpenFolder: false,
+    canOpenFolder: fs.existsSync(folder),
     beatmapSetId: beatmapSetId > 0 ? beatmapSetId : null,
     beatmapId: beatmapId > 0 ? beatmapId : null,
   };

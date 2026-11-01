@@ -1981,8 +1981,10 @@
             var a = window.__loadedAudio;
             var url = a && a.url ? a.url : null;
             if (!url) { specData = null; specForUrl = null; setEmpty(true,
-              isEn() ? 'Load a beatmap with audio to view its spectrogram.'
-                     : '音源付きの譜面を読み込むとスペクトログラムを表示します。'); return; }
+              window.__loadedDiffs && !window.__loadedDiffs.length
+                ? electronText('noOsuFiles')
+                : (isEn() ? 'Load a beatmap with audio to view its spectrogram.'
+                          : '音源付きの譜面を読み込むとスペクトログラムを表示します。')); return; }
             if (url === specForUrl && specData) { setEmpty(false); redraw(); return; }
             if (computing) return;
             computing = true;
@@ -2006,12 +2008,21 @@
                 return ctx.decodeAudioData(ab);
               })
               .then(function (buf) {
+                if (!window.__loadedAudio || window.__loadedAudio.url !== url) {
+                  computing = false;
+                  ensureComputed();
+                  return;
+                }
                 specData = window.computeTaikoSpectrogram(buf, { fftSize: 2048, targetCols: 1600 });
                 specForUrl = url; computing = false;
                 setEmpty(false); redraw();
               })
               .catch(function () {
                 computing = false; specData = null;
+                if (!window.__loadedAudio || window.__loadedAudio.url !== url) {
+                  ensureComputed();
+                  return;
+                }
                 setEmpty(true, isEn() ? 'Could not analyze the audio.' : '音声を解析できませんでした。');
               });
           };
@@ -2045,11 +2056,20 @@
              ensureComputed は URL が変わった時しか再計算しないので軽い。
              非アクティブ時は何もしない（バックグラウンド負荷なし）。 */
           var lastSeenUrl = null;
+          var lastSeenDiffs = null;
+          var lastSeenEnglish = null;
           setInterval(function () {
             if (!isActive()) return;
             var a = window.__loadedAudio;
             var url = a && a.url ? a.url : null;
-            if (url !== lastSeenUrl) { lastSeenUrl = url; ensureComputed(); }
+            var diffs = window.__loadedDiffs;
+            var english = isEn();
+            if (url !== lastSeenUrl || diffs !== lastSeenDiffs || english !== lastSeenEnglish) {
+              lastSeenUrl = url;
+              lastSeenDiffs = diffs;
+              lastSeenEnglish = english;
+              ensureComputed();
+            }
           }, 600);
           /* 起動直後に既にアクティブなら描く */
           if (isActive()) setTimeout(ensureComputed, 300);
