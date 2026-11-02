@@ -2144,10 +2144,127 @@
           return panelMode === 'osu' ? spreadLastTime : null;
         };
 
-        /* トップレベルの表示モード: チェック / プレビュー / 設定 の3タブ。
-           settingsMode = 設定表示, previewMode = プレビュー（スプレッド表示）, 両方 false = チェック */
+        /* トップレベルの表示モード: チェック / プレビュー / メモ帳 / 設定。 */
         var settingsMode = false;
         var previewMode = false;
+        var notepadMode = false;
+
+        /* メモ帳: 元の行を保持し、現在位置の周辺だけを描く（大量のノーツでも軽くする）。 */
+        var notepadPanel = document.createElement('section');
+        notepadPanel.id = 'etb-notepad';
+        notepadPanel.innerHTML =
+          '<div class="etb-notepad-toolbar">' +
+            '<label for="etb-notepad-diff" data-i18n="electronNotepadDifficulty">' + electronText('electronNotepadDifficulty') + '</label>' +
+            '<select id="etb-notepad-diff"></select>' +
+            '<span id="etb-notepad-status" role="status"></span>' +
+          '</div>' +
+          '<div class="etb-notepad-columns">' +
+            '<section class="etb-notepad-column"><h3>[TimingPoints]</h3><div class="etb-notepad-viewport"><pre></pre><div class="etb-notepad-playhead"></div></div></section>' +
+            '<section class="etb-notepad-column"><h3>[HitObjects]</h3><div class="etb-notepad-viewport"><pre></pre><div class="etb-notepad-playhead"></div></div></section>' +
+          '</div>';
+        colsWrap.appendChild(notepadPanel);
+        var notepadSelect = notepadPanel.querySelector('select');
+        var notepadStatus = notepadPanel.querySelector('#etb-notepad-status');
+        var notepadViews = Array.from(notepadPanel.querySelectorAll('.etb-notepad-viewport'));
+        var notepadRawRef = null, notepadSource = null, notepadSelectedFile = null;
+        var notepadSections = [[], []];
+        var notepadRenderKeys = ['', ''];
+        var notepadRaf = null;
+        var notepadEmptyDiffs = [];
+
+        var parseNotepadSections = function(text) {
+          var sections = [[], []], section = -1;
+          String(text || '').split(/\r?\n/).forEach(function(line) {
+            var trimmed = line.trim();
+            if (/^\[.*\]$/.test(trimmed)) {
+              section = trimmed === '[TimingPoints]' ? 0 : trimmed === '[HitObjects]' ? 1 : -1;
+              return;
+            }
+            if (section < 0 || !trimmed || trimmed.indexOf('//') === 0) return;
+            var values = line.split(',');
+            var value = values[section === 0 ? 0 : 2];
+            if (value == null || !value.trim()) return;
+            var time = Number(value);
+            if (Number.isFinite(time)) sections[section].push({ time: time, text: line });
+          });
+          sections.forEach(function(rows) { rows.sort(function(a, b) { return a.time - b.time; }); });
+          return sections;
+        };
+        var findNotepadRow = function(rows, time, timingPoints) {
+          if (!rows.length) return -1;
+          if (time == null) return 0;
+          var lo = 0, hi = rows.length;
+          while (lo < hi) {
+            var mid = (lo + hi) >>> 1;
+            if (rows[mid].time <= time) lo = mid + 1;
+            else hi = mid;
+          }
+          var index = Math.max(0, lo - 1);
+          if (!timingPoints && lo < rows.length &&
+              Math.abs(rows[lo].time - time) < Math.abs(rows[index].time - time)) index = lo;
+          return index;
+        };
+        var refreshNotepad = function() {
+          var raw = window.__loadedDiffs || notepadEmptyDiffs;
+          if (raw !== notepadRawRef) {
+            notepadRawRef = raw;
+            notepadSelect.textContent = '';
+            raw.forEach(function(diff) {
+              var option = document.createElement('option');
+              option.value = diff.fileName;
+              option.textContent = diff.fileName;
+              notepadSelect.appendChild(option);
+            });
+          }
+          // osu! モードでは現在エディタで開いている難易度に追従する。
+          var wanted = panelMode === 'osu' && currentDiffFile ? currentDiffFile : notepadSelectedFile;
+          var source = raw.find(function(diff) { return diff.fileName === wanted; });
+          if (!source && !(panelMode === 'osu' && currentDiffFile)) source = raw[0];
+          notepadSelect.disabled = panelMode === 'osu' || !raw.length;
+          notepadSelect.value = source ? source.fileName : '';
+          if (source !== notepadSource) {
+            notepadSource = source;
+            notepadSections = parseNotepadSections(source && source.text);
+            notepadRenderKeys = ['', ''];
+          }
+          var time = panelMode === 'osu' ? spreadLastTime : getSpreadTime();
+          var statusText = !source ? electronText('electronNoBeatmapLoadedPlain')
+            : time == null ? electronText('electronNotepadWaiting') : Math.round(time) + ' ms';
+          if (notepadStatus.textContent !== statusText) notepadStatus.textContent = statusText;
+          notepadViews.forEach(function(view, side) {
+            var rows = notepadSections[side];
+            var index = findNotepadRow(rows, time, side === 0);
+            var height = view.clientHeight;
+            var key = index + ':' + height + ':' + document.documentElement.lang;
+            if (notepadRenderKeys[side] === key) return;
+            notepadRenderKeys[side] = key;
+            var pre = view.querySelector('pre');
+            pre.textContent = '';
+            var half = Math.ceil(height / 48) + 1;
+            var start = Math.max(0, index - half), end = Math.min(rows.length, index + half + 1);
+            pre.style.top = (height / 2 - 12 + (start - Math.max(0, index)) * 24) + 'px';
+            if (!rows.length) {
+              pre.textContent = electronText(source ? 'electronNotepadEmptySection' : 'electronNoBeatmapLoadedPlain');
+              return;
+            }
+            for (var row = start; row < end; row++) {
+              var line = document.createElement('span');
+              line.textContent = rows[row].text;
+              if (row === index) line.className = 'etb-notepad-current';
+              pre.appendChild(line);
+            }
+          });
+        };
+        notepadSelect.addEventListener('change', function() {
+          notepadSelectedFile = notepadSelect.value;
+          refreshNotepad();
+        });
+        var notepadLoop = function() {
+          notepadRaf = null;
+          if (!notepadMode) return;
+          refreshNotepad();
+          notepadRaf = requestAnimationFrame(notepadLoop);
+        };
 
         /* 分離状態: 別ウィンドウに出しているパネルは true（メイン側のカードを隠す） */
         var detachState = { metadata: false, timing: false };
@@ -2261,7 +2378,7 @@
           geomRaf = null;
           var ids = Object.keys(geomDirty);
           geomDirty = {};
-          if (panelMode !== 'osu' || settingsMode || previewMode) return;
+          if (panelMode !== 'osu' || settingsMode || previewMode || notepadMode) return;
           for (var i = 0; i < ids.length; i++) positionPlayhead(ids[i], lastPlayheadMs);
         };
         var hookChartGeom = function(id) {
@@ -2290,14 +2407,14 @@
         /* タブ切替などで表示が変わった後、保持している時刻で再生ヘッドを復帰させる。
            osu! が一時停止中は新しい時刻が来ないため、これが無いと消えたままになる。 */
         var refreshPlayheads = function() {
-          if (panelMode !== 'osu' || settingsMode || previewMode) return;
+          if (panelMode !== 'osu' || settingsMode || previewMode || notepadMode) return;
           updatePlayheads(lastPlayheadMs);
         };
         /* 保険: 少し経ってもジオメトリが古いまま＝グラフが描き直されていない場合、
            resize を投げて再描画パスを起こす（グラフ側は resize で描き直す）。
            通常は表示された時点で ResizeObserver が発火するのでここは通らない。 */
         var nudgeStaleCharts = function() {
-          if (panelMode !== 'osu' || settingsMode || previewMode) return;
+          if (panelMode !== 'osu' || settingsMode || previewMode || notepadMode) return;
           for (var i = 0; i < playheadChartIds.length; i++) {
             var cv = document.getElementById(playheadChartIds[i]);
             var g = cv && cv.__playheadGeom;
@@ -2407,11 +2524,17 @@
           if (layoutEl) {
             layoutEl.classList.toggle('etb-settings', s);
             layoutEl.classList.toggle('etb-preview', pv);
+            layoutEl.classList.toggle('etb-notepad', notepadMode);
+          }
+          if (notepadMode && notepadRaf == null) notepadLoop();
+          if (!notepadMode && notepadRaf != null) {
+            cancelAnimationFrame(notepadRaf);
+            notepadRaf = null;
           }
           /* スプレッド表示の描画ループ ON/OFF */
           if (window.__setSpreadActive) window.__setSpreadActive(pv);
           /* osu! モード以外・設定/プレビュー中は再生ヘッドを隠す */
-          if (!isOsu || s || pv) hideAllPlayheads();
+          if (!isOsu || s || pv || notepadMode) hideAllPlayheads();
           else schedulePlayheadRefresh(); // チェック表示に戻ったら保持時刻で復帰
           /* チェックリストカードのタイトル切替 */
           var clT = document.getElementById('etb-title-checklist');
@@ -2424,9 +2547,11 @@
           var sBtn = document.getElementById('toggleTabSettings');
           if (sBtn) sBtn.classList.toggle('active', s);
           var mBtn = document.getElementById('etb-tab-main');
-          if (mBtn) mBtn.classList.toggle('active', !s && !pv);
+          if (mBtn) mBtn.classList.toggle('active', !s && !pv && !notepadMode);
           var pvBtn = document.getElementById('etb-tab-preview');
           if (pvBtn) pvBtn.classList.toggle('active', pv);
+          var npBtn = document.getElementById('etb-tab-notepad');
+          if (npBtn) npBtn.classList.toggle('active', notepadMode);
         };
         var resetTimingPanel = function() {
           var ids = { 'osu-t-timing': '--:--:---', 'osu-t-bpm': '---',
@@ -2600,6 +2725,7 @@
           set('etb-title-toolsettings',  'electronToolDisplay');
           set('etb-tab-main',            'electronCheck');
           set('etb-tab-preview',         'electronPreview');
+          set('etb-tab-notepad',         'electronNotepad');
           set('toggleTabSettings',       'electronSettings');
           set('etb-spread-snap-text',    'electronBeatSnapDivisor');
           set('etb-spread-sfx-text',     'electronHitSounds');
@@ -2652,6 +2778,7 @@
         if (settingsToggleBtn) {
           settingsToggleBtn.addEventListener('click', function() {
             settingsMode = true; previewMode = false; // 「設定」表示へ
+            notepadMode = false;
             applyPanelModeUi();
           });
         }
@@ -2738,8 +2865,7 @@
             var settingsBtn = document.getElementById('toggleTabSettings');
             if (settingsBtn) settingsBtn.textContent = electronText('electronSettings');
 
-            /* 「チェック」「プレビュー」ボタンを設定の前に追加し、
-               チェック/プレビュー/設定 を明示的な切替タブにする */
+            /* 表示切替タブを設定の前に追加する。 */
             if (settingsBtn && settingsBtn.parentNode && !document.getElementById('etb-tab-main')) {
               var mainTabBtn = document.createElement('button');
               mainTabBtn.id = 'etb-tab-main';
@@ -2748,6 +2874,7 @@
               settingsBtn.parentNode.insertBefore(mainTabBtn, settingsBtn);
               mainTabBtn.addEventListener('click', function() {
                 settingsMode = false; previewMode = false; // チェック表示へ
+                notepadMode = false;
                 applyPanelModeUi();
               });
 
@@ -2758,9 +2885,19 @@
               settingsBtn.parentNode.insertBefore(previewTabBtn, settingsBtn);
               previewTabBtn.addEventListener('click', function() {
                 settingsMode = false; previewMode = true; // プレビュー（スプレッド表示）へ
+                notepadMode = false;
                 applyPanelModeUi();
               });
 
+              var notepadTabBtn = document.createElement('button');
+              notepadTabBtn.id = 'etb-tab-notepad';
+              notepadTabBtn.type = 'button';
+              notepadTabBtn.textContent = electronText('electronNotepad');
+              settingsBtn.parentNode.insertBefore(notepadTabBtn, settingsBtn);
+              notepadTabBtn.addEventListener('click', function() {
+                settingsMode = false; previewMode = false; notepadMode = true;
+                applyPanelModeUi();
+              });
               applyPanelModeUi(); // 追加直後に active 表示を反映
             }
             updatePanelTitles();
@@ -2769,11 +2906,12 @@
             extSep.style.cssText = 'width:1px;background:#363636;margin:9px 4px;flex-shrink:0;-webkit-app-region:no-drag;';
 
             /* ナビの並び順を指定どおりに整える:
-               チェック/プレビュー/設定 | 区切り | 日本語/English | 区切り | 説明書
+               チェック/プレビュー/メモ帳/設定 | 区切り | 日本語/English | 区切り | 説明書
                （appendChild は既存要素を移動するので、望む順に付け直すだけで並び替わる） */
             [
               document.getElementById('etb-tab-main'),      // チェック
               document.getElementById('etb-tab-preview'),   // プレビュー
+              document.getElementById('etb-tab-notepad'),   // メモ帳
               document.getElementById('toggleTabSettings'), // 設定
               langSep,                                      // 区切り
               document.getElementById('langJa'),            // 日本語

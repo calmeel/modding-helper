@@ -689,6 +689,43 @@
         line-height: 1.15 !important;
       }
 
+      /* メモ帳は左右同幅。行の中央を水平の再生ヘッドに合わせる。 */
+      #etb-notepad { display: none; }
+      #electron-layout.etb-notepad #electron-col-future,
+      #electron-layout.etb-notepad #electron-col-center,
+      #electron-layout.etb-notepad #electron-col-output,
+      #electron-layout.etb-notepad #etb-compact-bar { display: none !important; }
+      #electron-layout.etb-notepad #etb-notepad {
+        display: flex; flex: 1 1 100%; flex-direction: column;
+        min-width: 0; min-height: 0; overflow: hidden;
+        border: 1px solid #363640; border-radius: 8px; background: #1a1a1f;
+      }
+      .etb-notepad-toolbar {
+        display: flex; align-items: center; gap: 12px; padding: 8px 12px;
+        flex: 0 0 auto; border-bottom: 1px solid #363640; font-size: 12px;
+      }
+      #etb-notepad-diff { min-width: 0; max-width: 50%; color: #eee; background: #26262e; }
+      #etb-notepad-status { margin-left: auto; color: #aaa; font-variant-numeric: tabular-nums; }
+      .etb-notepad-columns { display: flex; flex: 1; min-height: 0; }
+      .etb-notepad-column { display: flex; flex-direction: column; flex: 1 1 0; min-width: 0; }
+      .etb-notepad-column + .etb-notepad-column { border-left: 1px solid #484853; }
+      .etb-notepad-column h3 { margin: 0; padding: 8px 12px; font: 13px Consolas, monospace; color: #ddd; }
+      .etb-notepad-viewport { position: relative; flex: 1; min-height: 0; overflow-x: auto; overflow-y: hidden; }
+      #etb-notepad .etb-notepad-viewport pre {
+        position: absolute; margin: 0; padding: 0 12px !important;
+        min-width: 100%; width: max-content; box-sizing: border-box;
+        border: 0; border-radius: 0; background: transparent;
+        font: 13px/24px Consolas, monospace; white-space: pre; color: #cfcfd8;
+        overflow: visible; user-select: text;
+      }
+      .etb-notepad-viewport pre span { display: block; height: 24px; }
+      .etb-notepad-current { color: #fff; background: rgba(255,80,80,0.1); }
+      .etb-notepad-playhead {
+        position: sticky; top: 50%; left: 0; width: 100%; height: 1px;
+        background: #ff4b4b; box-shadow: 0 0 4px rgba(255,50,50,0.5);
+        pointer-events: none;
+      }
+
       /* スプレッド表示パネル（プレビュータブ専用。通常は非表示） */
       #electron-col-output #tab-spreadPlay { padding: 0 !important; }
 
