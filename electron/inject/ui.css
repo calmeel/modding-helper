@@ -1005,7 +1005,7 @@
         background: transparent !important;
         padding: 0 !important;
         border-radius: 0 !important;
-        margin-top: 0 !important;
+        margin-top: 1.2em !important;
       }
 
       /* グラフの再生ヘッド（リアルタイム時刻バー） */
