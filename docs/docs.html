@@ -596,6 +596,13 @@
     <button class="doc-tab-button" data-doc-tab="bnCompare">BN評価</button>
   </details>
 
+  <details class="doc-tab-group">
+    <summary>デスクトップ版限定機能</summary>
+    <button class="doc-tab-button" data-doc-tab="desktopPreview">プレビュー</button>
+    <button class="doc-tab-button" data-doc-tab="desktopNotepad">メモ帳</button>
+    <button class="doc-tab-button" data-doc-tab="desktopRealtime">リアルタイム表示</button>
+  </details>
+
 </nav>
 
   <main class="doc-tab-content">
@@ -2713,6 +2720,102 @@ Before / After で全体のオフセットが変わる場合は、<code>赤線�
 
 ただし、NC rest の追加などにより赤線の位置が 1/1 拍単位などでずれる場合は対応できません。<br>
 その場合は、最初の赤線の位置を揃えてから再度比較してください。<br>
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="desktopPreview">
+<h2>プレビュー</h2>
+<div class="section section-bg">
+<span class="label label-bg">■ 概要</span><br>
+デスクトップ版の上部にある「プレビュー」から、読み込んだ譜面のノーツやタイミングを視覚的に確認できます。<br>
+osu! 連携時は、エディターの再生位置に追従して表示します。
+</div>
+<div class="section section-warning">
+現在開発中の機能です。詳しい操作方法や設定の説明は、今後追記する予定です。
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="desktopNotepad">
+<h2>メモ帳</h2>
+<div class="section section-bg">
+<span class="label label-bg">■ 概要</span><br>
+デスクトップ版の上部にある「メモ帳」から、譜面ファイルの <code>[TimingPoints]</code> と <code>[HitObjects]</code> を並べて確認できます。<br>
+osu! 連携時は、エディターの再生位置に合わせて、対応する行の周辺を表示します。
+</div>
+<div class="section section-warning">
+現在開発中の機能です。詳しい操作方法や表示内容の説明は、今後追記する予定です。
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="desktopRealtime">
+<h2>リアルタイム表示</h2>
+<div class="section section-bg">
+<span class="label label-bg">■ 概要</span><br>
+デスクトップ版の上部にある「リアルタイム表示」を押すと、osu! の現在の再生時刻・BPM・SV・見た目BPM・ボリュームを表示する別ウィンドウが開きます。<br>
+osu! での再生やシークに合わせて値が更新されるため、確認したい位置のタイミング情報を手元で見ることができます。
+</div>
+
+<div class="section section-bg">
+<span class="label label-bg">■ 開き方とウィンドウの操作</span><br>
+<ol>
+  <li>osu! で確認したい譜面を開きます。</li>
+  <li>Modding Helper の上部にある「リアルタイム表示」を押します。</li>
+  <li>osu! の再生位置を動かして、その時点の値を確認します。</li>
+</ol>
+ウィンドウを開いている間は、上部の「リアルタイム表示」がハイライトされます。<br>
+もう一度押すと、新しいウィンドウを増やさず、開いているウィンドウにフォーカスします。<br><br>
+
+リアルタイム表示は最前面に表示され、メイン画面を「チェック」「プレビュー」「メモ帳」などに切り替えても、別ウィンドウで確認できます。<br>
+ウィンドウは好きな位置に移動でき、横幅を広げることもできます。高さは固定です。<br>
+不要になったらウィンドウの閉じるボタンで閉じます。閉じると、上部のハイライトも解除されます。
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ 表示項目</span><br>
+<div class="ratio-table-wrap">
+<table class="ratio-threshold-table">
+  <thead>
+    <tr><th scope="col">項目</th><th scope="col">表示例</th><th scope="col">内容</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Timing</td><td><code>00:24:125</code></td>
+      <td>osu! の現在の再生時刻です。分・秒・ミリ秒の順に表示します。この例は24秒125ミリ秒を表します。</td>
+    </tr>
+    <tr>
+      <td>BPM</td><td><code>127.30</code></td>
+      <td>その位置で有効な赤線のBPMです。小数点以下2桁で表示します。</td>
+    </tr>
+    <tr>
+      <td>SV</td><td><code>1.00</code></td>
+      <td>その位置で有効なSV倍率です。赤線で1.00に戻り、その後の緑線で指定された倍率に更新されます。小数点以下2桁で表示します。</td>
+    </tr>
+    <tr>
+      <td>見た目BPM</td><td><code>127.30</code></td>
+      <td><code>BPM × SV</code> で求めた値です。例えばBPMが120、SVが1.50の場合は180.00になります。小数点以下2桁で表示します。</td>
+    </tr>
+    <tr>
+      <td>Volume</td><td><code>90%</code></td>
+      <td>その位置のタイミングポイントで設定されているボリュームです。Modding Helper や osu! 本体の全体音量ではありません。</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+<div class="section section-bg">
+<span class="label label-bg">■ ダブルクリックでコピー</span><br>
+<strong>各項目の値をダブルクリックすると、表示中の値をクリップボードにコピーできます。</strong><br>
+Timing・BPM・SV・見た目BPM・Volume のすべてが対象です。項目名ではなく、右側の時刻や数値をダブルクリックしてください。<br><br>
+
+例えば、Timing の <code>00:24:125</code> をダブルクリックすると <code>00:24:125</code> が、Volume の <code>90%</code> なら <code>90%</code> がそのままコピーされます。<br>
+コピーした瞬間は、値とその背景が一時的に緑色になり、コピーできたことを確認できます。
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ 表示されない場合</span><br>
+情報を取得できない項目は <code>---</code>、再生時刻を取得できない場合は <code>--:--:---</code> と表示されます。これらの未取得表示はコピーされません。<br>
+値が表示されない場合は、osu! が起動していることと、確認したい譜面を開いていることを確認してください。
 </div>
 </section>
 
