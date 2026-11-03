@@ -2792,7 +2792,7 @@ osu! での再生やシークに合わせて値が更新されるため、確認
     </tr>
     <tr>
       <td>見た目BPM</td><td><code>127.30</code></td>
-      <td><code>BPM × SV</code> で求めた値です。例えばBPMが120、SVが1.50の場合は180.00になります。小数点以下2桁で表示します。</td>
+      <td><code>BPM × SV × (SliderMultiplier / 1.40)</code> で求めた値です。SliderMultiplier 1.40・SV 1.00 の状態を基準に、スクロール速度をBPMに換算しています。例えばBPMが120、SVが1.50の場合、SliderMultiplierが1.40なら180.00、1.80なら231.43になります。小数点以下2桁で表示します。</td>
     </tr>
     <tr>
       <td>Volume</td><td><code>90%</code></td>
