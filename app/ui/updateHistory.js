@@ -272,6 +272,18 @@ const updateHistoryEntries = [
       ]
     }
   },
+  {
+    date: "2026/11/04",
+    type: "update",
+    items: {
+      en: [
+        "Expanded 1ms deviation detection functionality"
+      ],
+      ja: [
+        "1msズレ検出機能を拡張"
+      ]
+    }
+  },
 ];
 
 const updateHistoryTypeLabels = {

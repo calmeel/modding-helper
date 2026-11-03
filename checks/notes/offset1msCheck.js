@@ -1,5 +1,6 @@
 const DEFAULT_BEAT_SNAPS = [1, 2, 3, 4, 6, 8, 12, 16];
 const ADVANCED_SNAPS = [5, 7, 9];
+const SUPPLEMENTAL_OFFSET_SNAPS = [...ADVANCED_SNAPS, 24];
 
 function getBeatSnapCandidates(includeAdvancedSnaps = false) {
   return includeAdvancedSnaps
@@ -37,6 +38,9 @@ function runOffset1msCheck(text, fileName, options = {}) {
         currentTp.beatLength,
         beatSnaps
       );
+      const supplementalSnaps = options.includeAdvancedSnaps
+        ? []
+        : findSupplementalOffsetSnaps(item.time, currentTp);
 
       if (best && best.diff !== 0) {
         results.push({
@@ -45,6 +49,7 @@ function runOffset1msCheck(text, fileName, options = {}) {
           snap: best.snap,
           target: item.target,
           objectType: item.objectType,
+          supplementalSnaps,
           level: best.compatibility
             ? "warn"
             : getOffsetIssueLevelFromDiff(best.diff),
@@ -65,6 +70,7 @@ function runOffset1msCheck(text, fileName, options = {}) {
           snap: wheelDifference.snap,
           target: item.target,
           objectType: item.objectType,
+          supplementalSnaps,
           level: "info",
           compatibility: wheelDifference.compatibility
         });
@@ -77,6 +83,31 @@ function runOffset1msCheck(text, fileName, options = {}) {
     results,
     wheelResults
   };
+}
+
+function findSupplementalOffsetSnaps(time, timingPoint) {
+  const matches = [];
+
+  for (const snap of SUPPLEMENTAL_OFFSET_SNAPS) {
+    const lazer = createOffsetSnapCandidate(
+      time,
+      getLazerOffsetSnapTime(time, timingPoint.time, timingPoint.beatLength, snap),
+      snap
+    );
+    const stable = findNearestStableSnapDiff(
+      time,
+      timingPoint.time,
+      timingPoint.beatLength,
+      [snap]
+    );
+    // Use the nearest integer-ms position accepted by either editor.
+    const best = isBetterOffsetSnapCandidate(stable, lazer) ? stable : lazer;
+    if (Math.abs(best.diff) <= 1) {
+      matches.push({ snap, diff: best.diff });
+    }
+  }
+
+  return matches;
 }
 
 function getOffsetIssueLevelFromDiff(diff) {

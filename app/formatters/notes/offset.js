@@ -67,6 +67,12 @@ function formatShiftItems(items, t) {
     const compatibilityText = compatibilityKey
       ? t(compatibilityKey).replace("{diff}", `${sign}${item.diff} ms`)
       : null;
+    const supplementalText = (item.supplementalSnaps || []).map(match => {
+      const key = match.diff === 0 ? "offsetSupplementalExact" : "offsetSupplementalNear";
+      return t(key)
+        .replace("{snap}", `1/${match.snap}`)
+        .replace("{diff}", `${match.diff > 0 ? "+" : ""}${match.diff} ms`);
+    }).join(", ");
 
     lines.push(
       `<span${classAttribute}>${formatTimestampLink(item.time)} | ` +
@@ -74,7 +80,11 @@ function formatShiftItems(items, t) {
       `${compatibilityText
         ? escapeHtml(compatibilityText)
         : `${escapeHtml(t("offsetUnsnappedBy"))} ${sign}${item.diff} ms`} ` +
-      `[1/${item.snap} ${escapeHtml(t("snap"))}]</span>`
+      `[1/${item.snap} ${escapeHtml(t("snap"))}]` +
+      (supplementalText
+        ? ` ${escapeHtml(t("offsetSupplementalNote").replace("{matches}", supplementalText))}`
+        : "") +
+      `</span>`
     );
   }
 
