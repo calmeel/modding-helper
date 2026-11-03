@@ -471,6 +471,8 @@ function openPopout(name, lang) {
   if (name !== 'metadata' && name !== 'timing') return;
   if (popoutWindows[name] && !popoutWindows[name].isDestroyed()) {
     popoutWindows[name].focus();
+    const main = getMainWin();
+    if (main && !main.isDestroyed()) main.webContents.send('panel-opened', name);
     return;
   }
   const isEn = lang === 'en';
@@ -503,6 +505,8 @@ function openPopout(name, lang) {
   // 全画面アプリ(osu! 等)の上にも重ねたいので最前面レベルを少し上げる
   if (name === 'timing') pop.setAlwaysOnTop(true, 'screen-saver');
   popoutWindows[name] = pop;
+  const main = getMainWin();
+  if (main && !main.isDestroyed()) main.webContents.send('panel-opened', name);
 
   const url = 'file:///' + path.join(__dirname, 'popout.html').replace(/\\/g, '/')
     + '?panel=' + name + '&lang=' + (isEn ? 'en' : 'ja');

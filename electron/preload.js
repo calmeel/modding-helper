@@ -36,6 +36,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   detachPanel:      (name, lang, checked) => ipcRenderer.send('detach-panel', name, lang, checked),
   detachChart:      (chartId, lang) => ipcRenderer.send('detach-chart', chartId, lang),
   onUpdateProgress: (cb) => ipcRenderer.on('update-progress', (_, pct) => cb(pct)),
+  onPanelOpened:    (cb)         => ipcRenderer.on('panel-opened', (_, name) => cb(name)),
   onPanelRedocked:  (cb)         => ipcRenderer.on('panel-redocked', (_, name, checked) => cb(name, checked)),
   sendMapMetaToPopout: (data)    => ipcRenderer.send('popout-map-meta', data),
   sendPopoutChecked: (arr)       => ipcRenderer.send('popout-checked-changed', arr),

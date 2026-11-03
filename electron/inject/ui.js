@@ -10,7 +10,7 @@
         var tabPanels  = Array.from(tabsSec.querySelectorAll('.tab-panel'));
 
         /* ── 表示モード（ワイド / コンパクト） ──
-           コンパクト: 左カラム（メタデータ/リアルタイム/譜面ファイル）を出さず、
+           コンパクト: 左カラム（メタデータ/譜面ファイル）を出さず、
            チェックリストとチェック結果を画面いっぱいに広げる。代わりに上部の細いバーへ
            「Artist - Title (Creator)」を出し、file モードではドロップエリアもそこへ移す。
            ※ 設定ラジオの初期チェック(opt.mode === viewMode)より前で読む必要があるため、
@@ -65,47 +65,29 @@
           /* メタデータカード */
           '<div class="etb-card" id="etb-card-meta">' +
             '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-meta">' +
-              electronText('electronMetadata') + '</span>' +
-              '<button class="etb-detach-btn" data-panel="metadata" data-i18n-title="electronDetachWindow" title="' +
-                electronText('electronDetachWindow') + '">' + svgDetach + '</button></div>' +
+              electronText('electronMetadata') + '</span></div>' +
             '<div class="etb-card-body" id="etb-meta-body">' +
               '<div id="osu-map-panel">' +
                 '<div id="osu-map-bg-wrap" style="display:none"><img id="osu-map-bg" src="" alt=""></div>' +
                 '<div id="osu-map-meta"><div id="osu-map-waiting"></div></div>' +
               '</div>' +
             '</div>' +
-          '</div>' +
-          /* リアルタイム表示カード（osu! モードのみ表示） */
-          '<div class="etb-card" id="etb-card-realtime">' +
-            '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-realtime">' +
-              electronText('electronRealtime') + '</span>' +
-              '<button class="etb-detach-btn" data-panel="timing" data-i18n-title="electronDetachWindow" title="' +
-                electronText('electronDetachWindow') + '">' + svgDetach + '</button></div>' +
-            '<div class="etb-card-body" id="osu-timing-panel">' +
-              '<div class="osu-timing-row"><span class="osu-timing-label">Timing</span><span class="osu-timing-value" id="osu-t-timing">--:--:---</span></div>' +
-              '<div class="osu-timing-row"><span class="osu-timing-label">BPM</span><span class="osu-timing-value" id="osu-t-bpm">---</span></div>' +
-              '<div class="osu-timing-row"><span class="osu-timing-label">SV</span><span class="osu-timing-value" id="osu-t-sv">---</span></div>' +
-              '<div class="osu-timing-row"><span class="osu-timing-label" id="osu-t-vbpm-label">' +
-                electronText('electronVisualBpm') + '</span><span class="osu-timing-value" id="osu-t-vbpm">---</span></div>' +
-              '<div class="osu-timing-row"><span class="osu-timing-label">Volume</span><span class="osu-timing-value" id="osu-t-vol">---</span></div>' +
-            '</div>' +
           '</div>';
 
-        /* 譜面操作はメタデータ見出しの下へ。分離操作とは別の行にする。 */
+        /* 譜面操作はメタデータ見出しの右端にアイコンのみで配置する。 */
         var mapActions = document.createElement('div');
         mapActions.id = 'etb-map-actions';
         mapActions.innerHTML =
           '<button class="etb-map-action" id="etb-open-map-folder" type="button" disabled ' +
             'data-i18n-title="electronOpenBeatmapFolder" title="' + electronText('electronOpenBeatmapFolder') + '" ' +
             'aria-label="' + electronText('electronOpenBeatmapFolder') + '">' + svgFolder +
-            '<span id="etb-open-map-folder-label">' + electronText('electronOpenBeatmapFolder') + '</span></button>' +
+            '</button>' +
           '<button class="etb-map-action" id="etb-open-map-page" type="button" disabled ' +
             'data-i18n-title="electronOpenBeatmapPage" title="' + electronText('electronOpenBeatmapPage') + '" ' +
             'aria-label="' + electronText('electronOpenBeatmapPage') + '">' + svgExternal +
-            '<span id="etb-open-map-page-label">' + electronText('electronOpenBeatmapPage') + '</span></button>';
-        var metaCard = futureCol.querySelector('#etb-card-meta');
-        var metaBody = futureCol.querySelector('#etb-meta-body');
-        metaCard.insertBefore(mapActions, metaBody);
+            '</button>';
+        var metaHead = futureCol.querySelector('#etb-card-meta > .etb-card-head');
+        metaHead.appendChild(mapActions);
 
         /* 譜面ファイルカード（file モードのみ表示。ドロップエリアを内包） */
         var fileCard = document.createElement('div');
@@ -2266,10 +2248,7 @@
           notepadRaf = requestAnimationFrame(notepadLoop);
         };
 
-        /* 分離状態: 別ウィンドウに出しているパネルは true（メイン側のカードを隠す） */
-        var detachState = { metadata: false, timing: false };
-
-        /* Tags のチェック状態（タグ文字列→true）。譜面切替でリセット、分離/復帰で引き継ぐ */
+        /* Tags のチェック状態（タグ文字列→true）。譜面切替でリセットする。 */
         var tagChecked = Object.create(null);
         var lastRenderedTags = null;
         var applyTagChecked = function() {
@@ -2455,7 +2434,7 @@
         updateWaitingText();
 
         /* カード表示の切替（panelMode と settingsMode を反映）:
-           通常時   左→リアルタイム/譜面ファイル, 中央→チェックリスト
+           通常時   左→メタデータ/譜面ファイル, 中央→チェックリスト
            設定時   左→譜面読み込み設定,          中央→チェックリストの設定 */
         /* 表示モードの実装。値 viewMode 自体はもっと前で読み込んでいる
            （設定ラジオの初期チェックがこれより前で組まれるため）。 */
@@ -2480,7 +2459,7 @@
           if (layoutEl) layoutEl.classList.toggle('etb-compact', viewMode === 'compact');
           /* 同じボタンを移動し、可否・イベントを表示モード間で保持する。 */
           if (viewMode === 'compact') compactBar.insertBefore(mapActions, document.getElementById('etb-compact-drop'));
-          else metaCard.insertBefore(mapActions, metaBody);
+          else metaHead.appendChild(mapActions);
           /* ドロップエリアは1つしか無いので、置き場所ごと移動する
              （複製するとイベントの張り直しが要るため） */
           var slot = document.getElementById('etb-compact-drop');
@@ -2502,9 +2481,8 @@
             var el = document.getElementById(id);
             if (el) el.style.display = show ? '' : 'none';
           };
-          /* 左カラム（設定モード中・分離中のカードは隠す。カラム全体はプレビューで CSS が隠す） */
-          setDisp('etb-card-meta',         !s && !detachState.metadata);
-          setDisp('etb-card-realtime',     !s && isOsu && !detachState.timing);
+          /* 左カラム（設定モード中のカードは隠す。カラム全体はプレビューで CSS が隠す） */
+          setDisp('etb-card-meta',         !s);
           setDisp('etb-card-file',         !s && !isOsu);
           setDisp('etb-card-viewsettings',  s);
           setDisp('etb-card-loadsettings',  s);
@@ -2553,14 +2531,6 @@
           var npBtn = document.getElementById('etb-tab-notepad');
           if (npBtn) npBtn.classList.toggle('active', notepadMode);
         };
-        var resetTimingPanel = function() {
-          var ids = { 'osu-t-timing': '--:--:---', 'osu-t-bpm': '---',
-                      'osu-t-sv': '---', 'osu-t-vbpm': '---', 'osu-t-vol': '---' };
-          Object.keys(ids).forEach(function(id) {
-            var el = document.getElementById(id);
-            if (el) el.textContent = ids[id];
-          });
-        };
         var clearMetaToWaiting = function() {
           lastMapMeta = null; updateCompactMeta();
           var meta = document.getElementById('osu-map-meta');
@@ -2598,38 +2568,6 @@
           });
         }
 
-        /* パネル分離ボタン: クリックで別ウィンドウに出し、メイン側のカードを隠す */
-        Array.prototype.slice.call(document.querySelectorAll('.etb-detach-btn')).forEach(function(btn) {
-          btn.addEventListener('click', function(ev) {
-            ev.stopPropagation();
-            var panel = btn.getAttribute('data-panel');
-            if (panel !== 'metadata' && panel !== 'timing') return;
-            detachState[panel] = true;
-            applyPanelModeUi();
-            var isEn = document.getElementById('langEn') && document.getElementById('langEn').classList.contains('active');
-            var checkedArr = (panel === 'metadata') ? Object.keys(tagChecked) : undefined;
-            if (window.electronAPI && window.electronAPI.detachPanel) {
-              window.electronAPI.detachPanel(panel, isEn ? 'en' : 'ja', checkedArr);
-            }
-          });
-        });
-
-        /* 分離ウィンドウが閉じられたらカードを復帰 */
-        if (window.electronAPI && window.electronAPI.onPanelRedocked) {
-          window.electronAPI.onPanelRedocked(function(panel, checked) {
-            if (panel === 'metadata' || panel === 'timing') {
-              detachState[panel] = false;
-              /* メタデータ: 分離窓の Tags チェック状態を引き継ぐ */
-              if (panel === 'metadata' && Array.isArray(checked)) {
-                tagChecked = Object.create(null);
-                checked.forEach(function(t) { tagChecked[t] = true; });
-                applyTagChecked();
-              }
-              applyPanelModeUi();
-            }
-          });
-        }
-
         /* 各グラフの右上に分離ボタンを設置（別ウィンドウで独立表示） */
         [
           { wrap: 'kiaiCompareChartWrap',       chart: 'kiaiCompareChart' },
@@ -2662,32 +2600,6 @@
 
         /* ツールグループは「ツール」カードへ移設済み（DOM 挿入直後の処理を参照）。 */
 
-        /* リアルタイム表示の値をダブルクリックでクリップボードにコピー */
-        ['osu-t-timing', 'osu-t-bpm', 'osu-t-sv', 'osu-t-vbpm', 'osu-t-vol'].forEach(function(id) {
-          var el = document.getElementById(id);
-          if (!el) return;
-          el.setAttribute('data-i18n-title', 'electronDoubleClickCopy');
-          el.title = electronText('electronDoubleClickCopy');
-          el.addEventListener('dblclick', function() {
-            var txt = (el.textContent || '').trim();
-            if (!txt || txt === '---' || txt === '--:--:---') return;
-            if (window.electronAPI && window.electronAPI.copyText) {
-              window.electronAPI.copyText(txt);
-              el.classList.add('etb-copied');
-              setTimeout(function() { el.classList.remove('etb-copied'); }, 450);
-            }
-          });
-        });
-
-        /* タイミングパネルの言語対応ラベル */
-        var updateTimingLabels = function() {
-          var vbpmLabel = document.getElementById('osu-t-vbpm-label');
-          if (!vbpmLabel) return;
-          vbpmLabel.setAttribute('data-i18n', 'electronVisualBpm');
-          vbpmLabel.textContent = electronText('electronVisualBpm');
-        };
-        updateTimingLabels();
-
         /* カードタイトルの言語対応 */
         var updatePanelTitles = function() {
           var set = function(id, key) {
@@ -2703,7 +2615,6 @@
             el.title = electronText(key);
           };
           set('etb-title-meta',            'electronMetadata');
-          set('etb-title-realtime',        'electronRealtime');
           set('etb-title-file',            'electronBeatmapFile');
           set('etb-title-loadsettings',    'electronBeatmapLoading');
           set('etb-title-previewsettings', 'electronPreviewTab');
@@ -2726,6 +2637,7 @@
           set('etb-tab-main',            'electronCheck');
           set('etb-tab-preview',         'electronPreview');
           set('etb-tab-notepad',         'electronNotepad');
+          set('etb-tab-realtime',        'electronRealtime');
           set('toggleTabSettings',       'electronSettings');
           set('etb-spread-snap-text',    'electronBeatSnapDivisor');
           set('etb-spread-sfx-text',     'electronHitSounds');
@@ -2749,21 +2661,15 @@
           setTitle('etb-sb-stop',      'electronStop');
           setTitle('etb-open-map-folder', 'electronOpenBeatmapFolder');
           setTitle('etb-open-map-page',   'electronOpenBeatmapPage');
-          set('etb-open-map-folder-label', 'electronOpenBeatmapFolder');
-          set('etb-open-map-page-label',   'electronOpenBeatmapPage');
           var mapFolderLabel = document.getElementById('etb-open-map-folder');
           var mapPageLabel = document.getElementById('etb-open-map-page');
           if (mapFolderLabel) mapFolderLabel.setAttribute('aria-label', electronText('electronOpenBeatmapFolder'));
           if (mapPageLabel) mapPageLabel.setAttribute('aria-label', electronText('electronOpenBeatmapPage'));
 
-          document.querySelectorAll('.etb-detach-btn, .etb-chart-detach')
+          document.querySelectorAll('.etb-chart-detach')
             .forEach(function(el) {
               el.setAttribute('data-i18n-title', 'electronDetachWindow');
               el.title = electronText('electronDetachWindow');
-            });
-          ['osu-t-timing', 'osu-t-bpm', 'osu-t-sv', 'osu-t-vbpm', 'osu-t-vol']
-            .forEach(function(id) {
-              setTitle(id, 'electronDoubleClickCopy');
             });
           var zoomLabel = document.getElementById('etb-spread-zoomlabel');
           var testButton = document.getElementById('etb-sb-test');
@@ -2851,7 +2757,6 @@
               new MutationObserver(function() {
                 updateDocsUrl();
                 updateWaitingText();
-                updateTimingLabels();
                 updatePanelTitles();
                 /* Source / Tags の空値表示（なし / None）とタグの
                    ツールチップも、現在の言語で再描画する。 */
@@ -2898,6 +2803,33 @@
                 settingsMode = false; previewMode = false; notepadMode = true;
                 applyPanelModeUi();
               });
+              /* リアルタイム表示は画面を切り替えず、既存の分離窓を開く。 */
+              var realtimeTabBtn = document.createElement('button');
+              realtimeTabBtn.id = 'etb-tab-realtime';
+              realtimeTabBtn.type = 'button';
+              realtimeTabBtn.setAttribute('aria-expanded', 'false');
+              realtimeTabBtn.textContent = electronText('electronRealtime');
+              settingsBtn.parentNode.insertBefore(realtimeTabBtn, settingsBtn);
+              var setRealtimeWindowOpen = function(open) {
+                realtimeTabBtn.classList.toggle('active', open);
+                realtimeTabBtn.setAttribute('aria-expanded', String(open));
+              };
+              if (window.electronAPI && window.electronAPI.onPanelOpened) {
+                window.electronAPI.onPanelOpened(function(panel) {
+                  if (panel === 'timing') setRealtimeWindowOpen(true);
+                });
+              }
+              if (window.electronAPI && window.electronAPI.onPanelRedocked) {
+                window.electronAPI.onPanelRedocked(function(panel) {
+                  if (panel === 'timing') setRealtimeWindowOpen(false);
+                });
+              }
+              realtimeTabBtn.addEventListener('click', function() {
+                if (window.electronAPI && window.electronAPI.detachPanel) {
+                  var lang = document.documentElement.lang === 'en' ? 'en' : 'ja';
+                  window.electronAPI.detachPanel('timing', lang);
+                }
+              });
               applyPanelModeUi(); // 追加直後に active 表示を反映
             }
             updatePanelTitles();
@@ -2906,12 +2838,13 @@
             extSep.style.cssText = 'width:1px;background:#363636;margin:9px 4px;flex-shrink:0;-webkit-app-region:no-drag;';
 
             /* ナビの並び順を指定どおりに整える:
-               チェック/プレビュー/メモ帳/設定 | 区切り | 日本語/English | 区切り | 説明書
+               チェック/プレビュー/メモ帳/リアルタイム表示/設定 | 区切り | 日本語/English | 区切り | 説明書
                （appendChild は既存要素を移動するので、望む順に付け直すだけで並び替わる） */
             [
               document.getElementById('etb-tab-main'),      // チェック
               document.getElementById('etb-tab-preview'),   // プレビュー
               document.getElementById('etb-tab-notepad'),   // メモ帳
+              document.getElementById('etb-tab-realtime'), // リアルタイム表示（別ウィンドウ）
               document.getElementById('toggleTabSettings'), // 設定
               langSep,                                      // 区切り
               document.getElementById('langJa'),            // 日本語
@@ -3017,7 +2950,7 @@
             /* プレビュー(スプレッド)の追従は data.editing のときのみ許可。
                editing = Edit 画面 または エディタのテストプレイ（osuWatcher.js が判定）。
                本番のゲームプレイ中は追従させない＝デュアルスクリーンでの先読みチート対策。
-               ※リアルタイム表示カードは下で常時更新（プレイ中OK）。
+               ※リアルタイム表示の別ウィンドウはプレイ中も更新する。
                osu! の時刻が届いた＝再生/シークなので、ドラッグ中でなければ手動解除。 */
             if (data && typeof data.time === 'number' && data.time >= 0 && data.editing) {
               var prevOsuTime = spreadLastTime;
@@ -3037,38 +2970,6 @@
             }
             /* グラフ上の再生ヘッドを更新（時刻が無ければ -1 で非表示） */
             updatePlayheads(data && typeof data.time === 'number' ? data.time : -1);
-            var timing = document.getElementById('osu-t-timing');
-            var bpm    = document.getElementById('osu-t-bpm');
-            var sv     = document.getElementById('osu-t-sv');
-            var vbpm   = document.getElementById('osu-t-vbpm');
-            var vol    = document.getElementById('osu-t-vol');
-            if (!timing) return;
-
-            if (!data) {
-              if (timing.textContent !== '--:--:---') timing.textContent = '--:--:---';
-              if (bpm.textContent !== '---') bpm.textContent = '---';
-              if (sv.textContent !== '---') sv.textContent = '---';
-              if (vbpm.textContent !== '---') vbpm.textContent = '---';
-              if (vol.textContent !== '---') vol.textContent = '---';
-              return;
-            }
-
-            var ms  = data.time;
-            var m   = Math.floor(ms / 60000);
-            var s   = Math.floor((ms % 60000) / 1000);
-            var mil = ms % 1000;
-            var timingText = String(m).padStart(2, '0') + ':' +
-                             String(s).padStart(2, '0') + ':' +
-                             String(mil).padStart(3, '0');
-            var bpmText  = data.bpm   !== null ? data.bpm.toFixed(2)  : '---';
-            var svText   = data.sv    !== null ? data.sv.toFixed(2)   : '---';
-            var vbpmText = data.vbpm  !== null ? data.vbpm.toFixed(2) : '---';
-            var volText  = data.volume !== null ? data.volume + '%'   : '---';
-            if (timing.textContent !== timingText) timing.textContent = timingText;
-            if (bpm.textContent !== bpmText) bpm.textContent = bpmText;
-            if (sv.textContent !== svText) sv.textContent = svText;
-            if (vbpm.textContent !== vbpmText) vbpm.textContent = vbpmText;
-            if (vol.textContent !== volText) vol.textContent = volText;
           };
 
           /* PowerShell側は低遅延のため約125Hzで時刻を送る。IPCごとにDOM・グラフを
@@ -3113,7 +3014,6 @@
                 updatePlayheads(-1);
               }
               applyPanelModeUi();
-              resetTimingPanel();
               clearMetaToWaiting();
               /* osu! モードに切り替えた時は、既に開いている譜面の情報を要求する。
                  監視側は譜面が変わった時しか送らないので、これが無いと
@@ -3126,10 +3026,6 @@
               if (panelMode !== 'file') return;
               if (!data) { clearMetaToWaiting(); }
               else { renderMapPanel(data); }
-              /* メタデータ分離ウィンドウにも反映（osu モードは osuWatcher 経由で届く） */
-              if (window.electronAPI && window.electronAPI.sendMapMetaToPopout) {
-                window.electronAPI.sendMapMetaToPopout(data || null);
-              }
               refreshMapActionState();
             }
           };

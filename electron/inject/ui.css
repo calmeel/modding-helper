@@ -165,9 +165,9 @@
 
       #etb-map-actions {
         display: flex;
-        flex-wrap: wrap;
         gap: 6px;
-        padding: 8px;
+        margin-left: auto;
+        padding: 0;
         flex: 0 0 auto;
       }
 
@@ -175,12 +175,12 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 5px;
-        min-height: 28px;
-        padding: 4px 8px;
-        background: #2c2c35;
-        border: 1px solid #454550;
-        border-radius: 5px;
+        width: 24px;
+        height: 20px;
+        padding: 0;
+        background: transparent;
+        border: none;
+        border-radius: 4px;
         color: #cfcfe0;
         font: inherit;
         font-size: 11px;
@@ -343,24 +343,6 @@
         white-space: nowrap;
       }
       .etb-card-body { padding: 8px; min-height: 0; }
-
-      /* カードヘッダーの分離ボタン */
-      .etb-detach-btn {
-        margin-left: auto;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 22px;
-        height: 18px;
-        padding: 0;
-        background: transparent;
-        border: none;
-        border-radius: 4px;
-        color: #6b6b78;
-        cursor: pointer;
-        transition: background 0.1s, color 0.1s;
-      }
-      .etb-detach-btn:hover { background: #3a3a44; color: #cfcfe0; }
 
       /* ── 左カラム: 複数カードを縦に並べ、列ごとスクロール ── */
       #electron-col-future {
