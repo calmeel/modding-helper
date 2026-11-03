@@ -49,6 +49,7 @@
           '<div id="etb-vsep"></div>' +
           '<div id="etb-nav"></div>' +
           '<div id="etb-spacer"></div>' +
+          '<div id="etb-language"></div>' +
           '<div id="etb-controls">' +
             '<button class="etb-ctrl" id="etb-min">' + svgMin + '</button>' +
             '<button class="etb-ctrl" id="etb-max">' + svgMax + '</button>' +
@@ -2701,10 +2702,11 @@
               Array.from(tlRow.children).forEach(function(child) { navEl.appendChild(child); });
             }
             if (langSwitch) {
-              var langSep = document.createElement('div');
-              langSep.style.cssText = 'width:1px;background:#363636;margin:9px 4px;flex-shrink:0;-webkit-app-region:no-drag;';
-              navEl.appendChild(langSep);
-              Array.from(langSwitch.children).forEach(function(child) { navEl.appendChild(child); });
+              var languageEl = document.getElementById('etb-language');
+              ['langJa', 'langEn'].forEach(function(id) {
+                var button = langSwitch.querySelector('#' + id);
+                if (button) languageEl.appendChild(button);
+              });
             }
             topLinks.remove();
 
@@ -2834,24 +2836,21 @@
             }
             updatePanelTitles();
 
-            var extSep = document.createElement('div');
-            extSep.style.cssText = 'width:1px;background:#363636;margin:9px 4px;flex-shrink:0;-webkit-app-region:no-drag;';
-
             /* ナビの並び順を指定どおりに整える:
-               チェック/プレビュー/メモ帳/リアルタイム表示/設定 | 区切り | 日本語/English | 区切り | 説明書
+               チェック/プレビュー/メモ帳/リアルタイム表示/設定
+               説明書・言語切替は右上のウィンドウ操作ボタンの手前に配置する。
                （appendChild は既存要素を移動するので、望む順に付け直すだけで並び替わる） */
             [
               document.getElementById('etb-tab-main'),      // チェック
               document.getElementById('etb-tab-preview'),   // プレビュー
               document.getElementById('etb-tab-notepad'),   // メモ帳
               document.getElementById('etb-tab-realtime'), // リアルタイム表示（別ウィンドウ）
-              document.getElementById('toggleTabSettings'), // 設定
-              langSep,                                      // 区切り
-              document.getElementById('langJa'),            // 日本語
-              document.getElementById('langEn'),            // English
-              extSep,                                       // 区切り
-              document.getElementById('manualLink')         // 説明書
+              document.getElementById('toggleTabSettings')  // 設定
             ].forEach(function(el) { if (el) navEl.appendChild(el); });
+            var rightLinks = document.getElementById('etb-language');
+            if (manualLink && rightLinks) {
+              rightLinks.insertBefore(manualLink, rightLinks.firstChild);
+            }
           }
         } catch(e) { /* ナビゲーション処理が失敗してもウィンドウ操作は継続 */ }
 

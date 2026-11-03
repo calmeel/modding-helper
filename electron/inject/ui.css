@@ -154,6 +154,15 @@
 
       #etb-spacer { flex: 1 1 0; min-width: 0; }
 
+      #etb-language {
+        display: flex;
+        align-items: center;
+        gap: 1px;
+        padding: 0 6px;
+        flex: 0 0 auto;
+        -webkit-app-region: no-drag;
+      }
+
       /* 最小化/最大化/閉じるは絶対に縮めない・押し出さない */
       #etb-controls {
         display: flex;
@@ -209,7 +218,7 @@
       @media (max-width: 720px)  {
         #etb-vsep { display: none; }
         /* 下の .top-links 上書きが !important なので、こちらも !important で勝たせる */
-        #etb-nav > a, #etb-nav > button { padding: 0 6px !important; }
+        #etb-nav > a, #etb-nav > button, #etb-language > a, #etb-language > button { padding: 0 6px !important; }
         .etb-nav-btn { padding: 0 6px; }
       }
 
@@ -876,7 +885,9 @@
 
       /* ── タイトルバーに移動した .top-links 要素のスタイル上書き ── */
       #etb-nav > a,
-      #etb-nav > button {
+      #etb-nav > button,
+      #etb-language > a,
+      #etb-language > button {
         display: inline-flex !important;
         align-items: center !important;
         gap: 4px !important;
@@ -899,12 +910,15 @@
       }
 
       #etb-nav > a:hover,
-      #etb-nav > button:hover {
+      #etb-nav > button:hover,
+      #etb-language > a:hover,
+      #etb-language > button:hover {
         background: #2e2e2e !important;
         color: #ccc !important;
       }
 
-      #etb-nav > button.active {
+      #etb-nav > button.active,
+      #etb-language > button.active {
         color: #ccc !important;
         background: #353535 !important;
       }

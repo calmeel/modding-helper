@@ -246,6 +246,10 @@ body {
   background: #202029;
 }
 
+.kiai-compare-chart-section .volume-compare-chart-header p {
+  max-width: none;
+}
+
 .kiai-compare-chart-wrap {
   position: relative;
   width: 100%;
