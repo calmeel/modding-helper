@@ -850,7 +850,8 @@ In some maps, the estimated slider tail timing may not perfectly match the actua
 The following snap divisions are used as the target grid:
 <code>1/1</code>, <code>1/2</code>, <code>1/3</code>, <code>1/4</code>, <code>1/6</code>, <code>1/8</code>, <code>1/12</code>, <code>1/16</code>.<br>
 Objects that are not on this target grid are detected as unsnapped.<br><br>
-<code>1/5</code>, <code>1/7</code>, and <code>1/9</code> snaps are only checked when the corresponding checkbox is enabled.
+Enabling the checkbox also includes <code>1/5</code>, <code>1/7</code>, and <code>1/9</code> snaps in the target grid.<br>
+When the checkbox is disabled, only unsnapped objects shown as red errors (offsets of ±2 ms or more) are additionally checked against <code>1/5</code>, <code>1/7</code>, <code>1/9</code>, and <code>1/24</code> snaps. Exact matches and candidates within ±1 ms are shown as supplementary notes. All matching candidates are listed, and the original result and warning color remain unchanged. Yellow ±1 ms warnings and osu!stable grid time check rows do not receive supplementary notes.
 </div>
 </div>
 

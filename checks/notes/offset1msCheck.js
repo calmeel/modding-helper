@@ -38,11 +38,13 @@ function runOffset1msCheck(text, fileName, options = {}) {
         currentTp.beatLength,
         beatSnaps
       );
-      const supplementalSnaps = options.includeAdvancedSnaps
-        ? []
-        : findSupplementalOffsetSnaps(item.time, currentTp);
-
       if (best && best.diff !== 0) {
+        const level = best.compatibility
+          ? "warn"
+          : getOffsetIssueLevelFromDiff(best.diff);
+        const supplementalSnaps = !options.includeAdvancedSnaps && level === "error"
+          ? findSupplementalOffsetSnaps(item.time, currentTp)
+          : [];
         results.push({
           time: item.time,
           diff: best.diff,
@@ -50,9 +52,7 @@ function runOffset1msCheck(text, fileName, options = {}) {
           target: item.target,
           objectType: item.objectType,
           supplementalSnaps,
-          level: best.compatibility
-            ? "warn"
-            : getOffsetIssueLevelFromDiff(best.diff),
+          level,
           compatibility: best.compatibility
         });
       }
@@ -70,7 +70,7 @@ function runOffset1msCheck(text, fileName, options = {}) {
           snap: wheelDifference.snap,
           target: item.target,
           objectType: item.objectType,
-          supplementalSnaps,
+          supplementalSnaps: [],
           level: "info",
           compatibility: wheelDifference.compatibility
         });
