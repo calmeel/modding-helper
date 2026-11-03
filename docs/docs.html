@@ -747,7 +747,7 @@
 <span class="label label-detect">■ チェック内容について</span><br>
 
 本ツールの判定は、事前に定義したルールベースのチェックによって行われています。<br>
-生成AIなどによる自動推測・自動判定は使用していません。<br><br>
+生成 AI などによる自動推測・自動判定は使用していません。<br><br>
 
 例：
 <ul>
@@ -826,7 +826,7 @@ Circle（type=1/5）の hitsound を解析し、<code>Clap</code> / <code>Whistl
 <div class="section section-bg">
 <span class="label label-bg">■ 背景</span><br>
 <code>60000 / BPM</code> が割り切れない場合、osu!editorでのコピーペーストにより浮動小数誤差が発生し、<code>1 ms</code> のズレが生じることがあります。<br>
-1 msズレは SV線の未適用や SR計算の誤差につながるため、なるべく避けたほうが良いです。<br><br>
+1 ms ズレは SV線の未適用や SR計算の誤差につながるため、なるべく避けたほうが良いです。<br><br>
 Mapset Verifier や AiMod では ±1 ms のズレは表示されません（unrankable ではないため）。
 </div>
 
@@ -860,7 +860,7 @@ osu!stable または osu!lazer の片方のグリッド時刻にのみ snap し�
 
 <div class="section section-warning">
 <span class="label label-warning">■ 注意点</span><br>
-±1 ms は unrankable ではないため、必ずしも全て修正する必要はありません。
+± 1 ms は unrankable ではないため、必ずしも全て修正する必要はありません。
 </div>
 </section>
 
@@ -1160,6 +1160,13 @@ Normal 以外の sampleset やカスタムヒットサウンドを検出しま�
   <li><code>edgeSets.normalSet > 1</code> → 2: Soft / 3: Drum</li>
   <li><code>edgeSets.additionSet > 1</code> → 2: Soft / 3: Drum</li>
 </ul>
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ 注意事項</span><br>
+<code>1: Normal</code> 以外のサンプルセットを用いることは unrankable ではありません。<br><br>
+次の map のように、演出に用いる場合があります。<br>
+例：<a href="https://osu.ppy.sh/beatmapsets/619270#taiko/1305282" target="_blank" rel="noopener noreferrer">https://osu.ppy.sh/beatmapsets/619270#taiko/1305282</a>
 </div>
 </section>
 
@@ -1681,7 +1688,7 @@ song フォルダ名とは異なり、Artist / Title 内のピリオド（<code>
 </section>
 
 <section class="doc-tab-panel" data-doc-tab-panel="epilepsyWarning">
-<h2>その他：点滅・てんかん警告</h2>
+<h2>Kiaiフラッシュ</h2>
 
 <div class="section section-bg">
 <span class="label label-bg">■ 背景</span><br>
