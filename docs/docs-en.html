@@ -856,10 +856,28 @@ When the checkbox is disabled, only unsnapped objects shown as red errors (offse
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ Detection Content (Differences between osu!stable and osu!lazer)</span><br>
-The tool displays the <code>resnap check</code> separately from the <code>osu!stable grid time check</code>.<br>
-Resnap time, grid rendering time, and grid time use separate calculations and do not necessarily produce the same integer millisecond.<br><br>
-Results that snap only to either the osu!stable or osu!lazer grid time are displayed in normal white text without triggering a warning.<br><br>
+<span class="label label-detect">■ Snap-Time Calculations and Reading the Results</span><br>
+The time an object moves to when using “Resnap all notes” and the grid time the editor stops at when navigating with the mouse wheel or similar controls do not necessarily match at the integer-millisecond level.<br>
+The calculations also differ between osu!stable and osu!lazer.<br>
+The following four types of time may differ because of the calculation steps used:
+<ul>
+  <li>osu!stable resnap time</li>
+  <li>osu!stable grid time (the time reached when navigating with the mouse wheel or similar controls)</li>
+  <li>osu!lazer resnap time</li>
+  <li>osu!lazer grid time (the time reached when navigating with the mouse wheel or similar controls)</li>
+</ul>
+This tool calculates and compares these times as described below.<br><br>
+
+<strong>Resnap check</strong>
+<ul>
+  <li>Objects matching both clients’ resnap times are not listed in the resnap check results.</li>
+  <li>Objects matching only one client’s resnap time are shown in yellow with <code>snaps only to the osu!stable resnap time</code> or <code>snaps only to the osu!lazer resnap time</code>, together with the difference to the other client’s candidate time.</li>
+  <li>Objects matching neither client’s resnap time are compared against the nearer candidate: <code>±1 ms</code> offsets are yellow warnings, and offsets of <code>±2 ms or more</code> are red errors.</li>
+</ul>
+
+<strong>Grid time check</strong><br>
+The tool compares osu!stable grid time against the osu!lazer candidate time. Objects matching only one are shown in white with the difference to the other candidate time. This row does not trigger a warning.<br>
+When such results exist, the tool displays the <code>resnap check</code> and the <code>osu!stable grid time check</code> separately. The same object may appear in both sections.<br><br>
 
 For the formulas, rounding modes, and reasons that osu!stable and osu!lazer can differ by 1 ms, see the technical reference:<br>
 <a href="logics/snapTiming.en.html" target="_blank" rel="noopener noreferrer">
@@ -918,6 +936,12 @@ This check detects cases where kiai ON/OFF timing is placed on
 It also detects
 <code><span style="color:#ff6b6b; font-weight:bold;">unsnapped kiai lines</span></code>
 (such as 1/1 snap + 1 ms), matching AiMod behavior.
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+Placing kiai ON/OFF timing on <strong><code>anything other than 1/1 snap</code></strong> does not necessarily make a map unrankable.<br>
+Use this check as an aid to confirm that kiai time transitions are intentional.
 </div>
 </section>
 

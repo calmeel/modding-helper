@@ -849,10 +849,28 @@ Mapset Verifier や AiMod では ±1 ms のズレは表示されません（unra
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ 検出内容（osu!stable と osu!lazer の違い）</span><br>
-本ツールでは、<code>再スナップ判定</code>と<code>osu!stable グリッド時刻判定</code>を分離して表示します。<br>
-再スナップ時刻、グリッド描画時刻、グリッド時刻は別々の計算処理であり、同じ整数msになるとは限りません。<br><br>
-osu!stable または osu!lazer の片方のグリッド時刻にのみ snap している結果は、警告にはせず白文字で表示します。<br><br>
+<span class="label label-detect">■ snap位置の計算と結果の見方</span><br>
+「すべてのノーツを再スナップする」でノーツが移動する先の時刻と、エディターでマウスホイールなどを使って前後に移動したときに止まるグリッド時刻は、必ずしも同じ整数msには一致しません。<br>
+また、osu!stable と osu!lazer の間でも計算方法が異なります。<br>
+よって以下の4種類の時刻は、計算手順によって差が出る場合があります。
+<ul>
+  <li>osu!stable の再スナップ時刻</li>
+  <li>osu!stable のグリッド時刻（マウスホイールなどで移動したときに止まる時刻）</li>
+  <li>osu!lazer の再スナップ時刻</li>
+  <li>osu!lazer のグリッド時刻（マウスホイールなどで移動したときに止まる時刻）</li>
+</ul>
+本ツールでは以下のように計算を行いそれぞれ比較します。<br><br>
+
+<strong>再スナップ判定</strong>
+<ul>
+  <li>両クライアントの再スナップ時刻に一致する場合は、再スナップ判定の結果には表示しません。</li>
+  <li>片方の再スナップ時刻にのみ一致する場合は、<code>osu!stable の再スナップ時刻にのみ snap しています</code> または <code>osu!lazer の再スナップ時刻にのみ snap しています</code> と、もう片方の候補時刻までの差を黄色で表示します。</li>
+  <li>どちらにも一致しない場合は、近い方の候補時刻を基準に、<code>±1 ms</code> のズレを黄色の警告、<code>±2 ms 以上</code> のズレを赤色のエラーとして表示します。</li>
+</ul>
+
+<strong>グリッド時刻判定</strong><br>
+osu!stable のグリッド時刻と osu!lazer の候補時刻を比較し、片方にのみ一致する場合は、もう片方の候補時刻までの差を白文字で表示します。この行自体は警告にはしません。<br>
+この結果がある場合は、<code>再スナップ判定</code>と<code>osu!stable グリッド時刻判定</code>を分けて表示します。同じオブジェクトが両方に表示される場合もあります。<br><br>
 
 各処理の計算式、丸め方、osu!stable / osu!lazer間で1 ms差が生じる理由については、次の技術資料を参照してください。<br>
 <a href="logics/snapTiming.html" target="_blank" rel="noopener noreferrer">
@@ -907,6 +925,12 @@ AiMod は unsnapped な kiai timing point を検出できますが、1/4 や 1/8
 kiai の ON/OFF が <code><span style="color:#ffd86b; font-weight:bold;">1/1 snap 以外</span></code> に乗っている場合を検出します。<br><br>
 
 また、<code><span style="color:#ff6b6b; font-weight:bold;">unsnapped な kiai line</span></code>（1/1 snap + 1 ms など）も検出します（AiModと同一の機能）。
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ 注意事項</span><br>
+kiai の ON/OFF が <strong><code>1/1 snap 以外</code></strong> に乗ることは必ずしも unrankable ではありません。<br>
+意図した kiai time の切り替えであるかの確認の補助として用いて下さい。
 </div>
 </section>
 
