@@ -51,13 +51,12 @@ function formatShiftItems(items, t) {
           ? "result-error"
           : "";
     const classAttribute = className ? ` class="${className}"` : "";
-    const objectText = getOffsetObjectTypeLabel(item, t);
-    const targetText =
+    const objectText =
       item.target === "sliderTail"
-        ? ` | ${t("sliderTail")}`
+        ? t("sliderTail")
         : item.target === "spinnerTail"
-          ? ` | ${t("spinnerTail")}`
-          : "";
+          ? t("spinnerTail")
+          : getOffsetObjectTypeLabel(item, t);
     const compatibilityKey = {
       stableOnly: "offsetStableOnly",
       lazerOnly: "offsetLazerOnly",
@@ -76,7 +75,7 @@ function formatShiftItems(items, t) {
 
     lines.push(
       `<span${classAttribute}>${formatTimestampLink(item.time)} | ` +
-      `${escapeHtml(objectText)}${targetText} ` +
+      `${escapeHtml(objectText)} ` +
       `${compatibilityText
         ? escapeHtml(compatibilityText)
         : `${escapeHtml(t("offsetUnsnappedBy"))} ${sign}${item.diff} ms`} ` +
