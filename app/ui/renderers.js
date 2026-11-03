@@ -1,3 +1,10 @@
+function renderCoordinateResult(results, dom, t) {
+  if (!dom.coordinateOutput) return;
+  dom.coordinateOutput.innerHTML = results
+    ? formatMultipleCoordinateResults(results, t)
+    : escapeHtml(t("noFileLoaded"));
+}
+
 function renderClapWhistleResult(results, dom, t) {
   if (!results || !dom.output) return;
 

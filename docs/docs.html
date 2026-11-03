@@ -537,6 +537,7 @@
     <button class="doc-tab-button" data-doc-tab="clapWhistle">Clap / Whistle</button>
     <button class="doc-tab-button" data-doc-tab="offset">1msズレ</button>
     <button class="doc-tab-button" data-doc-tab="sampleSet">サンプルセット</button>
+    <button class="doc-tab-button" data-doc-tab="coordinates">座標</button>
   </details>
 
   <details class="doc-tab-group">
@@ -1168,6 +1169,21 @@ Normal 以外の sampleset やカスタムヒットサウンドを検出しま�
 <code>1: Normal</code> 以外のサンプルセットを用いることは unrankable ではありません。<br><br>
 次の map のように、演出に用いる場合があります。<br>
 例：<a href="https://osu.ppy.sh/beatmapsets/619270#taiko/1305282" target="_blank" rel="noopener noreferrer">https://osu.ppy.sh/beatmapsets/619270#taiko/1305282</a>
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="coordinates">
+<h2>座標</h2>
+<div class="section section-detect">
+<span class="label label-detect">■ 検出内容</span><br>
+ノーツとスライダー始点が <code>X=256 / Y=192</code> に統一されているか確認します。スピナーとスライダーの経路は対象外です。<br>
+難易度ごとに中心と中心以外の個数を表に表示し、中心以外のオブジェクトはタイムスタンプ・種別・座標を列挙します。中心以外がある場合、タブは黄色の警告になります。<br>
+初期状態では非表示です。「タブ設定」で「座標」にチェックを入れると表示できます。
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ 注意点</span><br>
+<code>X=256 / Y=192</code> 以外にノーツ・スライダーを置くことは unrankable ではありません。
 </div>
 </section>
 

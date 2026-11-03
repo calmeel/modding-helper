@@ -86,6 +86,10 @@
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="sampleSet" checked>
           <span data-i18n="tabSampleSet">SampleSet</span>
         </label>
+        <label>
+          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="coordinates">
+          <span data-i18n="tabCoordinates">Position</span>
+        </label>
 
         <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="kiaiCompare" checked>
@@ -201,6 +205,7 @@
           <button class="tab-button active" data-tab="clapWhistle" data-i18n="tabClapWhistle">Clap & Whistle</button>
           <button class="tab-button" data-tab="shift1ms" data-i18n="tabOffset">1ms Offset</button>
           <button class="tab-button" data-tab="sampleSet" data-i18n="tabSampleSet">SampleSet</button>
+          <button class="tab-button hidden-tab" data-tab="coordinates" data-i18n="tabCoordinates">Position</button>
         </div>
 
         <div class="tab-group">
@@ -276,6 +281,11 @@
         </div>
 
         <pre id="output" data-i18n="noFileLoaded">No file loaded.</pre>
+      </section>
+
+      <section class="tab-panel hidden-tab" id="tab-coordinates">
+        <p data-i18n="coordinateHelp">Checks that notes and slider starts are at X=256 / Y=192.</p>
+        <pre id="coordinateOutput" data-i18n="noFileLoaded">No file loaded.</pre>
       </section>
 
       <section class="tab-panel" id="tab-shift1ms">
@@ -947,6 +957,7 @@
 
   <!-- Checks: Notes -->
   <script src="checks/notes/clapWhistleCheck.js"></script>
+  <script src="checks/notes/coordinateCheck.js"></script>
   <script src="checks/notes/offset1msCheck.js"></script>
   <script src="checks/notes/sampleSetCheck.js"></script>
 
@@ -1004,6 +1015,7 @@
 
   <!-- Formatters: Notes -->
   <script src="app/formatters/notes/clapWhistle.js"></script>
+  <script src="app/formatters/notes/coordinates.js"></script>
   <script src="app/formatters/notes/offset.js"></script>
   <script src="app/formatters/notes/sampleSet.js"></script>
 

@@ -537,6 +537,7 @@
     <button class="doc-tab-button" data-doc-tab="clapWhistle">Clap / Whistle</button>
     <button class="doc-tab-button" data-doc-tab="offset">1ms Offset</button>
     <button class="doc-tab-button" data-doc-tab="sampleSet">SampleSet</button>
+    <button class="doc-tab-button" data-doc-tab="coordinates">Position</button>
   </details>
 
   <details class="doc-tab-group">
@@ -1199,6 +1200,21 @@ Hitsounds assigned to individual slider edges are also detected:
 Using samplesets other than <code>1: Normal</code> does not make a map unrankable.<br><br>
 They may be used for creative effects, as in the following map.<br>
 Example: <a href="https://osu.ppy.sh/beatmapsets/619270#taiko/1305282" target="_blank" rel="noopener noreferrer">https://osu.ppy.sh/beatmapsets/619270#taiko/1305282</a>
+</div>
+</section>
+
+<section class="doc-tab-panel" data-doc-tab-panel="coordinates">
+<h2>Position</h2>
+<div class="section section-detect">
+<span class="label label-detect">■ Detection</span><br>
+Checks that notes and slider starts are at <code>X=256 / Y=192</code>. Spinners and slider paths are excluded.<br>
+A table lists centered and off-center counts for each difficulty. Off-center objects are listed with timestamps, object types, and positions. The tab turns yellow when any off-center objects are found.<br>
+Hidden by default. Enable "Position" in "Tab settings" to show it.
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+Placing notes or sliders outside <code>X=256 / Y=192</code> does not make a map unrankable.
 </div>
 </section>
 

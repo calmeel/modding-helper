@@ -277,10 +277,12 @@ const updateHistoryEntries = [
     type: "update",
     items: {
       en: [
-        "Expanded 1ms deviation detection functionality"
+        "Expanded 1ms deviation detection functionality",
+        "Added a feature to check note positions"
       ],
       ja: [
-        "1msズレ検出機能を拡張"
+        "1msズレ検出機能を拡張",
+        "ノーツ座標のチェック機能を追加"
       ]
     }
   },

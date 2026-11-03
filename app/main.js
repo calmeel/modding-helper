@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const updateHistoryContent = document.getElementById("updateHistoryContent");
   const fileInput = document.getElementById("fileInput");
   const output = document.getElementById("output");
+  const coordinateOutput = document.getElementById("coordinateOutput");
   const showClap = document.getElementById("showClap");
   const showWhistle = document.getElementById("showWhistle");
   const fileName = document.getElementById("fileName");
@@ -157,6 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const dom = {
     output,
+    coordinateOutput,
     showClap,
     showWhistle,
     shiftOutput,
@@ -271,6 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const state = {
     clapWhistle: null,
+    coordinates: null,
     offsetSources: null,
     offset: null,
     doubleSvSources: null,
@@ -607,6 +610,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderResult() {
     renderClapWhistleResult(state.clapWhistle, dom, t);
+    renderCoordinateResult(state.coordinates, dom, t);
   }
 
   function renderShiftResult() {
@@ -884,6 +888,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       state.clapWhistle = result.clapWhistle;
+      state.coordinates = result.coordinates;
       state.offsetSources = result.offsetSources;
       state.timelineSources = result.offsetSources;
       // スプレッド表示(exe)用に全難易度のテキストを公開

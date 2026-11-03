@@ -6,6 +6,7 @@ function isTaikoMode(mode) {
 function createEmptyProcessResult() {
   return {
     clapWhistle: [],
+    coordinates: [],
     offsetSources: [],
     offset: [],
     doubleSvSources: [],
@@ -58,6 +59,7 @@ async function analyzeOszFile(file, options = {}) {
   const zip = await loadOszZip(file);
 
   const clapWhistleResults = [];
+  const coordinateResults = [];
   const shiftResults = [];
   const offsetSources = [];
   const doubleSvSources = [];
@@ -101,6 +103,7 @@ async function analyzeOszFile(file, options = {}) {
     }
 
     clapWhistleResults.push(runClapWhistleCheck(text, entry.name));
+    coordinateResults.push(runCoordinateCheck(text, entry.name));
 
     shiftResults.push(runOffset1msCheck(text, entry.name));
 
@@ -218,6 +221,7 @@ async function analyzeOszFile(file, options = {}) {
 
   return {
     clapWhistleResults,
+    coordinateResults,
     shiftResults,
     offsetSources,
     doubleSvSources,
@@ -266,6 +270,7 @@ async function processFile(file, options = {}) {
       clapWhistle: [
         runClapWhistleCheck(text, file.name)
       ],
+      coordinates: [runCoordinateCheck(text, file.name)],
       offsetSources: [
         { text, fileName: file.name }
       ],
@@ -362,6 +367,7 @@ async function processFile(file, options = {}) {
 
     return {
       clapWhistle: analyzed.clapWhistleResults,
+      coordinates: analyzed.coordinateResults,
       offsetSources: analyzed.offsetSources,
       offset: analyzed.shiftResults,
       doubleSvSources: analyzed.doubleSvSources,

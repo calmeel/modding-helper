@@ -50,6 +50,7 @@ function setSubtabIssueLevel(subtabName, level) {
 
 function updateTabIssueStates(state) {
   setTabIssueLevel("clapWhistle", getClapWhistleIssueLevel(state.clapWhistle));
+  setTabIssueLevel("coordinates", getCoordinateIssueLevel(state.coordinates));
   setTabIssueLevel("shift1ms", getOffsetIssueLevel(state.offset));
   setTabIssueLevel("kiaiCompare", getKiaiCompareIssueLevel(state.kiaiCompare));
   setTabIssueLevel("kiaiSnap", getKiaiSnapIssueLevel(state.kiaiSnap));
@@ -83,6 +84,12 @@ function getFileCheckIssueLevel(results, songFolderResult) {
     results?.some(result => !result.matches) ||
     (songFolderResult?.checked && !songFolderResult.matches)
   )
+    ? TAB_LEVEL_WARN
+    : TAB_LEVEL_NONE;
+}
+
+function getCoordinateIssueLevel(results) {
+  return results?.some(result => result.counts.other > 0)
     ? TAB_LEVEL_WARN
     : TAB_LEVEL_NONE;
 }
