@@ -1834,9 +1834,7 @@ If the <code>.osz</code> file is renamed afterwards, a warning may be displayed 
 <div class="section section-bg">
 <span class="label label-bg">■ Background</span><br>
 
-In osu!, storyboard / video / kiai effects containing repetitive strobing or rapid flashing effects may require an epilepsy warning.<br><br>
-
-In particular, osu!taiko kiai effects include visual elements such as:
+osu!taiko kiai effects include visual elements such as:
 
 <ul>
   <li>hit object flashes</li>
@@ -1876,9 +1874,19 @@ Cases where Kiai repeatedly turns ON within a short period of time are treated a
 
 <div class="note-subtext">
 Kiai flash frequency is estimated from the interval between Kiai OFF → ON transitions.<br>
-Since flashing above 3 Hz is commonly considered a concern from a photosensitive epilepsy perspective,
-this tool treats cases with 3 or more Kiai ON events per second as warnings.
+This tool treats a frequency of 3 Hz or higher as a Warning.
 </div>
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes: Kiai Flash and Ranking Criteria</span><br>
+Kiai flashes and short kiais are discouraged by the <a href="https://osu.ppy.sh/wiki/en/Ranking_criteria/osu%21taiko" target="_blank" rel="noopener noreferrer">osu!taiko ranking criteria</a>.<br><br>
+Original text:
+<blockquote>
+<strong>Kiai time should only be used for the chorus or emphasised parts of a song.</strong> Kiai flashes/short kiais are discouraged for several reasons: they disturb the gameplay experience especially on low-end PC users, and can cause trouble for epileptic users.
+</blockquote>
+This tool uses a Kiai OFF → ON transition frequency of <strong><code>3 Hz or higher</code></strong> as its Warning threshold for Kiai Flash. However, the osu!taiko ranking criteria do not define a precise frequency for Kiai Flash.<br>
+Treat the results as a reference and make the final judgement by reviewing the effects during actual gameplay.
 </div>
 
 <div class="section section-detect">
@@ -1905,34 +1913,25 @@ The following information is displayed:
 </ul>
 
 <div class="note-subtext">
-Flashing above 3 Hz is generally considered a concern from a photosensitive epilepsy perspective.<br>
-However, because osu!taiko kiai effects are not fullscreen strobes,
-this tool uses higher BPM thresholds before displaying warnings.
+Because osu!taiko kiai effects differ from fullscreen strobes,
+this tool uses the BPM thresholds above as its own criteria for manual review.
 </div>
 </div>
 
 <div class="section section-warning">
-<span class="label label-warning">■ Notes</span><br>
-
-Displayed results do not automatically mean that a warning is mandatory or that the map is unrankable.<br><br>
-The epilepsy warning toggle is intended for videos and storyboards, so a Kiai Flash result alone does not require it to be turned on.<br><br>
-
-The actual intensity of visual stimulation depends heavily on factors such as:
-
-<ul>
-  <li>flash size</li>
-  <li>brightness / contrast</li>
-  <li>flash duration</li>
-  <li>storyboard / video content</li>
-  <li>player environment</li>
-</ul>
-
-and other factors.<br><br>
-
-Storyboard and video flashing effects are not analyzed by this tool.<br>
-Final judgement should always be made after reviewing the actual gameplay footage and storyboard content.
-<br><br>
+<span class="label label-warning">■ Notes: Epilepsy Warnings and High-BPM Kiai</span><br>
+The <a href="https://osu.ppy.sh/wiki/en/Ranking_criteria" target="_blank" rel="noopener noreferrer">Ranking criteria</a> require an epilepsy warning for difficulties containing repetitive strobes, pulsing images, or rapid changes in contrast, brightness, or colour in the storyboard or video.<br><br>
+Original text:
+<blockquote>
+<strong>Difficulties that contain repetitive strobes, pulsing images, or rapid changes in contrast, brightness or colour in the storyboard or video must use an epilepsy warning.</strong> If the warning interferes with gameplay, audio lead-in must be made longer. Strobing effects at 3 Hz (i.e. 3 flashes per second) and below are unlikely to cause concern. When in doubt, add the warning and confirm its necessity during the modding process.
+</blockquote>
+This tool does not analyze storyboard or video flashing.<br><br>
+The epilepsy warning toggle is intended for videos and storyboards, so <strong>high-BPM Kiai alone does not require it to be turned on.</strong><br><br>
+To reduce high-BPM Kiai flashing, consider measures such as halving the BPM where possible.<br><br>
+Example: <a href="https://osu.ppy.sh/beatmapsets/2540235#taiko/5622984" target="_blank" rel="noopener noreferrer">Kry.exe feat. Ice - Last Wish</a><br>
+This example uses <code>240 BPM</code> for sections that would otherwise be <code>05:26:093 — 480 BPM</code> and <code>05:28:093 — 960 BPM</code>.
 </div>
+
 </section>
 
 <section class="doc-tab-panel" data-doc-tab-panel="spread1">

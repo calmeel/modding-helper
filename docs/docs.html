@@ -1754,10 +1754,7 @@ song フォルダ名とは異なり、Artist / Title 内のピリオド（<code>
 <div class="section section-bg">
 <span class="label label-bg">■ 背景</span><br>
 
-osu! では、繰り返しのストロボ発光や高速な点滅演出が含まれる storyboard / video / kiai effect を使用する場合、
-epilepsy warning の表示が必要になる場合があります。<br><br>
-
-特に osu!taiko の kiai effect では：
+osu!taiko の kiai effect には、次のような演出があります：
 
 <ul>
   <li>hit object flash</li>
@@ -1799,9 +1796,19 @@ ON 100ms</code></pre>
 
 <div class="note-subtext">
 Kiai flash は、Kiai の OFF → ON 切り替え間隔から推定しています。<br>
-一般的に、3 Hz 以上の点滅は photosensitive epilepsy の観点から注意対象とされているため、
-本ツールでは 1秒間に3回以上の Kiai ON が発生する場合を Warning として扱います。
+本ツールでは、この頻度が 3 Hz 以上の場合を Warning として扱います。
 </div>
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ 注意事項：Kiai Flash と Ranking criteria</span><br>
+Kiai Flash や短い Kiai は、<a href="https://osu.ppy.sh/wiki/en/Ranking_criteria/osu%21taiko" target="_blank" rel="noopener noreferrer">osu!taiko ranking criteria</a> で推奨されていません。<br><br>
+原文引用：
+<blockquote>
+<strong>Kiai time should only be used for the chorus or emphasised parts of a song.</strong> Kiai flashes/short kiais are discouraged for several reasons: they disturb the gameplay experience especially on low-end PC users, and can cause trouble for epileptic users.
+</blockquote>
+本ツールでは <strong><code>3 Hz 以上</code></strong>の Kiai OFF → ON 切り替え頻度を Kiai Flash の Warning 基準としています。ただし、osu!taiko ranking criteria では Kiai Flash の厳密な頻度は定義されていません。<br>
+検出結果は参考として用い、最終的には実際のゲームプレイを見て、演出が適切か判断してください。
 </div>
 
 <div class="section section-detect">
@@ -1831,33 +1838,25 @@ osu!taiko の kiai effect は BPM に応じて flash 頻度が増加するため
 </ul>
 
 <div class="note-subtext">
-一般的に、3 Hz 以上の点滅は photosensitive epilepsy の観点から注意対象とされています。<br>
-ただし、osu!taiko の kiai effect は fullscreen strobe ではないため、
-本ツールではより高い BPM を基準として確認対象を表示しています。
+osu!taiko の kiai effect は fullscreen strobe とは異なるため、
+本ツールでは上記の BPM を独自の確認基準として使用しています。
 </div>
 </div>
 
 <div class="section section-warning">
-<span class="label label-warning">■ 注意点</span><br>
-
-表示された結果が、そのまま warning 必須・unrankable を意味するわけではありません。<br><br>
-epilepsy warning はビデオ・ストーリーボード用のものであるため、Kiaiフラッシュの検出結果だけを理由に toggle を ON にする必要はありません。<br><br>
-
-実際の視覚刺激の強さは：
-
-<ul>
-  <li>flash の面積</li>
-  <li>brightness / contrast</li>
-  <li>flash の継続時間</li>
-  <li>storyboard / video の内容</li>
-  <li>プレイヤー環境</li>
-</ul>
-
-などによって大きく変化します。<br><br>
-
-特に storyboard や video の flash は、本ツールでは解析していません。<br>
-最終的には実際のプレイ映像や storyboard 内容を確認した上で判断してください。<br><br>
+<span class="label label-warning">■ 注意事項：てんかん警告と高BPM Kiai</span><br>
+<a href="https://osu.ppy.sh/wiki/en/Ranking_criteria" target="_blank" rel="noopener noreferrer">Ranking criteria</a> では、storyboard / video に繰り返しのストロボ発光、画像の明滅、コントラスト・明るさ・色の急激な変化が含まれる場合、てんかん警告の表示を必須としています。<br><br>
+原文引用：
+<blockquote>
+<strong>Difficulties that contain repetitive strobes, pulsing images, or rapid changes in contrast, brightness or colour in the storyboard or video must use an epilepsy warning.</strong> If the warning interferes with gameplay, audio lead-in must be made longer. Strobing effects at 3 Hz (i.e. 3 flashes per second) and below are unlikely to cause concern. When in doubt, add the warning and confirm its necessity during the modding process.
+</blockquote>
+本ツールでは storyboard / video の点滅は解析していません。<br><br>
+てんかん警告 toggle はビデオ・ストーリーボード用のものであるため、<strong>高BPM Kiai を理由に toggle を ON にする必要はありません。</strong><br><br>
+高BPM Kiai の点滅を抑えるため、可能であれば BPM を半分にするなどの対応を検討してください。<br><br>
+例：<a href="https://osu.ppy.sh/beatmapsets/2540235#taiko/5622984" target="_blank" rel="noopener noreferrer">Kry.exe feat. Ice - Last Wish</a><br>
+本来は <code>05:26:093 — 480 BPM</code>、<code>05:28:093 — 960 BPM</code> となる箇所を、<code>240 BPM</code> に変更している例です。
 </div>
+
 </section>
 
 <section class="doc-tab-panel" data-doc-tab-panel="spread1">
