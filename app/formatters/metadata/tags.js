@@ -16,7 +16,7 @@ function formatMultipleTagResults(results, t) {
   lines.push("");
 
   if (compared.base) {
-    lines.push(`(${t("baseDiff")}: ${escapeHtml(getDifficultyNameText(compared.base.fileName))})`);
+    lines.push(`(${t("baseDiff")}: ${getDifficultyName(compared.base.fileName)})`);
     lines.push("");
   }
 
@@ -27,14 +27,15 @@ function formatMultipleTagResults(results, t) {
     lines.push("");
 
     for (const mismatch of compared.mismatches) {
-      lines.push(`${escapeHtml(getDifficultyNameText(mismatch.fileName))}`);
+      lines.push(getDifficultyName(mismatch.fileName));
+      lines.push("");
 
       if (mismatch.removed.length) {
-        lines.push(`  <span class="result-error">${escapeHtml(t("tagRemoved"))}:</span> ${mismatch.removed.map(tag => `<code>${escapeHtml(tag)}</code>`).join(" ")}`);
+        lines.push(`<span class="result-error">${escapeHtml(t("tagRemoved"))}:</span> ${mismatch.removed.map(tag => `<code>${escapeHtml(tag)}</code>`).join(" ")}`);
       }
 
       if (mismatch.added.length) {
-        lines.push(`  <span class="result-error">${escapeHtml(t("tagAdded"))}:</span> ${mismatch.added.map(tag => `<code>${escapeHtml(tag)}</code>`).join(" ")}`);
+        lines.push(`<span class="result-error">${escapeHtml(t("tagAdded"))}:</span> ${mismatch.added.map(tag => `<code>${escapeHtml(tag)}</code>`).join(" ")}`);
       }
 
       lines.push("");

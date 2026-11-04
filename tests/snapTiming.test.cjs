@@ -126,7 +126,8 @@ for (const [time, snap, diff, nearest, offset] of [
     assert.deepEqual(kiai.results[0].supplementalSnaps, preview.supplementalSnaps);
     const html = run('formatPreviewPointResult([preview], k => i18n.en[k])', { preview });
     assert.match(html, new RegExp(`1/${snap} snap`));
-    assert.ok(html.includes(`${nearest} snap | ${offset > 0 ? "+" : ""}${offset} ms`));
+    assert.ok(html.includes(`${nearest} snap | ${offset > 0 ? "+" : ""}${offset} ms | `));
+    assert.doesNotMatch(html, /\| Warning \|/);
     const khtml = run('formatKiaiSnapResult(kiai, k => i18n.en[k])', { kiai });
     assert.ok(khtml.includes(`${nearest} snap`));
     assert.ok(khtml.includes(`${offset > 0 ? "+" : ""}${offset} ms`));
@@ -197,6 +198,37 @@ test("preview grouping does not merge different compatibility or supplementary n
     { ...base, compatibility: "stableOnly" },
     { ...base, compatibility: "lazerOnly" }
   ] }), 4);
+});
+
+test("preview consistency never claims a match when a difficulty is missing its preview", () => {
+  const run = runtime();
+  const configured = run('runPreviewPointCheck(text, "[Oni].osu")', { text: beatmap(1000) });
+  const missing = run('runPreviewPointCheck(text, "[Kantan].osu")', {
+    text: beatmap(1000, { preview: -1 })
+  });
+  const other = { ...configured, fileName: "[Inner Oni].osu" };
+  for (const lang of ["ja", "en"]) {
+    for (const items of [
+      [missing, configured, other],
+      [missing, configured],
+      [missing],
+      [missing, configured, { ...other, previewTime: 1500 }]
+    ]) {
+      const html = run(`formatPreviewPointResult(items, k => i18n.${lang}[k])`, { items });
+      const snapTitle = run(`i18n.${lang}.previewPointSnapTitle`);
+      const consistency = html.slice(0, html.indexOf(snapTitle));
+      assert.doesNotMatch(html, new RegExp(run(`i18n.${lang}.previewPointConsistencyOk`)));
+      assert.ok(consistency.includes(run(`i18n.${lang}.previewPointMissingError`)));
+      assert.ok(consistency.includes("[Kantan]"));
+      assert.match(consistency, /result-error/);
+      assert.equal(run("getPreviewPointIssueLevel(items)"), "error");
+    }
+    const html = run(`formatPreviewPointResult(items, k => i18n.${lang}[k])`, {
+      items: [configured, other]
+    });
+    assert.ok(html.includes(run(`i18n.${lang}.previewPointConsistencyOk`)));
+    assert.equal(run("getPreviewPointIssueLevel(items)"), "none");
+  }
 });
 
 test("preview VBR warnings survive the new snap and grid sections", () => {

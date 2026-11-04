@@ -12,12 +12,23 @@ function formatPreviewPointResult(results, t) {
 
   lines.push(formatSectionTitle(t("previewPointConsistencyTitle")));
 
+  if (missingResults.length) {
+    lines.push(formatPreviewPointDifficultyNames(missingResults));
+    lines.push("");
+    lines.push(`<span class="result-error">${escapeHtml(t("previewPointMissingError"))}</span>`);
+    lines.push("");
+  }
+
   if (!validResults.length) {
     lines.push(t("previewPointConsistencyUnavailable"));
+  } else if (missingResults.length && groups.length === 1) {
+    // Show the configured difficulties without claiming that the entire
+    // mapset is consistent when some difficulties have no preview point.
+    lines.push(formatPreviewPointConsistencyGroup(groups[0]));
   } else if (validResults.length === 1) {
-    lines.push(t("previewPointConsistencySingle"));
+    lines.push(formatPreviewPointConsistencyGroup(groups[0], t("previewPointConsistencySingle")));
   } else if (groups.length === 1) {
-    lines.push(t("previewPointConsistencyOk"));
+    lines.push(formatPreviewPointConsistencyGroup(groups[0], t("previewPointConsistencyOk")));
   } else if (groups.length > 1) {
     lines.push(`<span class="result-error">${escapeHtml(t("previewPointMismatch"))}</span>`);
     lines.push("");
@@ -41,23 +52,10 @@ function formatPreviewPointResult(results, t) {
     lines.push(formatSectionTitle(t("offsetResnapHeading")));
   }
 
-  if (missingResults.length) {
-    lines.push(`<span class="result-error">${escapeHtml(t("previewPointMissingError"))}</span>`);
-    lines.push(
-      missingResults
-        .map(result => getDifficultyName(result.fileName))
-        .join(" ")
-    );
-    lines.push("");
-  }
-
   for (const group of groupPreviewPointSnapResults(validResults)) {
+    lines.push(formatPreviewPointDifficultyNames(group.items));
+    lines.push("");
     lines.push(formatPreviewPointSingleResult(group.items[0], t));
-    lines.push(
-      group.items
-        .map(result => escapeHtml(getDifficultyNameText(result.fileName)))
-        .join(", ")
-    );
     lines.push("");
   }
 
@@ -65,11 +63,12 @@ function formatPreviewPointResult(results, t) {
     lines.push(formatSectionTitle(t("offsetWheelHeading")));
     for (const group of groupPreviewPointSnapResults(wheelResults)) {
       const item = group.items[0];
+      lines.push(formatPreviewPointDifficultyNames(group.items));
+      lines.push("");
       lines.push(
         `<span>${formatTimestampLink(item.previewTime)} | ${escapeHtml(item.snap)} snap | ` +
         `${escapeHtml(formatSnapCompatibility(item, t))}</span>`
       );
-      lines.push(group.items.map(result => escapeHtml(getDifficultyNameText(result.fileName))).join(", "));
       lines.push("");
     }
   }
@@ -117,13 +116,18 @@ function getPreviewPointAudioWarnings(results) {
   return warnings;
 }
 
-function formatPreviewPointConsistencyGroup(group) {
-  const item = group.items[0];
-  const diffNames = group.items
-    .map(result => getDifficultyNameText(result.fileName))
+function formatPreviewPointDifficultyNames(results) {
+  return sortResultsForDisplay(results)
+    .map(result => getDifficultyName(result.fileName))
     .join(", ");
+}
 
-  return `${formatTimestampLink(item.previewTime)} | ${escapeHtml(diffNames)}`;
+function formatPreviewPointConsistencyGroup(group, message = "") {
+  const item = group.items[0];
+  const lines = [formatPreviewPointDifficultyNames(group.items), ""];
+  if (message) lines.push(escapeHtml(message));
+  lines.push(formatTimestampLink(item.previewTime));
+  return lines.join("\n");
 }
 
 function groupPreviewPointResults(results) {
@@ -179,8 +183,8 @@ function formatPreviewPointSingleResult(item, t) {
 
   const status =
     item.level === "warn"
-      ? t("warning")
-      : t("sourceOk");
+      ? ""
+      : ` | ${escapeHtml(t("sourceOk"))}`;
   const note = item.timingUnavailable ? t("timingSnapUnavailable") : formatSnapCompatibility(item, t);
   const message = note
     ? ` | ${escapeHtml(note)}`
@@ -189,8 +193,7 @@ function formatPreviewPointSingleResult(item, t) {
 
   return `<span class="${levelClass}">` +
     `${formatTimestampLink(item.previewTime)} | ` +
-    `${item.snap ? `${item.snap} snap` : "-"} | ` +
-    `${diffText} | ` +
+    `${item.snap ? `${item.snap} snap` : "-"} | ${diffText}` +
     `${status}` +
     `${message}` +
     (supplemental ? ` ${escapeHtml(supplemental)}` : "") +
