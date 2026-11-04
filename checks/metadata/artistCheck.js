@@ -308,6 +308,7 @@ function compareArtistsAcrossDiffs(results) {
   if (!results || results.length < 2) {
     return {
       hasMismatch: false,
+      base: results?.[0] ?? null,
       mismatches: []
     };
   }

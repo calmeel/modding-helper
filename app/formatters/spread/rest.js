@@ -224,6 +224,10 @@ function formatSpreadFinishersTable(results, t, diffOrder = null) {
     return t("noOsuFiles");
   }
 
+  if (results.length === 1) {
+    return t("spreadFinishersNeedTwoDiffs");
+  }
+
   const sortedResults = diffOrder
     ? applySpreadDiffOrder(results, diffOrder)
     : sortSpreadResults(results);

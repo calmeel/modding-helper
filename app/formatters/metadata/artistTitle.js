@@ -18,28 +18,31 @@ function formatMultipleArtistResults(results, t) {
   lines.push(formatSectionTitle(t("artistConsistencyCheck")));
   lines.push("");
 
-  if (compared.base) {
-    lines.push(`(${t("baseDiff")}: ${escapeHtml(getDifficultyNameText(compared.base.fileName))})`);
+  if (sortedResults.length > 1 && compared.base) {
+    lines.push(`(${t("baseDiff")}: ${getDifficultyName(compared.base.fileName)})`);
     lines.push("");
   }
 
-  if (!compared.hasMismatch) {
+  if (sortedResults.length === 1) {
+    lines.push(t("diffConsistencySingle"));
+  } else if (!compared.hasMismatch) {
     lines.push(t("artistNoMismatch"));
   } else {
     lines.push(`<span class="result-error">${escapeHtml(t("artistMismatchFound"))}</span>`);
     lines.push("");
 
     for (const mismatch of compared.mismatches) {
-      lines.push(escapeHtml(getDifficultyNameText(mismatch.fileName)));
+      lines.push(getDifficultyName(mismatch.fileName));
+      lines.push("");
 
       if (mismatch.artistMismatch) {
-        lines.push(`  ${escapeHtml(t("baseArtist"))}: <code>${escapeHtml(mismatch.baseArtist)}</code>`);
-        lines.push(`  <span class="result-error">${escapeHtml(t("currentArtist"))}:</span> <code>${escapeHtml(mismatch.artist)}</code>`);
+        lines.push(`${escapeHtml(t("baseArtist"))}: <code>${escapeHtml(mismatch.baseArtist)}</code>`);
+        lines.push(`<span class="result-error">${escapeHtml(t("currentArtist"))}:</span> <code>${escapeHtml(mismatch.artist)}</code>`);
       }
 
       if (mismatch.unicodeMismatch) {
-        lines.push(`  ${escapeHtml(t("baseRomanisedArtist"))}: <code>${escapeHtml(mismatch.baseArtistUnicode)}</code>`);
-        lines.push(`  <span class="result-error">${escapeHtml(t("currentRomanisedArtist"))}:</span> <code>${escapeHtml(mismatch.artistUnicode)}</code>`);
+        lines.push(`${escapeHtml(t("baseRomanisedArtist"))}: <code>${escapeHtml(mismatch.baseArtistUnicode)}</code>`);
+        lines.push(`<span class="result-error">${escapeHtml(t("currentRomanisedArtist"))}:</span> <code>${escapeHtml(mismatch.artistUnicode)}</code>`);
       }
 
       lines.push("");
@@ -191,28 +194,31 @@ function formatMultipleTitleResults(results, t) {
   lines.push(formatSectionTitle(t("titleConsistencyCheck")));
   lines.push("");
 
-  if (compared.base) {
-    lines.push(`(${t("baseDiff")}: ${escapeHtml(getDifficultyNameText(compared.base.fileName))})`);
+  if (sortedResults.length > 1 && compared.base) {
+    lines.push(`(${t("baseDiff")}: ${getDifficultyName(compared.base.fileName)})`);
     lines.push("");
   }
 
-  if (!compared.hasMismatch) {
+  if (sortedResults.length === 1) {
+    lines.push(t("diffConsistencySingle"));
+  } else if (!compared.hasMismatch) {
     lines.push(t("titleNoMismatch"));
   } else {
     lines.push(`<span class="result-error">${escapeHtml(t("titleMismatchFound"))}</span>`);
     lines.push("");
 
     for (const mismatch of compared.mismatches) {
-      lines.push(escapeHtml(getDifficultyNameText(mismatch.fileName)));
+      lines.push(getDifficultyName(mismatch.fileName));
+      lines.push("");
 
       if (mismatch.titleMismatch) {
-        lines.push(`  ${escapeHtml(t("baseTitle"))}: <code>${escapeHtml(mismatch.baseTitle)}</code>`);
-        lines.push(`  <span class="result-error">${escapeHtml(t("currentTitle"))}:</span> <code>${escapeHtml(mismatch.title)}</code>`);
+        lines.push(`${escapeHtml(t("baseTitle"))}: <code>${escapeHtml(mismatch.baseTitle)}</code>`);
+        lines.push(`<span class="result-error">${escapeHtml(t("currentTitle"))}:</span> <code>${escapeHtml(mismatch.title)}</code>`);
       }
 
       if (mismatch.unicodeMismatch) {
-        lines.push(`  ${escapeHtml(t("baseRomanisedTitle"))}: <code>${escapeHtml(mismatch.baseTitleUnicode)}</code>`);
-        lines.push(`  <span class="result-error">${escapeHtml(t("currentRomanisedTitle"))}:</span> <code>${escapeHtml(mismatch.titleUnicode)}</code>`);
+        lines.push(`${escapeHtml(t("baseRomanisedTitle"))}: <code>${escapeHtml(mismatch.baseTitleUnicode)}</code>`);
+        lines.push(`<span class="result-error">${escapeHtml(t("currentRomanisedTitle"))}:</span> <code>${escapeHtml(mismatch.titleUnicode)}</code>`);
       }
 
       lines.push("");

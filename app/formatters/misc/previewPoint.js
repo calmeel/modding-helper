@@ -25,8 +25,8 @@ function formatPreviewPointResult(results, t) {
     // Show the configured difficulties without claiming that the entire
     // mapset is consistent when some difficulties have no preview point.
     lines.push(formatPreviewPointConsistencyGroup(groups[0]));
-  } else if (validResults.length === 1) {
-    lines.push(formatPreviewPointConsistencyGroup(groups[0], t("previewPointConsistencySingle")));
+  } else if (results.length === 1) {
+    lines.push(t("diffConsistencySingle"));
   } else if (groups.length === 1) {
     lines.push(formatPreviewPointConsistencyGroup(groups[0], t("previewPointConsistencyOk")));
   } else if (groups.length > 1) {

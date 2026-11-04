@@ -17,21 +17,24 @@ function formatMultipleSourceResults(results, t) {
   lines.push(formatSectionTitle(t("sourceConsistencyCheck")));
   lines.push("");
 
-  if (compared.base) {
-    lines.push(`(${t("baseDiff")}: ${escapeHtml(getDifficultyNameText(compared.base.fileName))})`);
+  if (sortedResults.length > 1 && compared.base) {
+    lines.push(`(${t("baseDiff")}: ${getDifficultyName(compared.base.fileName)})`);
     lines.push("");
   }
 
-  if (!compared.hasMismatch) {
+  if (sortedResults.length === 1) {
+    lines.push(t("diffConsistencySingle"));
+  } else if (!compared.hasMismatch) {
     lines.push(t("sourceNoMismatch"));
   } else {
     lines.push(`<span class="result-error">${escapeHtml(t("sourceMismatchFound"))}</span>`);
     lines.push("");
 
     for (const mismatch of compared.mismatches) {
-      lines.push(`${escapeHtml(getDifficultyNameText(mismatch.fileName))}`);
-      lines.push(`  ${escapeHtml(t("sourceBase"))}: <code>${escapeHtml(mismatch.baseSource)}</code>`);
-      lines.push(`  <span class="result-error">${escapeHtml(t("sourceCurrent"))}:</span> <code>${escapeHtml(mismatch.source)}</code>`);
+      lines.push(getDifficultyName(mismatch.fileName));
+      lines.push("");
+      lines.push(`${escapeHtml(t("sourceBase"))}: <code>${escapeHtml(mismatch.baseSource)}</code>`);
+      lines.push(`<span class="result-error">${escapeHtml(t("sourceCurrent"))}:</span> <code>${escapeHtml(mismatch.source)}</code>`);
       lines.push("");
     }
   }

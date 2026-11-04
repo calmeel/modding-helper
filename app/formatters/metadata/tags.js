@@ -15,12 +15,14 @@ function formatMultipleTagResults(results, t) {
   lines.push(formatSectionTitle(t("tagConsistencyCheck")));
   lines.push("");
 
-  if (compared.base) {
+  if (sortedResults.length > 1 && compared.base) {
     lines.push(`(${t("baseDiff")}: ${getDifficultyName(compared.base.fileName)})`);
     lines.push("");
   }
 
-  if (!compared.hasMismatch) {
+  if (sortedResults.length === 1) {
+    lines.push(t("diffConsistencySingle"));
+  } else if (!compared.hasMismatch) {
     lines.push(t("tagNoMismatch"));
   } else {
     lines.push(`<span class="result-error">${escapeHtml(t("tagMismatchFound"))}</span>`);
