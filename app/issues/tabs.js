@@ -165,7 +165,7 @@ function getKiaiSnapIssueLevel(results) {
 
   for (const result of results) {
     for (const item of result.results ?? []) {
-      if (item.snap === "unknown" || item.diff !== 0) {
+      if (item.level === "error") {
         return TAB_LEVEL_ERROR;
       }
 

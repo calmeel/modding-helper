@@ -927,6 +927,19 @@ kiai の ON/OFF が <code><span style="color:#ffd86b; font-weight:bold;">1/1 sna
 また、<code><span style="color:#ff6b6b; font-weight:bold;">unsnapped な kiai line</span></code>（1/1 snap + 1 ms など）も検出します（AiModと同一の機能）。
 </div>
 
+<div class="section section-detect">
+<span class="label label-detect">■ snap 判定とクライアント間の違い</span><br>
+対象 snap は <code>1/1</code>, <code>1/2</code>, <code>1/3</code>, <code>1/4</code>, <code>1/6</code>, <code>1/8</code>, <code>1/12</code>, <code>1/16</code> です。「1msズレ」タブと共通の計算処理で、osu!stable と osu!lazer の再スナップ候補時刻を比較します。
+<ul>
+  <li>両方に一致する場合：<code>1/1</code> は正常として省略し、それ以外は黄色で表示します。</li>
+  <li>片方にのみ一致する場合：一致するクライアントと、もう片方の候補時刻までの差を黄色で表示します。</li>
+  <li>どちらにも一致しない場合：通常の8種類から最寄りの snap と、その候補時刻までの差分 ms を赤色で表示します（±1 ms、±2 ms 以上ともに対象）。</li>
+</ul>
+通常の snap から ±2 ms 以上ずれている場合は、<code>1/5</code>, <code>1/7</code>, <code>1/9</code>, <code>1/24</code> も探索し、どちらかのクライアントで一致または ±1 ms となる候補をすべて補足表示します。元の判定や警告色は変更しません。<br><br>
+グリッド比較では、osu!stable のグリッド時刻と lazer の再スナップ式による候補時刻を比較します。片方にのみ一致する場合は、再スナップ判定とは別の欄に白文字で表示し、この行自体は警告にしません。同じ時刻が両方の欄に表示される場合もあります。lazer のグリッド移動の方向・境界処理までは再現していません。<br>
+有効な赤線がなく計算できない場合は、その旨を表示し、特殊な snap の探索は行いません。
+</div>
+
 <div class="section section-warning">
 <span class="label label-warning">■ 注意事項</span><br>
 kiai の ON/OFF が <strong><code>1/1 snap 以外</code></strong> に乗ることは必ずしも unrankable ではありません。<br>
@@ -1549,9 +1562,16 @@ osu-web 上でプレビューポイントの再生位置が意図した位置か
 <span class="label label-detect">■ 検出内容</span><br>
 
 <code>PreviewTime</code> が snap からずれている場合、warning として表示します<br>
-（この検出は AiMod や Mapset Verifier では行えません）。<br>
-snap時刻は、osu!stable の「すべてのノーツを再スナップする」と同じ計算方法で判定します。<br>
-タイムライングリッドの時刻は別の計算方法で生成されるため、判定結果がタイムライングリッドと一致しない場合があります。<br><br>
+（この検出は AiMod や Mapset Verifier では行えません）。<br><br>
+対象 snap は <code>1/1</code>, <code>1/2</code>, <code>1/3</code>, <code>1/4</code>, <code>1/6</code>, <code>1/8</code>, <code>1/12</code>, <code>1/16</code> です。「1msズレ」タブと共通の計算処理で、osu!stable と osu!lazer の再スナップ候補時刻を比較します。
+<ul>
+  <li>両方に一致する場合：正常として表示します。</li>
+  <li>片方にのみ一致する場合：一致するクライアントと、もう片方の候補時刻までの差を黄色で表示します。</li>
+  <li>どちらにも一致しない場合：通常の8種類から最寄りの snap と、その候補時刻までの差分 ms を黄色で表示します（±1 ms、±2 ms 以上ともに対象）。</li>
+</ul>
+通常の snap から ±2 ms 以上ずれている場合は、<code>1/5</code>, <code>1/7</code>, <code>1/9</code>, <code>1/24</code> も探索し、どちらかのクライアントで一致または ±1 ms となる候補をすべて補足表示します。元の判定や警告色は変更しません。<br><br>
+グリッド比較では、osu!stable のグリッド時刻と lazer の再スナップ式による候補時刻を比較します。片方にのみ一致する場合は、再スナップ判定とは別の欄に白文字で表示し、この行自体は警告にしません。同じ時刻が両方の欄に表示される場合もあります。lazer のグリッド移動の方向・境界処理までは再現していません。<br>
+有効な赤線がなく計算できない場合は、その旨を黄色で表示し、特殊な snap の探索は行いません。<br><br>
 
 また、以下の内容も検出します：
 

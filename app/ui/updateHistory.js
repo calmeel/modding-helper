@@ -286,6 +286,18 @@ const updateHistoryEntries = [
       ]
     }
   },
+  {
+    date: "2026/11/05",
+    type: "update",
+    items: {
+      en: [
+        "Corrected the snap calculation method for Kiai and Preview Points to use an accurate formula."
+      ],
+      ja: [
+        "Kiai・プレビューポイントのスナップ計算方法を正確な式に修正"
+      ]
+    }
+  },
 ];
 
 const updateHistoryTypeLabels = {

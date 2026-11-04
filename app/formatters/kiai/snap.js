@@ -13,30 +13,44 @@ function formatKiaiSnapResult(result, t) {
   lines.push(`${getDifficultyName(result.fileName)}`);
   lines.push("");
 
+  const wheelResults = result.wheelResults ?? [];
+  if (wheelResults.length) {
+    lines.push(`【${t("offsetResnapHeading")}】`);
+  }
   if (!result.results.length) {
     lines.push(t("noKiaiSnap"));
-    return lines.join("\n");
+  } else {
+    lines.push(...formatKiaiSnapItems(result.results, t));
   }
 
+  if (wheelResults.length) {
+    lines.push("", `【${t("offsetWheelHeading")}】`);
+    lines.push(...formatKiaiSnapItems(wheelResults, t));
+  }
+  return lines.join("\n");
+}
+
+function formatKiaiSnapItems(items, t) {
+  const lines = [];
   // 列幅計算
   const timeWidth = Math.max(
     visibleWidth("Time"),
-    ...result.results.map(item => visibleWidth(msToTimestamp(item.time)))
+    ...items.map(item => visibleWidth(msToTimestamp(item.time)))
   );
 
-  const typeTexts = result.results.map(item => `Kiai ${item.type}`);
+  const typeTexts = items.map(item => `Kiai ${item.type}`);
   const typeWidth = Math.max(
     visibleWidth("Type"),
     ...typeTexts.map(text => visibleWidth(text))
   );
 
-  const snapTexts = result.results.map(item => `${item.snap} snap`);
+  const snapTexts = items.map(item => item.snap ? `${item.snap} snap` : "-");
   const snapWidth = Math.max(
     visibleWidth("Snap"),
     ...snapTexts.map(text => visibleWidth(text))
   );
 
-  const diffTexts = result.results.map(item =>
+  const diffTexts = items.map(item =>
     item.diff === null
       ? "-"
       : `${item.diff >= 0 ? "+" : "-"}${Math.abs(item.diff)} ms`
@@ -48,15 +62,15 @@ function formatKiaiSnapResult(result, t) {
   );
 
   // 本体
-  for (let i = 0; i < result.results.length; i++) {
-    const item = result.results[i];
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
 
     const timeText = formatTimestampLink(item.time);
 
     const plainTime = msToTimestamp(item.time);
 
     const typeText = `Kiai ${item.type}`;
-    const snapText = `${item.snap} snap`;
+    const snapText = snapTexts[i];
 
     const diffText =
       item.diff === null
@@ -66,22 +80,20 @@ function formatKiaiSnapResult(result, t) {
     const timePadding =
       " ".repeat(timeWidth - visibleWidth(plainTime));
 
+    const note = item.timingUnavailable ? t("timingSnapUnavailable") : formatSnapCompatibility(item, t);
+    const supplemental = formatSnapSupplemental(item, t);
     const line =
       `${timeText}${timePadding} | ` +
       `${padEndVisual(typeText, typeWidth)} | ` +
       `${padEndVisual(snapText, snapWidth)} | ` +
-      `${padEndVisual(diffText, diffWidth)}`;
+      `${padEndVisual(diffText, diffWidth)}` +
+      (note ? ` | ${escapeHtml(note)}` : "") +
+      (supplemental ? ` ${escapeHtml(supplemental)}` : "");
 
-    const isError =
-      item.snap === "unknown" ||
-      item.diff !== 0;
-
-    lines.push(
-      isError
-        ? `<span class="result-error">${line}</span>`
-        : `<span class="result-warn">${line}</span>`
-    );
+    const className = item.level === "error" ? "result-error"
+      : item.level === "warn" ? "result-warn" : "";
+    lines.push(`<span${className ? ` class="${className}"` : ""}>${line}</span>`);
   }
 
-  return lines.join("\n");
+  return lines;
 }

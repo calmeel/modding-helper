@@ -32,6 +32,15 @@ function formatPreviewPointResult(results, t) {
   lines.push(formatSeparator());
   lines.push(formatSectionTitle(t("previewPointSnapTitle")));
 
+  const wheelResults = validResults.flatMap(result =>
+    (result.wheelResults ?? []).map(item => ({
+      ...item, previewTime: result.previewTime, fileName: result.fileName
+    }))
+  );
+  if (wheelResults.length) {
+    lines.push(formatSectionTitle(t("offsetResnapHeading")));
+  }
+
   if (missingResults.length) {
     lines.push(`<span class="result-error">${escapeHtml(t("previewPointMissingError"))}</span>`);
     lines.push(
@@ -50,6 +59,19 @@ function formatPreviewPointResult(results, t) {
         .join(", ")
     );
     lines.push("");
+  }
+
+  if (wheelResults.length) {
+    lines.push(formatSectionTitle(t("offsetWheelHeading")));
+    for (const group of groupPreviewPointSnapResults(wheelResults)) {
+      const item = group.items[0];
+      lines.push(
+        `<span>${formatTimestampLink(item.previewTime)} | ${escapeHtml(item.snap)} snap | ` +
+        `${escapeHtml(formatSnapCompatibility(item, t))}</span>`
+      );
+      lines.push(group.items.map(result => escapeHtml(getDifficultyNameText(result.fileName))).join(", "));
+      lines.push("");
+    }
   }
 
   appendPreviewPointAudioSection(lines, audioWarnings, t);
@@ -128,7 +150,10 @@ function groupPreviewPointSnapResults(results) {
       result.previewTime,
       result.snap,
       result.diff,
-      result.level
+      result.level,
+      result.compatibility,
+      result.timingUnavailable,
+      JSON.stringify(result.supplementalSnaps ?? [])
     ].join("|");
 
     if (!groups.has(key)) {
@@ -156,16 +181,18 @@ function formatPreviewPointSingleResult(item, t) {
     item.level === "warn"
       ? t("warning")
       : t("sourceOk");
-  const message =
-    item.level === "warn"
-      ? ` | ${escapeHtml(t("previewPointSnapWarning"))}`
-      : "";
+  const note = item.timingUnavailable ? t("timingSnapUnavailable") : formatSnapCompatibility(item, t);
+  const message = note
+    ? ` | ${escapeHtml(note)}`
+    : item.level === "warn" ? ` | ${escapeHtml(t("previewPointSnapWarning"))}` : "";
+  const supplemental = formatSnapSupplemental(item, t);
 
   return `<span class="${levelClass}">` +
     `${formatTimestampLink(item.previewTime)} | ` +
-    `${item.snap} snap | ` +
+    `${item.snap ? `${item.snap} snap` : "-"} | ` +
     `${diffText} | ` +
     `${status}` +
     `${message}` +
+    (supplemental ? ` ${escapeHtml(supplemental)}` : "") +
     `</span>`;
 }

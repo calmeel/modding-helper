@@ -1,60 +1,32 @@
-const PREVIEW_POINT_SNAP_CANDIDATES = [1, 2, 3, 4, 6, 8, 12, 16];
-const PREVIEW_POINT_SNAP_TOLERANCE_MS = 1;
-
 function runPreviewPointCheck(text, fileName, options = {}) {
   const audioBitrate = analyzePreviewPointAudioBitrate(options);
   const previewTime = parsePreviewTime(text);
+  const base = { fileName, previewTime, audioBitrate };
 
   if (previewTime === null) {
     return {
-      fileName,
-      level: "error",
-      previewTime: null,
-      snap: null,
-      diff: null,
-      audioBitrate
+      ...base, level: "error", snap: null, diff: null,
+      compatibility: null, supplementalSnaps: [], wheelResults: []
     };
   }
 
-  const redTimingPoints = parseTimingPoints(text);
-  const currentRed = findCurrentTimingPoint(redTimingPoints, previewTime);
-
-  if (!currentRed) {
-    return {
-      fileName,
-      level: "warn",
-      previewTime,
-      snap: "unknown",
-      diff: null,
-      audioBitrate
-    };
-  }
-
-  const snap = findNearestStableSnapDiff(
-    previewTime,
-    currentRed.time,
-    currentRed.beatLength,
-    PREVIEW_POINT_SNAP_CANDIDATES
-  );
-
-  if (!snap || Math.abs(snap.diff) > PREVIEW_POINT_SNAP_TOLERANCE_MS) {
-    return {
-      fileName,
-      level: "warn",
-      previewTime,
-      snap: "unknown",
-      diff: null,
-      audioBitrate
-    };
-  }
-
+  const analysis = analyzeTimingSnap(previewTime, parseTimingPoints(text));
+  const snap = analysis.snap;
   return {
-    fileName,
-    level: snap.diff === 0 ? "ok" : "warn",
-    previewTime,
-    snap: `1/${snap.snap}`,
-    diff: snap.diff,
-    audioBitrate
+    ...base,
+    level: !snap || snap.compatibility || snap.diff !== 0 ? "warn" : "ok",
+    snap: snap ? `1/${snap.snap}` : null,
+    diff: snap ? snap.diff : null,
+    compatibility: snap?.compatibility ?? null,
+    supplementalSnaps: analysis.supplementalSnaps,
+    timingUnavailable: !snap,
+    wheelResults: analysis.wheel ? [{
+      ...analysis.wheel,
+      time: previewTime,
+      snap: `1/${analysis.wheel.snap}`,
+      level: "info",
+      supplementalSnaps: []
+    }] : []
   };
 }
 
