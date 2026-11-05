@@ -1182,7 +1182,7 @@ and
 </div>
 
 <div class="section section-warning">
-<span class="label label-warning">■ Notes</span><br>
+<span class="label label-warning">■ Kiai Toggle on the First Red Timing Point</span><br>
 
 Due to osu!editor limitations, the very first red timing point cannot have kiai enabled.<br><br>
 
@@ -1190,11 +1190,17 @@ The osu! Ranking Criteria recommends placing a green timing point at the same ti
 and enabling kiai only on the green line when kiai should start from the beginning of the map.<br><br>
 
 Because of this, this check intentionally ignores kiai mismatches between
-the very first red line and the very first green line.<br><br>
+the very first red line and the very first green line.
+</div>
 
-Additionally, the first red and green timing points may intentionally use different volume values.
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+Different settings on red and green timing points are not inherently unrankable.<br>
+However, keeping them consistent is recommended because differences may cause unexpected behavior.<br><br>
+
+The first red and green timing points may intentionally use different volume values.<br>
 This is because the red line volume is applied before that timestamp,
-while the green line volume is applied from that timestamp onward.
+while the green line volume is applied from that timestamp onward. If this difference is intentional, no correction is necessary.
 
 </div>
 </section>
