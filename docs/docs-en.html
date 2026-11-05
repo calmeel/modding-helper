@@ -970,7 +970,15 @@ AiMod can detect duplicate SV lines placed at the exact same timestamp, but cann
 <div class="section section-detect">
 <span class="label label-detect">■ Detection Content</span><br>
 This check detects SV lines that are placed too close together within the specified interval
-(<code>1 ~ 5 ms</code>).
+(<code>1 ~ 5 ms</code>).<br>
+SV lines at exactly the same timestamp are shown as red errors; other nearby SV lines are shown as yellow warnings.
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+Two SV lines at exactly the same timestamp are unrankable and must be corrected.<br><br>
+By contrast, SV lines placed <code>1 ms</code> or <code>2 ms</code> apart are not inherently unrankable and do not necessarily need to be corrected.<br>
+However, one of the lines is likely unintentional, so checking whether the placement is intended is recommended.
 </div>
 </section>
 

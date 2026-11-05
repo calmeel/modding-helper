@@ -291,10 +291,12 @@ const updateHistoryEntries = [
     type: "update",
     items: {
       en: [
-        "Corrected the snap calculation method for Kiai and Preview Points to use an accurate formula."
+        "Corrected the snap calculation method for Kiai and Preview Points to use an accurate formula.",
+        "Modified the system to flag red / green lines occurring at the exact same timestamp as an RC violation, displaying the error in red."
       ],
       ja: [
-        "Kiai・プレビューポイントのスナップ計算方法を正確な式に修正"
+        "Kiai・プレビューポイントのスナップ計算方法を正確な式に修正",
+        "完全同一時刻にある赤線・緑線はRC違反として赤字でエラーを出すように修正"
       ]
     }
   },

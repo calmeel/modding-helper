@@ -49,9 +49,10 @@ function formatDoubleSvResult(result, t) {
         " ".repeat(timeWidth - visibleWidth(plainTime));
 
       lines.push(
+        `<span class="${item.level === "error" ? "result-error" : "result-warn"}">` +
         `${timeText}${timePadding} | ` +
         `${padEndVisual(svText, svWidth)} | ` +
-        `${padEndVisual(volumeText, volumeWidth)}`
+        `${padEndVisual(volumeText, volumeWidth)}</span>`
       );
     }
 

@@ -177,6 +177,10 @@ function getKiaiSnapIssueLevel(results) {
 }
 
 function getDoubleSvIssueLevel(results) {
+  if (results?.some(result => result.groups?.some(group => group.level === "error"))) {
+    return TAB_LEVEL_ERROR;
+  }
+
   const hasDoubleSv =
     results?.some(result => result.groups?.length > 0) ?? false;
 

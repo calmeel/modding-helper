@@ -46,6 +46,18 @@ function detectDoubleSvGroups(svLines, maxGapMs) {
     });
   }
 
+  for (const group of groups) {
+    const counts = new Map();
+    for (const item of group.items) {
+      counts.set(item.time, (counts.get(item.time) ?? 0) + 1);
+    }
+    group.items = group.items.map(item => ({
+      ...item,
+      level: counts.get(item.time) > 1 ? "error" : "warn"
+    }));
+    group.level = group.items.some(item => item.level === "error") ? "error" : "warn";
+  }
+
   return groups;
 }
 

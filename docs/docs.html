@@ -958,7 +958,15 @@ AiMod は同時刻の重複 SV は検出できますが、1 ms ズレの二重 S
 
 <div class="section section-detect">
 <span class="label label-detect">■ 検出内容</span><br>
-指定した間隔（<code>1 ~ 5 ms</code>）以内にある、近すぎる SV line を検出します。
+指定した間隔（<code>1 ~ 5 ms</code>）以内にある、近すぎる SV line を検出します。<br>
+完全同時刻に重複する SV線は赤色のエラー、それ以外の近接した SV線は黄色の警告として表示します。
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ 注意点</span><br>
+完全に同じ時刻に2本の SV線がある場合は unrankable のため、修正する必要があります。<br><br>
+一方、<code>1 ms</code> または <code>2 ms</code> 離れた SV線は、それ自体は unrankable ではなく、必ずしも修正する必要はありません。<br>
+ただし、どちらかが意図しない SV線である可能性が高いため、意図した配置かどうか確認することを推奨します。
 </div>
 </section>
 
