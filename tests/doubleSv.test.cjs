@@ -4,7 +4,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 const { test } = require("node:test");
 
-function check(times, maxGapMs = 2) {
+function check(times, maxGapMs = 2, sameValues = false) {
   const context = vm.createContext({ window: {} });
   for (const file of [
     "parsers/osuParser.js", "checks/sv/doubleSvCheck.js", "app/i18n.js",
@@ -13,7 +13,7 @@ function check(times, maxGapMs = 2) {
     vm.runInContext(fs.readFileSync(path.join(__dirname, "..", file), "utf8"), context);
   }
   context.text = "[TimingPoints]\n" + times.map((time, index) =>
-    `${time},${index % 2 ? -50 : -100},4,1,0,100,0,0`
+    `${time},${!sameValues && index % 2 ? -50 : -100},4,1,0,100,0,0`
   ).join("\n");
   context.maxGapMs = maxGapMs;
   return JSON.parse(vm.runInContext(`JSON.stringify((() => {
@@ -32,6 +32,10 @@ test("exact timestamp duplicates are red errors regardless of their SV values", 
     assert.equal(result.groups[0].level, "error");
     assert.ok(result.groups[0].items.every(item => item.level === "error"));
     assert.equal((html.match(/class="result-error"/g) ?? []).length, times.length);
+    assert.ok(html.includes(`There are ${times.length} SV lines at the same timestamp. Correction is required.`));
+    assert.match(html, /SV x1\s*\|/);
+    assert.match(html, /SV x2\s*\|/);
+    assert.equal((html.match(/Correction is required\./g) ?? []).length, times.length);
     assert.doesNotMatch(html, /result-warn/);
   }
 });
@@ -51,6 +55,14 @@ test("mixed groups only color the exact duplicates red", () => {
   assert.deepEqual(result.groups[0].items.map(item => item.level), ["warn", "error", "error", "warn"]);
   assert.equal((html.match(/class="result-error"/g) ?? []).length, 2);
   assert.equal((html.match(/class="result-warn"/g) ?? []).length, 2);
+});
+
+test("identical duplicates retain both rows and show the duplicate count on each", () => {
+  const { html } = check([243984, 243984], 2, true);
+  assert.equal((html.match(/class="timestamp-link"/g) ?? []).length, 2);
+  assert.equal((html.match(/There are 2 SV lines/g) ?? []).length, 2);
+  assert.match(html, /SV x1\s*\| vol 100\s*\| There are 2 SV lines/);
+  assert.doesNotMatch(html, /SV x1 \/ x1|vol 100 \/ 100/);
 });
 
 test("no duplicates and configurable proximity retain their existing behavior", () => {

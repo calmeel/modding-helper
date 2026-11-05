@@ -87,6 +87,7 @@ const i18n = {
     noOffset: "No unsnapped objects found.",
 
     noDoubleSv: "No double SV found.",
+    doubleSvSameTime: "There are {count} SV lines at the same timestamp. Correction is required.",
     barlineDoubleBarline: "Double barline",
     barlineNegativeStartBug: "Negative-start barline bug",
     barlineNoteBarlineSeparation: "Separation between notes and barlines",
@@ -745,6 +746,7 @@ const i18n = {
     noOffset: "スナップされていないオブジェクトは見つかりませんでした。",
     
     noDoubleSv: "二重SVは見つかりませんでした。",
+    doubleSvSameTime: "同一時刻に{count}本のSV線があります。修正が必要です。",
     barlineDoubleBarline: "2重小節線",
     barlineNegativeStartBug: "マイナス時刻開始による小節線バグ",
     barlineNoteBarlineSeparation: "ノーツと小節線の分離",
