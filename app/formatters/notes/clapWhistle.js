@@ -46,12 +46,13 @@ function formatClapWhistleSummaryTable(results, t) {
     const coloredName = getDifficultyName(result.fileName);
 
     const padding = " ".repeat(diffWidth - plainName.length);
+    const mixed = result.counts.whistle > 0 && result.counts.clap > 0;
 
     lines.push(
       `${coloredName}${padding} | ` +
-      `${String(result.counts.whistle).padStart(12)} | ` +
-      `${String(result.counts.clap).padStart(12)} | ` +
-      `${String(result.counts.both).padStart(12)}`
+      `${formatWarningCount(result.counts.whistle, 12, mixed)} | ` +
+      `${formatWarningCount(result.counts.clap, 12, mixed)} | ` +
+      `${formatWarningCount(result.counts.both, 12, true)}`
     );
   }
 

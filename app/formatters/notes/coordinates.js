@@ -19,7 +19,7 @@ function formatMultipleCoordinateResults(results, t) {
     lines.push(
       `${getDifficultyName(result.fileName)}${padding} | ` +
       `${padStartVisual(result.counts.center, centerWidth)} | ` +
-      `${padStartVisual(result.counts.other, otherWidth)}`
+      `${formatWarningCount(result.counts.other, otherWidth, true)}`
     );
   }
 

@@ -140,6 +140,14 @@ function padStartVisual(text, width) {
   return " ".repeat(Math.max(0, width - visibleWidth(s))) + s;
 }
 
+function formatWarningCount(count, width, warn) {
+  const value = String(count);
+  const padding = " ".repeat(Math.max(0, width - visibleWidth(value)));
+  const text = escapeHtml(value);
+  return padding + (warn && count > 0
+    ? `<span class="result-warn">${text}</span>` : text);
+}
+
 function formatSectionTitle(text) {
   return `<h3 class="result-section-title">${escapeHtml(text)}</h3>`;
 }
