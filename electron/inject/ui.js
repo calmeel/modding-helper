@@ -22,8 +22,10 @@
            ※ 設定ラジオの初期チェック(opt.mode === viewMode)より前で読む必要があるため、
              var の巻き上げ任せにせずここで確定させる。 */
         var viewMode = 'wide';
+        var tagDisplayMode = 'text';
         try {
           if (localStorage.getItem('moddingHelperViewMode') === 'compact') viewMode = 'compact';
+          if (localStorage.getItem('moddingHelperTagDisplayMode') === 'buttons') tagDisplayMode = 'buttons';
         } catch (e) {}
 
         var electronText = function(key) {
@@ -744,6 +746,40 @@
                 viewModeSection.appendChild(lb);
               });
               viewSettingsBody.appendChild(viewModeSection);
+
+              var tagDisplaySection = document.createElement('div');
+              tagDisplaySection.className = 'etb-sfx-settings';
+              var tagDisplayTitle = document.createElement('div');
+              tagDisplayTitle.className = 'etb-sfx-settings-title';
+              tagDisplayTitle.id = 'etb-tagdisplay-title';
+              tagDisplayTitle.textContent = electronText('electronTagDisplay');
+              tagDisplaySection.appendChild(tagDisplayTitle);
+              [
+                { mode: 'text', id: 'etb-tagdisplay-text', key: 'electronTagDisplayText' },
+                { mode: 'buttons', id: 'etb-tagdisplay-buttons', key: 'electronTagDisplayButtons' }
+              ].forEach(function(opt) {
+                var label = document.createElement('label');
+                label.className = 'etb-sfx-opt';
+                var radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'etb-tagdisplay';
+                radio.value = opt.mode;
+                radio.checked = tagDisplayMode === opt.mode;
+                radio.addEventListener('change', function() {
+                  if (!radio.checked) return;
+                  tagDisplayMode = opt.mode;
+                  try { localStorage.setItem('moddingHelperTagDisplayMode', tagDisplayMode); } catch (e) {}
+                  if (typeof renderMapPanel === 'function' && lastMapMeta) renderMapPanel(lastMapMeta);
+                });
+                var text = document.createElement('span');
+                text.id = opt.id;
+                text.textContent = electronText(opt.key);
+                label.appendChild(radio);
+                label.appendChild(document.createTextNode(' '));
+                label.appendChild(text);
+                tagDisplaySection.appendChild(label);
+              });
+              viewSettingsBody.appendChild(tagDisplaySection);
             }
 
             /* 判定ラインの位置（中央 / 左寄せ）の切替 */
@@ -2630,6 +2666,9 @@
           set('etb-title-viewsettings',    'electronDisplayMode');
           set('etb-viewmode-wide',         'electronWide');
           set('etb-viewmode-compact',      'electronCompact');
+          set('etb-tagdisplay-title',     'electronTagDisplay');
+          set('etb-tagdisplay-text',      'electronTagDisplayText');
+          set('etb-tagdisplay-buttons',   'electronTagDisplayButtons');
           set('etb-judgepos-title',        'electronJudgementLine');
           set('etb-judgepos-center',       'electronCenter');
           set('etb-judgepos-left',         'electronLeft');
@@ -2923,6 +2962,9 @@
                   '<span class="osu-map-label">Tags</span>' +
                   '<span class="osu-map-value none">' + noneText + '</span>' +
                   '</div>';
+              }
+              if (tagDisplayMode === 'text') {
+                return row('Tags', data.tags, 'osu-tags-text');
               }
               var chipTitle = electronText('electronTagHint');
               var chips = data.tags.split(' ').filter(function(t) { return t; })
