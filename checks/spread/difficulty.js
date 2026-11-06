@@ -120,17 +120,7 @@ function createSpreadDiffOrder(results) {
 
 function applySpreadDiffOrder(results, diffOrder) {
   if (!results) return [];
-
-  const orderMap = new Map(diffOrder.map((fileName, index) => [fileName, index]));
-
-  return [...results].sort((a, b) => {
-    const ai = orderMap.has(a.fileName) ? orderMap.get(a.fileName) : 9999;
-    const bi = orderMap.has(b.fileName) ? orderMap.get(b.fileName) : 9999;
-
-    if (ai !== bi) return ai - bi;
-
-    return getDifficultyNameText(a.fileName).localeCompare(getDifficultyNameText(b.fileName));
-  });
+  return sortResultsForDisplay(results, diffOrder);
 }
 
 function countCircleNotes(text) {

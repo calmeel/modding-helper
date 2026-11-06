@@ -26,7 +26,7 @@ function formatMultipleContentPermissionResults(results, t) {
     return escapeHtml(t("noOsuFiles"));
   }
 
-  const matchedResults = results.filter(result =>
+  const matchedResults = sortResultsForDisplay(results).filter(result =>
     result.results?.length
   );
 

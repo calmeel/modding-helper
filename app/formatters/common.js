@@ -64,11 +64,42 @@ function formatSortedResults(results, formatter, t) {
     .join("\n\n");
 }
 
-/** Taiko用ソート関数 */
-function sortResultsForDisplay(results) {
-  return [...results].sort(
-    (a, b) => getTaikoDifficultySortKey(a) - getTaikoDifficultySortKey(b)
-  );
+/** メイン画面とプレビューで共有する表示順。公開時は配列の差し替えも通知する。 */
+function getDisplayDiffOrder() {
+  return typeof window !== "undefined" ? (window.__loadedDiffOrder || []) : [];
+}
+
+function publishDisplayDiffOrder(diffOrder) {
+  window.__loadedDiffOrder = [...diffOrder];
+  window.dispatchEvent(new Event("modding-helper-diff-order-changed"));
+}
+
+function compareAutomaticDiffOrder(a, b) {
+  const info = result => result.sortInfo ||
+    (typeof getSpreadSortInfo === "function" ? getSpreadSortInfo(result) : null);
+  const sa = info(a);
+  const sb = info(b);
+  const score = (sa?.score ?? getTaikoDifficultySortKey(a)) -
+    (sb?.score ?? getTaikoDifficultySortKey(b));
+  if (score) return score;
+  if (sa?.base === 999 && sb?.base === 999) {
+    const count = result => Number.isFinite(result.noteCount) ? result.noteCount :
+      (typeof result.text === "string" && typeof countCircleNotes === "function" ? countCircleNotes(result.text) : null);
+    const ac = count(a);
+    const bc = count(b);
+    if (ac !== null && bc !== null && ac !== bc) return ac - bc;
+  }
+  return getDifficultyNameText(a).localeCompare(getDifficultyNameText(b));
+}
+
+function sortResultsForDisplay(results, diffOrder = getDisplayDiffOrder()) {
+  const rank = new Map(diffOrder.map((fileName, index) => [fileName, index]));
+  return [...results].sort((a, b) => {
+    const ai = rank.get(a.fileName) ?? Infinity;
+    const bi = rank.get(b.fileName) ?? Infinity;
+    if (ai !== bi) return ai < bi ? -1 : 1;
+    return compareAutomaticDiffOrder(a, b);
+  });
 }
 
 function getTaikoDifficultySortKey(fileNameOrResult) {

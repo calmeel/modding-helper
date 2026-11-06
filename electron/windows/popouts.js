@@ -21,6 +21,21 @@ let lastMapInfo = null;
 let lastTimingInfo = null;
 let lastChartSource = null;
 let chartSourceMode = 'file';
+let lastDiffOrder = { diffOrder: [], manualCategories: {} };
+
+function setDiffOrder(payload) {
+  if (!payload || !Array.isArray(payload.diffOrder) ||
+      !payload.diffOrder.every(name => typeof name === 'string')) return;
+  const categories = new Set(['belowKantan', 'kantan', 'futsuu', 'muzukashii', 'oni', 'innerPlus', 'unknown']);
+  lastDiffOrder = {
+    diffOrder: [...payload.diffOrder],
+    manualCategories: Object.fromEntries(Object.entries(payload.manualCategories || {})
+      .filter(([name, category]) => payload.diffOrder.includes(name) && categories.has(category)))
+  };
+  for (const win of Object.values(chartPopouts)) {
+    if (!win.isDestroyed()) win.webContents.send('diff-order-changed', lastDiffOrder);
+  }
+}
 let popoutMetaChecked = [];  // メタデータ分離窓と同期する Tags チェック状態（タグ文字列の配列）
 
 function chartSourceBuffer(value) {
@@ -187,6 +202,7 @@ function openChartPopout(chartId, lang) {
          先に送ると誰も受け取れず、osu! 側が動くまで
          「再生ヘッドが出ない」「Diff との交点マーカーが出ない」状態になる。 */
       sendChartSourceModeToWindow(pop);
+      pop.webContents.send('diff-order-changed', lastDiffOrder);
       if (chartSourceMode === 'file') {
         sendChartSourceToWindow(pop);
       } else {
@@ -565,6 +581,7 @@ module.exports = {
   broadcastOsuData,
   setChartSourceFile,
   setChartSourceMode,
+  setDiffOrder,
   openPopout,
   openChartPopout,
   setMetaChecked,

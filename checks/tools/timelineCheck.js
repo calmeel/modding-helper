@@ -396,31 +396,7 @@ function lcmArray(values) {
 }
 
 function sortTimelineDiffs(diffs, diffOrder = []) {
-  if (diffOrder && diffOrder.length) {
-    const orderMap = new Map(
-      diffOrder.map((fileName, index) => [fileName, index])
-    );
-
-    return [...diffs].sort((a, b) => {
-      const ai = orderMap.has(a.fileName) ? orderMap.get(a.fileName) : 9999;
-      const bi = orderMap.has(b.fileName) ? orderMap.get(b.fileName) : 9999;
-
-      if (ai !== bi) return ai - bi;
-
-      return getDifficultyNameText(a.fileName)
-        .localeCompare(getDifficultyNameText(b.fileName));
-    });
-  }
-
-  return [...diffs].sort((a, b) => {
-    const an = a.objects?.length ?? 0;
-    const bn = b.objects?.length ?? 0;
-
-    if (an !== bn) return an - bn;
-
-    return getDifficultyNameText(a.fileName)
-      .localeCompare(getDifficultyNameText(b.fileName));
-  });
+  return sortResultsForDisplay(diffs, diffOrder);
 }
 
 function parseTimelineSliderMultiplier(text) {

@@ -349,27 +349,7 @@ function formatSpreadOdHpTable(results, t, diffOrder = null, manualCategories = 
 }
 
 function sortSpreadResults(results) {
-  return [...results].sort((a, b) => {
-    const sa = a.sortInfo?.score ?? 9999;
-    const sb = b.sortInfo?.score ?? 9999;
-
-    if (sa !== sb) return sa - sb;
-
-    const aCategory = getSpreadAutoCategory(a.sortInfo);
-    const bCategory = getSpreadAutoCategory(b.sortInfo);
-
-    if (
-      aCategory === "unknown" &&
-      bCategory === "unknown"
-    ) {
-      if (a.noteCount !== b.noteCount) {
-        return a.noteCount - b.noteCount;
-      }
-    }
-
-    return getDifficultyNameText(a.fileName)
-      .localeCompare(getDifficultyNameText(b.fileName));
-  });
+  return sortResultsForDisplay(results, []);
 }
 
 function formatSpreadValue(value) {

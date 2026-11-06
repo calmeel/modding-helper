@@ -111,6 +111,8 @@ function createSrCalculatorState() {
 }
 
 function renderSrCalculator(state, output, t, diffOrder = []) {
+  // 計算中に順番が変わった場合も、完了時は最後に描画した順番を使う。
+  state.diffOrder = diffOrder;
   if (!output) return;
   output.replaceChildren();
 
@@ -158,13 +160,7 @@ function renderSrCalculator(state, output, t, diffOrder = []) {
     output.appendChild(meta);
   }
 
-  const order = new Map(diffOrder.map((fileName, index) => [fileName, index]));
-  const results = [...state.results].sort((a, b) => {
-    const ai = order.has(a.fileName) ? order.get(a.fileName) : Number.MAX_SAFE_INTEGER;
-    const bi = order.has(b.fileName) ? order.get(b.fileName) : Number.MAX_SAFE_INTEGER;
-    if (ai !== bi) return ai - bi;
-    return String(a.difficultyName).localeCompare(String(b.difficultyName));
-  });
+  const results = sortResultsForDisplay(state.results, diffOrder);
 
   const table = document.createElement("table");
   table.className = "sr-calculator-table";
@@ -263,5 +259,5 @@ async function startSrCalculation(
     state.error = error && error.message || t("srCalculatorUnavailable");
   }
 
-  renderSrCalculator(state, output, t, diffOrder);
+  renderSrCalculator(state, output, t, state.diffOrder || diffOrder);
 }

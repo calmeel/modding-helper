@@ -140,8 +140,12 @@ function setupBnCompareUi(params) {
     }
   }
 
-  function renderBnDiffMatching() {
+  function renderBnDiffMatching(preserveSelections = false) {
     if (!bnDiffMatchingArea) return;
+
+    // 順番・言語の更新で、手動で選んだ比較相手を失わない。
+    const selections = new Map((preserveSelections ? [...bnDiffMatchingArea.querySelectorAll('.bn-match-row')] : [])
+      .map(row => [row.dataset.beforeId, row.querySelector('.bn-match-after').value]));
 
     const beforeDiffs = sortResultsForDisplay(state.bnCompare.beforeDiffs);
     const afterDiffs = sortResultsForDisplay(state.bnCompare.afterDiffs);
@@ -155,7 +159,9 @@ function setupBnCompareUi(params) {
     const rows = [];
 
     for (const beforeDiff of beforeDiffs) {
-      const matched = findDefaultBnMatch(beforeDiff, afterDiffs, usedAfterIds);
+      const matched = selections.has(beforeDiff.id)
+        ? afterDiffs.find(diff => diff.id === selections.get(beforeDiff.id))
+        : findDefaultBnMatch(beforeDiff, afterDiffs, usedAfterIds);
       if (matched) usedAfterIds.add(matched.id);
 
       const options = [
@@ -292,10 +298,18 @@ function setupBnCompareUi(params) {
     renderBnSelectedResult();
   }
 
+  function getSortedBnResults() {
+    return sortResultsForDisplay(state.bnCompare.resultsByPair.map(result => ({
+      ...state.bnCompare.beforeDiffs.find(diff => diff.fileName === result.beforeFileName),
+      fileName: result.beforeFileName,
+      result
+    }))).map(item => item.result);
+  }
+
   function renderBnPairSelect() {
     if (!bnPairSelect) return;
 
-    const results = state.bnCompare.resultsByPair;
+    const results = getSortedBnResults();
 
     if (!results.length) {
       bnPairSelect.innerHTML = "";
@@ -311,6 +325,7 @@ function setupBnCompareUi(params) {
   }
 
   function renderBnSelectedResult() {
+    renderBnPairSelect();
     const result = state.bnCompare.resultsByPair.find(item =>
       item.pairId === state.bnCompare.selectedPairId
     );
@@ -321,12 +336,13 @@ function setupBnCompareUi(params) {
       t,
       {
         svChangeThreshold: state.bnCompare.svChangeThreshold,
-        resultsByPair: state.bnCompare.resultsByPair
+        resultsByPair: getSortedBnResults()
       }
     );
   }
   
   return {
-    renderBnSelectedResult
+    renderBnSelectedResult,
+    renderBnDiffMatching
   };
 }

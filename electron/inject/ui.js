@@ -1145,6 +1145,10 @@
 
           /* 難易度キャッシュ（__loadedDiffs が差し替わった時だけ再解析） */
           var spCacheRef = null, spCacheDiffs = [];
+          window.addEventListener('modding-helper-diff-order-changed', function() {
+            sortSpreadDiffs(spCacheDiffs);
+            spVisibleDiffsDirty = true;
+          });
           var spreadTimeRange = null; // 手動シークのクランプ用 [min, max]
           /* ── ノーツ選択（Ctrl+C のタイムスタンプ用） ──
              選択は 1 難易度内に限定する（osu! のタイムスタンプが 1 譜面を指すため）。

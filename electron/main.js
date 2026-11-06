@@ -310,6 +310,10 @@ app.whenReady().then(() => {
     beatmapActionMode = mode === 'osu' ? 'osu' : 'file';
     popouts.setChartSourceMode(mode);
   });
+  ipcMain.on('diff-order-changed', (event, payload) => {
+    if (!mainWin || mainWin.isDestroyed() || event.sender !== mainWin.webContents) return;
+    popouts.setDiffOrder(payload);
+  });
 
   /* 「osu! で開いている譜面」へ切り替えた直後など、レンダラーから現在の譜面情報を要求する。
      監視は譜面が変わった時しか送らないので、これが無いと切替時に空のままになる。 */

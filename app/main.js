@@ -1,4 +1,15 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const isChartPopout = new URLSearchParams(location.search).has('popoutChart');
+  let receivedDiffOrder = null;
+  const synchronizeDiffOrder = () => {
+    publishDisplayDiffOrder(state.spread.diffOrder);
+    if (!isChartPopout && window.electronAPI?.setDiffOrder) {
+      window.electronAPI.setDiffOrder({
+        diffOrder: state.spread.diffOrder,
+        manualCategories: state.spread.manualCategories
+      });
+    }
+  };
   const langEn = document.getElementById("langEn");
   const langJa = document.getElementById("langJa");
   const manualLink = document.getElementById("manualLink");
@@ -357,7 +368,11 @@ document.addEventListener("DOMContentLoaded", () => {
     state,
     dom,
     t,
-    renderSpreadResult
+    renderSpreadResult,
+    onOrderChanged: () => {
+      synchronizeDiffOrder();
+      renderAllDiffResults();
+    }
   });
 
   setupTabVisibilitySettings();
@@ -573,6 +588,10 @@ document.addEventListener("DOMContentLoaded", () => {
       timelineOutput.textContent = t("timelineNotRendered");
     }
 
+    renderAllDiffResults();
+  }
+
+  function renderAllDiffResults() {
     renderResult();
     renderShiftResult();
     renderKiaiResult();
@@ -605,11 +624,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     updateTabIssueStates(state);
     bnCompareUi.renderBnSelectedResult();
+    bnCompareUi.renderBnDiffMatching(true);
   }
 
   // did-finish-load 後に追加される Electron 専用 DOM へも、
   // 現在言語を初回適用できるよう公開する。
   window.applyModdingHelperLanguage = applyLanguage;
+
+  if (isChartPopout && window.electronAPI?.onDiffOrder) {
+    window.electronAPI.onDiffOrder(payload => {
+      receivedDiffOrder = payload;
+      state.spread.diffOrder = [...payload.diffOrder];
+      state.spread.manualCategories = { ...payload.manualCategories };
+      synchronizeDiffOrder();
+      renderAllDiffResults();
+    });
+  }
 
   function renderResult() {
     renderClapWhistleResult(state.clapWhistle, dom, t);
@@ -938,8 +968,12 @@ document.addEventListener("DOMContentLoaded", () => {
       state.spread.results = result.spread;
       state.spread.diffOrder = createSpreadDiffOrder(result.spread);
       state.spread.manualCategories = {};
+      if (isChartPopout && receivedDiffOrder) {
+        state.spread.diffOrder = [...receivedDiffOrder.diffOrder];
+        state.spread.manualCategories = { ...receivedDiffOrder.manualCategories };
+      }
       // スプレッド表示(exe)用に難易度順（易→難）を公開。表示側で逆順=難→易に並べる
-      window.__loadedDiffOrder = state.spread.diffOrder;
+      synchronizeDiffOrder();
       state.offsetWaveformSources = result.offsetWaveformSources;
       state.contentPermission = result.contentPermission;
 
@@ -1175,7 +1209,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     state.spread = { results: null, diffOrder: [], manualCategories: {} };
     window.__loadedDiffs = null;
-    window.__loadedDiffOrder = [];
+    synchronizeDiffOrder();
     if (window.__loadedAudioUrl) URL.revokeObjectURL(window.__loadedAudioUrl);
     window.__loadedAudioUrl = null;
     window.__loadedAudio = null;

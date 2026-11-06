@@ -483,8 +483,17 @@ function setupSpreadOrderControls(params) {
   const {
     state,
     dom,
-    renderSpreadResult
+    renderSpreadResult,
+    onOrderChanged
   } = params;
+
+  const refreshOrder = () => {
+    if (onOrderChanged) onOrderChanged();
+    else {
+      renderSpreadResult();
+      updateTabIssueStates(state);
+    }
+  };
 
   if (dom.spreadResetOrderButton) {
     dom.spreadResetOrderButton.addEventListener("click", () => {
@@ -492,8 +501,7 @@ function setupSpreadOrderControls(params) {
       if (!results) return;
 
       state.spread.diffOrder = createSpreadDiffOrder(results);
-        renderSpreadResult();
-        updateTabIssueStates(state);
+      refreshOrder();
     });
   }
 
@@ -518,8 +526,7 @@ function setupSpreadOrderControls(params) {
         swapSpreadOrder(state.spread.diffOrder, index, index + 1);
       }
 
-      renderSpreadResult();
-      updateTabIssueStates(state);
+      refreshOrder();
     });
   }
 
@@ -544,8 +551,7 @@ function setupSpreadOrderControls(params) {
         state.spread.manualCategories
       );
 
-      renderSpreadResult();
-      updateTabIssueStates(state);
+      refreshOrder();
     });
   }
 }
