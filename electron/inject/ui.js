@@ -2709,7 +2709,7 @@
             }
             if (langSwitch) {
               var languageEl = document.getElementById('etb-language');
-              ['langJa', 'langEn'].forEach(function(id) {
+              ['langEn', 'langJa'].forEach(function(id) {
                 var button = langSwitch.querySelector('#' + id);
                 if (button) languageEl.appendChild(button);
               });
