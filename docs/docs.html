@@ -1642,38 +1642,57 @@ background event は、以下の形式で記述されます：<br>
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ 検出内容1：BGのオフセット差分</span><br>
+<span class="label label-detect">■ 検出内容1：オフセット検出：Diff間のオフセット比較</span><br>
 mapset 内の各 difficulty について background event を読み取り、同じ背景画像ファイルを使用している difficulty 間で
 <code>xOffset</code> / <code>yOffset</code> が一致しているかを確認します。<br><br>
 
-同じ background file を使用しているにもかかわらず、diff 間で offset が異なる場合は warning として表示します。<br><br>
-
-この検出は AiMod や Mapset Verifier では行えません。
-</div>
-
-<div class="section section-detect">
-<span class="label label-detect">■ 検出内容2：背景画像形式</span><br>
-background event で参照されている背景画像ファイルの拡張子を確認し、
-<code>.jpg</code> / <code>.jpeg</code> / <code>.png</code> を識別します。<br>
-背景画像に <code>.png</code> が使用されている場合は、容量削減の観点から
-<code>.jpg</code> 形式が推奨されるため warning として表示します。<br><br>
-
-<code>.osz</code> ファイルを読み込んだ場合は、画像ファイル本体のシグネチャも確認します。
-拡張子が <code>.jpg</code> / <code>.jpeg</code> なのに実体が PNG、または
-拡張子が <code>.png</code> なのに実体が JPEG の場合は error として表示します。<br><br>
-
-複数の background event がある場合は、それぞれの画像ファイル名と形式を一覧で表示します。
+同じ background file を使用しているにもかかわらず、diff 間で offset が異なる場合は warning として表示します。
 </div>
 
 <div class="section section-warning">
 <span class="label label-warning">■ 注意点</span><br>
-異なる background file を使用している difficulty 同士は比較対象外です。<br><br>
+同じ background file で offset が異なることは unrankable ではありません。意図的な演出である可能性があります。<br>
+例：<br>
+<a href="https://osu.ppy.sh/beatmapsets/2050721#taiko/4282206">https://osu.ppy.sh/beatmapsets/2050721#taiko/4282206</a><br>
+<a href="https://osu.ppy.sh/beatmapsets/1875162#taiko/4003751">https://osu.ppy.sh/beatmapsets/1875162#taiko/4003751</a><br><br>
 
-例えば、<code>Kantan</code> では <code>BG.jpg</code>、<code>Muzukashii</code> では <code>BG2.jpg</code> を使用している場合、
-それぞれ別の背景画像として扱うため、offset が異なっていても warning にはしません。<br><br>
-
-また、同じ background file で offset が異なる場合でも、意図的な演出である可能性があります。<br>
 warning が出た場合は、修正漏れか意図的な差分かを確認してください。
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ 検出内容2：オフセット検出：xオフセットの使用</span><br>
+<code>xOffset</code> に <code>0</code> 以外の値が使用されている場合は、正負にかかわらず warning として表示します。<br><br>
+
+Taiko モードでは、0 以外のxオフセットを用いることは非常に稀です。もし意図的に用いている場合は、画面内に BG が欠けている領域がないか確認してください。
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ 検出内容3：拡張子検出：pngの使用</span><br>
+background event で参照されている背景画像ファイルの拡張子を確認し、
+<code>.jpg</code> / <code>.jpeg</code> / <code>.png</code> を識別します。<br><br>
+
+背景画像に <code>.png</code> が使用されている場合は、容量削減の観点から
+<code>.jpg</code> 形式が推奨されるため warning として表示します。（変更は必須ではありません）<br>
+
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ 検出内容4：拡張子検出：シグネチャの確認</span><br>
+画像ファイル本体のシグネチャを確認し、
+拡張子が <code>.jpg</code> / <code>.jpeg</code> なのに実体が PNG、または
+拡張子が <code>.png</code> なのに実体が JPEG の場合は warning として表示します。<br><br>
+
+<code>.jpg</code> と <code>.jpeg</code> は、どちらも JPEG として扱います。
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ 注意点</span><br>
+拡張子と実際の画像形式の不一致は必ずしも unrankable ではありません。
+</div>
+
+<div class="section section-detect">
+<span class="label label-detect">■ 検出内容5：BGが設定されていないDiffの検出</span><br>
+background event がない Diff は、BG 未設定として error を表示します。
 </div>
 </section>
 

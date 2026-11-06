@@ -457,11 +457,13 @@
       <td class="warn-cell">
         ・同じ background file を使用している difficulty 間で
         <code>xOffset</code> / <code>yOffset</code> が一致していない<br>
-        ・拡張子が .png
-      </td>
-      <td class="error-cell">
+        ・<code>xOffset</code> に <code>0</code> 以外の値が使用されている<br>
+        ・拡張子が <code>.png</code>（容量削減の観点から JPG を推奨）<br>
         ・拡張子が <code>.jpg</code> / <code>.jpeg</code> だが実体は PNG<br>
         ・拡張子が <code>.png</code> だが実体は JPEG
+      </td>
+      <td class="error-cell">
+        ・BG が設定されていない difficulty が存在する
       </td>
     </tr>
 

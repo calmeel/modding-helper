@@ -540,15 +540,16 @@ function getBgOffsetIssueLevel(results) {
   if (!results || !results.length) return TAB_LEVEL_NONE;
 
   const groups = new Map();
+  let hasWarn = false;
 
   for (const result of results) {
-    for (const bg of result.backgrounds ?? []) {
-      if (bg.imageTypeMismatch) {
-        return TAB_LEVEL_ERROR;
-      }
+    if (!result.backgrounds?.length) {
+      return TAB_LEVEL_ERROR;
+    }
 
-      if (bg.imageType === "png") {
-        return TAB_LEVEL_WARN;
+    for (const bg of result.backgrounds ?? []) {
+      if (bg.imageTypeMismatch || bg.imageType === "png" || (Number.isFinite(bg.xOffset) && bg.xOffset !== 0)) {
+        hasWarn = true;
       }
 
       const key = bg.normalizedFileName;
@@ -568,7 +569,7 @@ function getBgOffsetIssueLevel(results) {
     }
   }
 
-  return TAB_LEVEL_NONE;
+  return hasWarn ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
 }
 
 function getEpilepsyWarningIssueLevel(results) {

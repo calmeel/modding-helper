@@ -366,9 +366,13 @@ const i18n = {
 
     tabBgOffset: "BG",
     bgOffsetTitle: "BG",
+    bgOffsetCheckTitle: "Offset check",
+    bgExtensionCheckTitle: "File extension check",
+    bgExtensionNoIssues: "No BG file extension issues were found.",
     bgOffsetNoBackgrounds: "No background events were found.",
-    bgOffsetNoIssues: "No BG issues were found.",
-    bgOffsetDifferentOffsets: "has different offsets between difficulties.",
+    bgOffsetNoIssues: "No BG offset issues were found.",
+    bgOffsetDifferentOffsets: "Different offsets are used between difficulties.",
+    bgOffsetNonZeroXWarning: "A non-zero xOffset is used.\nCheck whether any area of the screen is left uncovered by the BG.",
     bgOffsetPngWarning: "PNG background is used. JPG is recommended from a file-size reduction perspective.",
     bgOffsetImageTypeMismatch: "The file extension does not match the actual image type",
 
@@ -1014,9 +1018,13 @@ const i18n = {
 
     tabBgOffset: "BG",
     bgOffsetTitle: "BG",
+    bgOffsetCheckTitle: "オフセットのチェック",
+    bgExtensionCheckTitle: "拡張子のチェック",
+    bgExtensionNoIssues: "BGの拡張子の問題は見つかりませんでした。",
     bgOffsetNoBackgrounds: "Background event が見つかりませんでした。",
-    bgOffsetNoIssues: "BGの問題は見つかりませんでした。",
-    bgOffsetDifferentOffsets: "は difficulty 間で異なるオフセットを使用しています。",
+    bgOffsetNoIssues: "BGのオフセットの問題は見つかりませんでした。",
+    bgOffsetDifferentOffsets: "difficulty 間で異なるオフセットが使用されています。",
+    bgOffsetNonZeroXWarning: "xOffset に 0 以外の値が使用されています。\n画面内に BG が欠けている領域がないか確認してください。",
     bgOffsetPngWarning: "PNG形式の背景画像が使用されています。容量削減の観点からJPG形式が推奨されています。",
     bgOffsetImageTypeMismatch: "拡張子と実際の画像形式が一致していません",
 
