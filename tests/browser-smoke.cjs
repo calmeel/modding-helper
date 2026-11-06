@@ -137,6 +137,24 @@ async function run() {
     }
     await selectFile(osuFile, path.basename(osuFile));
     await until(async () => await evaluate(`!document.getElementById('openBeatmapPage').disabled && document.getElementById('output').textContent.includes('Oni')`), 'osu results');
+    assert.deepEqual(await evaluate(`document.getElementById('shiftOutput').textContent.split('\\n').find(line => line.startsWith('[Oni]') && line.includes(' | ')).split(' | ').slice(1, 4).map(cell => cell.trim())`), ['3', '0', '0']);
+    await evaluate(`document.querySelector('.tab-button[data-tab="shift1ms"]').click(); true`);
+    assert.equal(await evaluate(`document.querySelector('#shiftOutput table') === null && document.getElementById('shiftOutput').tagName === 'PRE'`), true);
+    if (pageUrl.startsWith('http')) {
+      await evaluate(`(() => {
+        const t = key => window.i18n.ja[key] || key;
+        const times = [[480, 240, 120], [480, 240, 160, 120, 81], [480, 240, 160, 120, 80, 61], [480, 96, 481]];
+        const names = ['Kantan', 'Futsuu', 'Muzukashii', 'Oni'];
+        const results = times.map((values, i) => runOffset1msCheck(
+          '[TimingPoints]\\n0,480,4,1,0,100,1,0\\n[HitObjects]\\n' + values.map(time => '256,192,' + time + ',1,0').join('\\n'),
+          '[' + names[i] + '].osu'
+        ));
+        document.getElementById('shiftOutput').innerHTML = formatMultipleShiftResults(results, t);
+        document.getElementById('shiftOutput').scrollIntoView();
+      })()`);
+      const screenshot = await command('Page.captureScreenshot', { format: 'png' });
+      fs.writeFileSync(path.join(output, 'offset-summary.png'), Buffer.from(screenshot.data, 'base64'));
+    }
     const stamp = await evaluate(`document.querySelector('.timestamp-link')?.getAttribute('href')`);
     assert.match(stamp, /^osu:\/\/edit\//);
     await selectFile(oszFile, '日本語テスト [Oni].osu');

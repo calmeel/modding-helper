@@ -8,6 +8,8 @@ function runOffset1msCheck(text, fileName, options = {}) {
 
   const results = [];
   const wheelResults = [];
+  const summary = createOffsetSnapSummary(beatSnaps);
+  const summaryPoints = [];
 
   for (const line of hitObjects) {
     const items = getOffsetCheckTimesFromHitObject(
@@ -20,6 +22,7 @@ function runOffset1msCheck(text, fileName, options = {}) {
 
     for (const item of items) {
       const currentTp = findCurrentTimingPoint(timingPoints, item.time);
+      collectOffsetSnapSummary(summary, summaryPoints, item, currentTp);
       if (!currentTp) continue;
 
       const best = findNearestSnapDiff(
@@ -68,11 +71,108 @@ function runOffset1msCheck(text, fileName, options = {}) {
     }
   }
 
+  finishOffsetSnapSummary(summary, summaryPoints);
+
   return {
     fileName,
+    summary,
     results,
     wheelResults
   };
+}
+
+// Use the same candidates and start/tail times as the detailed check.
+// Sort a copy so ties consistently belong to the coarsest snap.
+function createOffsetSnapSummary(beatSnaps = DEFAULT_BEAT_SNAPS) {
+  return {
+    snapped: 0,
+    shifted: 0,
+    unknown: 0,
+    unavailable: 0,
+    compatibility: 0,
+    snaps: [...beatSnaps].sort((a, b) => a - b)
+      .map(snap => ({ snap, snapped: 0, shifted: 0 })),
+    usedSnaps: [],
+    resnapDivisor: null,
+    status: "empty"
+  };
+}
+
+function collectOffsetSnapSummary(summary, points, item, timingPoint) {
+  if (!timingPoint || !Number.isFinite(item.time) ||
+      !Number.isFinite(timingPoint.time) ||
+      !Number.isFinite(timingPoint.beatLength) || timingPoint.beatLength <= 0) {
+    summary.unavailable++;
+    return;
+  }
+
+  // Find exact matches before near matches; a tie belongs to the coarsest
+  // snap. Count each start/tail once, even when several grids share it.
+  let best = null;
+  for (const row of summary.snaps) {
+    const stableDiff = getStableResnapInteger(
+      item.time, timingPoint.time, timingPoint.beatLength, row.snap
+    ) - item.time;
+    const lazerDiff = Math.trunc(getLazerOffsetSnapTime(
+      item.time, timingPoint.time, timingPoint.beatLength, row.snap
+    )) - item.time;
+    const distance = Math.min(Math.abs(stableDiff), Math.abs(lazerDiff));
+    if (!best || distance < best.distance) {
+      best = { row, distance, stableDiff, lazerDiff };
+    }
+  }
+
+  if (best.distance > 1) {
+    summary.unknown++;
+    return;
+  }
+
+  const category = best.distance === 0 ? "snapped" : "shifted";
+  summary[category]++;
+  best.row[category]++;
+  if (category === "snapped" &&
+      (best.stableDiff === 0) !== (best.lazerDiff === 0)) {
+    summary.compatibility++;
+  }
+  points.push({ ...item, timingPoint, category });
+}
+
+function finishOffsetSnapSummary(summary, points) {
+  summary.usedSnaps = summary.snaps
+    .filter(row => row.snapped + row.shifted > 0)
+    .map(row => row.snap);
+  if (summary.usedSnaps.length) {
+    summary.resnapDivisor = summary.usedSnaps.reduce((multiple, snap) => {
+      let a = multiple;
+      let b = snap;
+      while (b) [a, b] = [b, a % b];
+      return multiple / a * snap;
+    }, 1);
+  }
+
+  if (summary.unavailable) summary.status = "unavailable";
+  else if (summary.unknown) summary.status = "unknown";
+  else if (!points.length) summary.status = "empty";
+  else if (!summary.shifted) summary.status = "snapped";
+  else {
+    // A common divisor alone is insufficient: integer rounding may change
+    // with a finer grid. Check both editors and preserve already exact times.
+    // Slider tails depend on length/SV and cannot be resnapped independently.
+    const safe = points.every(point => {
+      if (point.objectType === "slider" && point.category === "shifted") return false;
+      const tp = point.timingPoint;
+      const stable = getStableResnapInteger(
+        point.time, tp.time, tp.beatLength, summary.resnapDivisor
+      );
+      const lazer = Math.trunc(getLazerOffsetSnapTime(
+        point.time, tp.time, tp.beatLength, summary.resnapDivisor
+      ));
+      const tolerance = point.category === "snapped" ? 0 : 1;
+      return Math.abs(stable - point.time) <= tolerance &&
+        Math.abs(lazer - point.time) <= tolerance;
+    });
+    summary.status = safe ? "resnap" : "review";
+  }
 }
 
 function getOffsetIssueLevelFromDiff(diff) {

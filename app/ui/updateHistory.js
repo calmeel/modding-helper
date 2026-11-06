@@ -305,10 +305,12 @@ const updateHistoryEntries = [
     type: "update",
     items: {
       en: [
-        "Updated the Node.js version"
+        "Updated the Node.js version",
+        "Added a tabular summary to the 1ms Offset tab."
       ],
       ja: [
-        "Node.js のバージョン更新"
+        "Node.js のバージョン更新",
+        "「1msズレ」タブに表形式の集計を追加"
       ]
     }
   },

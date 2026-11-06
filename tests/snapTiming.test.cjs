@@ -40,6 +40,177 @@ function analyze(time, options) {
   return { run, ...results };
 }
 
+function offsetSummaryMap(objects, beat = 480) {
+  return `[Difficulty]\nSliderMultiplier:1.4\n[TimingPoints]\n0,${beat},4,1,0,100,1,0\n` +
+    `[HitObjects]\n${objects.join("\n")}\n`;
+}
+
+test("offset summary counts each basic snap and its 1ms offsets once", () => {
+  const run = runtime();
+  const times = [480, 240, 160, 120, 80, 60, 40, 30];
+  const text = offsetSummaryMap(times.flatMap(time => [time, time + 1, time - 1])
+    .map(time => `256,192,${time},1,0`));
+  const summary = run('runOffset1msCheck(text, "[Oni].osu").summary', { text });
+  assert.equal(summary.snapped, 8);
+  assert.equal(summary.shifted, 16);
+  assert.equal(summary.unknown, 0);
+  assert.equal(summary.resnapDivisor, 48);
+  assert.equal(summary.status, "resnap");
+  for (const row of summary.snaps) {
+    assert.equal(row.snapped, 1);
+    assert.equal(row.shifted, 2);
+  }
+});
+
+test("offset summary derives the common divisor from exact and shifted positions", () => {
+  const run = runtime();
+  for (const [times, divisor] of [
+    [[480, 240, 121], 4],
+    [[480, 240, 160, 120, 81], 12],
+    [[480, 240, 160, 120, 80, 61], 24]
+  ]) {
+    const summary = run('runOffset1msCheck(text, "[Oni].osu").summary', {
+      text: offsetSummaryMap(times.map(time => `256,192,${time},1,0`))
+    });
+    assert.equal(summary.resnapDivisor, divisor);
+    assert.equal(summary.status, "resnap");
+  }
+});
+
+test("advanced snaps update summary counts while larger offsets stay unknown", () => {
+  const run = runtime();
+  const text = offsetSummaryMap([96, 98, 482, 481].map(time => `256,192,${time},1,0`));
+  const basic = run('runOffset1msCheck(text, "[Oni].osu").summary', { text });
+  const advanced = run('runOffset1msCheck(text, "[Oni].osu", { includeAdvancedSnaps: true }).summary');
+  assert.equal(basic.unknown, 3);
+  assert.equal(basic.shifted, 1);
+  assert.equal(basic.status, "unknown");
+  assert.equal(advanced.snapped, 1);
+  assert.equal(advanced.unknown, 2);
+  assert.equal(advanced.shifted, 1);
+  assert.equal(advanced.status, "unknown");
+  assert.deepEqual(advanced.usedSnaps, [1, 5]);
+  assert.equal(advanced.resnapDivisor, 5);
+  assert.deepEqual(run('runOffset1msCheck(text, "[Oni].osu", { includeAdvancedSnaps: false }).summary'), basic);
+});
+
+test("advanced snap summary counts exact and 1ms matches and derives their LCM", () => {
+  const run = runtime();
+  const text = offsetSummaryMap([504, 505, 360, 361, 280, 281]
+    .map(time => `256,192,${time},1,0`), 2520);
+  const result = run('runOffset1msCheck(text, "[Oni].osu", { includeAdvancedSnaps: true })', { text });
+  assert.equal(result.summary.snapped, 3);
+  assert.equal(result.summary.shifted, 3);
+  assert.equal(result.summary.unknown, 0);
+  assert.deepEqual(result.summary.usedSnaps, [5, 7, 9]);
+  assert.equal(result.summary.resnapDivisor, 315);
+  assert.equal(result.summary.status, "resnap");
+  for (const snap of [5, 7, 9]) {
+    assert.deepEqual(result.summary.snaps.find(row => row.snap === snap),
+      { snap, snapped: 1, shifted: 1 });
+  }
+  const html = run('formatOffsetSnapSummary([result], k => i18n.en[k] || k)', { result });
+  assert.match(html, /1\/315 snap \(1\/5, 1\/7, 1\/9 snaps are used\)/);
+  assert.match(html, /class="result-warn"/);
+});
+
+test("advanced snaps still calculate the LCM when slider offsets require individual review", () => {
+  const run = runtime();
+  const result = run('runOffset1msCheck(text, "[Oni].osu", { includeAdvancedSnaps: true })', {
+    text: offsetSummaryMap([
+      "256,192,504,1,0", "256,192,360,1,0", "256,192,280,1,0",
+      "256,192,1,2,0,B|300:192,1,140"
+    ], 2520)
+  });
+  assert.equal(result.summary.unknown, 0);
+  assert.equal(result.summary.shifted, 2);
+  assert.deepEqual(result.summary.usedSnaps, [1, 5, 7, 9]);
+  assert.equal(result.summary.resnapDivisor, 315);
+  assert.equal(result.summary.status, "review");
+  for (const lang of ["ja", "en"]) {
+    const html = run(`formatOffsetSnapSummary([result], k => i18n.${lang}[k] || k)`, { result });
+    assert.match(html, /<span class="result-error">Check individually<\/span>/);
+    assert.doesNotMatch(html, /unknown \(check individually\)/);
+  }
+});
+
+test("offset summary includes slider and spinner tails, including shared timestamps", () => {
+  const run = runtime();
+  const summary = run('runOffset1msCheck(text, "[Oni].osu").summary', {
+    text: offsetSummaryMap([
+      "256,192,480,2,0,B|300:192,1,140",
+      "256,192,960,8,0,1441",
+      "256,192,960,1,0"
+    ])
+  });
+  assert.equal(summary.snapped, 4);
+  assert.equal(summary.shifted, 1);
+  assert.equal(summary.status, "resnap");
+  const tailOffset = run('runOffset1msCheck(text, "[Oni].osu").summary', {
+    text: offsetSummaryMap(["256,192,480,2,0,B|300:192,1,140.4"])
+  });
+  assert.equal(tailOffset.snapped, 1);
+  assert.equal(tailOffset.shifted, 1);
+  assert.equal(tailOffset.status, "review");
+});
+
+test("offset summary separates missing timing, empty maps and editor compatibility", () => {
+  const run = runtime();
+  const unavailable = run('runOffset1msCheck(text, "[Oni].osu").summary', {
+    text: beatmap(100, { timing: false })
+  });
+  assert.equal(unavailable.unavailable, 1);
+  assert.equal(unavailable.unknown, 0);
+  assert.equal(unavailable.status, "unavailable");
+  const empty = run('runOffset1msCheck(text, "[Oni].osu").summary', { text: offsetSummaryMap([]) });
+  assert.equal(empty.status, "empty");
+  const compatible = run('runOffset1msCheck(text, "[Oni].osu").summary', { text: beatmap(-500) });
+  assert.equal(compatible.snapped, 1);
+  assert.equal(compatible.compatibility, 1);
+  assert.equal(compatible.status, "snapped");
+  const mixed = run('runOffset1msCheck(text, "[Oni].osu").summary', {
+    text: offsetSummaryMap(["256,192,-500,1,0", "256,192,501,1,0"], 500)
+  });
+  assert.equal(mixed.shifted, 1);
+  assert.equal(mixed.status, "review"); // Do not move an already accepted position.
+});
+
+test("offset overview renders one compact row per difficulty in both languages", () => {
+  const run = runtime();
+  const items = [
+    run('runOffset1msCheck(text, "[Oni].osu")', { text: beatmap(100) }),
+    run('runOffset1msCheck(text, "[Kantan].osu")', { text: beatmap(501) }),
+    run('runOffset1msCheck(text, "[<b>].osu")', { text: beatmap(500) })
+  ];
+  for (const lang of ["ja", "en"]) {
+    const html = run(`formatMultipleShiftResults(items, k => i18n.${lang}[k] || k)`, { items });
+    const table = run(`formatOffsetSnapSummary(items, k => i18n.${lang}[k] || k)`, { items });
+    const lines = table.split("\n");
+    assert.deepEqual(lines[0].split(" | ").map(cell => cell.trim()),
+      ["Difficulty", "Snapped", "1ms offsets", "unknown snap", "Resnap with"]);
+    assert.match(table, /<span class="result-warn">1<\/span>/);
+    assert.match(table, /<span class="result-error">1<\/span>/);
+    assert.doesNotMatch(table, /<span class="result-(?:warn|error)">0<\/span>/);
+    assert.match(table, /<span class="result-warn">1\/1 snap \(Only 1\/1 snap is used\)<\/span>/);
+    assert.match(table, /<span class="result-error">unknown<\/span>/);
+    assert.match(table, /All snapped/);
+    assert.doesNotMatch(table, /<span class="result-(?:warn|error)">All snapped<\/span>/);
+    const separator = run('formatSeparator()');
+    assert.ok(html.startsWith(table + "\n\n" + separator + "\n\n"));
+    assert.equal(lines.filter(line => line.includes('class="diff-name"')).length, 3);
+    assert.doesNotMatch(table, /<table|<tr|<td/);
+    const plainRows = lines.filter(line => line.includes('class="diff-name"'))
+      .map(line => line.replace(/<[^>]*>/g, ""));
+    assert.deepEqual(plainRows.map(line => line.split(" | ").slice(1, 4).map(cell => cell.trim())),
+      [["0", "1", "0"], ["0", "0", "1"], ["1", "0", "0"]]);
+    assert.ok(table.indexOf("[Kantan]") < table.indexOf("[Oni]"));
+    assert.match(table, /1\/1/);
+    assert.match(table, /&lt;b&gt;/);
+    assert.doesNotMatch(html, /undefined|NaN/);
+    assert.match(html, /timestamp-link/); // Existing per-position details remain.
+  }
+});
+
 test("normal whole beats retain Kiai omission and preview OK output", () => {
   const { run, kiai, preview } = analyze(1000);
   assert.deepEqual(kiai.results, []);
