@@ -531,19 +531,10 @@ This page contains the checklist used for Tag checks in Modding Helper.
 
 <div class="section">
   <p>
-    If <code>feat.</code> is included in any of the <code>Title</code>,
-    <code>TitleUnicode</code>, <code>Artist</code>, or <code>ArtistUnicode</code>
-    fields, related featured-artist tags are displayed as suggested additions.
+    Related tags are suggested based on the fields and markers listed below.
   </p>
-
   <p>
-    Matching for <code>feat.</code> is case-insensitive.<br>
-    A suggestion is not displayed again if it is already included in <code>Tags</code>.
-  </p>
-
-  <p>
-    If <code>Ver.</code> is included in <code>Title</code> or <code>TitleUnicode</code>,
-    <code>version</code> is displayed as a suggested addition.
+    Matching is case-insensitive. Candidates already included in <code>Tags</code> are not displayed.
   </p>
 </div>
 
@@ -572,10 +563,23 @@ This page contains the checklist used for Tag checks in Modding Helper.
       <td>
         <code>Title</code> / <code>TitleUnicode</code>
       </td>
-      <td><code>Ver.</code></td>
+      <td><code>Ver.</code></code></td>
       <td>
         <span class="rule-tag suggest">version</span>
       </td>
+    </tr>
+    <tr>
+      <td><code>Title</code> / <code>TitleUnicode</code></td>
+      <td><code>rmx</code></td>
+      <td><span class="rule-tag suggest">remix</span></td>
+    </tr>
+    <tr>
+      <td>
+        <code>Title</code> / <code>TitleUnicode</code><br>
+        <code>Artist</code> / <code>ArtistUnicode</code>
+      </td>
+      <td><code>&amp;</code></td>
+      <td><span class="rule-tag suggest">and</span></td>
     </tr>
   </tbody>
 </table>

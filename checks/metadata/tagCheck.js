@@ -441,6 +441,8 @@ function runTagCheck(text, fileName) {
   relatedSuggestions.push(...findTagRelatedSuggestions(tags, sourceLine?.value ?? ""));
   metadataSuggestions.push(...findFeatTagSuggestions(tags, metadataFields));
   metadataSuggestions.push(...findVersionTagSuggestions(tags, metadataFields));
+  metadataSuggestions.push(...findRemixTagSuggestions(tags, metadataFields));
+  metadataSuggestions.push(...findAndTagSuggestions(tags, metadataFields));
   duplicateTags.push(...findDuplicateTags(tags));
   metadataDuplicateTags.push(...findMetadataDuplicateTags(tags, metadataFields));
   sourceSuggestions.push(
@@ -806,6 +808,32 @@ function findVersionTagSuggestions(tags, metadataFields) {
     marker: "Ver.",
     suggestions
   }];
+}
+
+function findRemixTagSuggestions(tags, metadataFields) {
+  const fields = metadataFields
+    .filter(item =>
+      ["Title", "TitleUnicode"].includes(item.field) &&
+      /rmx/i.test(String(item.value ?? ""))
+    )
+    .map(item => item.field);
+
+  if (!fields.length || getNormalizedTagWords(tags).includes("remix")) return [];
+
+  return [{ fields, marker: "rmx", suggestions: ["remix"] }];
+}
+
+function findAndTagSuggestions(tags, metadataFields) {
+  const fields = metadataFields
+    .filter(item =>
+      ["Title", "TitleUnicode", "Artist", "ArtistUnicode"].includes(item.field) &&
+      String(item.value ?? "").includes("&")
+    )
+    .map(item => item.field);
+
+  if (!fields.length || getNormalizedTagWords(tags).includes("and")) return [];
+
+  return [{ fields, marker: "&", suggestions: ["and"] }];
 }
 
 function normalizeSourceForTagCompare(source) {

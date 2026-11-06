@@ -530,19 +530,10 @@
 
 <div class="section">
   <p>
-    <code>Title</code>、<code>TitleUnicode</code>、<code>Artist</code>、
-    <code>ArtistUnicode</code> のいずれかに <code>feat.</code> が含まれている場合、
-    featured artist に関連する tag を追加候補として表示します。
+    下表のフィールドと表記に応じて、関連する tag を追加候補として表示します。
   </p>
-
   <p>
-    <code>feat.</code> の判定は大文字・小文字を区別しません。<br>
-    追加候補が既に <code>Tags</code> に含まれている場合、その候補は再表示しません。
-  </p>
-
-  <p>
-    <code>Title</code> / <code>TitleUnicode</code> に <code>Ver.</code> が含まれている場合は、
-    <code>version</code> を追加候補として表示します。
+    大文字・小文字は区別せず、既に <code>Tags</code> にある候補は表示しません。
   </p>
 </div>
 
@@ -571,10 +562,23 @@
       <td>
         <code>Title</code> / <code>TitleUnicode</code>
       </td>
-      <td><code>Ver.</code></td>
+      <td><code>Ver.</code></code></td>
       <td>
         <span class="rule-tag suggest">version</span>
       </td>
+    </tr>
+    <tr>
+      <td><code>Title</code> / <code>TitleUnicode</code></td>
+      <td><code>rmx</code></code></td>
+      <td><span class="rule-tag suggest">remix</span></td>
+    </tr>
+    <tr>
+      <td>
+        <code>Title</code> / <code>TitleUnicode</code><br>
+        <code>Artist</code> / <code>ArtistUnicode</code>
+      </td>
+      <td><code>&amp;</code></td>
+      <td><span class="rule-tag suggest">and</span></td>
     </tr>
   </tbody>
 </table>
