@@ -79,7 +79,7 @@ function runVolumeCompareCheck(sources, options = {}) {
   });
 
   return {
-    results: displaySections,
+    results: mergeIdenticalVolumeCompareSections(displaySections),
     intervals,
     series: parsed.map(item => ({
       fileName: item.fileName,
@@ -104,6 +104,28 @@ function runVolumeCompareCheck(sources, options = {}) {
 
 function normalizeVolumeCompareAudioDurationMs(value) {
   return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+function mergeIdenticalVolumeCompareSections(sections) {
+  const merged = [];
+
+  for (const section of sections) {
+    const last = merged[merged.length - 1];
+    const sameVolumes = last &&
+      last.states.length === section.states.length &&
+      last.states.every((state, index) =>
+        state.fileName === section.states[index].fileName &&
+        state.volume === section.states[index].volume
+      );
+
+    if (last && last.end === section.start && sameVolumes) {
+      last.end = section.end;
+    } else {
+      merged.push({ ...section });
+    }
+  }
+
+  return merged;
 }
 
 function filterVolumeCompareSectionsByOptions(intervals, options = {}) {
