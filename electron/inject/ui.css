@@ -365,6 +365,36 @@
       #electron-col-future > .etb-card { flex: 0 0 auto; }
       #etb-meta-body { padding: 0 !important; }
 
+      /* Diff順: ワイドはメタデータ直下、コンパクトは元のサブタブ。 */
+      #electron-layout:not(.etb-compact) .tab-button[data-spread-subtab-target="order"],
+      #electron-layout:not(.etb-compact) .spread-subtab-button[data-spread-subtab="order"] { display: none !important; }
+      #etb-card-difforder #spread-subtab-order { display: block !important; }
+      #etb-card-difforder > .etb-card-body { max-height: 360px; overflow-y: auto; }
+      #etb-card-difforder .spread-order-actions { display: none; }
+      #etb-card-difforder > .etb-card-head > #spreadResetOrderButton { margin-left: auto; }
+      #etb-card-difforder > .etb-card-head > #spreadResetOrderButton span[data-i18n] { display: none; }
+      .etb-order-reset-icon { flex-shrink: 0; }
+      #spreadResetOrderButton:not(.etb-map-action) .etb-order-reset-icon { display: none; }
+      .etb-order-table { width: 100%; max-width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 13px; }
+      .etb-order-table th, .etb-order-table td {
+        padding: 2px; text-align: left; vertical-align: middle; border: none;
+        overflow-wrap: anywhere;
+      }
+      .etb-order-table th { color: #999; font-weight: normal; }
+      .etb-order-table thead th { border-bottom: 1px solid #363640; }
+      .etb-order-number-col { width: 25px; }
+      .etb-order-move-col { width: 46px; }
+      .etb-order-category-col { width: 36%; }
+      .etb-order-table .etb-order-name, .etb-order-table .diff-name {
+        white-space: normal; word-break: normal; overflow-wrap: anywhere;
+      }
+      .etb-order-table .spread-order-button { margin: 0 1px 0 0; padding: 2px 4px; }
+      .etb-order-table .spread-category-select { width: 100%; min-width: 0; padding: 1px 2px; font-size: 13px; }
+      @media (max-width: 900px) {
+        .etb-order-number-col { width: 18px; }
+        .etb-order-move-col { width: 24px; }
+      }
+
       /* ── 設定モード: 3分割 ──
          左  = 表示モード＋譜面読み込み設定 / 中央 = チェックリスト表示設定＋ツール表示設定
          右  = プレビュータブ設定（専用カラム #electron-col-settings-right）。
