@@ -59,6 +59,11 @@
   <div id="root"></div>
   <script>
     (function () {
+      function escapePanelText(value) {
+        var el = document.createElement('span');
+        el.textContent = String(value == null ? '' : value);
+        return el.innerHTML;
+      }
       var params = new URLSearchParams(location.search);
       var panel  = params.get('panel') || 'metadata';
       var isEn   = (params.get('lang') || 'ja') === 'en';
@@ -100,7 +105,7 @@
             var empty = !value;
             return '<div class="osu-map-row"><span class="osu-map-label">' + label + '</span>' +
               '<span class="osu-map-value ' + (empty ? 'none' : (cls || '')) + '">' +
-              (empty ? noneText : value) + '</span></div>';
+              escapePanelText(empty ? noneText : value) + '</span></div>';
           };
           var tagsHtml = (function () {
             if (!data.tags) {
@@ -109,7 +114,7 @@
             }
             var chipTitle = isEn ? 'Click: mark / Double-click: copy' : 'クリック: チェック / ダブルクリック: コピー';
             var chips = data.tags.split(' ').filter(function (t) { return t; })
-              .map(function (t) { return '<span class="osu-tag-chip" title="' + chipTitle + '">' + t + '</span>'; }).join('');
+              .map(function (t) { return '<span class="osu-tag-chip" title="' + chipTitle + '">' + escapePanelText(t) + '</span>'; }).join('');
             return '<div class="osu-map-row"><span class="osu-map-label">Tags</span>' +
               '<div id="osu-map-tags">' + chips + '</div></div>';
           })();

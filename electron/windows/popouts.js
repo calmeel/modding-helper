@@ -2,7 +2,8 @@
 //
 // メインウィンドウから切り離した小窓を開き、osu! のデータを配信する。
 // mainWin は main.js 側が持つので init({getMainWin}) で参照方法だけ受け取る。
-const { BrowserWindow, shell, screen } = require('electron');
+const { BrowserWindow, screen } = require('electron');
+const { configureWindowLinks } = require('../services/windowLinks');
 const fs = require('fs');
 const path = require('path');
 
@@ -156,6 +157,8 @@ function openChartPopout(chartId, lang) {
     backgroundColor: '#1e1e1e',
     webPreferences: {
       contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
       preload: path.join(__dirname, '..', 'preload.js'),
     },
     icon: path.join(root, 'images', 'icon.ico'),
@@ -165,13 +168,12 @@ function openChartPopout(chartId, lang) {
   // index.html の <title> でウィンドウ名が上書きされないようにする（グラフ名を出したい）
   pop.on('page-title-updated', (e) => e.preventDefault());
 
-  // リンク類は外部ブラウザで開く（メインと同様）
-  pop.webContents.on('new-window', (e, url) => { e.preventDefault(); shell.openExternal(url); });
-
   // 安全策: 注入が失敗してもウィンドウが出るよう一定時間後に必ず表示
   setTimeout(() => { if (!pop.isDestroyed() && !pop.isVisible()) pop.show(); }, 4000);
 
   const url = 'file:///' + path.join(root, 'index.html').replace(/\\/g, '/') + '?popoutChart=' + chartId;
+  // リンク類は外部ブラウザで開く（メインと同様）
+  configureWindowLinks(pop, url);
   pop.loadURL(url);
 
   pop.webContents.on('did-finish-load', () => {
@@ -497,6 +499,8 @@ function openPopout(name, lang) {
     alwaysOnTop: name === 'timing',  // リアルタイム表示窓は最前面に固定
     webPreferences: {
       contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
       preload: path.join(__dirname, '..', 'preload.js'),
     },
     icon: path.join(root, 'images', 'icon.ico'),
@@ -510,6 +514,7 @@ function openPopout(name, lang) {
 
   const url = 'file:///' + path.join(__dirname, 'popout.html').replace(/\\/g, '/')
     + '?panel=' + name + '&lang=' + (isEn ? 'en' : 'ja');
+  configureWindowLinks(pop, url);
   pop.loadURL(url);
 
   // 読み込み完了時に最新データを送って即時反映

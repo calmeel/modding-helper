@@ -1,4 +1,5 @@
-const { app, BrowserWindow, session, Menu, screen, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, Menu, screen, ipcMain, shell, clipboard } = require('electron');
+const { pathToFileURL } = require('url');
 const path = require('path');
 const fs = require('fs');
 const JSZip = require('jszip');
@@ -7,6 +8,7 @@ const mapsetWatcher = require('./osu/mapsetWatcher');
 const popouts = require('./windows/popouts');
 const updater = require('./services/updater');
 const windowState = require('./services/windowState');
+const { configureWindowLinks } = require('./services/windowLinks');
 const { createSrCalculatorService } = require('./services/srCalculator');
 // リアルタイム(osu!メモリ監視)は非公開ファイル（GitHub には上げない方針）。
 // 欠落していても web プレビュー等は動くよう no-op スタブにフォールバックする。
@@ -139,6 +141,8 @@ function createWindow() {
     title: `osu!taiko Modding Helper v${version}`,
     webPreferences: {
       contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
       preload: path.join(__dirname, 'preload.js'),
       additionalArguments: ['--modding-helper-main-window'],
     },
@@ -154,28 +158,7 @@ function createWindow() {
   win.on('unmaximize', () => win.webContents.send('win-unmaximized'));
 
   // target="_blank" リンク・新規ウィンドウをすべて外部ブラウザで開く
-  win.webContents.on('new-window', (event, url) => {
-    event.preventDefault();
-    shell.openExternal(url);
-  });
-
-  // 誤って index.html 以外に遷移しそうになったらブラウザに飛ばす
-  win.webContents.on('will-navigate', (event, url) => {
-    const indexUrl = 'file:///' + path.join(root, 'index.html').replace(/\\/g, '/');
-    if (url !== indexUrl) {
-      event.preventDefault();
-      shell.openExternal(url);
-    }
-  });
-
-  // CDN 経由の jszip をローカルの npm 版にリダイレクト
-  const jszipLocal = path.join(root, 'node_modules', 'jszip', 'dist', 'jszip.min.js');
-  session.defaultSession.webRequest.onBeforeRequest(
-    { urls: ['https://cdn.jsdelivr.net/npm/jszip*'] },
-    (details, callback) => {
-      callback({ redirectURL: `file://${jszipLocal.replace(/\\/g, '/')}` });
-    }
-  );
+  configureWindowLinks(win, pathToFileURL(path.join(root, 'index.html')).href);
 
   win.webContents.once('did-finish-load', async () => {
     // スプレッド表示の効果音源セット（sounds/<セット>/ にあれば）を注入。無ければ合成音にフォールバック
@@ -237,6 +220,19 @@ app.whenReady().then(() => {
   updater.init({ getMainWin: () => mainWin });
   mainWin = createWindow();
   updater.setupAutoUpdate();
+
+  ipcMain.handle('clipboard-write-text', async (event, text) => {
+    const allowedUrls = [
+      pathToFileURL(path.join(root, 'index.html')).href,
+      pathToFileURL(path.join(__dirname, 'windows', 'popout.html')).href,
+    ];
+    const senderUrl = event.senderFrame && event.senderFrame.url.split(/[?#]/)[0];
+    if (!BrowserWindow.fromWebContents(event.sender) ||
+        event.senderFrame !== event.sender.mainFrame || !allowedUrls.includes(senderUrl) ||
+        typeof text !== 'string') return false;
+    await clipboard.writeText(text);
+    return true;
+  });
 
   ipcMain.handle('sr-calculate', (event, payload) =>
     srCalculator.calculate(payload));

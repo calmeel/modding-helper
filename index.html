@@ -950,7 +950,12 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script>
+    // Keep this parser-blocking: the following scripts expect JSZip to be ready.
+    document.write('<script src="' + (window.electronAPI
+      ? 'node_modules/jszip/dist/jszip.min.js'
+      : 'https://cdn.jsdelivr.net/npm/jszip@3.10.2/dist/jszip.min.js') + '"><\/script>');
+  </script>
   <script src="app/files/oszZipLoader.js"></script>
   <script src="parsers/osuParser.js"></script>
   <script src="app/electron/taikoSpreadView.js"></script>

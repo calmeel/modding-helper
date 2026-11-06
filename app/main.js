@@ -472,7 +472,10 @@ document.addEventListener("DOMContentLoaded", () => {
       window.electronAPI.setLanguage(currentLang);
     }
     if (manualLink) {
-      manualLink.href = currentLang === "ja" ? "docs/docs.html" : "docs/docs-en.html";
+      const docsBase = window.electronAPI
+        ? "https://calmeel.github.io/modding-helper/docs/"
+        : "docs/";
+      manualLink.href = docsBase + (currentLang === "ja" ? "docs.html" : "docs-en.html");
     }
     if (updateHistoryContent) {
       renderUpdateHistory(updateHistoryContent, currentLang);
@@ -1010,9 +1013,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // Electron 13 のファイル選択・ドロップでは File.path が利用できる。
-      // パスがないFileにも対応できるよう、ArrayBufferをフォールバックにする。
-      const filePath = typeof file.path === "string" ? file.path : "";
+      // Electron 32以降はpreloadのwebUtils経由でパスを取得する。
+      // ブラウザやメモリ上のFileではArrayBufferにフォールバックする。
+      const filePath = getNativeFilePath(file);
       let source;
       if (filePath) {
         source = { name: file.name, type: file.type || "", path: filePath };

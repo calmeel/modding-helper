@@ -3,6 +3,14 @@ function isTaikoMode(mode) {
   return mode === 1;
 }
 
+function getNativeFilePath(file) {
+  if (typeof window !== "undefined" && window.electronAPI &&
+      typeof window.electronAPI.getPathForFile === "function") {
+    try { return window.electronAPI.getPathForFile(file); } catch (_) { return ""; }
+  }
+  return "";
+}
+
 function createEmptyProcessResult() {
   return {
     clapWhistle: [],
@@ -357,7 +365,7 @@ async function processFile(file, options = {}) {
       ],
       songFolderCheck: runSongFolderNameCheck(
         text,
-        options.songFolderName || getParentFolderNameFromFilePath(file.path)
+        options.songFolderName || getParentFolderNameFromFilePath(getNativeFilePath(file))
       ),
     };
   }

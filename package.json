@@ -6,13 +6,17 @@
   "repository": "https://github.com/calmeel/modding-helper",
   "scripts": {
     "start": "electron .",
+    "test": "node --test tests/*.test.cjs",
+    "test:electron": "electron tests/electron-smoke.cjs",
     "build:sr": "powershell -NoProfile -ExecutionPolicy Bypass -File electron/sr-calculator/build-all.ps1",
     "build:sr:current": "powershell -NoProfile -ExecutionPolicy Bypass -File electron/sr-calculator/build.ps1",
+    "prebuild:electron": "node -e \"require('electron')\"",
     "build:electron": "electron-builder --win nsis",
     "build": "npm run build:sr && npm run build:electron",
-    "publish": "npm run build:sr && electron-builder --win nsis --publish always"
+    "publish": "npm run build:sr && node -e \"require('electron')\" && electron-builder --win nsis --publish always"
   },
   "build": {
+    "electronDist": "node_modules/electron/dist",
     "appId": "com.vanity8.modding-helper",
     "productName": "Modding Helper",
     "win": {
@@ -48,6 +52,7 @@
       "!electron/dist/**",
       "!electron/dist-verify/**",
       "!electron/resources/sr-calculator/**",
+      "!tests/**",
       "!.claude/**",
       "!.vscode/**"
     ],
@@ -55,7 +60,9 @@
       {
         "from": "electron/resources/sr-calculator",
         "to": "sr-calculator",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "asarUnpack": [
@@ -67,13 +74,19 @@
     }
   },
   "devDependencies": {
-    "electron": "^13.4.0",
-    "electron-builder": "^25.0.0",
-    "png-to-ico": "^3.0.1",
-    "sharp": "^0.35.2"
+    "electron": "^45.2.3",
+    "electron-builder": "^26.18.1",
+    "png-to-ico": "^3.0.2",
+    "sharp": "^0.35.5"
   },
   "dependencies": {
-    "electron-updater": "^6.8.9",
-    "jszip": "^3.10.1"
+    "electron-updater": "^6.8.11",
+    "jszip": "^3.10.2"
+  },
+  "overrides": {
+    "minimatch@>=7": "^11.0.4"
+  },
+  "engines": {
+    "node": ">=24.22.2"
   }
 }

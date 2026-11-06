@@ -1,6 +1,12 @@
       (function() {
         if (document.getElementById('electron-titlebar')) return;
 
+        function escapePanelText(value) {
+          var el = document.createElement('span');
+          el.textContent = String(value == null ? '' : value);
+          return el.innerHTML;
+        }
+
         var appEl      = document.querySelector('.app');
         var topLinks   = appEl.querySelector('.top-links');
         var dropArea   = appEl.querySelector('.drop-area');
@@ -2906,7 +2912,7 @@
               if (!value && !alwaysShow) return '';
               var isEmpty = !value;
               var displayCls = isEmpty ? 'none' : (cls || '');
-              var displayVal = isEmpty ? noneText : value;
+              var displayVal = escapePanelText(isEmpty ? noneText : value);
               return '<div class="osu-map-row">' +
                 '<span class="osu-map-label">' + label + '</span>' +
                 '<span class="osu-map-value ' + displayCls + '">' + displayVal + '</span>' +
@@ -2921,7 +2927,7 @@
               }
               var chipTitle = electronText('electronTagHint');
               var chips = data.tags.split(' ').filter(function(t) { return t; })
-                .map(function(t) { return '<span class="osu-tag-chip" title="' + chipTitle + '">' + t + '</span>'; })
+                .map(function(t) { return '<span class="osu-tag-chip" title="' + chipTitle + '">' + escapePanelText(t) + '</span>'; })
                 .join('');
               return '<div class="osu-map-row"><span class="osu-map-label">Tags</span>' +
                 '<div id="osu-map-tags">' + chips + '</div></div>';
@@ -3025,6 +3031,7 @@
               if (panelMode !== 'file') return;
               if (!data) { clearMetaToWaiting(); }
               else { renderMapPanel(data); }
+              window.electronAPI.sendMapMetaToPopout(data);
               refreshMapActionState();
             }
           };

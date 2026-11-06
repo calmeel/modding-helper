@@ -300,6 +300,18 @@ const updateHistoryEntries = [
       ]
     }
   },
+  {
+    date: "2026/11/06",
+    type: "update",
+    items: {
+      en: [
+        "Updated the Node.js version"
+      ],
+      ja: [
+        "Node.js のバージョン更新"
+      ]
+    }
+  },
 ];
 
 const updateHistoryTypeLabels = {

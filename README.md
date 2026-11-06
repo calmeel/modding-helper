@@ -23,13 +23,25 @@
 
 ## Usage
 
-You can use [Modding Helper in your browser](https://calmeel.github.io/modding-helper/) without installing anything. To use the Windows desktop app, download it from the [latest release](https://github.com/calmeel/modding-helper/releases/latest).
+You can use [Modding Helper in your browser](https://calmeel.github.io/modding-helper/) without installing anything.
+To use the Windows desktop app, download it from the [latest release](https://github.com/calmeel/modding-helper/releases/latest).
 
 After opening the app, load a `.osu` or `.osz` file and select the checks you want to run.
 
 ## Documentation
 
 Detailed instructions are available in the [English documentation](https://calmeel.github.io/modding-helper/docs/docs-en.html) and the [Japanese documentation](https://calmeel.github.io/modding-helper/docs/docs.html).
+
+## Development
+
+Use Node.js 24.22.2 or newer (see `.node-version`). The desktop app uses its own Node.js runtime bundled with Electron.
+
+```sh
+npm ci
+npm test
+npm run test:electron
+npm run build
+```
 
 ## Feedback
 
