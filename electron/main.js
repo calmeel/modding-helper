@@ -2,7 +2,7 @@ const { app, BrowserWindow, Menu, screen, ipcMain, shell, clipboard } = require(
 const { pathToFileURL } = require('url');
 const path = require('path');
 const fs = require('fs');
-const JSZip = require('jszip');
+const { readMapset } = require('./osu/readMapset');
 const { loadTaikoSoundSets } = require('./services/sounds');
 const mapsetWatcher = require('./osu/mapsetWatcher');
 const popouts = require('./windows/popouts');
@@ -330,39 +330,17 @@ app.whenReady().then(() => {
 
   // 現在 osu! で開いている譜面のフォルダを .osz 相当の zip にまとめて返す。
   // knownFolder と同じフォルダなら再構築せず { unchanged:true } を返す。
-  ipcMain.handle('osu-get-current-mapset', async (event, knownFolder) => {
+  ipcMain.handle('osu-get-current-mapset', async (event, knownFolder, options) => {
     const osuPath = osuWatcher.getCurrentOsuPath();
     if (!osuPath) { mapsetWatcher.watch(null); return null; }
 
     const folder = path.dirname(osuPath);
     // このフォルダの .osu 更新を監視（保存で自動反映）
     mapsetWatcher.watch(folder, event.sender);
-    if (knownFolder && folder === knownFolder) {
-      return { unchanged: true, folder };
-    }
-
-    let entries;
-    try {
-      entries = fs.readdirSync(folder, { withFileTypes: true });
-    } catch (_) {
-      return null;
-    }
-
-    // 解析に必要なファイルのみ（.osu / 音声 / 画像）。動画やストーリーボードは除外。
-    const allow = /\.(osu|mp3|ogg|wav|jpg|jpeg|png|bmp)$/i;
-    const zip = new JSZip();
-    let osuCount = 0;
-    for (const ent of entries) {
-      if (!ent.isFile() || !allow.test(ent.name)) continue;
-      try {
-        zip.file(ent.name, fs.readFileSync(path.join(folder, ent.name)));
-        if (/\.osu$/i.test(ent.name)) osuCount++;
-      } catch (_) { /* 読めないファイルはスキップ */ }
-    }
-    if (osuCount === 0) return null;
-
-    const buffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'STORE' });
-    return { name: path.basename(folder) + '.osz', folder, buffer };
+    return readMapset(folder, {
+      knownFolder,
+      skipMultipleAudio: options?.skipMultipleAudio !== false
+    });
   });
 });
 

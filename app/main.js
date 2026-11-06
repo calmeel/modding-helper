@@ -885,6 +885,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const result = await processFile(file, processOptions);
+      if (pageLoadId !== beatmapPageLoadId) return;
       if (pageLoadId === beatmapPageLoadId) {
         beatmapPageUrl = getBeatmapPageUrlFromSources(result.offsetSources);
         if (openBeatmapPage) openBeatmapPage.disabled = !beatmapPageUrl;
@@ -985,6 +986,7 @@ document.addEventListener("DOMContentLoaded", () => {
         await renderFileMetaToPanel(file);
       }
     } catch (err) {
+      if (pageLoadId !== beatmapPageLoadId) return;
       if (err.message === "invalidFile") {
         output.textContent = t("invalidFile");
       } else {
@@ -999,6 +1001,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // ───────────────────────────────────────────────
   let osuSourceMode        = "file";
   let osuLastLoadedFolder  = null;
+  let osuLastSkipped = false;
+  let osuLoadId = 0;
+  let skipMultipleAudioMapsets = true;
   let osuStatusKey         = "";
   let osuStatusCls         = "";
   let lastLoadedFileForMeta = null;  // file モードで左パネルに出すため最後に読んだ File を保持
@@ -1126,7 +1131,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function applyOsuSourceMode(mode) {
+    ++osuLoadId;
+    ++beatmapPageLoadId;
+    osuLastLoadedFolder = null;
+    osuLastSkipped = false;
     osuSourceMode = (mode === "osu") ? "osu" : "file";
+    const skipOption = document.getElementById("skipMultipleAudioMapsets");
+    if (skipOption) {
+      skipOption.disabled = osuSourceMode !== "osu";
+      skipOption.checked = osuSourceMode === "osu" && skipMultipleAudioMapsets;
+    }
     try { localStorage.setItem("moddingHelperCheckSource", osuSourceMode); } catch {}
     if (window.electronAPI && typeof window.electronAPI.setChartSourceMode === "function") {
       window.electronAPI.setChartSourceMode(osuSourceMode);
@@ -1150,17 +1164,42 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function clearOsuCheckResults() {
+    ++beatmapPageLoadId;
+    beatmapPageUrl = null;
+    if (openBeatmapPage) openBeatmapPage.disabled = true;
+    prepareSrCalculation(null, state.srCalculator, srCalculatorOutput, t);
+    // Preserve independent BN comparison inputs and the SR calculator's state object.
+    for (const key of Object.keys(state)) {
+      if (!["bnCompare", "srCalculator", "spread"].includes(key)) state[key] = null;
+    }
+    state.spread = { results: null, diffOrder: [], manualCategories: {} };
+    window.__loadedDiffs = null;
+    window.__loadedDiffOrder = [];
+    if (window.__loadedAudioUrl) URL.revokeObjectURL(window.__loadedAudioUrl);
+    window.__loadedAudioUrl = null;
+    window.__loadedAudio = null;
+    lastLoadedFileForMeta = null;
+    applyLanguage();
+  }
+
   async function loadFromOsu(force) {
     if (osuSourceMode !== "osu") return;
+    const loadId = ++osuLoadId;
+    ++beatmapPageLoadId;
     setOsuStatus("osuSourceLoading", "");
 
     let res;
     try {
-      res = await window.electronAPI.getCurrentMapset(force ? null : osuLastLoadedFolder);
+      res = await window.electronAPI.getCurrentMapset(force ? null : osuLastLoadedFolder, {
+        skipMultipleAudio: skipMultipleAudioMapsets
+      });
     } catch {
+      if (loadId !== osuLoadId || osuSourceMode !== "osu") return;
       setOsuStatus("osuSourceNoMap", "error");
       return;
     }
+    if (loadId !== osuLoadId || osuSourceMode !== "osu") return;
 
     if (!res) {
       osuLastLoadedFolder = null;
@@ -1168,11 +1207,18 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     if (res.unchanged) {
-      setOsuStatus("osuSourceLoaded", "ok");
+      setOsuStatus(osuLastSkipped ? "osuSourceMultipleAudioSkipped" : "osuSourceLoaded", osuLastSkipped ? "" : "ok");
+      return;
+    }
+    if (res.skipped === "multiple-audio") {
+      osuLastLoadedFolder = res.folder;
+      osuLastSkipped = true;
+      clearOsuCheckResults();
+      setOsuStatus("osuSourceMultipleAudioSkipped", "");
       return;
     }
 
-    osuLastLoadedFolder = res.folder;
+    osuLastSkipped = false;
     try {
       const file = new File([res.buffer], res.name, { type: "application/octet-stream" });
       const songFolderName = String(res.folder ?? "")
@@ -1180,6 +1226,8 @@ document.addEventListener("DOMContentLoaded", () => {
         .filter(Boolean)
         .pop() ?? "";
       await handleFile(file, { songFolderName });
+      if (loadId !== osuLoadId || osuSourceMode !== "osu") return;
+      osuLastLoadedFolder = res.folder;
       // フォルダ監視による再解析では osu! 側のファイルパス自体は変わらないため、
       // osuWatcher はメタデータを自動では読み直さない。現在開いている .osu を
       // 明示的に再読込し、メタデータカード（分離窓を含む）とTiming情報を更新する。
@@ -1188,6 +1236,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       setOsuStatus("osuSourceLoaded", "ok");
     } catch {
+      if (loadId !== osuLoadId || osuSourceMode !== "osu") return;
       setOsuStatus("osuSourceNoMap", "error");
     }
   }
@@ -1203,6 +1252,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let saved = "file";
     try { saved = localStorage.getItem("moddingHelperCheckSource") || "file"; } catch {}
+    try {
+      skipMultipleAudioMapsets = localStorage.getItem("moddingHelperSkipMultipleAudioMapsets") !== "false";
+    } catch {}
+    const skipOption = document.getElementById("skipMultipleAudioMapsets");
+    if (skipOption) skipOption.addEventListener("change", () => {
+      if (osuSourceMode !== "osu") return;
+      skipMultipleAudioMapsets = skipOption.checked;
+      try { localStorage.setItem("moddingHelperSkipMultipleAudioMapsets", String(skipMultipleAudioMapsets)); } catch {}
+      osuLastLoadedFolder = null;
+      osuLastSkipped = false;
+      loadFromOsu(true);
+    });
 
     settings.querySelectorAll('input[name="osuSource"]').forEach(radio => {
       radio.checked = (radio.value === saved);

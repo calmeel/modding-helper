@@ -1178,6 +1178,12 @@ pre {
   cursor: pointer;
 }
 
+.osu-source-option:has(input:disabled),
+.osu-source-option input:disabled {
+  color: #8a8a9a;
+  cursor: default;
+}
+
 .osu-source-reload {
   align-self: flex-start;
   margin-top: 2px;

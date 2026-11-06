@@ -18,8 +18,9 @@ if (root !== sourceRoot) {
 
 // Never start the real game memory watcher or alter the user's clipboard/settings.
 const watcherPath = path.join(root, 'electron', 'osu', 'osuWatcher.js');
+let currentOsuPath = null;
 require.cache[watcherPath] = { id: watcherPath, filename: watcherPath, loaded: true, exports: {
-  setDeliver() {}, start() {}, stop() {}, resendMapInfo() {}, getCurrentOsuPath() { return null; },
+  setDeliver() {}, start() {}, stop() {}, resendMapInfo() {}, getCurrentOsuPath() { return currentOsuPath; },
 } };
 let copiedText;
 clipboard.writeText = async text => { copiedText = text; };
@@ -191,10 +192,100 @@ app.whenReady().then(async () => {
     await until(() => openedLinks.length > previous, 'manual link after language selection');
     assert.equal(openedLinks.at(-1), expectedDocs);
   }
+  // Loading policy applies only to osu! mode; file mode keeps its saved preference.
+  const multiFolder = fs.mkdtempSync(path.join(output, 'multi-audio-'));
+  currentOsuPath = path.join(multiFolder, 'one.osu');
+  fs.writeFileSync(currentOsuPath, beatmap);
+  fs.writeFileSync(path.join(multiFolder, 'two.osu'), beatmap.replace('audio.wav', 'other.wav'));
+  const optionState = () => evaluate(main, `(() => {
+    const el = document.getElementById('skipMultipleAudioMapsets');
+    return { checked: el.checked, disabled: el.disabled };
+  })()`);
+  const sourceMode = mode => evaluate(main, `(() => {
+    const radio = document.querySelector('input[name="osuSource"][value="${mode}"]');
+    radio.checked = true; radio.dispatchEvent(new Event('change'));
+  })()`);
+  const togglePolicy = () => evaluate(main, `document.getElementById('skipMultipleAudioMapsets').click()`);
+  const skipped = () => evaluate(main, `document.getElementById('osuSourceStatus').textContent === i18n[document.documentElement.lang].osuSourceMultipleAudioSkipped`);
+  assert.deepEqual(await optionState(), { checked: false, disabled: true });
+  await sourceMode('osu');
+  await until(skipped, 'multiple-audio mapset skipped');
+  assert.deepEqual(await optionState(), { checked: true, disabled: false });
+  assert.equal(await evaluate(main, 'window.__loadedDiffs'), null);
+  assert.equal(await evaluate(main, 'window.__loadedAudio'), null);
+  assert.equal(await evaluate(main, `document.getElementById('output').textContent === i18n[document.documentElement.lang].noFileLoaded`), true);
+  await evaluate(main, `document.querySelector('.tab-button[data-tab="spectrogram"]').click()`);
+  await until(async () => await evaluate(main, `document.getElementById('spectrogramEmpty').textContent === i18n[document.documentElement.lang].noFileLoaded`), 'skipped spectrogram shows no file loaded');
+  // Switch to a different mapset whose beatmap loads but whose audio is absent.
+  // Spectrogram availability follows the audio, not the presence of .osu data.
+  const noAudioFolder = fs.mkdtempSync(path.join(output, 'no-audio-'));
+  currentOsuPath = path.join(noAudioFolder, 'no-audio.osu');
+  fs.writeFileSync(currentOsuPath, beatmap);
+  main.webContents.send('osu-map-info', null);
+  await until(async () => await evaluate(main, `window.__loadedDiffs?.[0]?.fileName === 'no-audio.osu'`), 'next mapset loaded without audio');
+  assert.equal(await evaluate(main, 'window.__loadedAudio'), null);
+  for (const language of ['Ja', 'En']) {
+    await evaluate(main, `new Promise(resolve => {
+      document.getElementById('lang${language}').click();
+      document.querySelector('.tab-button[data-tab="spectrogram"]').click();
+      setTimeout(resolve, 0);
+    })`);
+    assert.equal(await evaluate(main, `document.getElementById('spectrogramEmpty').textContent === i18n[document.documentElement.lang].noFileLoaded`), true);
+    assert.equal(await evaluate(main, `document.getElementById('spectrogramChartWrap').hidden`), true);
+  }
+  currentOsuPath = path.join(multiFolder, 'one.osu');
+  main.webContents.send('osu-map-info', null);
+  await until(skipped, 'returning to multi-audio mapset is skipped');
+  const unchanged = await evaluate(main, `window.electronAPI.getCurrentMapset(${JSON.stringify(multiFolder)})`);
+  assert.equal(unchanged.unchanged, true);
+  await togglePolicy();
+  await until(async () => await evaluate(main, 'window.__loadedDiffs?.length === 2'), 'policy off loads current mapset');
+  await sourceMode('file');
+  assert.deepEqual(await optionState(), { checked: false, disabled: true });
+  await sourceMode('osu');
+  assert.deepEqual(await optionState(), { checked: false, disabled: false });
+  await togglePolicy();
+  await until(skipped, 'policy on clears current mapset');
+  await sourceMode('file');
+  await sourceMode('osu');
+  await until(skipped, 'saved on preference restored');
+  assert.deepEqual(await optionState(), { checked: true, disabled: false });
+  // Saving a changed audio reference invalidates the same-folder skip.
+  fs.writeFileSync(path.join(multiFolder, 'two.osu'), beatmap);
+  await until(async () => await evaluate(main, 'window.__loadedDiffs?.length === 2'), 'saved mapset is re-evaluated');
+  fs.writeFileSync(path.join(multiFolder, 'two.osu'), beatmap.replace('audio.wav', 'other.wav'));
+  await until(skipped, 'saved multi-audio mapset is skipped again');
+  // The blocked mapset still loads when explicitly selected as a file.
+  const multiZip = new JSZip();
+  multiZip.file('one.osu', beatmap);
+  multiZip.file('two.osu', beatmap.replace('audio.wav', 'other.wav'));
+  const multiOsz = path.join(output, 'Multi.osz');
+  fs.writeFileSync(multiOsz, await multiZip.generateAsync({ type: 'nodebuffer' }));
+  await selectFile(main, multiOsz, 'one.osu');
+  assert.deepEqual(await optionState(), { checked: false, disabled: true });
+  assert.equal(await evaluate(main, 'window.__loadedDiffs.length'), 2);
+  // Production injects the desktop layout once per window. Recreate that layout
+  // explicitly after reload so we can verify renderer startup with saved values.
+  const loadedAgain = new Promise(resolve => main.webContents.once('did-finish-load', resolve));
+  main.webContents.reload();
+  await loadedAgain;
+  await main.webContents.insertCSS(fs.readFileSync(path.join(root, 'electron/inject/ui.css'), 'utf8'));
+  await evaluate(main, `(function(__etbIconUrl, __etbVersion) {
+    ${fs.readFileSync(path.join(root, 'electron/inject/ui.js'), 'utf8')}
+  })(${JSON.stringify(require('node:url').pathToFileURL(path.join(root, 'images/icon.png')).href)}, ${JSON.stringify(require(path.join(root, 'package.json')).version)});`);
+  await evaluate(main, 'window.electronAPI.revealStartupUI()');
+  assert.deepEqual(await optionState(), { checked: false, disabled: true });
+  await sourceMode('osu');
+  await until(skipped, 'preference persists after reload');
+  await evaluate(main, `document.getElementById('langJa').click(); document.getElementById('toggleTabSettings').click()`);
+  await evaluate(main, `new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
+  assert.equal(await evaluate(main, `getComputedStyle(document.getElementById('etb-card-loadsettings')).display !== 'none'`), true);
+  fs.writeFileSync(path.join(output, 'mapset-loading-settings.png'), (await main.webContents.capturePage()).toPNG());
+  console.log('PASS multiple-audio loading policy and saved settings');
   assert.deepEqual(runtimeErrors, []);
   console.log(JSON.stringify({ status: 'passed', versions: process.versions,
     checks: ['startup', 'sandbox/preload', '.osu native paths and folder actions', 'clipboard IPC', 'SR calculator',
-      'external links', 'osu timestamp clicks and chart navigation', 'metadata/timing/chart popouts', 'chart synchronization', '.osz loading', 'language switching'] }));
+      'external links', 'osu timestamp clicks and chart navigation', 'metadata/timing/chart popouts', 'chart synchronization', '.osz loading', 'language switching', 'multiple-audio mapset policy and persistence'] }));
   clearTimeout(deadline);
   app.exit(0);
 }).catch(error => {

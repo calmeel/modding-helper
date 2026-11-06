@@ -1996,10 +1996,9 @@
             var a = window.__loadedAudio;
             var url = a && a.url ? a.url : null;
             if (!url) { specData = null; specForUrl = null; setEmpty(true,
+              // A loaded .osu does not mean audio is available to this tab.
               window.__loadedDiffs && !window.__loadedDiffs.length
-                ? electronText('noOsuFiles')
-                : (isEn() ? 'Load a beatmap with audio to view its spectrogram.'
-                          : '音源付きの譜面を読み込むとスペクトログラムを表示します。')); return; }
+                ? electronText('noOsuFiles') : electronText('noFileLoaded')); return; }
             if (url === specForUrl && specData) { setEmpty(false); redraw(); return; }
             if (computing) return;
             computing = true;

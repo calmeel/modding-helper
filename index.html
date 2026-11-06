@@ -70,6 +70,11 @@
           </label>
           <button id="osuReloadBtn" class="doc-btn osu-source-reload" data-i18n="checkSourceReload" hidden>🔄 Reload</button>
           <div id="osuSourceStatus" class="osu-source-status"></div>
+          <label class="osu-source-option">
+            <input id="skipMultipleAudioMapsets" type="checkbox" aria-describedby="skipMultipleAudioHint" disabled>
+            <span data-i18n="skipMultipleAudioMapsets">Do not load mapsets with multiple audio tracks</span>
+          </label>
+          <div id="skipMultipleAudioHint" class="osu-source-status" data-i18n="skipMultipleAudioHint">Only applies to beatmaps open in osu!.</div>
         </div>
 
         <label>

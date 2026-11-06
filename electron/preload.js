@@ -27,7 +27,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getPathForFile: (file) => webUtils.getPathForFile(file),
   onOsuMapInfo:  (cb) => subscribe('osu-map-info', cb),
   onTimingInfo:  (cb) => subscribe('osu-timing-info', cb),
-  getCurrentMapset: (knownFolder) => ipcRenderer.invoke('osu-get-current-mapset', knownFolder),
+  getCurrentMapset: (knownFolder, options) => ipcRenderer.invoke('osu-get-current-mapset', knownFolder, options),
   calculateSr:      (beatmaps, mods, rulesetId) => ipcRenderer.invoke('sr-calculate', { beatmaps, mods, rulesetId }),
   cancelSrCalculation: () => ipcRenderer.send('sr-cancel'),
   requestMapInfo:   () => ipcRenderer.send('osu-request-map-info'),
