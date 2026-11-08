@@ -6,6 +6,7 @@ const { readMapset } = require('./osu/readMapset');
 const { loadTaikoSoundSets } = require('./services/sounds');
 const mapsetWatcher = require('./osu/mapsetWatcher');
 const popouts = require('./windows/popouts');
+const { createDiffOrderPreferences } = require('./services/diffOrderPreferences');
 const updater = require('./services/updater');
 const windowState = require('./services/windowState');
 const { configureWindowLinks } = require('./services/windowLinks');
@@ -214,6 +215,31 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  const diffOrderPreferences = createDiffOrderPreferences(app.getPath('userData'));
+  let preferencesFlushedForQuit = false;
+  let waitingForPreferences = false;
+  app.on('before-quit', event => {
+    if (preferencesFlushedForQuit) return;
+    event.preventDefault();
+    if (waitingForPreferences) return;
+    waitingForPreferences = true;
+    void diffOrderPreferences.flush().catch(error => {
+      console.warn('Could not save Diff order preferences before quitting:', error);
+    }).finally(() => {
+      preferencesFlushedForQuit = true;
+      app.quit();
+    });
+  });
+  ipcMain.handle('diff-order-preferences-load', (event, folder) => {
+    if (!mainWin || mainWin.isDestroyed() || event.sender !== mainWin.webContents ||
+        event.senderFrame !== event.sender.mainFrame) return null;
+    return diffOrderPreferences.load(folder);
+  });
+  ipcMain.handle('diff-order-preferences-save', (event, folder, preferences) => {
+    if (!mainWin || mainWin.isDestroyed() || event.sender !== mainWin.webContents ||
+        event.senderFrame !== event.sender.mainFrame) return false;
+    return diffOrderPreferences.save(folder, preferences);
+  });
   Menu.setApplicationMenu(null);
   // 別モジュールにも mainWin の取得方法を渡す（循環 require を避けるため関数で渡す）
   popouts.init({ getMainWin: () => mainWin });

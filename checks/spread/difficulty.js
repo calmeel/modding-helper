@@ -118,6 +118,50 @@ function createSpreadDiffOrder(results) {
   return sortSpreadResults(results).map(result => result.fileName);
 }
 
+// 保存時だけVersionを使い、画面・比較処理では現在のファイル名を使う。
+function serializeSpreadDiffPreferences(sources, preferences) {
+  const versions = new Map((sources || []).map(source =>
+    [source.fileName, parseMetadataValue(source.text, 'Version')]));
+  return {
+    keyType: 'version',
+    diffOrder: preferences.diffOrder.map(name => versions.get(name)).filter(Boolean),
+    manualCategories: Object.fromEntries(Object.entries(preferences.manualCategories)
+      .filter(([name]) => versions.get(name))
+      .map(([name, category]) => [versions.get(name), category]))
+  };
+}
+
+function resolveSpreadDiffPreferences(sources, saved) {
+  // 従来のファイル名形式はそのまま復元し、次の保存でVersion形式へ移行する。
+  if (!saved || saved.keyType !== 'version') return saved;
+  const files = new Map((sources || []).map(source =>
+    [parseMetadataValue(source.text, 'Version'), source.fileName]));
+  return {
+    diffOrder: saved.diffOrder.map(version => files.get(version)).filter(Boolean),
+    manualCategories: Object.fromEntries(Object.entries(saved.manualCategories || {})
+      .filter(([version]) => files.has(version))
+      .map(([version, category]) => [files.get(version), category]))
+  };
+}
+
+function restoreSpreadDiffPreferences(results, saved) {
+  const automatic = createSpreadDiffOrder(results);
+  if (!saved) return { diffOrder: automatic, manualCategories: {} };
+  const present = new Set(automatic);
+  const manualCategories = Object.fromEntries(Object.entries(saved.manualCategories || {})
+    .filter(([name, category]) => present.has(name) && Object.prototype.hasOwnProperty.call(SPREAD_CATEGORY_ORDER, category)));
+  let diffOrder = [...new Set((saved.diffOrder || []).filter(name => present.has(name)))];
+  if (!diffOrder.length) return { diffOrder: automatic, manualCategories };
+  // 既存Diff同士の順番を保ち、新規Diffだけ自動判定のカテゴリへ差し込む。
+  for (const name of automatic) {
+    if (diffOrder.includes(name)) continue;
+    const result = results.find(item => item.fileName === name);
+    diffOrder = moveSpreadDiffToCategory(diffOrder, results, name,
+      getSpreadEffectiveCategory(result, manualCategories), manualCategories);
+  }
+  return { diffOrder, manualCategories };
+}
+
 function applySpreadDiffOrder(results, diffOrder) {
   if (!results) return [];
   return sortResultsForDisplay(results, diffOrder);

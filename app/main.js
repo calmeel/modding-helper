@@ -1,6 +1,18 @@
 document.addEventListener("DOMContentLoaded", () => {
   const isChartPopout = new URLSearchParams(location.search).has('popoutChart');
   let receivedDiffOrder = null;
+  let activeMapsetFolder = null;
+  async function persistDiffPreferences() {
+    if (isChartPopout || !activeMapsetFolder || osuSourceMode !== 'osu' ||
+        !window.electronAPI?.saveDiffOrderPreferences) return;
+    try {
+      const saved = await window.electronAPI.saveDiffOrderPreferences(activeMapsetFolder,
+        serializeSpreadDiffPreferences(state.offsetSources, state.spread));
+      if (!saved) console.warn('Could not save Diff order preferences.');
+    } catch (error) {
+      console.warn('Could not save Diff order preferences:', error);
+    }
+  }
   const synchronizeDiffOrder = () => {
     publishDisplayDiffOrder(state.spread.diffOrder);
     if (!isChartPopout && window.electronAPI?.setDiffOrder) {
@@ -370,6 +382,7 @@ document.addEventListener("DOMContentLoaded", () => {
     t,
     renderSpreadResult,
     onOrderChanged: () => {
+      void persistDiffPreferences();
       synchronizeDiffOrder();
       renderAllDiffResults();
     }
@@ -916,6 +929,19 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const result = await processFile(file, processOptions);
       if (pageLoadId !== beatmapPageLoadId) return;
+      const preferencesFolder = !isChartPopout && processOptions.mapsetFolder &&
+        window.electronAPI?.loadDiffOrderPreferences ? processOptions.mapsetFolder : null;
+      let savedPreferences = preferencesFolder && activeMapsetFolder === preferencesFolder
+        ? serializeSpreadDiffPreferences(state.offsetSources, state.spread)
+        : null;
+      if (preferencesFolder) {
+        try {
+          savedPreferences = await window.electronAPI.loadDiffOrderPreferences(preferencesFolder) || savedPreferences;
+        } catch (error) {
+          console.warn('Could not load Diff order preferences:', error);
+        }
+        if (pageLoadId !== beatmapPageLoadId) return;
+      }
       if (pageLoadId === beatmapPageLoadId) {
         beatmapPageUrl = getBeatmapPageUrlFromSources(result.offsetSources);
         if (openBeatmapPage) openBeatmapPage.disabled = !beatmapPageUrl;
@@ -966,14 +992,18 @@ document.addEventListener("DOMContentLoaded", () => {
       state.songFolderCheck = result.songFolderCheck;
       state.epilepsyWarning = result.epilepsyWarning;
       state.spread.results = result.spread;
-      state.spread.diffOrder = createSpreadDiffOrder(result.spread);
-      state.spread.manualCategories = {};
+      const restoredPreferences = restoreSpreadDiffPreferences(result.spread || [],
+        resolveSpreadDiffPreferences(result.offsetSources, savedPreferences));
+      state.spread.diffOrder = restoredPreferences.diffOrder;
+      state.spread.manualCategories = restoredPreferences.manualCategories;
+      activeMapsetFolder = preferencesFolder;
       if (isChartPopout && receivedDiffOrder) {
         state.spread.diffOrder = [...receivedDiffOrder.diffOrder];
         state.spread.manualCategories = { ...receivedDiffOrder.manualCategories };
       }
       // スプレッド表示(exe)用に難易度順（易→難）を公開。表示側で逆順=難→易に並べる
       synchronizeDiffOrder();
+      if (savedPreferences) void persistDiffPreferences();
       state.offsetWaveformSources = result.offsetWaveformSources;
       state.contentPermission = result.contentPermission;
 
@@ -1208,6 +1238,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!["bnCompare", "srCalculator", "spread"].includes(key)) state[key] = null;
     }
     state.spread = { results: null, diffOrder: [], manualCategories: {} };
+    activeMapsetFolder = null;
     window.__loadedDiffs = null;
     synchronizeDiffOrder();
     if (window.__loadedAudioUrl) URL.revokeObjectURL(window.__loadedAudioUrl);
@@ -1259,7 +1290,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .split(/[\\/]/)
         .filter(Boolean)
         .pop() ?? "";
-      await handleFile(file, { songFolderName });
+      await handleFile(file, { songFolderName, mapsetFolder: res.folder });
       if (loadId !== osuLoadId || osuSourceMode !== "osu") return;
       osuLastLoadedFolder = res.folder;
       // フォルダ監視による再解析では osu! 側のファイルパス自体は変わらないため、

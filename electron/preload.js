@@ -38,6 +38,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onChartSourceMode: (cb) => subscribe('chart-source-mode', cb),
   setDiffOrder: (payload) => ipcRenderer.send('diff-order-changed', payload),
   onDiffOrder: (cb) => subscribe('diff-order-changed', cb),
+  loadDiffOrderPreferences: (folder) => ipcRenderer.invoke('diff-order-preferences-load', folder),
+  saveDiffOrderPreferences: (folder, preferences) => ipcRenderer.invoke('diff-order-preferences-save', folder, preferences),
   getCurrentMapActions: () => ipcRenderer.invoke('osu-get-current-map-actions'),
   openCurrentMapFolder: () => ipcRenderer.invoke('osu-open-current-folder'),
   openCurrentBeatmapPage: () => ipcRenderer.invoke('osu-open-current-beatmap-page'),
