@@ -126,12 +126,12 @@ test('Electron preview reorders its existing cache when a new order is published
   const start = source.indexOf('var sortSpreadDiffs = function');
   const end = source.indexOf('var spreadTimeRange', start);
   assert.ok(start >= 0 && end > start);
-  vm.runInContext('var spDiffDesc = true; var spVisibleDiffsDirty = false;\n' + source.slice(start, end), ctx);
+  vm.runInContext('var options = { diffDescending: true }; var spVisibleDiffsDirty = false;\n' + source.slice(start, end), ctx);
   const input = [map('Kantan'), map('Oni')];
   ctx.spCacheDiffs = [...input];
   ctx.publishDisplayDiffOrder(names(input));
   assert.deepEqual(names(ctx.spCacheDiffs), names(input).reverse());
-  ctx.spDiffDesc = false;
+  ctx.options.diffDescending = false;
   ctx.spVisibleDiffsDirty = false;
   ctx.publishDisplayDiffOrder(names(input).reverse());
   assert.deepEqual(names(ctx.spCacheDiffs), names(input).reverse());

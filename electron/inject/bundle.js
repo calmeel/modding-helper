@@ -4,7 +4,8 @@ const path = require('path');
 
 const CSS_FILES = ['base.css', 'titlebar.css', 'layout.css', 'metadata.css',
   'checklist.css', 'preview.css', 'titlebarOverrides.css', 'ui.css'];
-const JS_FILES = ['metadataCard.js', 'diffOrderCard.js', 'previewController.js', 'ui.js'];
+const JS_FILES = ['metadataCard.js', 'diffOrderCard.js', 'previewSettings.js', 'previewController.js',
+  'spectrogramController.js', 'notepadController.js', 'ui.js'];
 let css;
 let script;
 

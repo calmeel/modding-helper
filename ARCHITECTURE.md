@@ -24,8 +24,15 @@ initialization scripts. Production and the Electron smoke test use this loader.
 - `metadataCard.js`: creates the metadata card; owns tag marks and map-action buttons.
 - `diffOrderCard.js`: creates the Diff order card and moves its existing controls
   between wide and compact layouts without replacing their event handlers.
-- `previewController.js`: preview playback, seeking, input handling, and settings.
-  It receives playback state and explicit callbacks for parent-owned settings.
+- `previewController.js`: preview playback, seeking, input handling, and live
+  preview option state. It receives playback state and parent-owned display callbacks.
+- `previewSettings.js`: settings-card DOM and input handlers. It receives only
+  preview options, display callbacks, audio callbacks, and visibility/order callbacks;
+  audio playback and parsed-difficulty caches remain in the preview controller.
+- `spectrogramController.js`: audio decoding, color selection, and redraw monitoring
+  for the spectrogram. Audio context and playhead changes use explicit callbacks.
+- `notepadController.js`: raw beatmap sections, difficulty selection, and virtualized
+  rows around the current time. `setActive()` starts/stops its rendering loop.
 
 The CSS files are concatenated in their original cascade order. In particular,
 `titlebarOverrides.css` deliberately follows the preview styles, and `ui.css`

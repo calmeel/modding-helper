@@ -2,6 +2,7 @@
 function createElectronPreview({ outBody, previewSettingsBody, viewSettingsBody,
   text: electronText, playback, getSpreadTime, getPanelMode,
   getViewMode, setViewMode, applyViewModeUi, getTagDisplayMode, setTagDisplayMode, redrawMetadata }) {
+  var options = {};
   /* ── スプレッド表示タブ（exe 限定）──
      全難易度のノーツを等速(SV無視)で右→左に流し、osu! 再生に同期する。 */
   if (window.drawTaikoSpread && window.parseTaikoNotes) {
@@ -86,26 +87,26 @@ function createElectronPreview({ outBody, previewSettingsBody, viewSettingsBody,
     /* 判定ラインの位置（プレイフィールド幅に対する割合）。
        左寄せの 0.2 は osu!taiko 実機の受け口位置（165/901.7≒0.18）に近い値。 */
     var SP_JUDGE_CENTER = 0.5, SP_JUDGE_LEFT = 0.2;
-    var spJudgeFrac = SP_JUDGE_CENTER;
+    options.judgementFraction = SP_JUDGE_CENTER;
     try {
       var jf = parseFloat(localStorage.getItem('moddingHelperPreviewJudgeFrac'));
-      if (jf === SP_JUDGE_LEFT || jf === SP_JUDGE_CENTER) spJudgeFrac = jf;
+      if (jf === SP_JUDGE_LEFT || jf === SP_JUDGE_CENTER) options.judgementFraction = jf;
     } catch (e) {}
 
     /* Diff順: true=難→易(上が難しい / 既定), false=易→難(上が易しい) */
-    var spDiffDesc = true;
-    try { if (localStorage.getItem('moddingHelperPreviewDiffDesc') === '0') spDiffDesc = false; } catch (e) {}
+    options.diffDescending = true;
+    try { if (localStorage.getItem('moddingHelperPreviewDiffDesc') === '0') options.diffDescending = false; } catch (e) {}
     /* 非表示にする Diff（fileName→true）。localStorage に永続化 */
-    var spHiddenDiffs = Object.create(null);
+    options.hiddenDiffs = Object.create(null);
     var spVisibleDiffsRef = null;
     var spVisibleDiffs = [];
     var spVisibleDiffsDirty = true;
     try {
       var hd0 = JSON.parse(localStorage.getItem('moddingHelperPreviewHiddenDiffs') || '{}');
-      if (hd0 && typeof hd0 === 'object') for (var hk in hd0) if (hd0[hk]) spHiddenDiffs[hk] = true;
+      if (hd0 && typeof hd0 === 'object') for (var hk in hd0) if (hd0[hk]) options.hiddenDiffs[hk] = true;
     } catch (e) {}
     var saveHiddenDiffs = function () {
-      try { localStorage.setItem('moddingHelperPreviewHiddenDiffs', JSON.stringify(spHiddenDiffs)); } catch (e) {}
+      try { localStorage.setItem('moddingHelperPreviewHiddenDiffs', JSON.stringify(options.hiddenDiffs)); } catch (e) {}
     };
     var SP_FALLBACK_BASE_PX = 0.32;
     var SP_ZOOM_RATIO_MIN = 0.06 / SP_FALLBACK_BASE_PX;
@@ -147,17 +148,17 @@ function createElectronPreview({ outBody, previewSettingsBody, viewSettingsBody,
       );
       if (spBaseSpeedDiffsRef === diffs &&
           spBaseSpeedCanvasWidth === canvasWidth &&
-          spBaseSpeedTimingInfo === spShowTimingInfo) return;
+          spBaseSpeedTimingInfo === options.showTimingInfo) return;
       spBaseSpeedDiffsRef = diffs;
       spBaseSpeedCanvasWidth = canvasWidth;
-      spBaseSpeedTimingInfo = spShowTimingInfo;
+      spBaseSpeedTimingInfo = options.showTimingInfo;
       var bpm = getSpreadRepresentativeBpm(diffs);
       var key = (bpm == null ? 'fallback' : bpm.toFixed(6)) + ':' +
-        Math.round(canvasWidth) + ':' + (spShowTimingInfo ? 'info' : 'plain');
+        Math.round(canvasWidth) + ':' + (options.showTimingInfo ? 'info' : 'plain');
       if (key === spBaseSpeedKey) return;
       spBaseSpeedKey = key;
       var calculated = window.getTaikoEqualSpeedPxPerMs
-        ? window.getTaikoEqualSpeedPxPerMs(bpm, canvasWidth, spShowTimingInfo)
+        ? window.getTaikoEqualSpeedPxPerMs(bpm, canvasWidth, options.showTimingInfo)
         : null;
       spBasePxPerMs = Number.isFinite(calculated) && calculated > 0
         ? calculated
@@ -243,15 +244,15 @@ function createElectronPreview({ outBody, previewSettingsBody, viewSettingsBody,
     /* 効果音（ドン/カツ）: ON のとき、選択レーンのノーツを再生に合わせて鳴らす */
     var spHitSounds = false;   // 効果音 ON/OFF
     /* Kiai/NCは既定ON、BPM/SV/Volume情報は既定OFF。 */
-    var spHighlightKiai = true;
-    var spShowNc = true;
-    var spShowTimingInfo = false;
-    var spTransparentSliders = false;
+    options.highlightKiai = true;
+    options.showNc = true;
+    options.showTimingInfo = false;
+    options.transparentSliders = false;
     try {
-      if (localStorage.getItem('moddingHelperPreviewKiaiHighlight') === '0') spHighlightKiai = false;
-      if (localStorage.getItem('moddingHelperPreviewNcCymbal') === '0') spShowNc = false;
-      if (localStorage.getItem('moddingHelperPreviewTimingInfo') === '1') spShowTimingInfo = true;
-      if (localStorage.getItem('moddingHelperPreviewTransparentSliders') === '1') spTransparentSliders = true;
+      if (localStorage.getItem('moddingHelperPreviewKiaiHighlight') === '0') options.highlightKiai = false;
+      if (localStorage.getItem('moddingHelperPreviewNcCymbal') === '0') options.showNc = false;
+      if (localStorage.getItem('moddingHelperPreviewTimingInfo') === '1') options.showTimingInfo = true;
+      if (localStorage.getItem('moddingHelperPreviewTransparentSliders') === '1') options.transparentSliders = true;
     } catch (e) {}
     var spSynth = null;        // Web Audio シンセ/サンプルキット
     var spSoundLane = 0;       // 効果音を鳴らすレーン（0=最上=最難）。クリックで変更
@@ -261,20 +262,20 @@ function createElectronPreview({ outBody, previewSettingsBody, viewSettingsBody,
     var spSfxSetId = null;
     try { spSfxSetId = localStorage.getItem('moddingHelperSfxSet'); } catch (e) {}
     /* 効果音の音量（0..1）。設定画面で 0〜100 入力。 */
-    var spSfxVolume01 = 0.8;
+    options.sfxVolume = 0.8;
     try {
       var sv0 = parseInt(localStorage.getItem('moddingHelperSfxVolume'), 10);
-      if (Number.isFinite(sv0)) spSfxVolume01 = Math.max(0, Math.min(100, sv0)) / 100;
+      if (Number.isFinite(sv0)) options.sfxVolume = Math.max(0, Math.min(100, sv0)) / 100;
     } catch (e) {}
     /* 効果音の内部基準遅延と、設定画面で指定する相対補正(ms)。
        基準遅延 30ms を設定上の 0ms とし、+で遅らせ / -で早める。 */
     var SP_SFX_BASE_DELAY_MS = 30;
     var SP_SFX_TIMING_ADJUST_LIMIT_MS = 250;
-    var spSfxTimingAdjustMs = 0;
+    options.sfxTimingAdjustment = 0;
     try {
       var timingAdjust0 = parseInt(localStorage.getItem('moddingHelperSfxTimingAdjustment'), 10);
       if (Number.isFinite(timingAdjust0)) {
-        spSfxTimingAdjustMs = Math.max(
+        options.sfxTimingAdjustment = Math.max(
           -SP_SFX_TIMING_ADJUST_LIMIT_MS,
           Math.min(SP_SFX_TIMING_ADJUST_LIMIT_MS, timingAdjust0)
         );
@@ -282,19 +283,19 @@ function createElectronPreview({ outBody, previewSettingsBody, viewSettingsBody,
         /* 旧設定は絶対値だったため、30ms を引いて同じ再生タイミングを保つ。 */
         var legacyOffset0 = parseInt(localStorage.getItem('moddingHelperSfxOffset'), 10);
         if (Number.isFinite(legacyOffset0)) {
-          spSfxTimingAdjustMs = Math.max(
+          options.sfxTimingAdjustment = Math.max(
             -SP_SFX_TIMING_ADJUST_LIMIT_MS,
             Math.min(SP_SFX_TIMING_ADJUST_LIMIT_MS, legacyOffset0 - SP_SFX_BASE_DELAY_MS)
           );
-          localStorage.setItem('moddingHelperSfxTimingAdjustment', String(spSfxTimingAdjustMs));
+          localStorage.setItem('moddingHelperSfxTimingAdjustment', String(options.sfxTimingAdjustment));
         }
       }
     } catch (e) {}
     /* 曲の音量（0..1）。設定画面で 0〜100 入力。spAudio.volume に反映。 */
-    var spMusicVolume01 = 1.0;
+    options.musicVolume = 1.0;
     try {
       var mv0 = parseInt(localStorage.getItem('moddingHelperMusicVolume'), 10);
-      if (Number.isFinite(mv0)) spMusicVolume01 = Math.max(0, Math.min(100, mv0)) / 100;
+      if (Number.isFinite(mv0)) options.musicVolume = Math.max(0, Math.min(100, mv0)) / 100;
     } catch (e) {}
     var getSelectedSfxSet = function () {
       if (!spSfxSets.length) return null;
@@ -331,7 +332,7 @@ function createElectronPreview({ outBody, previewSettingsBody, viewSettingsBody,
         spSynth = window.createTaikoHitSynth(ctx); // 音源が無ければ合成音
       }
       if (spSynth) {
-        if (spSynth.setVolume) spSynth.setVolume(spSfxVolume01);
+        if (spSynth.setVolume) spSynth.setVolume(options.sfxVolume);
         spSynth.resume();
       }
     };
@@ -344,402 +345,26 @@ function createElectronPreview({ outBody, previewSettingsBody, viewSettingsBody,
     };
     window.__spreadSetSfxSet = setSfxSet; // 設定 UI から利用
 
-    /* 設定画面「プレビュータブ設定」カードに Diff順 / 効果音の種類・音量 を追加 */
-    if (typeof previewSettingsBody !== 'undefined' && previewSettingsBody) {
-      /* Diff順（難→易 / 易→難）の切替 */
-      var diffOrderSection = document.createElement('div');
-      diffOrderSection.className = 'etb-sfx-settings';
-      var doTitle = document.createElement('div');
-      doTitle.className = 'etb-sfx-settings-title';
-      doTitle.id = 'etb-difforder-title';
-      doTitle.textContent = electronText('electronDiffOrder');
-      diffOrderSection.appendChild(doTitle);
-      [
-        { desc: true,  id: 'etb-difforder-desc', key: 'electronHardToEasy' },
-        { desc: false, id: 'etb-difforder-asc',  key: 'electronEasyToHard' }
-      ].forEach(function (opt) {
-        var lb = document.createElement('label');
-        lb.className = 'etb-sfx-opt';
-        var rb = document.createElement('input');
-        rb.type = 'radio'; rb.name = 'etb-difforder';
-        if (opt.desc === spDiffDesc) rb.checked = true;
-        rb.addEventListener('change', function () {
-          if (!rb.checked) return;
-          spDiffDesc = opt.desc;
-          try { localStorage.setItem('moddingHelperPreviewDiffDesc', spDiffDesc ? '1' : '0'); } catch (e) {}
-          if (spCacheDiffs && spCacheDiffs.length) sortSpreadDiffs(spCacheDiffs); // 即時反映
+    setupElectronPreviewSettings({
+      previewSettingsBody, viewSettingsBody, text: electronText, options,
+      display: { getViewMode, setViewMode, applyViewModeUi, getTagDisplayMode, setTagDisplayMode, redrawMetadata },
+      events: {
+        getDiffs: function() { return getSpreadDiffs(); },
+        diffOrderChanged: function() {
+          if (spCacheDiffs && spCacheDiffs.length) sortSpreadDiffs(spCacheDiffs);
           spVisibleDiffsDirty = true;
-        });
-        var txt = document.createElement('span');
-        txt.id = opt.id; txt.textContent = electronText(opt.key);
-        lb.appendChild(rb);
-        lb.appendChild(document.createTextNode(' '));
-        lb.appendChild(txt);
-        diffOrderSection.appendChild(lb);
-      });
-      previewSettingsBody.appendChild(diffOrderSection);
-
-      /* 表示モード（ワイド / コンパクト）の切替。カードは別だがここでまとめて組む */
-      if (typeof viewSettingsBody !== 'undefined' && viewSettingsBody) {
-        var viewModeSection = document.createElement('div');
-        viewModeSection.className = 'etb-sfx-settings';
-        [
-          { mode: 'wide',    id: 'etb-viewmode-wide',    key: 'electronWide' },
-          { mode: 'compact', id: 'etb-viewmode-compact', key: 'electronCompact' }
-        ].forEach(function (opt) {
-          var lb = document.createElement('label');
-          lb.className = 'etb-sfx-opt';
-          var rb = document.createElement('input');
-          rb.type = 'radio'; rb.name = 'etb-viewmode';
-          if (opt.mode === getViewMode()) rb.checked = true;
-          rb.addEventListener('change', function () {
-            if (!rb.checked) return;
-            setViewMode(opt.mode);
-            try { localStorage.setItem('moddingHelperViewMode', getViewMode()); } catch (e) {}
-            applyViewModeUi();
-            /* ウィンドウサイズもモードに合わせる。
-               コンパクト → 標準のデスクトップサイズ / ワイド → 画面いっぱい。
-               どちらも固定ではないので、以後は自由にリサイズできる。 */
-            var api = window.electronAPI;
-            if (getViewMode() === 'compact') { if (api && api.standardSize) api.standardSize(); }
-            else if (api && api.maximizeFull) api.maximizeFull();
-          });
-          var txt = document.createElement('span');
-          txt.id = opt.id; txt.textContent = electronText(opt.key);
-          lb.appendChild(rb);
-          lb.appendChild(document.createTextNode(' '));
-          lb.appendChild(txt);
-          viewModeSection.appendChild(lb);
-        });
-        viewSettingsBody.appendChild(viewModeSection);
-
-        var tagDisplaySection = document.createElement('div');
-        tagDisplaySection.className = 'etb-sfx-settings';
-        var tagDisplayTitle = document.createElement('div');
-        tagDisplayTitle.className = 'etb-sfx-settings-title';
-        tagDisplayTitle.id = 'etb-tagdisplay-title';
-        tagDisplayTitle.textContent = electronText('electronTagDisplay');
-        tagDisplaySection.appendChild(tagDisplayTitle);
-        [
-          { mode: 'text', id: 'etb-tagdisplay-text', key: 'electronTagDisplayText' },
-          { mode: 'buttons', id: 'etb-tagdisplay-buttons', key: 'electronTagDisplayButtons' }
-        ].forEach(function(opt) {
-          var label = document.createElement('label');
-          label.className = 'etb-sfx-opt';
-          var radio = document.createElement('input');
-          radio.type = 'radio';
-          radio.name = 'etb-tagdisplay';
-          radio.value = opt.mode;
-          radio.checked = getTagDisplayMode() === opt.mode;
-          radio.addEventListener('change', function() {
-            if (!radio.checked) return;
-            setTagDisplayMode(opt.mode);
-            try { localStorage.setItem('moddingHelperTagDisplayMode', getTagDisplayMode()); } catch (e) {}
-            redrawMetadata();
-          });
-          var text = document.createElement('span');
-          text.id = opt.id;
-          text.textContent = electronText(opt.key);
-          label.appendChild(radio);
-          label.appendChild(document.createTextNode(' '));
-          label.appendChild(text);
-          tagDisplaySection.appendChild(label);
-        });
-        viewSettingsBody.appendChild(tagDisplaySection);
-      }
-
-      /* 判定ラインの位置（中央 / 左寄せ）の切替 */
-      var judgePosSection = document.createElement('div');
-      judgePosSection.className = 'etb-sfx-settings';
-      var jpTitle = document.createElement('div');
-      jpTitle.className = 'etb-sfx-settings-title';
-      jpTitle.id = 'etb-judgepos-title';
-      jpTitle.textContent = electronText('electronJudgementLine');
-      judgePosSection.appendChild(jpTitle);
-      [
-        { frac: SP_JUDGE_CENTER, id: 'etb-judgepos-center', key: 'electronCenter' },
-        { frac: SP_JUDGE_LEFT,   id: 'etb-judgepos-left',   key: 'electronLeft' }
-      ].forEach(function (opt) {
-        var lb = document.createElement('label');
-        lb.className = 'etb-sfx-opt';
-        var rb = document.createElement('input');
-        rb.type = 'radio'; rb.name = 'etb-judgepos';
-        if (opt.frac === spJudgeFrac) rb.checked = true;
-        rb.addEventListener('change', function () {
-          if (!rb.checked) return;
-          spJudgeFrac = opt.frac;
-          try { localStorage.setItem('moddingHelperPreviewJudgeFrac', String(spJudgeFrac)); } catch (e) {}
-        });
-        var txt = document.createElement('span');
-        txt.id = opt.id; txt.textContent = electronText(opt.key);
-        lb.appendChild(rb);
-        lb.appendChild(document.createTextNode(' '));
-        lb.appendChild(txt);
-        judgePosSection.appendChild(lb);
-      });
-      previewSettingsBody.appendChild(judgePosSection);
-
-      /* Diff の表示/非表示（読み込み中の譜面に応じて動的生成） */
-      var diffVisSection = document.createElement('div');
-      diffVisSection.className = 'etb-sfx-settings';
-      var dvTitle = document.createElement('div');
-      dvTitle.className = 'etb-sfx-settings-title';
-      dvTitle.id = 'etb-diffvis-title';
-      dvTitle.textContent = electronText('electronShownDiffs');
-      diffVisSection.appendChild(dvTitle);
-      var diffVisList = document.createElement('div');
-      diffVisList.id = 'etb-diffvis-list';
-      diffVisSection.appendChild(diffVisList);
-      previewSettingsBody.appendChild(diffVisSection);
-
-      /* 現在の譜面から表示チェックリストを作り直す（設定画面を開いた時に呼ぶ） */
-      var rebuildDiffVisibilityList = function () {
-        diffVisList.innerHTML = '';
-        var diffs = getSpreadDiffs();
-        if (!diffs.length) {
-          var none = document.createElement('div');
-          none.className = 'etb-sfx-none'; none.id = 'etb-diffvis-none';
-          none.setAttribute('data-i18n', 'electronNoBeatmapLoaded');
-          none.textContent = electronText('electronNoBeatmapLoaded');
-          diffVisList.appendChild(none);
-          return;
-        }
-        diffs.forEach(function (d) {
-          var lb = document.createElement('label');
-          lb.className = 'etb-sfx-opt';
-          var cb = document.createElement('input');
-          cb.type = 'checkbox';
-          cb.checked = !spHiddenDiffs[d.fileName];
-          cb.addEventListener('change', function () {
-            if (cb.checked) delete spHiddenDiffs[d.fileName];
-            else spHiddenDiffs[d.fileName] = true;
-            spVisibleDiffsDirty = true;
-            saveHiddenDiffs();
-          });
-          lb.appendChild(cb);
-          lb.appendChild(document.createTextNode(' ' + (d.name || d.fileName)));
-          diffVisList.appendChild(lb);
-        });
-      };
-      window.__spreadRebuildDiffList = rebuildDiffVisibilityList;
-
-      /* その他のプレビュー設定 */
-      var otherSection = document.createElement('div');
-      otherSection.className = 'etb-sfx-settings';
-      var otherTitle = document.createElement('div');
-      otherTitle.className = 'etb-sfx-settings-title';
-      otherTitle.id = 'etb-preview-other-title';
-      otherTitle.textContent = electronText('electronOtherSettings');
-      otherSection.appendChild(otherTitle);
-      [
-        {
-          id: 'etb-preview-transparent-sliders-cb',
-          textId: 'etb-preview-transparent-sliders-text',
-          key: 'electronTransparentSliders',
-          checked: spTransparentSliders,
-          change: function(checked) {
-            spTransparentSliders = checked;
-            try {
-              localStorage.setItem(
-                'moddingHelperPreviewTransparentSliders',
-                checked ? '1' : '0'
-              );
-            } catch (e) {}
-          }
         },
-        {
-          id: 'etb-preview-kiai-cb',
-          textId: 'etb-preview-kiai-text',
-          key: 'electronHighlightKiai',
-          checked: spHighlightKiai,
-          change: function(checked) {
-            spHighlightKiai = checked;
-            try {
-              localStorage.setItem(
-                'moddingHelperPreviewKiaiHighlight',
-                checked ? '1' : '0'
-              );
-            } catch (e) {}
-          }
-        },
-        {
-          id: 'etb-preview-nc-cb',
-          textId: 'etb-preview-nc-text',
-          key: 'electronHighlightNcBarlines',
-          checked: spShowNc,
-          change: function(checked) {
-            spShowNc = checked;
-            try {
-              localStorage.setItem(
-                'moddingHelperPreviewNcCymbal',
-                checked ? '1' : '0'
-              );
-            } catch (e) {}
-          }
-        },
-        {
-          id: 'etb-preview-timing-info-cb',
-          textId: 'etb-preview-timing-info-text',
-          key: 'electronShowPreviewTimingInfo',
-          checked: spShowTimingInfo,
-          change: function(checked) {
-            spShowTimingInfo = checked;
-            /* 情報カラム分だけプレイフィールド幅が変わるため基準ズームも再計算する。 */
-            spBaseSpeedKey = '';
-            try {
-              localStorage.setItem(
-                'moddingHelperPreviewTimingInfo',
-                checked ? '1' : '0'
-              );
-            } catch (e) {}
-          }
-        }
-      ].forEach(function(opt) {
-        var lb = document.createElement('label');
-        lb.className = 'etb-sfx-opt';
-        var cb = document.createElement('input');
-        cb.type = 'checkbox';
-        cb.id = opt.id;
-        cb.checked = opt.checked;
-        cb.addEventListener('change', function() {
-          opt.change(cb.checked);
-        });
-        var txt = document.createElement('span');
-        txt.id = opt.textId;
-        txt.textContent = electronText(opt.key);
-        lb.appendChild(cb);
-        lb.appendChild(document.createTextNode(' '));
-        lb.appendChild(txt);
-        otherSection.appendChild(lb);
-      });
-      previewSettingsBody.appendChild(otherSection);
-
-      var sfxSection = document.createElement('div');
-      sfxSection.className = 'etb-sfx-settings';
-      var sfxTitle = document.createElement('div');
-      sfxTitle.className = 'etb-sfx-settings-title';
-      sfxTitle.id = 'etb-sfx-settings-title';
-      sfxTitle.textContent = electronText('electronHitSoundSet');
-      sfxSection.appendChild(sfxTitle);
-      if (spSfxSets.length) {
-        var selId = (getSelectedSfxSet() || {}).id;
-        spSfxSets.forEach(function (set) {
-          var lb = document.createElement('label');
-          lb.className = 'etb-sfx-opt';
-          var rb = document.createElement('input');
-          rb.type = 'radio'; rb.name = 'etb-sfx-set'; rb.value = set.id;
-          if (set.id === selId) rb.checked = true;
-          rb.addEventListener('change', function () { if (rb.checked) setSfxSet(set.id); });
-          lb.appendChild(rb);
-          lb.appendChild(document.createTextNode(' ' + set.label));
-          sfxSection.appendChild(lb);
-        });
-      } else {
-        var sfxNone = document.createElement('div');
-        sfxNone.className = 'etb-sfx-none'; sfxNone.id = 'etb-sfx-none';
-        sfxNone.textContent = electronText('electronNoSoundFolders');
-        sfxSection.appendChild(sfxNone);
-      }
-
-      /* 音量（0〜100）: スライダー + 数値入力（同期） */
-      var volRow = document.createElement('div');
-      volRow.className = 'etb-sfx-vol';
-      var volLabel = document.createElement('span');
-      volLabel.id = 'etb-sfx-vol-label'; volLabel.className = 'etb-sfx-vol-label';
-      volLabel.textContent = electronText('electronHitSoundVolume');
-      var volRange = document.createElement('input');
-      volRange.type = 'range'; volRange.min = '0'; volRange.max = '100'; volRange.step = '1';
-      volRange.className = 'etb-sfx-vol-range';
-      var volNum = document.createElement('input');
-      volNum.type = 'number'; volNum.min = '0'; volNum.max = '100'; volNum.step = '1';
-      volNum.id = 'etb-sfx-vol-input'; volNum.className = 'etb-sfx-vol-num';
-      var applyVol = function (v, from) {
-        v = Math.max(0, Math.min(100, Math.round(v)));
-        spSfxVolume01 = v / 100;
-        try { localStorage.setItem('moddingHelperSfxVolume', String(v)); } catch (e) {}
-        if (spSynth && spSynth.setVolume) spSynth.setVolume(spSfxVolume01);
-        if (from !== 'range') volRange.value = String(v);
-        if (from !== 'num') volNum.value = String(v);
-      };
-      var initVol = Math.round(spSfxVolume01 * 100);
-      volRange.value = String(initVol); volNum.value = String(initVol);
-      volRange.addEventListener('input', function () { applyVol(parseInt(volRange.value, 10) || 0, 'range'); });
-      volNum.addEventListener('input', function () {
-        var v = parseInt(volNum.value, 10); if (Number.isFinite(v)) applyVol(v, 'num');
-      });
-      volRow.appendChild(volLabel);
-      volRow.appendChild(volRange);
-      volRow.appendChild(volNum);
-      sfxSection.appendChild(volRow);
-
-      /* 曲の音量（0〜100）: スライダー + 数値入力（同期） */
-      var mVolRow = document.createElement('div');
-      mVolRow.className = 'etb-sfx-vol';
-      var mVolLabel = document.createElement('span');
-      mVolLabel.id = 'etb-music-vol-label'; mVolLabel.className = 'etb-sfx-vol-label';
-      mVolLabel.textContent = electronText('electronMusicVolume');
-      var mVolRange = document.createElement('input');
-      mVolRange.type = 'range'; mVolRange.min = '0'; mVolRange.max = '100'; mVolRange.step = '1';
-      mVolRange.className = 'etb-sfx-vol-range';
-      var mVolNum = document.createElement('input');
-      mVolNum.type = 'number'; mVolNum.min = '0'; mVolNum.max = '100'; mVolNum.step = '1';
-      mVolNum.id = 'etb-music-vol-input'; mVolNum.className = 'etb-sfx-vol-num';
-      var applyMusicVol = function (v, from) {
-        v = Math.max(0, Math.min(100, Math.round(v)));
-        spMusicVolume01 = v / 100;
-        try { localStorage.setItem('moddingHelperMusicVolume', String(v)); } catch (e) {}
-        if (typeof spAudio !== 'undefined' && spAudio) spAudio.volume = spMusicVolume01;
-        if (from !== 'range') mVolRange.value = String(v);
-        if (from !== 'num') mVolNum.value = String(v);
-      };
-      var initMVol = Math.round(spMusicVolume01 * 100);
-      mVolRange.value = String(initMVol); mVolNum.value = String(initMVol);
-      mVolRange.addEventListener('input', function () { applyMusicVol(parseInt(mVolRange.value, 10) || 0, 'range'); });
-      mVolNum.addEventListener('input', function () {
-        var v = parseInt(mVolNum.value, 10); if (Number.isFinite(v)) applyMusicVol(v, 'num');
-      });
-      mVolRow.appendChild(mVolLabel);
-      mVolRow.appendChild(mVolRange);
-      mVolRow.appendChild(mVolNum);
-      sfxSection.appendChild(mVolRow);
-
-      /* 効果音タイミング補正(ms): 基準値 0、+で遅らせ / -で早める */
-      var offRow = document.createElement('div');
-      offRow.className = 'etb-sfx-vol';
-      var offLabel = document.createElement('span');
-      offLabel.id = 'etb-sfx-offset-label'; offLabel.className = 'etb-sfx-vol-label';
-      offLabel.textContent = electronText('electronHitSoundOffset');
-      var offRange = document.createElement('input');
-      offRange.type = 'range'; offRange.min = '-100'; offRange.max = '100'; offRange.step = '1';
-      offRange.className = 'etb-sfx-vol-range';
-      var offNum = document.createElement('input');
-      offNum.type = 'number'; offNum.min = String(-SP_SFX_TIMING_ADJUST_LIMIT_MS);
-      offNum.max = String(SP_SFX_TIMING_ADJUST_LIMIT_MS); offNum.step = '1';
-      offNum.id = 'etb-sfx-offset-input'; offNum.className = 'etb-sfx-vol-num';
-      var applyTimingAdjustment = function (v, from) {
-        v = Math.max(-SP_SFX_TIMING_ADJUST_LIMIT_MS, Math.min(SP_SFX_TIMING_ADJUST_LIMIT_MS, Math.round(v)));
-        spSfxTimingAdjustMs = v;
-        try {
-          localStorage.setItem('moddingHelperSfxTimingAdjustment', String(v));
-          /* 旧バージョンへ戻した場合も同じタイミングになるよう、旧キーも更新する。 */
-          localStorage.setItem('moddingHelperSfxOffset', String(SP_SFX_BASE_DELAY_MS + v));
-        } catch (e) {}
-        if (from !== 'range') offRange.value = String(Math.max(-100, Math.min(100, v)));
-        if (from !== 'num') offNum.value = String(v);
-      };
-      offRange.value = String(Math.max(-100, Math.min(100, spSfxTimingAdjustMs)));
-      offNum.value = String(spSfxTimingAdjustMs);
-      offRange.addEventListener('input', function () { applyTimingAdjustment(parseInt(offRange.value, 10) || 0, 'range'); });
-      offNum.addEventListener('input', function () {
-        var v = parseInt(offNum.value, 10); if (Number.isFinite(v)) applyTimingAdjustment(v, 'num');
-      });
-      offRow.appendChild(offLabel);
-      offRow.appendChild(offRange);
-      offRow.appendChild(offNum);
-      sfxSection.appendChild(offRow);
-
-      previewSettingsBody.appendChild(sfxSection);
-    }
+        visibilityChanged: function() { spVisibleDiffsDirty = true; saveHiddenDiffs(); },
+        timingInfoChanged: function() { spBaseSpeedKey = ''; }
+      },
+      sounds: {
+        sets: spSfxSets, getSelectedSet: getSelectedSfxSet, setSet: setSfxSet,
+        setVolume: function(volume) { if (spSynth && spSynth.setVolume) spSynth.setVolume(volume); },
+        setMusicVolume: function(volume) { if (spAudio) spAudio.volume = volume; }
+      },
+      constants: { judgeCenter: SP_JUDGE_CENTER, judgeLeft: SP_JUDGE_LEFT,
+        sfxBaseDelayMs: SP_SFX_BASE_DELAY_MS, sfxTimingLimitMs: SP_SFX_TIMING_ADJUST_LIMIT_MS }
+    });
 
     var spSfxCb = spBar.querySelector('#etb-spread-sfx-cb');
     if (spSfxCb) spSfxCb.addEventListener('change', function () {
@@ -750,17 +375,17 @@ function createElectronPreview({ outBody, previewSettingsBody, viewSettingsBody,
     });
 
     /* Diff順の並べ替え（難易度順 __loadedDiffOrder=易→難 を基準）。
-       spDiffDesc=true → 難→易(上が難)、false → 易→難(上が易)。順序不明は末尾。 */
+       options.diffDescending=true → 難→易(上が難)、false → 易→難(上が易)。順序不明は末尾。 */
     var sortSpreadDiffs = function (arr) {
       var order = window.__loadedDiffOrder;
       if (!order || !order.length) return;
       var rank = Object.create(null);
       for (var oi = 0; oi < order.length; oi++) rank[order[oi]] = oi;
-      var unknown = spDiffDesc ? -1 : (order.length + 1); // 未知は常に末尾へ
+      var unknown = options.diffDescending ? -1 : (order.length + 1); // 未知は常に末尾へ
       arr.sort(function (a, b) {
         var ra = a.fileName in rank ? rank[a.fileName] : unknown;
         var rb = b.fileName in rank ? rank[b.fileName] : unknown;
-        return spDiffDesc ? (rb - ra) : (ra - rb);
+        return options.diffDescending ? (rb - ra) : (ra - rb);
       });
     };
 
@@ -856,7 +481,7 @@ function createElectronPreview({ outBody, previewSettingsBody, viewSettingsBody,
     var getVisibleSpreadDiffs = function (allDiffs) {
       if (!spVisibleDiffsDirty && spVisibleDiffsRef === allDiffs) return spVisibleDiffs;
       spVisibleDiffsRef = allDiffs;
-      spVisibleDiffs = allDiffs.filter(function (d) { return !spHiddenDiffs[d.fileName]; });
+      spVisibleDiffs = allDiffs.filter(function (d) { return !options.hiddenDiffs[d.fileName]; });
       spVisibleDiffsDirty = false;
       return spVisibleDiffs;
     };
@@ -1289,7 +914,7 @@ function createElectronPreview({ outBody, previewSettingsBody, viewSettingsBody,
       };
       return api;
     })();
-    spAudio.volume = spMusicVolume01;      // 設定した曲の音量を反映
+    spAudio.volume = options.musicVolume;      // 設定した曲の音量を反映
     spAudio.playbackRate = spPlaybackRate; // 設定した再生速度を反映
     var spAudioSrcRef = null;
     var syncSpreadAudioSrc = function () {
@@ -1545,7 +1170,7 @@ function createElectronPreview({ outBody, previewSettingsBody, viewSettingsBody,
         /* 曲時間 → 実時間。基準遅延とタイミング補正は実時間の定数なので割らない
            （割ると 25% 再生で4倍に効いてしまう）。
            さらに速度ごとの補正を足す（下の SP_SFX_RATE_ADJUST を参照）。 */
-        var offMs = SP_SFX_BASE_DELAY_MS + spSfxTimingAdjustMs + spSfxRateAdjust(rate);
+        var offMs = SP_SFX_BASE_DELAY_MS + options.sfxTimingAdjustment + spSfxRateAdjust(rate);
         var realWhen = function (songMs) {
           return ctxNow + (songMs - songNow) / 1000 / rate + offMs / 1000;
         };
@@ -1628,11 +1253,11 @@ function createElectronPreview({ outBody, previewSettingsBody, viewSettingsBody,
         snap: spSnap,
         svMode: spSvMode, /* SVスケールは実機速度に一致するよう描画側で自動計算 */
         soundLane: spHitSounds ? Math.min(spSoundLane, diffs.length - 1) : -1,
-        judgeFrac: spJudgeFrac,
-        highlightKiai: spHighlightKiai,
-        showNcCymbal: spShowNc,
-        showTimingInfo: spShowTimingInfo,
-        transparentSliders: spTransparentSliders,
+        judgeFrac: options.judgementFraction,
+        highlightKiai: options.highlightKiai,
+        showNcCymbal: options.showNc,
+        showTimingInfo: options.showTimingInfo,
+        transparentSliders: options.transparentSliders,
         isSelected: spSelNotes.length ? spIsSelected : null,
         marquee: spMarquee,
         emptyText: isEn ? 'No beatmap loaded' : '譜面が読み込まれていません',

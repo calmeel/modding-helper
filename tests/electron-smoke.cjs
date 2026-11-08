@@ -114,6 +114,28 @@ app.whenReady().then(async () => {
   await until(async () => await evaluate(main, `document.getElementById('etb-spread-canvas').__spreadGeom?.n === 1`), 'preview canvas drawing');
   await evaluate(main, `document.getElementById('etb-tab-main').click(); true`);
   console.log('PASS preview controller and note drawing');
+  await evaluate(main, `document.getElementById('etb-tab-notepad').click(); true`);
+  await until(async () => await evaluate(main, `document.querySelectorAll('#etb-notepad pre span').length >= 4`), 'notepad virtualized rows');
+  assert.equal(await evaluate(main, `document.querySelector('#etb-notepad select').value`), path.basename(osuFile));
+  await evaluate(main, `(() => {
+    document.getElementById('toggleTabSettings').click();
+    document.getElementById('etb-preview-transparent-sliders-cb').click();
+    document.getElementById('etb-preview-kiai-cb').click();
+    document.getElementById('etb-preview-timing-info-cb').click();
+    const volume = document.getElementById('etb-sfx-vol-input');
+    volume.value = '73'; volume.dispatchEvent(new Event('input'));
+    const originalDraw = window.drawTaikoSpread;
+    window.drawTaikoSpread = function(canvas, diffs, time, options) {
+      window.__smokePreviewOptions = options;
+      return originalDraw(canvas, diffs, time, options);
+    };
+    window.__smokeRestorePreviewDraw = () => { window.drawTaikoSpread = originalDraw; };
+    document.getElementById('etb-tab-preview').click();
+  })()`);
+  await until(async () => await evaluate(main, `window.__smokePreviewOptions?.transparentSliders === true && window.__smokePreviewOptions.highlightKiai === false && window.__smokePreviewOptions.showTimingInfo === true`), 'settings update preview drawing');
+  assert.equal(await evaluate(main, `document.getElementById('etb-sfx-vol-input').parentElement.querySelector('input[type=range]').value`), '73');
+  await evaluate(main, `document.getElementById('etb-tab-main').click(); window.__smokeRestorePreviewDraw(); true`);
+  console.log('PASS preview settings and notepad controller');
   for (const ruleset of ['livePP2510', 'livePP2503', 'livePP2410After', 'livePP2410Before', 'livePP2208', 'livePP2021', 'livePP2020']) {
     const historical = await evaluate(main, `window.electronAPI.calculateSr([{fileName:'test.osu', content:${JSON.stringify(beatmap)}}], [], ${JSON.stringify(ruleset)})`);
     assert.ok(!historical.error, `${ruleset}: ${JSON.stringify(historical)}`);
@@ -299,7 +321,7 @@ app.whenReady().then(async () => {
   console.log('PASS browser layout and file loading');
   assert.deepEqual(runtimeErrors, []);
   console.log(JSON.stringify({ status: 'passed', versions: process.versions,
-    checks: ['startup', 'sandbox/preload', '.osu native paths and folder actions', 'clipboard IPC', 'SR calculator', 'preview drawing', 'browser file loading',
+    checks: ['startup', 'sandbox/preload', '.osu native paths and folder actions', 'clipboard IPC', 'SR calculator', 'preview drawing', 'preview settings', 'notepad', 'browser file loading',
       'external links', 'osu timestamp clicks and chart navigation', 'metadata/timing/chart popouts', 'chart synchronization', '.osz loading', 'language switching', 'multiple-audio mapset policy and persistence'] }));
   clearTimeout(deadline);
   app.exit(0);

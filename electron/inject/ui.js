@@ -300,145 +300,12 @@
         });
         var ensureSpreadAudioCtx = preview.ensureAudioContext;
 
-        /* ── スペクトログラムタブ（exe 限定）──
-           音源をデコードして周波数成分を可視化する。高音カット（低品質再エンコード）を見つける用途。
-           data-electron-only を外して露出し、タブが表示された時に計算＆描画する。 */
-        (function setupSpectrogram() {
-          if (!window.computeTaikoSpectrogram || !window.drawTaikoSpectrogram) return;
-          /* web では隠している要素を exe で見せる */
-          Array.prototype.slice.call(
-            document.querySelectorAll('[data-electron-only] [data-target-tab="spectrogram"], ' +
-              '.tab-button[data-tab="spectrogram"], #tab-spectrogram')
-          ).forEach(function (el) {
-            var host = el.closest ? el.closest('[data-electron-only]') : null;
-            (host || el).removeAttribute('data-electron-only');
-          });
-
-          var canvas = document.getElementById('spectrogramCanvas');
-          var wrap   = document.getElementById('spectrogramChartWrap');
-          var empty  = document.getElementById('spectrogramEmpty');
-          var colorSelect = document.getElementById('spectrogramColorSelect');
-          var seekToggle  = document.getElementById('spectrogramSeekToggle');
-          if (!canvas || !wrap) return;
-
-          var specData = null, specForUrl = null, computing = false;
-          /* カラーマップ: 'spek'（マグマ, 既定）/ 'alt'（レインボー）。localStorage に保存 */
-          var colorMap = 'spek';
-          try { if (localStorage.getItem('moddingHelperSpectrogramColor') === 'alt') colorMap = 'alt'; } catch (e) {}
-          if (colorSelect) colorSelect.value = colorMap;
-          /* シークバー(再生ヘッド)の表示。既定 OFF。localStorage に保存 */
-          try { spectrogramSeekOn = (localStorage.getItem('moddingHelperSpectrogramSeek') === '1'); } catch (e) {}
-          if (seekToggle) seekToggle.checked = spectrogramSeekOn;
-
-          var isEn = function () {
-            var le = document.getElementById('langEn');
-            return !!(le && le.classList.contains('active'));
-          };
-          var setEmpty = function (show, text) {
-            if (empty) { empty.hidden = !show; if (text != null) empty.textContent = text; }
-            wrap.hidden = show;
-          };
-          var redraw = function () {
-            if (!specData) return;
-            window.drawTaikoSpectrogram(canvas, specData, { colorMap: colorMap });
-          };
-          /* 音源をデコードしてスペクトログラム行列を作る（URL が変わった時だけ） */
-          var ensureComputed = function () {
-            var a = window.__loadedAudio;
-            var url = a && a.url ? a.url : null;
-            if (!url) { specData = null; specForUrl = null; setEmpty(true,
-              // A loaded .osu does not mean audio is available to this tab.
-              window.__loadedDiffs && !window.__loadedDiffs.length
-                ? electronText('noOsuFiles') : electronText('noFileLoaded')); return; }
-            if (url === specForUrl && specData) { setEmpty(false); redraw(); return; }
-            if (computing) return;
-            computing = true;
-            setEmpty(true, isEn() ? 'Analyzing audio…' : '音声を解析中…');
-            fetch(url).then(function (r) { return r.arrayBuffer(); })
-              .then(function (ab) {
-                /* decodeAudioData は AudioContext のレートにリサンプルして返す。
-                   縦軸上限(ナイキスト)をファイル本来のレートで出すため、ヘッダから
-                   本来のレートを読み、そのレートの OfflineAudioContext でデコードする。
-                   読めなければ通常の ctx（＝出力レート）にフォールバック。 */
-                var nativeRate = null;
-                try { nativeRate = window.taikoSniffSampleRate(ab); } catch (e) {}
-                var ctx;
-                if (nativeRate && nativeRate >= 8000 && nativeRate <= 96000) {
-                  var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-                  ctx = new OAC(1, 1, nativeRate);
-                } else {
-                  ctx = (typeof ensureSpreadAudioCtx === 'function' && ensureSpreadAudioCtx())
-                    || new (window.AudioContext || window.webkitAudioContext)();
-                }
-                return ctx.decodeAudioData(ab);
-              })
-              .then(function (buf) {
-                if (!window.__loadedAudio || window.__loadedAudio.url !== url) {
-                  computing = false;
-                  ensureComputed();
-                  return;
-                }
-                specData = window.computeTaikoSpectrogram(buf, { fftSize: 2048, targetCols: 1600 });
-                specForUrl = url; computing = false;
-                setEmpty(false); redraw();
-              })
-              .catch(function () {
-                computing = false; specData = null;
-                if (!window.__loadedAudio || window.__loadedAudio.url !== url) {
-                  ensureComputed();
-                  return;
-                }
-                setEmpty(true, isEn() ? 'Could not analyze the audio.' : '音声を解析できませんでした。');
-              });
-          };
-
-          /* 配色プルダウン */
-          if (colorSelect) colorSelect.addEventListener('change', function () {
-            colorMap = (colorSelect.value === 'alt') ? 'alt' : 'spek';
-            try { localStorage.setItem('moddingHelperSpectrogramColor', colorMap); } catch (e) {}
-            redraw();
-          });
-          /* シークバーの表示 ON/OFF（再生ヘッドの表示を切り替える） */
-          if (seekToggle) seekToggle.addEventListener('change', function () {
-            spectrogramSeekOn = seekToggle.checked;
-            try { localStorage.setItem('moddingHelperSpectrogramSeek', spectrogramSeekOn ? '1' : '0'); } catch (e) {}
-            if (typeof refreshPlayheads === 'function') refreshPlayheads();
-          });
-
-          /* このタブが今アクティブか */
-          var isActive = function () {
-            var p = document.getElementById('tab-spectrogram');
-            return p && p.classList.contains('active');
-          };
-          /* タブボタンのクリックで計算＆描画（app/ui/setup.js の切替が active を付けた後に走る） */
-          var btnEl = document.querySelector('.tab-button[data-tab="spectrogram"]');
-          if (btnEl) btnEl.addEventListener('click', function () { setTimeout(ensureComputed, 0); });
-          /* 表示中にウィンドウサイズが変わったら描き直し（分離窓の高さ追従にも効く） */
-          if (typeof ResizeObserver !== 'undefined') {
-            new ResizeObserver(function () { if (isActive() && !wrap.hidden) redraw(); }).observe(wrap);
-          }
-          /* アクティブな間だけ、音源の差し替えを監視して作り直す。
-             ensureComputed は URL が変わった時しか再計算しないので軽い。
-             非アクティブ時は何もしない（バックグラウンド負荷なし）。 */
-          var lastSeenUrl = null;
-          var lastSeenDiffs = null;
-          var lastSeenEnglish = null;
-          setInterval(function () {
-            if (!isActive()) return;
-            var a = window.__loadedAudio;
-            var url = a && a.url ? a.url : null;
-            var diffs = window.__loadedDiffs;
-            var english = isEn();
-            if (url !== lastSeenUrl || diffs !== lastSeenDiffs || english !== lastSeenEnglish) {
-              lastSeenUrl = url;
-              lastSeenDiffs = diffs;
-              lastSeenEnglish = english;
-              ensureComputed();
-            }
-          }, 600);
-          /* 起動直後に既にアクティブなら描く */
-          if (isActive()) setTimeout(ensureComputed, 300);
-        })();
+        setupElectronSpectrogram({
+          text: electronText, ensureSpreadAudioCtx,
+          getSeekEnabled: function() { return spectrogramSeekOn; },
+          setSeekEnabled: function(enabled) { spectrogramSeekOn = enabled; },
+          onSeekChanged: function() { if (typeof refreshPlayheads === 'function') refreshPlayheads(); }
+        });
 
         /* Electron 既定: 保存設定がまだ無い初回のみ、web では既定 OFF の
            「音声波形」を ON にする（タイムラインは exe では非表示なので対象外。
@@ -480,122 +347,12 @@
         var previewMode = false;
         var notepadMode = false;
 
-        /* メモ帳: 元の行を保持し、現在位置の周辺だけを描く（大量のノーツでも軽くする）。 */
-        var notepadPanel = document.createElement('section');
-        notepadPanel.id = 'etb-notepad';
-        notepadPanel.innerHTML =
-          '<div class="etb-notepad-toolbar">' +
-            '<label for="etb-notepad-diff" data-i18n="electronNotepadDifficulty">' + electronText('electronNotepadDifficulty') + '</label>' +
-            '<select id="etb-notepad-diff"></select>' +
-            '<span id="etb-notepad-status" role="status"></span>' +
-          '</div>' +
-          '<div class="etb-notepad-columns">' +
-            '<section class="etb-notepad-column"><h3>[TimingPoints]</h3><div class="etb-notepad-viewport"><pre></pre><div class="etb-notepad-playhead"></div></div></section>' +
-            '<section class="etb-notepad-column"><h3>[HitObjects]</h3><div class="etb-notepad-viewport"><pre></pre><div class="etb-notepad-playhead"></div></div></section>' +
-          '</div>';
-        colsWrap.appendChild(notepadPanel);
-        var notepadSelect = notepadPanel.querySelector('select');
-        var notepadStatus = notepadPanel.querySelector('#etb-notepad-status');
-        var notepadViews = Array.from(notepadPanel.querySelectorAll('.etb-notepad-viewport'));
-        var notepadRawRef = null, notepadSource = null, notepadSelectedFile = null;
-        var notepadSections = [[], []];
-        var notepadRenderKeys = ['', ''];
-        var notepadRaf = null;
-        var notepadEmptyDiffs = [];
-
-        var parseNotepadSections = function(text) {
-          var sections = [[], []], section = -1;
-          String(text || '').split(/\r?\n/).forEach(function(line) {
-            var trimmed = line.trim();
-            if (/^\[.*\]$/.test(trimmed)) {
-              section = trimmed === '[TimingPoints]' ? 0 : trimmed === '[HitObjects]' ? 1 : -1;
-              return;
-            }
-            if (section < 0 || !trimmed || trimmed.indexOf('//') === 0) return;
-            var values = line.split(',');
-            var value = values[section === 0 ? 0 : 2];
-            if (value == null || !value.trim()) return;
-            var time = Number(value);
-            if (Number.isFinite(time)) sections[section].push({ time: time, text: line });
-          });
-          sections.forEach(function(rows) { rows.sort(function(a, b) { return a.time - b.time; }); });
-          return sections;
-        };
-        var findNotepadRow = function(rows, time, timingPoints) {
-          if (!rows.length) return -1;
-          if (time == null) return 0;
-          var lo = 0, hi = rows.length;
-          while (lo < hi) {
-            var mid = (lo + hi) >>> 1;
-            if (rows[mid].time <= time) lo = mid + 1;
-            else hi = mid;
-          }
-          var index = Math.max(0, lo - 1);
-          if (!timingPoints && lo < rows.length &&
-              Math.abs(rows[lo].time - time) < Math.abs(rows[index].time - time)) index = lo;
-          return index;
-        };
-        var refreshNotepad = function() {
-          var raw = window.__loadedDiffs || notepadEmptyDiffs;
-          if (raw !== notepadRawRef) {
-            notepadRawRef = raw;
-            notepadSelect.textContent = '';
-            raw.forEach(function(diff) {
-              var option = document.createElement('option');
-              option.value = diff.fileName;
-              option.textContent = diff.fileName;
-              notepadSelect.appendChild(option);
-            });
-          }
-          // osu! モードでは現在エディタで開いている難易度に追従する。
-          var wanted = panelMode === 'osu' && currentDiffFile ? currentDiffFile : notepadSelectedFile;
-          var source = raw.find(function(diff) { return diff.fileName === wanted; });
-          if (!source && !(panelMode === 'osu' && currentDiffFile)) source = raw[0];
-          notepadSelect.disabled = panelMode === 'osu' || !raw.length;
-          notepadSelect.value = source ? source.fileName : '';
-          if (source !== notepadSource) {
-            notepadSource = source;
-            notepadSections = parseNotepadSections(source && source.text);
-            notepadRenderKeys = ['', ''];
-          }
-          var time = panelMode === 'osu' ? playback.lastTime : getSpreadTime();
-          var statusText = !source ? electronText('electronNoBeatmapLoadedPlain')
-            : time == null ? electronText('electronNotepadWaiting') : Math.round(time) + ' ms';
-          if (notepadStatus.textContent !== statusText) notepadStatus.textContent = statusText;
-          notepadViews.forEach(function(view, side) {
-            var rows = notepadSections[side];
-            var index = findNotepadRow(rows, time, side === 0);
-            var height = view.clientHeight;
-            var key = index + ':' + height + ':' + document.documentElement.lang;
-            if (notepadRenderKeys[side] === key) return;
-            notepadRenderKeys[side] = key;
-            var pre = view.querySelector('pre');
-            pre.textContent = '';
-            var half = Math.ceil(height / 48) + 1;
-            var start = Math.max(0, index - half), end = Math.min(rows.length, index + half + 1);
-            pre.style.top = (height / 2 - 12 + (start - Math.max(0, index)) * 24) + 'px';
-            if (!rows.length) {
-              pre.textContent = electronText(source ? 'electronNotepadEmptySection' : 'electronNoBeatmapLoadedPlain');
-              return;
-            }
-            for (var row = start; row < end; row++) {
-              var line = document.createElement('span');
-              line.textContent = rows[row].text;
-              if (row === index) line.className = 'etb-notepad-current';
-              pre.appendChild(line);
-            }
-          });
-        };
-        notepadSelect.addEventListener('change', function() {
-          notepadSelectedFile = notepadSelect.value;
-          refreshNotepad();
+        var notepad = createElectronNotepad({
+          container: colsWrap, text: electronText, getSpreadTime,
+          getPanelMode: function() { return panelMode; },
+          getCurrentDiffFile: function() { return currentDiffFile; },
+          getOsuTime: function() { return playback.lastTime; }
         });
-        var notepadLoop = function() {
-          notepadRaf = null;
-          if (!notepadMode) return;
-          refreshNotepad();
-          notepadRaf = requestAnimationFrame(notepadLoop);
-        };
 
         /* ── グラフの再生ヘッド（リアルタイム時刻バー） ──
            各グラフは描画時に canvas.__playheadGeom = { plot, viewStart, viewEnd } を保存する。
@@ -835,11 +592,7 @@
             layoutEl.classList.toggle('etb-preview', pv);
             layoutEl.classList.toggle('etb-notepad', notepadMode);
           }
-          if (notepadMode && notepadRaf == null) notepadLoop();
-          if (!notepadMode && notepadRaf != null) {
-            cancelAnimationFrame(notepadRaf);
-            notepadRaf = null;
-          }
+          notepad.setActive(notepadMode);
           /* スプレッド表示の描画ループ ON/OFF */
           if (window.__setSpreadActive) window.__setSpreadActive(pv);
           /* osu! モード以外・設定/プレビュー中は再生ヘッドを隠す */
