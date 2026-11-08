@@ -301,11 +301,11 @@ const TAG_RELATED_RULES = [
   },
   {
     trigger: ["ウマ娘", "プリティーダービー", "umamusume"],
-    suggestGroup: ["ウマ娘", "プリティーダービー-", "umamusume", "uma", "musume", "pretty", "derby", "horse", "girls", "cygames"]
+    suggestGroup: ["ウマ娘", "プリティーダービー", "umamusume", "uma", "musume", "pretty", "derby", "horse", "girls", "cygames"]
   },
   {
     triggerAll: ["uma", "musume"],
-    suggestGroup: ["ウマ娘", "プリティーダービー-", "umamusume", "pretty", "derby", "horse", "girls", "cygames"]
+    suggestGroup: ["ウマ娘", "プリティーダービー", "umamusume", "pretty", "derby", "horse", "girls", "cygames"]
   },
 ];
 
