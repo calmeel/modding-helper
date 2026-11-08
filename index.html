@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <title>Modding Helper</title>
   <link rel="stylesheet" href="app/main.css" />
+  <link rel="stylesheet" href="app/styles/charts.css" />
+  <link rel="stylesheet" href="app/styles/controls.css" />
+  <link rel="stylesheet" href="app/styles/comparisons.css" />
   <link rel="icon" type="image/png" href="images/icon.png" />
 
   <!-- Google tag (gtag.js) -->
@@ -963,7 +966,11 @@
   </script>
   <script src="app/files/oszZipLoader.js"></script>
   <script src="parsers/osuParser.js"></script>
+  <script src="app/electron/taikoNotes.js"></script>
+  <script src="app/electron/taikoTiming.js"></script>
+  <script src="app/electron/taikoProgress.js"></script>
   <script src="app/electron/taikoSpreadView.js"></script>
+  <script src="app/electron/taikoAudio.js"></script>
 
   <!-- Checks: Notes -->
   <script src="checks/common/snapTiming.js"></script>
@@ -1075,9 +1082,12 @@
   <script src="app/charts/spreadDensityChart.js"></script>
   <script src="app/charts/spreadRestMomentBpmChart.js"></script>
   <script src="app/charts/spreadScrollChart.js"></script>
+  <script src="app/charts/spreadScrollDrawing.js"></script>
+  <script src="app/charts/spreadScrollTooltip.js"></script>
   <script src="app/charts/offsetWaveformData.js"></script>
   <script src="app/charts/offsetWaveformChart.js"></script>
   <script src="app/files/fileLoader.js"></script>
+  <script src="app/files/mapMetadata.js"></script>
   <script src="app/ui/setup.js"></script>
   <script src="app/issues/spread.js"></script>
   <script src="app/ui/renderers.js"></script>
@@ -1086,6 +1096,8 @@
   <script src="app/tools/srCalculator.js"></script>
   <script src="app/electron/spectrogram.js"></script>
   <script src="app/issues/tabs.js"></script>
+  <script src="app/ui/resultRenderer.js"></script>
+  <script src="app/electron/osuSourceController.js"></script>
   <script src="app/main.js"></script>
 </body>
 </html>

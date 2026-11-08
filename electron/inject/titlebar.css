@@ -1,0 +1,183 @@
+      /* ── カスタムタイトルバー ── */
+      #electron-titlebar {
+        display: flex;
+        align-items: stretch;
+        height: 36px;
+        min-height: 36px;
+        background: #252525;
+        border-bottom: 1px solid #363636;
+        flex-shrink: 0;
+        -webkit-app-region: drag;
+        user-select: none;
+      }
+
+      /* ウィンドウを狭めた時は、まずブランド表示（アイコン・題名・バージョン）から
+         削られるようにする。min-width:0 + overflow:hidden が無いと中身の幅で
+         突っ張ってしまい、右端のウィンドウ操作ボタンが画面外へ押し出される。 */
+      #etb-brand {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 0 10px 0 14px;
+        flex: 0 100 auto;   /* shrink 100 = ナビより先に縮む */
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      #etb-icon {
+        width: 15px;
+        height: 15px;
+        opacity: 0.85;
+      }
+
+      #etb-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: #dedede;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      #etb-title-suffix {
+        font-weight: 400;
+        color: #9a9a9a;
+      }
+
+      #etb-badge {
+        font-size: 9px;
+        color: #5a5a5a;
+        background: #1a1a1a;
+        border: 1px solid #3e3e3e;
+        border-radius: 3px;
+        padding: 1px 5px;
+        line-height: 1.5;
+      }
+
+      #etb-vsep {
+        width: 1px;
+        background: #363636;
+        margin: 9px 4px;
+        flex-shrink: 0;
+      }
+
+      #etb-nav {
+        display: flex;
+        align-items: center;
+        gap: 1px;
+        padding: 0 2px;
+        -webkit-app-region: no-drag;
+        flex: 0 1 auto;
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .etb-nav-btn {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        background: transparent;
+        border: none;
+        color: #888;
+        font-size: 11.5px;
+        font-family: inherit;
+        padding: 0 11px;
+        height: 36px;
+        cursor: pointer;
+        -webkit-app-region: no-drag;
+        transition: background 0.1s, color 0.1s;
+        white-space: nowrap;
+      }
+
+      .etb-nav-btn:hover {
+        background: #2e2e2e;
+        color: #ccc;
+      }
+
+      #etb-spacer { flex: 1 1 0; min-width: 0; }
+
+      #etb-language {
+        display: flex;
+        align-items: center;
+        gap: 1px;
+        padding: 0 6px;
+        flex: 0 0 auto;
+        -webkit-app-region: no-drag;
+      }
+
+      /* 最小化/最大化/閉じるは絶対に縮めない・押し出さない */
+      #etb-controls {
+        display: flex;
+        align-items: stretch;
+        -webkit-app-region: no-drag;
+        flex: 0 0 auto;
+        margin-left: auto;   /* spacer が潰れても常に右端へ寄せる */
+      }
+
+      #etb-map-actions {
+        display: flex;
+        gap: 6px;
+        margin-left: auto;
+        padding: 0;
+        flex: 0 0 auto;
+      }
+
+      .etb-map-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 20px;
+        padding: 0;
+        background: transparent;
+        border: none;
+        border-radius: 4px;
+        color: #cfcfe0;
+        font: inherit;
+        font-size: 11px;
+        white-space: nowrap;
+        cursor: pointer;
+        -webkit-app-region: no-drag;
+        transition: background 0.1s, color 0.1s;
+      }
+
+      .etb-map-action:hover:not(:disabled) {
+        background: rgba(91,155,213,0.16);
+        color: #5b9bd5;
+      }
+
+      .etb-map-action:disabled {
+        color: #777784;
+        border-color: #383842;
+        cursor: default;
+      }
+
+      /* 幅が足りなくなる順に、影響の小さいものから隠していく
+         （Chromium 91 のためコンテナクエリは使えずビューポート幅で判定） */
+      @media (max-width: 1000px) { #etb-title-suffix { display: none; } }
+      @media (max-width: 880px)  { #etb-badge        { display: none; } }
+      @media (max-width: 800px)  { #etb-title        { display: none; } }
+      @media (max-width: 720px)  {
+        #etb-vsep { display: none; }
+        /* 下の .top-links 上書きが !important なので、こちらも !important で勝たせる */
+        #etb-nav > a, #etb-nav > button, #etb-language > a, #etb-language > button { padding: 0 6px !important; }
+        .etb-nav-btn { padding: 0 6px; }
+      }
+
+      .etb-ctrl {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 46px;
+        background: transparent;
+        border: none;
+        color: #888;
+        cursor: pointer;
+        -webkit-app-region: no-drag;
+        transition: background 0.1s, color 0.1s;
+      }
+
+      .etb-ctrl:hover         { background: #363636; color: #eee; }
+      #etb-close:hover        { background: #c42b1c; color: #fff; }
+

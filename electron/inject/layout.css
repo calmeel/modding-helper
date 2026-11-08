@@ -1,0 +1,192 @@
+      /* ── 3カラムレイアウト（カード型パネル） ── */
+      /* レイアウトは縦積み（上=コンパクトバー / 下=3カラム）。
+         カラムの並びと余白は #etb-cols 側が持つ。 */
+      #electron-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 !important;
+        overflow: hidden !important;
+        min-height: 0 !important;
+        gap: 0 !important;
+        padding: 0 !important;
+        background: #19191e !important;
+        box-sizing: border-box !important;
+      }
+      #etb-cols {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        gap: 8px;
+        padding: 8px;
+        box-sizing: border-box;
+      }
+
+      /* ── コンパクトモード ──
+         左カラム（メタデータ/リアルタイム/譜面ファイル）を出さず、
+         チェックリストとチェック結果を画面いっぱいに使う。 */
+      #etb-compact-bar { display: none; }
+      #etb-compact-bar #etb-map-actions { padding: 0; flex-shrink: 1; }
+      /* 設定画面は左カラムに置いてあるので、コンパクトでも必ず出す
+         （消すと表示モードを戻せなくなる） */
+      #electron-layout.etb-compact:not(.etb-settings) #electron-col-future { display: none !important; }
+      #electron-layout.etb-compact:not(.etb-settings):not(.etb-preview) #etb-compact-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 5px 12px 0;
+        min-height: 0;
+        flex: 0 0 auto;
+      }
+      #etb-compact-meta {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 12px;
+        color: #cfcfe0;
+        letter-spacing: 0.01em;
+      }
+      #etb-compact-meta.etb-compact-meta-empty { color: #6a6a78; }
+      #etb-compact-drop { flex: 0 0 auto; display: flex; align-items: center; }
+      /* バーに入ったドロップエリアは1行に収まる小さい見た目にする */
+      #etb-compact-drop .drop-area {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        margin: 0 !important;
+        padding: 3px 9px !important;
+        border: 1px dashed #4a4a58 !important;
+        border-radius: 6px !important;
+        background: #22222a !important;
+        min-height: 0 !important;
+      }
+      #etb-compact-drop .drop-area p { display: none !important; }
+      #etb-compact-drop .drop-area .file-picker {
+        display: flex !important; align-items: center !important; gap: 6px !important; margin: 0 !important;
+      }
+      #etb-compact-drop .drop-area .file-button {
+        padding: 2px 9px !important; font-size: 11px !important; margin: 0 !important; white-space: nowrap !important;
+      }
+      #etb-compact-drop .drop-area .file-name {
+        font-size: 11px !important; max-width: 190px !important; overflow: hidden !important;
+        text-overflow: ellipsis !important; white-space: nowrap !important;
+      }
+
+      /* カード共通スタイル */
+      .etb-card {
+        background: #26262e;
+        border: 1px solid #383842;
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        box-sizing: border-box;
+      }
+      .etb-card-head {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 11px;
+        background: #2c2c35;
+        border-bottom: 1px solid #383842;
+        flex-shrink: 0;
+      }
+      .etb-card-head::before {
+        content: '';
+        width: 3px;
+        height: 12px;
+        border-radius: 2px;
+        background: #5b6c9c;
+        flex-shrink: 0;
+      }
+      .etb-card-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: #a6a6b4;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .etb-card-body { padding: 8px; min-height: 0; }
+
+      /* ── 左カラム: 複数カードを縦に並べ、列ごとスクロール ── */
+      #electron-col-future {
+        flex: 2 !important;
+        min-width: 0 !important;
+        overflow-y: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+      }
+      #electron-col-future > .etb-card { flex: 0 0 auto; }
+      #etb-meta-body { padding: 0 !important; }
+
+      /* Diff順: ワイドはメタデータ直下、コンパクトは元のサブタブ。 */
+      #electron-layout:not(.etb-compact) .tab-button[data-spread-subtab-target="order"],
+      #electron-layout:not(.etb-compact) .spread-subtab-button[data-spread-subtab="order"] { display: none !important; }
+      #etb-card-difforder #spread-subtab-order { display: block !important; }
+      #etb-card-difforder > .etb-card-body { max-height: 360px; overflow-y: auto; }
+      #etb-card-difforder .spread-order-actions { display: none; }
+      #etb-card-difforder > .etb-card-head > #spreadResetOrderButton { margin-left: auto; }
+      #etb-card-difforder > .etb-card-head > #spreadResetOrderButton span[data-i18n] { display: none; }
+      .etb-order-reset-icon { flex-shrink: 0; }
+      #spreadResetOrderButton:not(.etb-map-action) .etb-order-reset-icon { display: none; }
+      .etb-order-table { width: 100%; max-width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 13px; }
+      .etb-order-table th, .etb-order-table td {
+        padding: 2px; text-align: left; vertical-align: middle; border: none;
+        overflow-wrap: anywhere;
+      }
+      .etb-order-table th { color: #999; font-weight: normal; }
+      .etb-order-table thead th { border-bottom: 1px solid #363640; }
+      .etb-order-number-col { width: 25px; }
+      .etb-order-move-col { width: 46px; }
+      .etb-order-category-col { width: 36%; }
+      .etb-order-table .etb-order-name, .etb-order-table .diff-name {
+        white-space: normal; word-break: normal; overflow-wrap: anywhere;
+      }
+      .etb-order-table .spread-order-button { margin: 0 1px 0 0; padding: 2px 4px; }
+      .etb-order-table .spread-category-select { width: 100%; min-width: 0; padding: 1px 2px; font-size: 13px; }
+      @media (max-width: 900px) {
+        .etb-order-number-col { width: 18px; }
+        .etb-order-move-col { width: 24px; }
+      }
+
+      /* ── 設定モード: 3分割 ──
+         左  = 表示モード＋譜面読み込み設定 / 中央 = チェックリスト表示設定＋ツール表示設定
+         右  = プレビュータブ設定（専用カラム #electron-col-settings-right）。
+         チェック結果カラムは設定中は隠す（JS の setDisp）。 */
+      #electron-layout.etb-settings #electron-col-future { flex: 1 1 0 !important; }
+      #electron-layout.etb-settings #electron-col-center { flex: 1 1 0 !important; }
+      #electron-layout.etb-settings #electron-col-settings-right {
+        display: flex !important;
+        flex: 1 1 0 !important;
+      }
+      /* 設定モードではチェック用ツールカード(緑ボタン)は出さない */
+      #electron-layout.etb-settings #etb-card-tools { display: none !important; }
+      /* 各カラム内の設定カードは内容の高さで上から積む（左カラムの積み方に統一）。
+         中央のチェックリスト表示設定カードも設定時は内容高にして、ツール表示設定を
+         その直下に密着させる。はみ出す時はカラム側(#electron-col-center)がスクロール。 */
+      #electron-layout.etb-settings #electron-col-tabs,
+      #electron-layout.etb-settings #etb-card-viewsettings,
+      #electron-layout.etb-settings #etb-card-loadsettings,
+      #electron-layout.etb-settings #etb-card-toolsettings,
+      #electron-layout.etb-settings #etb-card-previewsettings { flex: 0 0 auto !important; }
+      #electron-layout.etb-settings #electron-col-center { overflow-y: auto !important; }
+
+      /* 設定モード専用の右カラム。設定以外（チェック/プレビュー）では隠す。 */
+      #electron-col-settings-right {
+        display: none;
+        min-width: 0;
+        overflow-y: auto;
+        flex-direction: column;
+        gap: 8px;
+      }
+      /* プレビュー設定カード: 先頭セクションだけ区切り線を出さない（2つ目以降は区切る） */
+      /* 設定カードの先頭セクションは区切り線と上余白を出さない（2つ目以降だけ区切る）。
+         カードを問わず効かせる（表示モードのように1セクションだけのカードもあるため）。 */
+      .etb-card-body > .etb-sfx-settings:first-child { margin-top: 0 !important; padding-top: 0 !important; border-top: none !important; }
+

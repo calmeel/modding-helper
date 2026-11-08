@@ -122,9 +122,10 @@ test('SR completion keeps an order changed while the asynchronous calculation wa
 
 test('Electron preview reorders its existing cache when a new order is published', () => {
   const ctx = context();
-  const source = fs.readFileSync(path.join(__dirname, '..', 'electron/inject/ui.js'), 'utf8');
-  const start = source.indexOf('          var sortSpreadDiffs = function');
-  const end = source.indexOf('          var spreadTimeRange', start);
+  const source = fs.readFileSync(path.join(__dirname, '..', 'electron/inject/previewController.js'), 'utf8');
+  const start = source.indexOf('var sortSpreadDiffs = function');
+  const end = source.indexOf('var spreadTimeRange', start);
+  assert.ok(start >= 0 && end > start);
   vm.runInContext('var spDiffDesc = true; var spVisibleDiffsDirty = false;\n' + source.slice(start, end), ctx);
   const input = [map('Kantan'), map('Oni')];
   ctx.spCacheDiffs = [...input];

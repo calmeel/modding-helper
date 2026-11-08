@@ -85,22 +85,8 @@ function getCurrentBeatmapActionTarget() {
 // 巨大な文字列を main.js に埋めると編集も構文チェックもできないため、
 // electron/inject/ に実ファイルとして置き、実行時に読み込んで注入する。
 // ui.js 側は iconUrl / version をラッパー引数 __etbIconUrl / __etbVersion で受け取る。
-const INJECT_DIR = path.join(__dirname, 'inject');
-let injectCssCache = null;
-let injectJsCache  = null;
-function loadInjectCss() {
-  if (injectCssCache == null) {
-    injectCssCache = fs.readFileSync(path.join(INJECT_DIR, 'ui.css'), 'utf8');
-  }
-  return injectCssCache;
-}
-function buildInjectJs() {
-  if (injectJsCache == null) {
-    injectJsCache = fs.readFileSync(path.join(INJECT_DIR, 'ui.js'), 'utf8');
-  }
-  return '(function(__etbIconUrl, __etbVersion){\n' + injectJsCache + '\n})(' +
-    JSON.stringify(iconUrl) + ',' + JSON.stringify(version) + ');';
-}
+const { loadInjectCss, buildInjectScript } = require('./inject/bundle');
+function buildInjectJs() { return buildInjectScript(iconUrl, version); }
 
 let mainWin = null;
 

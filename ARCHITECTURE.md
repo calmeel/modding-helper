@@ -1,0 +1,55 @@
+# Code organization
+
+The browser and Electron renderers use classic scripts loaded explicitly by
+`index.html`. Keep their order when adding dependencies. This project does not
+require a bundler for the web app.
+
+## Application startup
+
+- `app/main.js`: DOM references, application state, file processing, and wiring.
+- `app/ui/resultRenderer.js`: redraws individual checks or all related results.
+  It receives the application state, DOM references, translator, and BN UI accessor.
+- `app/electron/osuSourceController.js`: source-mode settings, osu! notifications,
+  reload sequencing, and load-status text. File processing and state reset are
+  callbacks supplied by startup.
+- `app/files/mapMetadata.js`: metadata/background extraction from `.osu` and `.osz`.
+
+## Electron layout
+
+`electron/inject/bundle.js` is the single entry point for loading desktop CSS and
+initialization scripts. Production and the Electron smoke test use this loader.
+
+- `ui.js`: creates the application layout and connects display modes, navigation,
+  timing notifications, playheads, and the following components.
+- `metadataCard.js`: creates the metadata card; owns tag marks and map-action buttons.
+- `diffOrderCard.js`: creates the Diff order card and moves its existing controls
+  between wide and compact layouts without replacing their event handlers.
+- `previewController.js`: preview playback, seeking, input handling, and settings.
+  It receives playback state and explicit callbacks for parent-owned settings.
+
+The CSS files are concatenated in their original cascade order. In particular,
+`titlebarOverrides.css` deliberately follows the preview styles, and `ui.css`
+contains the final result/settings overrides.
+
+## Preview and chart rendering
+
+- `taikoNotes.js`: note parsing, combo numbers, swell/roll calculations.
+- `taikoTiming.js`: timing, scroll speed, barlines, and timeline markers.
+- `taikoProgress.js`: progress-bar drawing.
+- `taikoSpreadView.js`: note lanes and playfield drawing.
+- `taikoAudio.js`: synthesized and sampled hit-sound kits.
+
+These files live under `app/electron/` and share the existing global helper API.
+Load them before creating the Electron preview controller.
+
+The scroll chart files under `app/charts/` share `spreadScrollChartState`:
+
+- `spreadScrollChart.js`: chart state, initialization, filtering, and input handling.
+- `spreadScrollDrawing.js`: speed/delta chart rendering and drawing helpers.
+- `spreadScrollTooltip.js`: tooltip content and coordinate helpers.
+
+## Verification
+
+- `npm test`: parser/check/order/persistence regression tests.
+- `npm run test:electron`: hidden Electron smoke test, including preview drawing,
+  desktop cards, source modes, chart popouts, reload, and a browser-style window.

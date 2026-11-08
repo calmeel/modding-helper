@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let receivedDiffOrder = null;
   let activeMapsetFolder = null;
   async function persistDiffPreferences() {
-    if (isChartPopout || !activeMapsetFolder || osuSourceMode !== 'osu' ||
+    if (isChartPopout || !activeMapsetFolder || osuSource.mode !== 'osu' ||
         !window.electronAPI?.saveDiffOrderPreferences) return;
     try {
       const saved = await window.electronAPI.saveDiffOrderPreferences(activeMapsetFolder,
@@ -346,6 +346,62 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  const {
+    renderAllDiffResults,
+    renderResult,
+    renderShiftResult,
+    renderDoubleSvResult,
+    renderBarlineResult,
+    renderUnappliedSvResult,
+    renderKiaiResult,
+    renderKiaiSnapResult,
+    renderSvVolumeResult,
+    renderVolumeCompareResult,
+    renderRedGreenMatchResult,
+    renderSampleSetResult,
+    renderSliderSettingsResult,
+    renderArtistResult,
+    renderTitleResult,
+    renderSourceResult,
+    renderTagResult,
+    renderPreviewPointResult,
+    renderBgOffsetResult,
+    renderFileCheckResult,
+    renderEpilepsyWarningResult,
+    renderSpreadResult,
+    renderOffsetWaveformResult,
+    renderContentPermissionResult,
+    renderTimelineResult,
+    renderResultAndUpdateTabs,
+    renderShiftResultAndUpdateTabs,
+    renderDoubleSvResultAndUpdateTabs,
+    renderSvVolumeResultAndUpdateTabs,
+    renderVolumeCompareResultAndUpdateTabs,
+    renderSpreadResultAndUpdateTabs,
+    renderEarlyNoteResult
+  } = createResultRenderer({ state, dom, t, getBnCompareUi: () => bnCompareUi });
+
+  const osuSource = createOsuSourceController({
+    t, invalidateLoads: () => { ++beatmapPageLoadId; }, handleFile,
+    clearResults: clearOsuCheckResults,
+    onModeChanged(mode) {
+      if (mode === "osu") publishChartSourceFile(null);
+
+      // 左パネル（メタ/タイミング）のモードを連動。osu モードはリアルタイム表示、
+      // file モードは読み込んだファイルのメタデータ表示に切り替える。
+      if (window.__osuPanel && typeof window.__osuPanel.setMode === "function") {
+        window.__osuPanel.setMode(mode);
+        // file モードに切り替えた際、既に読み込み済みのファイルがあれば即反映
+        if (mode === "file" && lastLoadedFileForMeta) {
+          renderFileMetaToPanel(lastLoadedFileForMeta);
+          publishChartSourceFile(lastLoadedFileForMeta);
+        }
+      }
+    }
+  });
+  const applyOsuSourceMode = osuSource.setMode;
+  const refreshOsuSourceStatus = osuSource.refreshStatus;
+
   // ユーザーが手動でファイルを選択/ドロップしたら自動でファイルモードに戻す
   const userFileHandler = async (file) => {
     const osuRadio = document.querySelector('input[name="osuSource"][value="osu"]');
@@ -604,42 +660,6 @@ document.addEventListener("DOMContentLoaded", () => {
     renderAllDiffResults();
   }
 
-  function renderAllDiffResults() {
-    renderResult();
-    renderShiftResult();
-    renderKiaiResult();
-    renderKiaiSnapResult();
-    renderDoubleSvResult();
-    renderBarlineResult();
-    renderUnappliedSvResult();
-    renderSvVolumeResult();
-    renderVolumeCompareResult();
-    renderRedGreenMatchResult();
-    renderSampleSetResult();
-    renderSliderSettingsResult();
-    renderEarlyNoteResult();
-    renderArtistResult();
-    renderTitleResult();
-    renderSourceResult();
-    renderTagResult();
-    renderPreviewPointResult();
-    renderBgOffsetResult();
-    renderFileCheckResult();
-    renderEpilepsyWarningResult();
-    renderSpreadResult();
-    renderSrCalculator(state.srCalculator, srCalculatorOutput, t, state.spread.diffOrder);
-    renderOffsetWaveformResult();
-    renderContentPermissionResult();
-
-    if (state.timeline) {
-      renderTimelineResult();
-    }
-
-    updateTabIssueStates(state);
-    bnCompareUi.renderBnSelectedResult();
-    bnCompareUi.renderBnDiffMatching(true);
-  }
-
   // did-finish-load 後に追加される Electron 専用 DOM へも、
   // 現在言語を初回適用できるよう公開する。
   window.applyModdingHelperLanguage = applyLanguage;
@@ -652,222 +672,6 @@ document.addEventListener("DOMContentLoaded", () => {
       synchronizeDiffOrder();
       renderAllDiffResults();
     });
-  }
-
-  function renderResult() {
-    renderClapWhistleResult(state.clapWhistle, dom, t);
-    renderCoordinateResult(state.coordinates, dom, t);
-  }
-
-  function renderShiftResult() {
-    state.offset = renderOffsetResultFromSources(
-      state.offsetSources,
-      dom,
-      t
-    );
-  }
-
-  function renderDoubleSvResult() {
-    state.doubleSvResults = renderDoubleSvResultFromSources(
-      state.doubleSvSources,
-      dom,
-      t
-    );
-  }
-
-  function renderBarlineResult() {
-    state.barlineResults = renderBarlineResultFromSources(
-      state.barlineSources,
-      dom,
-      t
-    );
-  }
-
-  function renderUnappliedSvResult() {
-    renderUnappliedSvResultFromResults(
-      state.unappliedSv,
-      dom,
-      t
-    );
-  }
-
-  function renderKiaiResult() {
-    renderKiaiCompareResult(state.kiaiCompare, dom, t);
-  }
-
-  function renderKiaiSnapResult() {
-    renderKiaiSnapResultFromResults(state.kiaiSnap, dom, t);
-  }
-
-  function renderSvVolumeResult() {
-    state.svVolumeResults = renderSvVolumeResultFromSources(
-      state.svVolumeSources,
-      dom,
-      t
-    );
-  }
-
-  function renderVolumeCompareResult() {
-    state.volumeCompareResult = renderVolumeCompareResultFromSources(
-      state.volumeCompareSources,
-      dom,
-      t
-    );
-  }
-
-  function renderRedGreenMatchResult() {
-    renderRedGreenMatchResultFromResults(
-      state.redGreenMatch,
-      dom,
-      t
-    );
-  }
-
-  function renderSampleSetResult() {
-    renderSampleSetResultFromResults(
-      state.sampleSet,
-      dom,
-      t
-    );
-  }
-
-  function renderSliderSettingsResult() {
-    renderSliderSettingsResultFromResults(
-      state.sliderSettings,
-      dom,
-      t
-    );
-  }
-
-  function renderArtistResult() {
-    renderArtistResultFromResults(
-      state.artist,
-      dom,
-      t
-    );
-  }
-
-  function renderTitleResult() {
-    renderTitleResultFromResults(
-      state.title,
-      dom,
-      t
-    );
-  }
-
-  function renderSourceResult() {
-    renderSourceResultFromResults(
-      state.source,
-      dom,
-      t
-    );
-  }
-
-  function renderTagResult() {
-    renderTagResultFromResults(
-      state.tag,
-      dom,
-      t
-    );
-  }
-
-  function renderPreviewPointResult() {
-    renderPreviewPointResultFromResults(
-      state.previewPoint,
-      dom,
-      t
-    );
-  }
-
-  function renderBgOffsetResult() {
-    renderBgOffsetResultFromResults(
-      state.bgOffset,
-      dom,
-      t
-    );
-  }
-
-  function renderFileCheckResult() {
-    renderFileCheckResultFromResults(
-      state.fileCheck,
-      state.songFolderCheck,
-      dom,
-      t
-    );
-  }
-
-  function renderEpilepsyWarningResult() {
-    renderEpilepsyWarningResultFromResults(
-      state.epilepsyWarning,
-      dom,
-      t
-    );
-  }
-
-  function renderSpreadResult() {
-    renderSpreadResultFromResults(state.spread, dom, t);
-  }
-
-  function renderOffsetWaveformResult() {
-    renderOffsetWaveformResultFromSources(
-      state.offsetWaveformSources,
-      dom,
-      t
-    );
-  }
-
-  function renderContentPermissionResult() {
-    renderContentPermissionResultFromResults(
-      state.contentPermission,
-      dom,
-      t
-    );
-  }
-
-  function renderTimelineResult() {
-    state.timeline = renderTimelineResultFromSources(
-      state.timelineSources,
-      dom,
-      t,
-      {
-        diffOrder: state.spread?.diffOrder ?? []
-      }
-    );
-  }
-
-  /** 警告tabのレンダー */
-  function renderResultAndUpdateTabs() {
-    renderResult();
-    updateTabIssueStates(state);
-  }
-
-  function renderShiftResultAndUpdateTabs() {
-    renderShiftResult();
-    updateTabIssueStates(state);
-  }
-
-  function renderDoubleSvResultAndUpdateTabs() {
-    renderDoubleSvResult();
-    updateTabIssueStates(state);
-  }
-
-  function renderSvVolumeResultAndUpdateTabs() {
-    renderSvVolumeResult();
-    updateTabIssueStates(state);
-  }
-
-  function renderVolumeCompareResultAndUpdateTabs() {
-    renderVolumeCompareResult();
-    updateTabIssueStates(state);
-  }
-
-  function renderSpreadResultAndUpdateTabs() {
-    renderSpreadResult();
-    updateTabIssueStates(state);
-  }
-
-  function renderEarlyNoteResult() {
-    renderEarlyNoteResultFromResults(state.earlyNote, dom, t);
   }
 
   setupPersistentOptions({
@@ -1045,7 +849,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // file モードのときは読み込んだファイルのメタデータを左パネルに表示
       lastLoadedFileForMeta = file;
-      if (osuSourceMode === "file") {
+      if (osuSource.mode === "file") {
         publishChartSourceFile(file);
         await renderFileMetaToPanel(file);
       }
@@ -1063,13 +867,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // ───────────────────────────────────────────────
   // チェック対象の切替（ファイル / osu! で開いている譜面）— Electron 専用
   // ───────────────────────────────────────────────
-  let osuSourceMode        = "file";
-  let osuLastLoadedFolder  = null;
-  let osuLastSkipped = false;
-  let osuLoadId = 0;
-  let skipMultipleAudioMapsets = true;
-  let osuStatusKey         = "";
-  let osuStatusCls         = "";
   let lastLoadedFileForMeta = null;  // file モードで左パネルに出すため最後に読んだ File を保持
   let chartSourcePublishId = 0;
 
@@ -1103,129 +900,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // .osu テキストからメタデータを取り出す
-  function metaFromOsuText(text, bgDataUrl) {
-    return {
-      artist:        parseMetadataValue(text, "Artist"),
-      artistUnicode: parseMetadataValue(text, "ArtistUnicode"),
-      title:         parseMetadataValue(text, "Title"),
-      titleUnicode:  parseMetadataValue(text, "TitleUnicode"),
-      creator:       parseMetadataValue(text, "Creator"),
-      beatmapSetId:  parseMetadataValue(text, "BeatmapSetID"),
-      beatmapId:     parseMetadataValue(text, "BeatmapID"),
-      source:        parseMetadataValue(text, "Source"),
-      tags:          parseMetadataValue(text, "Tags"),
-      bgDataUrl:     bgDataUrl || null
-    };
-  }
-
-  function parseBgFilename(text) {
-    const m = text.match(/^\s*0\s*,\s*0\s*,\s*"(.+?)"/m);
-    return m ? m[1] : "";
-  }
-
-  function blobToDataUrl(blob) {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload  = () => resolve(reader.result);
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(blob);
-    });
-  }
-
-  // 読み込んだ File からメタデータ（+ .osz なら BG）を抽出
-  async function extractMapMetaFromFile(file) {
-    if (!file) return null;
-    const lower = file.name.toLowerCase();
-
-    if (lower.endsWith(".osu")) {
-      const text = await file.text();
-      return metaFromOsuText(text, null);
-    }
-
-    if (lower.endsWith(".osz")) {
-      const zip = await loadOszZip(file);
-      const osuEntries = Object.values(zip.files)
-        .filter(e => !e.dir && e.name.toLowerCase().endsWith(".osu"));
-
-      let chosenEntry = null;
-      let chosenText  = null;
-      for (const entry of osuEntries) {
-        const text = await entry.async("text");
-        if (parseMode(text) === 1) { chosenEntry = entry; chosenText = text; break; }
-        if (!chosenEntry) { chosenEntry = entry; chosenText = text; }  // taiko が無ければ先頭
-      }
-      if (!chosenText) return null;
-
-      let bgDataUrl = null;
-      const bgName = parseBgFilename(chosenText);
-      if (bgName && typeof findOszImageEntry === "function") {
-        const imgEntry = findOszImageEntry(zip, chosenEntry.name, bgName);
-        if (imgEntry) {
-          try { bgDataUrl = await blobToDataUrl(await imgEntry.async("blob")); } catch {}
-        }
-      }
-      return metaFromOsuText(chosenText, bgDataUrl);
-    }
-
-    return null;
-  }
-
   async function renderFileMetaToPanel(file) {
     if (!window.__osuPanel || typeof window.__osuPanel.renderFileMeta !== "function") return;
     try {
       const fileMeta = await extractMapMetaFromFile(file);
       window.__osuPanel.renderFileMeta(fileMeta);
     } catch { /* メタ抽出失敗は無視（チェック結果には影響しない） */ }
-  }
-
-  function refreshOsuSourceStatus() {
-    const el = document.getElementById("osuSourceStatus");
-    if (!el) return;
-    el.classList.remove("error", "ok");
-    if (!osuStatusKey) { el.textContent = ""; return; }
-    el.textContent = t(osuStatusKey);
-    if (osuStatusCls) el.classList.add(osuStatusCls);
-  }
-
-  function setOsuStatus(key, cls) {
-    osuStatusKey = key;
-    osuStatusCls = cls || "";
-    refreshOsuSourceStatus();
-  }
-
-  function applyOsuSourceMode(mode) {
-    ++osuLoadId;
-    ++beatmapPageLoadId;
-    osuLastLoadedFolder = null;
-    osuLastSkipped = false;
-    osuSourceMode = (mode === "osu") ? "osu" : "file";
-    const skipOption = document.getElementById("skipMultipleAudioMapsets");
-    if (skipOption) {
-      skipOption.disabled = osuSourceMode !== "osu";
-      skipOption.checked = osuSourceMode === "osu" && skipMultipleAudioMapsets;
-    }
-    try { localStorage.setItem("moddingHelperCheckSource", osuSourceMode); } catch {}
-    if (window.electronAPI && typeof window.electronAPI.setChartSourceMode === "function") {
-      window.electronAPI.setChartSourceMode(osuSourceMode);
-    }
-
-    const reloadBtn = document.getElementById("osuReloadBtn");
-    if (reloadBtn) reloadBtn.hidden = (osuSourceMode !== "osu");
-
-    if (osuSourceMode === "file") setOsuStatus("", "");
-    if (osuSourceMode === "osu") publishChartSourceFile(null);
-
-    // 左パネル（メタ/タイミング）のモードを連動。osu モードはリアルタイム表示、
-    // file モードは読み込んだファイルのメタデータ表示に切り替える。
-    if (window.__osuPanel && typeof window.__osuPanel.setMode === "function") {
-      window.__osuPanel.setMode(osuSourceMode);
-      // file モードに切り替えた際、既に読み込み済みのファイルがあれば即反映
-      if (osuSourceMode === "file" && lastLoadedFileForMeta) {
-        renderFileMetaToPanel(lastLoadedFileForMeta);
-        publishChartSourceFile(lastLoadedFileForMeta);
-      }
-    }
   }
 
   function clearOsuCheckResults() {
@@ -1248,119 +928,7 @@ document.addEventListener("DOMContentLoaded", () => {
     applyLanguage();
   }
 
-  async function loadFromOsu(force) {
-    if (osuSourceMode !== "osu") return;
-    const loadId = ++osuLoadId;
-    ++beatmapPageLoadId;
-    setOsuStatus("osuSourceLoading", "");
+  osuSource.setup();
 
-    let res;
-    try {
-      res = await window.electronAPI.getCurrentMapset(force ? null : osuLastLoadedFolder, {
-        skipMultipleAudio: skipMultipleAudioMapsets
-      });
-    } catch {
-      if (loadId !== osuLoadId || osuSourceMode !== "osu") return;
-      setOsuStatus("osuSourceNoMap", "error");
-      return;
-    }
-    if (loadId !== osuLoadId || osuSourceMode !== "osu") return;
-
-    if (!res) {
-      osuLastLoadedFolder = null;
-      setOsuStatus("osuSourceNoMap", "error");
-      return;
-    }
-    if (res.unchanged) {
-      setOsuStatus(osuLastSkipped ? "osuSourceMultipleAudioSkipped" : "osuSourceLoaded", osuLastSkipped ? "" : "ok");
-      return;
-    }
-    if (res.skipped === "multiple-audio") {
-      osuLastLoadedFolder = res.folder;
-      osuLastSkipped = true;
-      clearOsuCheckResults();
-      setOsuStatus("osuSourceMultipleAudioSkipped", "");
-      return;
-    }
-
-    osuLastSkipped = false;
-    try {
-      const file = new File([res.buffer], res.name, { type: "application/octet-stream" });
-      const songFolderName = String(res.folder ?? "")
-        .split(/[\\/]/)
-        .filter(Boolean)
-        .pop() ?? "";
-      await handleFile(file, { songFolderName, mapsetFolder: res.folder });
-      if (loadId !== osuLoadId || osuSourceMode !== "osu") return;
-      osuLastLoadedFolder = res.folder;
-      // フォルダ監視による再解析では osu! 側のファイルパス自体は変わらないため、
-      // osuWatcher はメタデータを自動では読み直さない。現在開いている .osu を
-      // 明示的に再読込し、メタデータカード（分離窓を含む）とTiming情報を更新する。
-      if (typeof window.electronAPI.requestMapInfo === "function") {
-        window.electronAPI.requestMapInfo();
-      }
-      setOsuStatus("osuSourceLoaded", "ok");
-    } catch {
-      if (loadId !== osuLoadId || osuSourceMode !== "osu") return;
-      setOsuStatus("osuSourceNoMap", "error");
-    }
-  }
-
-  function setupOsuSourceMode() {
-    const settings = document.getElementById("osuSourceSettings");
-    if (!settings ||
-        !window.electronAPI ||
-        typeof window.electronAPI.getCurrentMapset !== "function") {
-      return;
-    }
-    settings.hidden = false;
-
-    let saved = "file";
-    try { saved = localStorage.getItem("moddingHelperCheckSource") || "file"; } catch {}
-    try {
-      skipMultipleAudioMapsets = localStorage.getItem("moddingHelperSkipMultipleAudioMapsets") !== "false";
-    } catch {}
-    const skipOption = document.getElementById("skipMultipleAudioMapsets");
-    if (skipOption) skipOption.addEventListener("change", () => {
-      if (osuSourceMode !== "osu") return;
-      skipMultipleAudioMapsets = skipOption.checked;
-      try { localStorage.setItem("moddingHelperSkipMultipleAudioMapsets", String(skipMultipleAudioMapsets)); } catch {}
-      osuLastLoadedFolder = null;
-      osuLastSkipped = false;
-      loadFromOsu(true);
-    });
-
-    settings.querySelectorAll('input[name="osuSource"]').forEach(radio => {
-      radio.checked = (radio.value === saved);
-      radio.addEventListener("change", () => {
-        if (!radio.checked) return;
-        applyOsuSourceMode(radio.value);
-        if (radio.value === "osu") loadFromOsu(true);
-      });
-    });
-
-    const reloadBtn = document.getElementById("osuReloadBtn");
-    if (reloadBtn) reloadBtn.addEventListener("click", () => loadFromOsu(true));
-
-    // osu! 側で譜面が変わったら（osu モード時）自動で再読み込み
-    if (typeof window.electronAPI.onOsuMapInfo === "function") {
-      window.electronAPI.onOsuMapInfo(() => {
-        if (osuSourceMode === "osu") loadFromOsu(false);
-      });
-    }
-
-    // 同じ譜面の .osu が更新（osu! エディタで保存）されたら強制再読み込み
-    if (typeof window.electronAPI.onMapsetChanged === "function") {
-      window.electronAPI.onMapsetChanged(() => {
-        if (osuSourceMode === "osu") loadFromOsu(true);
-      });
-    }
-
-    applyOsuSourceMode(saved);
-    if (saved === "osu") loadFromOsu(true);
-  }
-
-  setupOsuSourceMode();
-
-applyLanguage();
+  applyLanguage();
 });

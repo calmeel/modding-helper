@@ -1,0 +1,163 @@
+      /* ── プレビューモード: スプレッド表示を全面に、他カラム/サブタブを隠す ── */
+      #electron-layout.etb-preview #electron-col-future,
+      #electron-layout.etb-preview #electron-col-center { display: none !important; }
+      #electron-layout.etb-preview #electron-col-output { flex: 1 1 100% !important; }
+      #electron-layout.etb-preview #electron-col-output > .etb-card-head { display: none !important; }
+      #electron-layout.etb-preview #electron-col-output .tab-visibility-settings { display: none !important; }
+      #electron-layout.etb-preview #electron-col-output .tab-panel:not(#tab-spreadPlay) { display: none !important; }
+      #electron-layout.etb-preview #tab-spreadPlay {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+      }
+      #etb-spread-canvas {
+        display: block;
+        width: 100%;
+        flex: 1 1 auto;
+        min-height: 200px;
+        background: #1a1a1f;
+        cursor: grab;
+      }
+      .etb-spread-toolbar {
+        display: flex; align-items: center; gap: 14px;
+        flex: 0 0 auto;
+        padding: 6px 10px;
+        border-bottom: 1px solid #2a2a33;
+        font-size: 12px; color: #cfcfcf;
+      }
+      .etb-spread-toolbar .etb-spread-sfx { display: inline-flex; align-items: center; gap: 6px; }
+      .etb-spread-toolbar .etb-spread-sfx { cursor: pointer; user-select: none; }
+      .etb-spread-toolbar .etb-spread-sfx input { cursor: pointer; }
+
+      /* 設定画面の「効果音の種類」 */
+      .etb-sfx-settings { margin-top: 12px; padding-top: 10px; border-top: 1px solid #2a2a33; }
+      .etb-sfx-settings-title { font-size: 12px; color: #9fb0c0; margin-bottom: 6px; }
+      .etb-sfx-settings .etb-sfx-opt {
+        display: flex; align-items: center; gap: 7px;
+        font-size: 13px; color: #ddd; padding: 4px 2px; cursor: pointer;
+      }
+      .etb-sfx-settings .etb-sfx-opt input { cursor: pointer; flex-shrink: 0; }
+      .etb-sfx-settings .etb-sfx-none { font-size: 12px; color: #777; }
+      .etb-sfx-settings .etb-sfx-vol {
+        display: flex; align-items: center; gap: 8px; margin-top: 8px;
+      }
+      .etb-sfx-settings .etb-sfx-vol-label { font-size: 13px; color: #ddd; flex-shrink: 0; }
+      .etb-sfx-settings .etb-sfx-vol-range { flex: 1 1 auto; min-width: 60px; cursor: pointer; }
+      .etb-sfx-settings .etb-sfx-vol-num {
+        width: 56px; flex-shrink: 0;
+        background: #2a2a33; color: #eee;
+        border: 1px solid #3a3a45; border-radius: 4px; padding: 2px 4px; font-size: 12px;
+      }
+      .etb-spread-toolbar select {
+        background: #2a2a33; color: #eee;
+        border: 1px solid #3a3a45; border-radius: 4px;
+        padding: 2px 4px; font-size: 12px; cursor: pointer;
+      }
+      .etb-spread-zoom { display: inline-flex; align-items: center; gap: 6px; }
+      .etb-spread-zoom button {
+        width: 24px; height: 22px; line-height: 1; font-size: 14px;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #2a2a33; color: #eee;
+        border: 1px solid #3a3a45; border-radius: 4px; cursor: pointer;
+        padding: 0;
+      }
+      .etb-spread-zoom button:hover { background: #34343f; }
+      #etb-spread-zoomlabel { min-width: 44px; text-align: center; font-variant-numeric: tabular-nums; }
+
+      /* ── 下部バー（osu!エディタ風）: 時間/％ | 進捗バー | 再生操作 + 速度 ── */
+      .etb-spread-bottom {
+        display: flex; align-items: center; gap: 10px;
+        flex: 0 0 auto;
+        padding: 5px 10px;
+        border-top: 1px solid #2a2a33;
+        font-size: 12px; color: #cfcfcf;
+      }
+      .etb-sb-time {
+        font-variant-numeric: tabular-nums; font-size: 13px; color: #eee;
+        min-width: 78px; flex-shrink: 0;
+        cursor: pointer; user-select: none;
+        transition: color 0.1s;
+      }
+      .etb-sb-time:hover { color: #fff; }
+      .etb-sb-time.copied { color: #6ee79a !important; }
+      .etb-sb-pct {
+        font-variant-numeric: tabular-nums; color: #9fb0c0;
+        min-width: 46px; text-align: right; flex-shrink: 0;
+      }
+      .etb-sb-progress { flex: 1 1 auto; min-width: 80px; height: 27px; cursor: pointer; display: block; }
+      .etb-sb-progress canvas { display: block; width: 100%; height: 27px; }
+      .etb-sb-controls { display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0; }
+      .etb-sb-controls button {
+        height: 22px; min-width: 26px; padding: 0 7px; line-height: 1; font-size: 11px;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #2a2a33; color: #ddd;
+        border: 1px solid #3a3a45; border-radius: 4px; cursor: pointer;
+      }
+      .etb-sb-controls button:hover { background: #34343f; color: #fff; }
+      .etb-sb-controls button.active { background: #3a5bd0; border-color: #3a5bd0; color: #fff; }
+
+      /* 右寄せグループ: 小節/拍 + ビートスナップ(スクロール式) */
+      .etb-spread-right { display: inline-flex; align-items: center; gap: 14px; margin-left: auto; }
+      .etb-spread-meter {
+        min-width: 42px; padding: 2px 8px;
+        background: #202029; border: 1px solid #3a3a45; border-radius: 4px;
+        color: #9fb0c0; font-weight: 600; text-align: center;
+        font-variant-numeric: tabular-nums; user-select: none;
+      }
+      .etb-spread-snap2 {
+        display: inline-flex; align-items: center; gap: 6px;
+        user-select: none;
+        background: #2a2a33; border: 1px solid #3a3a45; border-radius: 4px;
+        padding: 2px 8px;
+      }
+      .etb-spread-snap2:hover { background: #34343f; }
+      .etb-spread-snap-slider {
+        -webkit-appearance: none; appearance: none;
+        width: 96px; height: 4px; border-radius: 2px;
+        background: #4a4a55; cursor: pointer; margin: 0 2px; vertical-align: middle;
+      }
+      .etb-spread-snap-slider::-webkit-slider-thumb {
+        -webkit-appearance: none; appearance: none;
+        width: 12px; height: 12px; border-radius: 50%;
+        background: #6ee79a; cursor: pointer;
+      }
+      .etb-spread-snap-slider::-webkit-slider-thumb:hover { background: #8affb3; }
+      .etb-spread-snap-val { color: #6ee79a; font-weight: 600; min-width: 30px; text-align: right; font-variant-numeric: tabular-nums; }
+      .etb-spread-speed { display: inline-flex; align-items: center; gap: 2px; }
+      .etb-spread-speed button {
+        height: 22px; line-height: 1; font-size: 11px; padding: 0 7px;
+        background: #2a2a33; color: #bbb;
+        border: 1px solid #3a3a45; cursor: pointer;
+      }
+      .etb-spread-speed button:first-child { border-radius: 4px 0 0 4px; }
+      .etb-spread-speed button:last-child  { border-radius: 0 4px 4px 0; }
+      .etb-spread-speed button:not(:first-child) { border-left: none; }
+      .etb-spread-speed button:hover { background: #34343f; color: #ddd; }
+      .etb-spread-speed button.active { background: #3a5bd0; border-color: #3a5bd0; color: #fff; }
+
+      /* 設定モード: 移設したチェック対象選択をカードに馴染ませる */
+      #etb-card-loadsettings .osu-source-settings {
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+      }
+
+      /* 設定モード: 移設したタブ表示トグルを縦リスト表示にする
+         （.tab-settings-panel から出したので元の flex 指定が効かないため再指定）。
+         「チェックリストの表示設定」と「ツールの表示設定」は同一の見た目に揃える。 */
+      #etb-checklist-settings-body,
+      #etb-toolsettings-body { padding: 10px 12px 8px !important; }
+      #etb-checklist-settings-body label,
+      #etb-toolsettings-body label {
+        display: flex !important;
+        align-items: center !important;
+        gap: 7px !important;
+        font-size: 12px !important;
+        color: #cfcfcf !important;
+        padding: 4px 2px !important;
+        cursor: pointer !important;
+        white-space: normal !important;
+      }
+      #etb-checklist-settings-body input,
+      #etb-toolsettings-body input { cursor: pointer; flex-shrink: 0; }
+

@@ -1,0 +1,813 @@
+/** BN評価 */
+.tab-button.bn-tab-button {
+  border-color: #4ade80;
+  color: #9ff2b2;
+}
+
+.tab-button.bn-tab-button.active {
+  background: #1f3a2a;
+  border-color: #4ade80;
+  color: #fff;
+}
+
+.bn-compare-panel {
+  margin-top: 8px;
+}
+
+.bn-file-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;
+}
+
+.bn-file-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bn-file-name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal; 
+}
+
+.bn-diff-matching {
+  margin: 12px 0;
+  padding: 12px;
+  background: #111;
+  border-radius: 8px;
+}
+
+.bn-match-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) auto minmax(160px, 1fr);
+  gap: 10px;
+  align-items: center;
+  margin: 8px 0;
+}
+
+.bn-match-before {
+  color: #6b9aff;
+}
+
+.bn-match-arrow {
+  color: #aaa;
+}
+
+.bn-result-controls {
+  margin: 16px 0;
+}
+
+.bn-subtabs {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+
+.bn-subtab-button {
+  padding: 8px 12px;
+  border: 1px solid #444;
+  border-radius: 8px;
+  background: #23232b;
+  color: #ddd;
+  cursor: pointer;
+}
+
+.bn-subtab-button.active {
+  background: #3a3a48;
+  color: #fff;
+  border-color: #777;
+}
+
+.bn-subtab-panel {
+  display: none;
+}
+
+.bn-subtab-panel.active {
+  display: block;
+}
+
+.bn-note {
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: Consolas, monospace;
+  background: #222;
+}
+
+.bn-note::before {
+  opacity: 0.8;
+}
+
+.bn-note::after {
+  opacity: 0.8;
+}
+
+.bn-d {
+  color: #ff6b6b;
+}
+
+.bn-k {
+  color: #7fb7ff;
+}
+
+.bn-slider {
+  color: #ffd166;
+}
+
+.bn-spinner {
+  color: #aaa;
+}
+
+.bn-offset-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+
+.bn-offset-status {
+  color: #ddd;
+  font-family: Consolas, monospace;
+}
+
+/** BN評価欄の、メタデータの表 */
+.bn-meta-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  background: #111;
+}
+
+.bn-meta-table th,
+.bn-meta-table td {
+  border: 1px solid #333;
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.bn-meta-table thead th {
+  background: #23232b;
+  color: #ddd;
+}
+
+.bn-meta-table tbody th {
+  width: 180px;
+  color: #9fdcff;
+  font-weight: 500;
+}
+
+.bn-meta-same {
+  color: #9aa0a6;
+}
+
+.bn-tags-block {
+  margin-top: 16px;
+  padding: 12px;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 8px;
+}
+
+.bn-tags-block h4 {
+  margin: 0 0 10px;
+  color: #ddd;
+}
+
+.bn-tags-row {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.bn-tags-label {
+  color: #aaa;
+}
+
+.bn-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bn-tag {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #222;
+  font-family: Consolas, monospace;
+}
+
+.bn-tag-removed {
+  color: #ff8a8a;
+  border: 1px solid rgba(255, 107, 107, 0.35);
+}
+
+.bn-tag-added {
+  color: #9ff2b2;
+  border: 1px solid rgba(74, 222, 128, 0.35);
+}
+
+.bn-section-title {
+  margin-top: 10px;
+  margin-bottom: 6px;
+  color: #9fdcff;
+  font-weight: 600;
+}
+
+/** プルダウン */
+select {
+  background-color: #2a2a2a;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 4px 6px;
+}
+
+/** ファイル選択ボタン */
+input[type="file"] {
+  color: #fff;
+}
+input[type="file"]::file-selector-button {
+  background-color: #2a2a2a;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+input[type="file"]::file-selector-button:hover {
+  background-color: #3a3a3a;
+}
+
+.result-warn {
+  color: #fbbc04;
+}
+
+.author {
+  font-size: 0.45em;
+  color: #666;
+  opacity: 0.8;
+}
+
+.result-error {
+  color: #ff6b6b;
+}
+
+/** スプレッドタブ用 */
+.spread-subtab-button {
+  padding: 8px 12px;
+  border: 1px solid #444;
+  border-radius: 8px;
+  background: #23232b;
+  color: #ddd;
+  cursor: pointer;
+}
+
+.spread-subtab-button.active {
+  background: #3a3a48;
+  color: #fff;
+  border-color: #777;
+}
+
+.spread-subtab-panel {
+  display: none;
+}
+
+.spread-subtab-panel.active {
+  display: block;
+}
+
+.spread-order-actions {
+  margin-bottom: 12px;
+}
+
+.spread-order-button {
+  margin-right: 4px;
+  padding: 2px 6px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background: #23232b;
+  color: #ddd;
+  cursor: pointer;
+  font-family: Consolas, monospace;
+}
+
+.spread-order-button:hover:not(:disabled) {
+  background: #2d2d38;
+}
+
+.spread-order-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.spread-category-select {
+  box-sizing: border-box;
+  width: 16ch;
+  padding: 2px 6px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background: #23232b;
+  color: #ddd;
+  font: inherit;
+  vertical-align: middle;
+}
+
+.spread-category-unknown {
+  background: #3a3320;
+  border-color: #fbbc04;
+  color: #fbbc04;
+}
+
+.spread-subtab-button.has-warnings {
+  border-color: #fbbc04;
+  color: #ffd580;
+}
+
+.spread-subtab-button.has-warnings.active {
+  background: #4a3a20;
+  border-color: #fbbc04;
+  color: #fff;
+}
+
+.spread-subtab-button.has-errors {
+  border-color: #ff6b6b;
+  color: #ff9a9a;
+}
+
+.spread-subtab-button.has-errors.active {
+  background: #4a2020;
+  border-color: #ff6b6b;
+  color: #fff;
+}
+
+/** 区切り線 */
+.result-separator {
+  border-top: 1px solid #444;
+  margin: 18px 0;
+}
+
+.result-separator-line {
+  display: block;
+  border-top: 1px solid #444;
+  margin: 16px 0;
+}
+
+/** 見出しの色 */
+.result-section-title {
+  margin: 14px 0 10px;
+  color: #f3f3f3;
+  font-size: 1.17em;
+  font-weight: 700;
+}
+
+
+.result-option-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  border: 1px solid #3d3d48;
+  border-radius: 6px;
+  background: #202029;
+}
+
+.result-option-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: normal;
+}
+
+.result-option-group select {
+  min-width: 96px;
+}
+
+.result-option-group input[type="checkbox"] {
+  margin: 0;
+}
+
+/** スプレッドタブのFinisher */
+.spread-finisher-d {
+  color: #ff6b6b;
+  font-weight: bold;
+}
+
+.spread-finisher-k {
+  color: #6b9aff;
+  font-weight: bold;
+}
+
+.bn-subtab-button.has-warnings {
+  border-color: #fbbc04;
+  color: #fbbc04;
+}
+
+.bn-subtab-button.has-errors {
+  border-color: #ff6b6b;
+  color: #ff6b6b;
+}
+
+.bn-subtab-button.active.has-warnings {
+  background: #4a3a20;
+  border-color: #fbbc04;
+  color: #fff;
+}
+
+.bn-subtab-button.active.has-errors {
+  background: #4a2020;
+  border-color: #ff6b6b;
+  color: #fff;
+}
+
+/** Tagの一覧表示 */
+.tag-token-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 8px;
+}
+
+.tag-token {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #222;
+  border: 1px solid #444;
+  color: #f0f0f0;
+  font-family: Consolas, monospace;
+  font-size: 0.95em;
+}
+
+/** BNタブのOD/HP */
+.bn-difficulty-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  background: #111;
+}
+
+.bn-difficulty-table th,
+.bn-difficulty-table td {
+  border: 1px solid #333;
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.bn-difficulty-table thead th {
+  background: #23232b;
+  color: #ddd;
+}
+
+.bn-difficulty-table tbody td:first-child {
+  color: #9fdcff;
+  font-family: Consolas, monospace;
+}
+
+.result-info {
+  color: #8ecdfc;
+  font-weight: 600;
+}
+
+.bn-difficulty-table th:nth-child(2),
+.bn-difficulty-table th:nth-child(3),
+.bn-difficulty-table td:nth-child(2),
+.bn-difficulty-table td:nth-child(3) {
+  min-width: 90px;
+  white-space: nowrap;
+}
+
+/** BNタイムライン表示 */
+.bn-timeline-block {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  background: #111;
+}
+
+.bn-timeline-header {
+  margin-bottom: 8px;
+  color: #ddd;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 13px;
+}
+
+.bn-timeline-grid {
+  margin-left: 8px;
+  color: #aaa;
+}
+
+.bn-timeline-row {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.bn-timeline-label {
+  color: #aaa;
+  font-size: 12px;
+}
+
+.bn-timeline-cells {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  line-height: 1.6;
+}
+
+.bn-timeline-cell {
+  display: inline-block;
+  width: 14px;
+  text-align: center;
+}
+
+.bn-empty {
+  color: #555;
+}
+
+.bn-overflow {
+  color: #fbbc04;
+  font-weight: bold;
+}
+
+.bn-timeline-warning {
+  color: #fbbc04;
+  font-size: 13px;
+}
+
+.bn-timeline-chunk-label {
+  font-size: 11px;
+  color: #a8b3c7;
+  margin: 4px 0 2px;
+  font-family: Consolas, monospace;
+}
+
+.misc-section + .misc-section {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid #333;
+}
+
+.result-note {
+  color: #b8b8b8;
+}
+
+/** タイムライン表示 */
+.tab-button.timeline-tab-button {
+  border-color: #4ade80;
+  color: #9ff2b2;
+}
+
+.tab-button.timeline-tab-button.active {
+  background: #1f3a2a;
+  border-color: #4ade80;
+  color: #fff;
+}
+
+.timeline-measure {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid #7a6f5a;
+  border-radius: 8px;
+  background: #111;
+  overflow-x: auto;
+}
+
+.timeline-measure-title {
+  margin-bottom: 8px;
+  color: #7fdcff;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.timeline-measure pre {
+  margin: 0;
+  white-space: pre;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.9;
+}
+
+.timeline-cell {
+  display: inline-block;
+  width: 14px;
+  text-align: center;
+}
+
+.timeline-cell {
+  font-size: 13px;
+  line-height: 16px;
+  height: 16px;
+  padding: 0 2px;
+  font-weight: 600;
+}
+
+.timeline-empty {
+  color: #555;
+}
+
+.timeline-unsupported {
+  color: #ff6b6b;
+}
+
+.timeline-cell.timeline-kiai {
+  background: rgba(255, 216, 107, 0.18);
+  border-radius: 3px;
+}
+
+.timeline-cell.timeline-kiai .bn-note {
+  background: rgba(255, 216, 107, 0.04);
+}
+
+.modal-content {
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.update-date {
+  margin-top: 24px;
+  margin-bottom: 8px;
+
+  padding-bottom: 4px;
+
+  border-bottom: 1px solid #444;
+
+  color: #9fdcff;
+  font-size: 18px;
+}
+
+[data-electron-only] {
+  display: none !important;
+}
+
+.tab-button.sr-calculator-tab-button,
+.tab-button.spectrogram-tab-button {
+  border-color: #4ade80;
+  color: #9ff2b2;
+}
+
+.tab-button.sr-calculator-tab-button.active,
+.tab-button.spectrogram-tab-button.active {
+  background: #1f3a2a;
+  border-color: #4ade80;
+  color: #fff;
+}
+
+.sr-calculator-panel {
+  max-width: 520px;
+}
+
+.sr-calculator-panel h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.sr-calculator-help,
+.sr-calculator-meta,
+.sr-calculator-status {
+  margin: 0 0 14px;
+}
+
+.sr-calculator-help,
+.sr-calculator-meta {
+  color: #b8b8b8;
+}
+
+.sr-calculator-ruleset {
+  display: grid;
+  grid-template-columns: max-content minmax(180px, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  color: #cfd3df;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sr-calculator-ruleset select {
+  min-width: 0;
+  padding: 5px 8px;
+  border: 1px solid #555563;
+  border-radius: 4px;
+  background: #24242c;
+  color: #f3f3f3;
+  font: inherit;
+  font-weight: 400;
+}
+
+.sr-calculator-mods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0 0 14px;
+  padding: 8px 0 0;
+  border: 0;
+  border-top: 1px solid #3d3d48;
+}
+
+.sr-calculator-mods legend {
+  padding: 0 8px 0 0;
+  color: #cfd3df;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sr-calculator-mods label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.sr-calculator-mods input {
+  margin: 0;
+}
+
+.sr-calculator-output {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.sr-calculator-table {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid #444;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+.sr-calculator-table th,
+.sr-calculator-table td {
+  padding: 9px 8px;
+  border: 0;
+  border-right: 1px solid #444;
+  border-bottom: 1px solid #444;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.sr-calculator-table th:last-child,
+.sr-calculator-table td:last-child {
+  border-right: 0;
+}
+
+.sr-calculator-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.sr-calculator-table th {
+  background: #29292f;
+  color: #ddd;
+}
+
+.sr-calculator-table th:last-child,
+.sr-calculator-table td:last-child {
+  width: 120px;
+  text-align: right;
+}
+
+.sr-calculator-rating-cell {
+  white-space: nowrap;
+}
+
+.sr-calculator-badge {
+  box-sizing: border-box;
+  display: inline-flex;
+  min-width: 76px;
+  padding: 3px 8px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.3;
+  letter-spacing: 0;
+  -webkit-text-stroke: 0.25px currentColor;
+  text-shadow: 0 0 0 currentColor;
+}
+
+.sr-calculator-badge-loading {
+  background: #34343d;
+  color: #aeb2bd;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+}

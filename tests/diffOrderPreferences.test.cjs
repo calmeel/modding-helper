@@ -7,12 +7,18 @@ const { createDiffOrderPreferences } = require('../electron/services/diffOrderPr
 
 function temporaryStore(t) {
   const directory = fs.mkdtempSync(path.join(__dirname, '.tmp-diff-order-'));
-  const store = createDiffOrderPreferences(directory);
+  const stores = [];
+  const reopen = () => {
+    const store = createDiffOrderPreferences(directory);
+    stores.push(store);
+    return store;
+  };
+  const store = reopen();
   t.after(async () => {
-    await store.flush();
+    for (const instance of stores) await instance.flush();
     fs.rmSync(directory, { recursive: true, force: true });
   });
-  return { directory, store };
+  return { directory, store, reopen };
 }
 
 function memoryStore(mapsets, now) {
@@ -146,14 +152,14 @@ test('a failed asynchronous write can be retried without losing the in-memory ch
 });
 
 test('preferences survive a new store instance and remain separate for each mapset', async t => {
-  const { directory, store } = temporaryStore(t);
+  const { directory, store, reopen } = temporaryStore(t);
   const a = { diffOrder: ['custom.osu', 'kantan.osu'], manualCategories: { 'custom.osu': 'innerPlus' } };
   const b = { diffOrder: ['oni.osu'], manualCategories: {} };
   assert.equal(await store.load('C:\\Songs\\A'), null);
   assert.equal(await store.save('C:\\Songs\\A', a), true);
   await store.save('C:\\Songs\\B', b);
   await store.flush();
-  const restarted = createDiffOrderPreferences(directory);
+  const restarted = reopen();
   assert.deepEqual(await restarted.load('C:/songs/a/'), a);
   assert.deepEqual(await restarted.load('C:\\Songs\\B'), b);
   assert.equal(fs.existsSync(path.join(directory, 'diff-order-preferences.json.tmp')), false);
@@ -171,11 +177,11 @@ test('saving replaces the previous order and filters invalid category entries', 
 });
 
 test('missing or damaged preference files do not prevent loading a mapset', async t => {
-  const { directory, store } = temporaryStore(t);
+  const { directory, reopen } = temporaryStore(t);
   fs.writeFileSync(path.join(directory, 'diff-order-preferences.json'), '{broken');
   const warn = console.warn;
   console.warn = () => {};
-  try { assert.equal(await createDiffOrderPreferences(directory).load('C:\\Songs\\A'), null); }
+  try { assert.equal(await reopen().load('C:\\Songs\\A'), null); }
   finally { console.warn = warn; }
 });
 
@@ -194,7 +200,7 @@ const plain = value => JSON.parse(JSON.stringify(value));
 
 test('Version keys survive title/artist/creator filename changes and restart', async t => {
   const ctx = restoreContext();
-  const { directory, store } = temporaryStore(t);
+  const { store, reopen } = temporaryStore(t);
   const oldSources = [
     { fileName: 'Old Artist - Title (Creator) [not-the-version].osu', text: '[Metadata]\nVersion:Galaxy\n' },
     { fileName: 'Old Artist - Title (Creator) [Kantan].osu', text: '[Metadata]\nVersion:Kantan\n' }
@@ -206,7 +212,7 @@ test('Version keys survive title/artist/creator filename changes and restart', a
     manualCategories: { Galaxy: 'innerPlus' } });
   await store.save('C:\\Songs\\A', encoded);
   await store.flush();
-  const saved = await createDiffOrderPreferences(directory).load('C:\\Songs\\A');
+  const saved = await reopen().load('C:\\Songs\\A');
   const newSources = oldSources.map(source => ({ ...source,
     fileName: source.fileName.replace('Old Artist - Title (Creator)', 'New Artist - New Title (New Creator)') }));
   const decoded = ctx.resolveSpreadDiffPreferences(newSources, saved);

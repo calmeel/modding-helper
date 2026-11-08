@@ -1,0 +1,371 @@
+.placeholder {
+  margin-top: 24px;
+  padding: 16px;
+  background: #111;
+  border-radius: 8px;
+  color: #aaa;
+}
+
+.language-switch {
+  display: flex;
+  gap: 8px;
+}
+
+.lang-button {
+  padding: 6px 12px;
+  border: 1px solid #555;
+  border-radius: 6px;
+  background: #23232b;
+  color: #ddd;
+  cursor: pointer;
+}
+
+.lang-button:hover {
+  background: #2d2d38;
+}
+
+.lang-button.active {
+  background: #3a3a48;
+  color: #fff;
+  border-color: #777;
+}
+
+.ok {
+  color: #9aa0a6;
+}
+
+.warn {
+  color: #fbbc04;
+}
+
+.error {
+  color: #ff6b6b;
+}
+
+.separator {
+  border-top: 1px solid #444;
+  margin: 12px 0;
+}
+
+.file-header {
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+.kiai-on {
+  color: #4ade80;
+}
+
+.kiai-off {
+  color: #f87171;
+}
+
+.highlight {
+  background: rgba(255, 107, 107, 0.1);
+}
+
+pre {
+  font-family: "JetBrains Mono", Consolas, monospace;
+}
+
+.tab-visibility-settings {
+  margin-top: 20px;
+}
+
+.settings-button {
+  padding: 8px 12px;
+  border: 1px solid #555;
+  border-radius: 6px;
+  background: #23232b;
+  color: #ddd;
+  cursor: pointer;
+}
+
+.settings-button:hover {
+  background: #2d2d38;
+}
+
+.tab-settings-panel {
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid #444;
+  border-radius: 8px;
+  background: #1f1f26;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tab-settings-panel.hidden {
+  display: none;
+}
+
+.tab-settings-panel label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tab-button.hidden-tab {
+  display: none;
+}
+
+/* チェック対象（ファイル / osu! 連動）切替 — Electron 専用 */
+.osu-source-settings {
+  flex-basis: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px 12px;
+  margin-bottom: 4px;
+  border: 1px solid #4a4a58;
+  border-radius: 8px;
+  background: #23232c;
+}
+
+.osu-source-settings[hidden] {
+  display: none;
+}
+
+.osu-source-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #cfcfe0;
+  letter-spacing: 0.03em;
+}
+
+.osu-source-option {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: #ddd;
+  cursor: pointer;
+}
+
+.osu-source-option input {
+  cursor: pointer;
+}
+
+.osu-source-option:has(input:disabled),
+.osu-source-option input:disabled {
+  color: #8a8a9a;
+  cursor: default;
+}
+
+.osu-source-reload {
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.osu-source-reload[hidden] {
+  display: none;
+}
+
+.osu-source-status {
+  font-size: 11.5px;
+  color: #8a8a9a;
+  min-height: 1em;
+}
+
+.osu-source-status.error { color: #d98a8a; }
+.osu-source-status.ok    { color: #8ac49a; }
+
+.tab-panel.hidden-tab {
+  display: none !important;
+}
+
+.top-links a {
+  text-decoration: none;
+  color: #9fdcff;
+  font-size: 14px;
+}
+
+.top-links a:hover {
+  text-decoration: underline;
+}
+
+.top-links {
+  position: absolute;
+  top: 8px;
+  right: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.doc-btn {
+  padding: 6px 10px;
+  border: 1px solid #555;
+  border-radius: 6px;
+  background: #23232b;
+  color: #ddd;
+  font-size: 13px;
+}
+
+.doc-btn:hover {
+  background: #2d2d38;
+}
+
+/* 設定だけ少し強調 */
+#toggleTabSettings {
+  border-color: #777;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: #1e1e26;
+  padding: 20px 24px;
+  border-radius: 10px;
+  max-width: 500px;
+  width: 90%;
+  color: #eee;
+}
+
+.close {
+  float: right;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+/* ヘッダーを2列に分割 */
+.app {
+  position: relative;
+}
+
+/* 右上に固定 */
+.top-links {
+  position: absolute;
+  top: 8px;
+  right: 0;
+
+  display: flex;
+  gap: 8px;
+}
+
+/* ボタン風に */
+.top-links-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.top-links .language-switch {
+  justify-content: flex-end;
+}
+
+.app > h1 {
+  margin-right: 400px;
+  font-size: 28px;
+}
+
+@media (max-width: 760px) {
+  .top-links {
+    position: static;
+    align-items: flex-end;
+    margin-bottom: 16px;
+  }
+
+  .app > h1 {
+    margin-right: 0;
+  }
+}
+
+.top-links a,
+.doc-btn {
+  padding: 6px 10px;
+  border: 1px solid #555;
+  border-radius: 6px;
+  background: #23232b;
+  color: #ddd;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.top-links a:hover,
+.doc-btn:hover {
+  background: #2d2d38;
+}
+
+/* Reference links in check results, including visited links. */
+pre a:not(.timestamp-link),
+pre a:not(.timestamp-link):visited {
+  color: #9fdcff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+pre a:not(.timestamp-link):hover,
+pre a:not(.timestamp-link):focus-visible {
+  color: #d9f1ff;
+}
+
+pre a:not(.timestamp-link):focus-visible {
+  outline: 2px solid #9fdcff;
+  outline-offset: 2px;
+}
+
+.timestamp-link {
+  color: #9fdcff;
+  text-decoration: none;
+}
+
+.timestamp-link:hover {
+  text-decoration: underline;
+}
+
+/** [Diff名]の色 */
+.diff-name {
+  color: #6b9aff;
+  font-weight: 500;
+}
+
+code {
+  background: #1f2a38;        /* 濃い青系 */
+  color: #7fd1ff;             /* 薄い青（重要） */
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: Consolas, monospace;
+}
+
+.tab-button.has-warnings {
+  border-color: #fbbc04;
+  color: #ffd580;
+}
+
+.tab-button.has-warnings.active {
+  background: #4a3a20;
+  border-color: #fbbc04;
+  color: #fff;
+}
+
+.tab-button.has-errors {
+  border-color: #ff6b6b;
+  color: #ff8a8a;
+}
+
+.tab-button.has-errors.active {
+  background: #4a252a;
+  border-color: #ff6b6b;
+  color: #fff;
+}
+

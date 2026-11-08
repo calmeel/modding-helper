@@ -110,6 +110,10 @@ app.whenReady().then(async () => {
   const result = await evaluate(main, `window.electronAPI.calculateSr([{fileName:'test.osu', content:${JSON.stringify(beatmap)}}], [], 'current')`);
   assert.ok(!result.error, JSON.stringify(result));
   console.log('PASS file loading, clipboard IPC, current SR');
+  await evaluate(main, `document.getElementById('etb-tab-preview').click(); true`);
+  await until(async () => await evaluate(main, `document.getElementById('etb-spread-canvas').__spreadGeom?.n === 1`), 'preview canvas drawing');
+  await evaluate(main, `document.getElementById('etb-tab-main').click(); true`);
+  console.log('PASS preview controller and note drawing');
   for (const ruleset of ['livePP2510', 'livePP2503', 'livePP2410After', 'livePP2410Before', 'livePP2208', 'livePP2021', 'livePP2020']) {
     const historical = await evaluate(main, `window.electronAPI.calculateSr([{fileName:'test.osu', content:${JSON.stringify(beatmap)}}], [], ${JSON.stringify(ruleset)})`);
     assert.ok(!historical.error, `${ruleset}: ${JSON.stringify(historical)}`);
@@ -269,10 +273,11 @@ app.whenReady().then(async () => {
   const loadedAgain = new Promise(resolve => main.webContents.once('did-finish-load', resolve));
   main.webContents.reload();
   await loadedAgain;
-  await main.webContents.insertCSS(fs.readFileSync(path.join(root, 'electron/inject/ui.css'), 'utf8'));
-  await evaluate(main, `(function(__etbIconUrl, __etbVersion) {
-    ${fs.readFileSync(path.join(root, 'electron/inject/ui.js'), 'utf8')}
-  })(${JSON.stringify(require('node:url').pathToFileURL(path.join(root, 'images/icon.png')).href)}, ${JSON.stringify(require(path.join(root, 'package.json')).version)});`);
+  const injection = require(path.join(root, 'electron/inject/bundle'));
+  await main.webContents.insertCSS(injection.loadInjectCss());
+  await evaluate(main, injection.buildInjectScript(
+    require('node:url').pathToFileURL(path.join(root, 'images/icon.png')).href,
+    require(path.join(root, 'package.json')).version));
   await evaluate(main, 'window.electronAPI.revealStartupUI()');
   assert.deepEqual(await optionState(), { checked: false, disabled: true });
   await sourceMode('osu');
@@ -282,9 +287,19 @@ app.whenReady().then(async () => {
   assert.equal(await evaluate(main, `getComputedStyle(document.getElementById('etb-card-loadsettings')).display !== 'none'`), true);
   fs.writeFileSync(path.join(output, 'mapset-loading-settings.png'), (await main.webContents.capturePage()).toPNG());
   console.log('PASS multiple-audio loading policy and saved settings');
+  // ブラウザ版と同じ、preload・Electronレイアウトなしの画面でも読み込めること。
+  const browser = new BrowserWindow({ show: false, webPreferences: { sandbox: true, contextIsolation: true } });
+  await browser.loadFile(path.join(root, 'index.html'));
+  assert.equal(await evaluate(browser, 'typeof window.electronAPI'), 'undefined');
+  await evaluate(browser, `window.__loadModdingHelperFile(new File([${JSON.stringify(beatmap)}], 'Browser [Oni].osu'))`);
+  assert.deepEqual(await evaluate(browser, 'window.__loadedDiffOrder'), ['Browser [Oni].osu']);
+  assert.equal(await evaluate(browser, `document.querySelectorAll('#spreadOrderOutput pre').length`), 1);
+  assert.equal(await evaluate(browser, `document.getElementById('electron-layout')`), null);
+  browser.destroy();
+  console.log('PASS browser layout and file loading');
   assert.deepEqual(runtimeErrors, []);
   console.log(JSON.stringify({ status: 'passed', versions: process.versions,
-    checks: ['startup', 'sandbox/preload', '.osu native paths and folder actions', 'clipboard IPC', 'SR calculator',
+    checks: ['startup', 'sandbox/preload', '.osu native paths and folder actions', 'clipboard IPC', 'SR calculator', 'preview drawing', 'browser file loading',
       'external links', 'osu timestamp clicks and chart navigation', 'metadata/timing/chart popouts', 'chart synchronization', '.osz loading', 'language switching', 'multiple-audio mapset policy and persistence'] }));
   clearTimeout(deadline);
   app.exit(0);
