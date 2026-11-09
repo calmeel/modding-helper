@@ -103,6 +103,16 @@ The density chart follows the same split and shares `spreadDensityChartState`:
 - `spreadDensityTooltip.js`: measure-group lookup, visible-Diff and inversion details,
   and tooltip positioning. Both drawing and tooltips use the existing density analysis.
 
+The offset waveform files share `offsetWaveformChartState`:
+
+- `offsetWaveformChart.js`: source selection, asynchronous audio decoding and stale
+  decode rejection, initialization, and estimate/manual-result display.
+- `offsetWaveformDrawing.js`: stereo waveform, grid/barlines, correction guides,
+  and playhead geometry.
+- `offsetWaveformInput.js`: pan/zoom, hover time, and manual peak selection with
+  nearest-barline correction. It uses the shared chart navigation helpers.
+- `offsetWaveformData.js`: audio sample analysis and waveform resampling.
+
 ## Verification
 
 - `npm test`: parser/check/order/persistence regression tests.
