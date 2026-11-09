@@ -4,11 +4,6 @@
         var appEl      = document.querySelector('.app');
         var topLinks   = appEl.querySelector('.top-links');
         var dropArea   = appEl.querySelector('.drop-area');
-        var tabVis     = appEl.querySelector('.tab-visibility-settings');
-        var tabsSec    = appEl.querySelector('.tabs');
-        var tabButtons = tabsSec.querySelector('.tab-buttons');
-        var tabPanels  = Array.from(tabsSec.querySelectorAll('.tab-panel'));
-
         /* ── 表示モード（ワイド / コンパクト） ──
            コンパクト: 左カラム（メタデータ/譜面ファイル）を出さず、
            チェックリストとチェック結果を画面いっぱいに広げる。代わりに上部の細いバーへ
@@ -42,232 +37,24 @@
         var titlebarController = createElectronTitlebar({ iconUrl: __etbIconUrl, version: __etbVersion, text: electronText });
         var titlebar = titlebarController.element;
 
-        /* ── 3カラムレイアウト生成 ── */
-        var layout = document.createElement('div');
-        layout.id = 'electron-layout';
-
-        var futureCol = document.createElement('div');
-        futureCol.id = 'electron-col-future';
-        var metadataCard = createElectronMetadataCard({
-          text: electronText, getMode: function() { return panelMode; },
+        var desktopLayout = createElectronLayout({
+          appEl, titlebar, dropArea, text: electronText,
+          getPanelMode: function() { return panelMode; },
           getTagDisplayMode: function() { return tagDisplayMode; },
-          onDataChanged: function(data) {
+          onMetadataChanged: function(data) {
             lastMapMeta = data;
             if (typeof updateCompactMeta === 'function') updateCompactMeta();
           }
         });
-        futureCol.appendChild(metadataCard.element);
-        var metaHead = metadataCard.head;
-        var mapActions = metadataCard.actions;
+        var metadataCard = desktopLayout.metadataCard;
+        var diffOrderCard = desktopLayout.diffOrderCard;
         var renderMapPanel = metadataCard.render;
         var refreshMapActionState = metadataCard.refreshActions;
         var setMapActionState = metadataCard.setActionState;
-        var diffOrderCard = createElectronDiffOrderCard(electronText);
-        futureCol.appendChild(diffOrderCard.element);
-
-        /* 譜面ファイルカード（file モードのみ表示。ドロップエリアを内包） */
-        var fileCard = document.createElement('div');
-        fileCard.className = 'etb-card';
-        fileCard.id = 'etb-card-file';
-        fileCard.innerHTML = '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-file">' +
-          electronText('electronBeatmapFile') + '</span></div>';
-        var fileBody = document.createElement('div');
-        fileBody.className = 'etb-card-body';
-        fileBody.appendChild(dropArea);
-        fileCard.appendChild(fileBody);
-        futureCol.appendChild(fileCard);
-
-        /* 表示モード設定カード（設定モード時のみ表示。ワイド/コンパクトの切替） */
-        var viewSettingsCard = document.createElement('div');
-        viewSettingsCard.className = 'etb-card';
-        viewSettingsCard.id = 'etb-card-viewsettings';
-        viewSettingsCard.style.display = 'none';
-        viewSettingsCard.innerHTML = '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-viewsettings">' +
-          electronText('electronDisplayMode') + '</span></div>';
-        var viewSettingsBody = document.createElement('div');
-        viewSettingsBody.className = 'etb-card-body';
-        viewSettingsCard.appendChild(viewSettingsBody);
-        futureCol.appendChild(viewSettingsCard);
-
-        /* 譜面読み込み設定カード（設定モード時のみ表示。チェック対象選択を内包） */
-        var loadSettingsCard = document.createElement('div');
-        loadSettingsCard.className = 'etb-card';
-        loadSettingsCard.id = 'etb-card-loadsettings';
-        loadSettingsCard.style.display = 'none';
-        loadSettingsCard.innerHTML = '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-loadsettings">' +
-          electronText('electronBeatmapLoading') + '</span></div>';
-        var loadSettingsBody = document.createElement('div');
-        loadSettingsBody.className = 'etb-card-body';
-        loadSettingsCard.appendChild(loadSettingsBody);
-        futureCol.appendChild(loadSettingsCard);
-
-        /* プレビュータブ設定カード（設定モード時のみ表示。効果音・音量を内包） */
-        var previewSettingsCard = document.createElement('div');
-        previewSettingsCard.className = 'etb-card';
-        previewSettingsCard.id = 'etb-card-previewsettings';
-        previewSettingsCard.style.display = 'none';
-        previewSettingsCard.innerHTML = '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-previewsettings">' +
-          electronText('electronPreviewTab') + '</span></div>';
-        var previewSettingsBody = document.createElement('div');
-        previewSettingsBody.className = 'etb-card-body';
-        previewSettingsCard.appendChild(previewSettingsBody);
-        /* 設定モードの右カラム（プレビュータブ設定を単独で置く）。設定以外は CSS で隠す。 */
-        var settingsRightCol = document.createElement('div');
-        settingsRightCol.id = 'electron-col-settings-right';
-        settingsRightCol.appendChild(previewSettingsCard);
-
-        /* チェックリストカード */
-        var tabsCol = document.createElement('div');
-        tabsCol.id = 'electron-col-tabs';
-        tabsCol.className = 'etb-card';
-        var tabsHead = document.createElement('div');
-        tabsHead.className = 'etb-card-head';
-        tabsHead.innerHTML = '<span class="etb-card-title" id="etb-title-checklist">' +
-          electronText('electronChecklist') + '</span>';
-        var tabsBody = document.createElement('div');
-        tabsBody.className = 'etb-card-body';
-        tabsBody.id = 'etb-checklist-buttons-body';
-        tabsBody.appendChild(tabButtons);
-        /* 設定モード時に表示する「チェックリストの設定」ボディ（表示トグルを内包） */
-        var tabsSettingsBody = document.createElement('div');
-        tabsSettingsBody.className = 'etb-card-body';
-        tabsSettingsBody.id = 'etb-checklist-settings-body';
-        tabsSettingsBody.style.display = 'none';
-        tabsCol.appendChild(tabsHead);
-        tabsCol.appendChild(tabsBody);
-        tabsCol.appendChild(tabsSettingsBody);
-
-        /* ツールカード（中央カラム・チェックリストの下）。
-           緑のツールボタン群（音声波形/スペクトログラム/SR計算/BN評価）をここへ移す。
-           中身のタブグループは DOM 挿入後（タイムライン除去の後）に移設する。 */
-        var toolsCard = document.createElement('div');
-        toolsCard.className = 'etb-card';
-        toolsCard.id = 'etb-card-tools';
-        var toolsHead = document.createElement('div');
-        toolsHead.className = 'etb-card-head';
-        toolsHead.innerHTML = '<span class="etb-card-title" id="etb-title-tools">' +
-          electronText('electronTools') + '</span>';
-        var toolsBody = document.createElement('div');
-        toolsBody.className = 'etb-card-body';
-        toolsBody.id = 'etb-tools-body';
-        toolsCard.appendChild(toolsHead);
-        toolsCard.appendChild(toolsBody);
-
-        /* ツールの表示設定カード（設定モード時のみ表示。中央カラム・チェックリストの表示設定の下）。
-           音声波形/スペクトログラム/SR計算/BN評価 の表示トグルをここへ振り分ける。 */
-        var toolsSettingsCard = document.createElement('div');
-        toolsSettingsCard.className = 'etb-card';
-        toolsSettingsCard.id = 'etb-card-toolsettings';
-        toolsSettingsCard.style.display = 'none';
-        toolsSettingsCard.innerHTML = '<div class="etb-card-head"><span class="etb-card-title" id="etb-title-toolsettings">' +
-          electronText('electronToolDisplay') + '</span></div>';
-        var toolsSettingsBody = document.createElement('div');
-        toolsSettingsBody.className = 'etb-card-body';
-        toolsSettingsBody.id = 'etb-toolsettings-body';
-        toolsSettingsCard.appendChild(toolsSettingsBody);
-
-        /* 中央カラム: チェックリスト（表示設定）カード＋ツールカード＋ツール表示設定カードを縦積み。 */
-        var centerCol = document.createElement('div');
-        centerCol.id = 'electron-col-center';
-        centerCol.appendChild(tabsCol);
-        centerCol.appendChild(toolsCard);
-        centerCol.appendChild(toolsSettingsCard);
-
-        /* チェック結果カード */
-        var outputCol = document.createElement('div');
-        outputCol.id = 'electron-col-output';
-        outputCol.className = 'etb-card';
-        var outHead = document.createElement('div');
-        outHead.className = 'etb-card-head';
-        outHead.innerHTML = '<span class="etb-card-title" id="etb-title-results">' +
-          electronText('electronCheckResults') + '</span>';
-        var outBody = document.createElement('div');
-        outBody.className = 'etb-card-body';
-        outBody.appendChild(tabVis);
-        tabPanels.forEach(function(p) { outBody.appendChild(p); });
-        outputCol.appendChild(outHead);
-        outputCol.appendChild(outBody);
-
-        /* コンパクトモード用の細い情報バー（カードの上に1行）。
-           「Artist - Title (Creator)」を表示し、file モードではドロップエリアも入る。
-           ワイドモードでは CSS で非表示。 */
-        var compactBar = document.createElement('div');
-        compactBar.id = 'etb-compact-bar';
-        compactBar.innerHTML =
-          '<span id="etb-compact-meta"></span>' +
-          '<span id="etb-compact-drop" style="display:none"></span>';
-
-        /* 3カラムは row 用のラッパーに入れる（バーを上に積むため layout は column）。
-           既存 CSS は #electron-layout の子孫セレクタなのでラッパーを挟んでも効く。 */
-        var colsWrap = document.createElement('div');
-        colsWrap.id = 'etb-cols';
-        colsWrap.appendChild(futureCol);
-        colsWrap.appendChild(centerCol);
-        colsWrap.appendChild(outputCol);
-        colsWrap.appendChild(settingsRightCol);
-
-        layout.appendChild(compactBar);
-        layout.appendChild(colsWrap);
-
-        /* ── DOM に挿入 ── */
-        appEl.insertBefore(titlebar, appEl.firstChild);
-        appEl.appendChild(layout);
-        tabsSec.remove();
-
-        /* 設定項目を各カードへ移設:
-           - チェック対象選択(#osuSourceSettings) → 譜面読み込み設定カード
-           - タブ表示トグル(チェックボックス各 label) → チェックリスト設定ボディ
-           移動後、空になった旧設定パネルは隠す */
-        var osuSrcEl = document.getElementById('osuSourceSettings');
-        if (osuSrcEl) { osuSrcEl.hidden = false; loadSettingsBody.appendChild(osuSrcEl); }
-        var tabSettingsPanelEl = document.getElementById('tabSettingsPanel');
-        if (tabSettingsPanelEl) {
-          /* ツール系タブの表示トグルは「ツールの表示設定」カードへ、
-             それ以外は「チェックリストの表示設定」へ振り分ける。 */
-          var toolToggleTabs = {
-            offsetWaveform: 1, spectrogram: 1, srCalculator: 1, timeline: 1, bnCompare: 1
-          };
-          Array.prototype.slice.call(tabSettingsPanelEl.querySelectorAll('label')).forEach(function(lb) {
-            var inp = lb.querySelector('.tab-visibility-toggle');
-            var tab = inp && inp.getAttribute('data-target-tab');
-            if (tab && toolToggleTabs[tab]) toolsSettingsBody.appendChild(lb);
-            else tabsSettingsBody.appendChild(lb);
-          });
-        }
-        var tabVisEl = document.querySelector('.tab-visibility-settings');
-        if (tabVisEl) tabVisEl.style.display = 'none';
-
-        /* exe では「タイムライン」タブを完全に出さない（web ツール側はそのまま）。
-           設定のチェックボックスとタブボタンを DOM から取り除き、パネルは隠したままにする。
-           パネル自体を消さないのは、チェック処理が結果を書き込む先だから（消すと落ちる）。
-           この時点で ui.js の復元処理は既に走っているので、保存設定で表示 ON に
-           なっていた場合に備えて hidden-tab を明示的に付け直す。 */
-        try {
-          var tlToggle = document.querySelector('.tab-visibility-toggle[data-target-tab="timeline"]');
-          if (tlToggle) {
-            var tlLabel = tlToggle.closest('label');
-            (tlLabel || tlToggle).remove();
-          }
-          Array.prototype.slice.call(document.querySelectorAll('.tab-button[data-tab="timeline"]'))
-            .forEach(function(b) { b.remove(); });
-          var tlPanel = document.getElementById('tab-timeline');
-          if (tlPanel) {
-            tlPanel.classList.add('hidden-tab');
-            tlPanel.classList.remove('active');
-          }
-          /* タブが消えた分、グループの折り畳みと「現在のタブ」を作り直す */
-          if (typeof applyTabVisibilitySettings === 'function') applyTabVisibilitySettings();
-        } catch (e) { /* 失敗しても他のUIは動かす */ }
-
-        /* 緑のツールボタン群（音声波形/スペクトログラム/SR計算/BN評価）のタブグループを
-           中央カラムの「ツール」カードへ丸ごと移す。bnCompare を目印にグループを特定する。
-           タブ切替はイベント委譲（closest('.tab-button')）なので、置き場所が変わっても動く。
-           .tab-group ごと移すので hidden-tab-group 等の既存ロジックもそのまま効く。 */
-        try {
-          var toolAnchorBtn = document.querySelector('.tab-button[data-tab="bnCompare"]');
-          var toolGroupEl = toolAnchorBtn && toolAnchorBtn.closest('.tab-group');
-          if (toolGroupEl) toolsBody.appendChild(toolGroupEl);
-        } catch (e) { /* 失敗してもチェックリスト側に残るだけ */ }
+        var outBody = desktopLayout.outBody;
+        var previewSettingsBody = desktopLayout.previewSettingsBody;
+        var viewSettingsBody = desktopLayout.viewSettingsBody;
+        var colsWrap = desktopLayout.colsWrap;
 
         var preview = createElectronPreview({
           outBody, previewSettingsBody, viewSettingsBody, text: electronText, playback, getSpreadTime,
@@ -348,102 +135,16 @@
         var updateWaitingText = metadataCard.updateWaitingText;
         updateWaitingText();
 
-        /* カード表示の切替（panelMode と settingsMode を反映）:
-           通常時   左→メタデータ/譜面ファイル, 中央→チェックリスト
-           設定時   左→譜面読み込み設定,          中央→チェックリストの設定 */
-        /* 表示モードの実装。値 viewMode 自体はもっと前で読み込んでいる
-           （設定ラジオの初期チェックがこれより前で組まれるため）。 */
-        var lastMapMeta = null;   // 直近に描画したメタデータ（バーの表示に使う）
-        var updateCompactMeta = function() {
-          var el = document.getElementById('etb-compact-meta');
-          if (!el) return;
-          var d = lastMapMeta;
-          var artist = d && (d.artist || d.artistUnicode) || '';
-          var title  = d && (d.title  || d.titleUnicode)  || '';
-          var creator = d && d.creator || '';
-          var txt = '';
-          if (artist || title) {
-            txt = (artist ? artist + ' - ' : '') + title;
-            if (creator) txt += ' (' + creator + ')';
-          }
-          el.textContent = txt || electronText('electronNoBeatmapLoadedPlain');
-          el.classList.toggle('etb-compact-meta-empty', !txt);
-        };
-        var applyViewModeUi = function() {
-          var layoutEl = document.getElementById('electron-layout');
-          if (layoutEl) layoutEl.classList.toggle('etb-compact', viewMode === 'compact');
-          diffOrderCard.setCompact(viewMode === 'compact');
-          /* 同じボタンを移動し、可否・イベントを表示モード間で保持する。 */
-          if (viewMode === 'compact') compactBar.insertBefore(mapActions, document.getElementById('etb-compact-drop'));
-          else metaHead.appendChild(mapActions);
-          /* ドロップエリアは1つしか無いので、置き場所ごと移動する
-             （複製するとイベントの張り直しが要るため） */
-          var slot = document.getElementById('etb-compact-drop');
-          if (slot && dropArea) {
-            var wantInBar = (viewMode === 'compact' && panelMode !== 'osu');
-            if (wantInBar) { if (dropArea.parentElement !== slot) slot.appendChild(dropArea); }
-            else if (dropArea.parentElement !== fileBody) fileBody.appendChild(dropArea);
-            slot.style.display = wantInBar ? '' : 'none';
-          }
-          updateCompactMeta();
-          schedulePlayheadRefresh(); // 幅が変わるのでグラフの再生ヘッドを置き直す
-        };
-
-        var applyPanelModeUi = function() {
-          var isOsu = (panelMode === 'osu');
-          var s = settingsMode;
-          var pv = previewMode;
-          var setDisp = function(id, show) {
-            var el = document.getElementById(id);
-            if (el) el.style.display = show ? '' : 'none';
-          };
-          /* 左カラム（設定モード中のカードは隠す。カラム全体はプレビューで CSS が隠す） */
-          setDisp('etb-card-meta',         !s);
-          setDisp('etb-card-difforder',    !s && viewMode !== 'compact');
-          setDisp('etb-card-file',         !s && !isOsu);
-          setDisp('etb-card-viewsettings',  s);
-          setDisp('etb-card-loadsettings',  s);
-          /* 右カラム(設定)のプレビュータブ設定。カラムの表示/非表示は CSS が担う */
-          setDisp('etb-card-previewsettings', s);
-          applyViewModeUi();   // モード切替でドロップエリアの置き場所が変わる
-          /* 設定を開いたら Diff表示チェックリストを現在の譜面で作り直す */
-          if (s && window.__spreadRebuildDiffList) window.__spreadRebuildDiffList();
-          /* 中央カラム（チェックリストの表示設定＋ツールの表示設定） */
-          setDisp('etb-checklist-buttons-body',  !s);
-          setDisp('etb-checklist-settings-body',  s);
-          setDisp('etb-card-toolsettings',        s);
-          /* 右カラム（チェック結果/プレビュー）は設定モード中のみ隠す */
-          setDisp('electron-col-output',  !s);
-          /* レイアウトのモードクラス（設定=50/50, プレビュー=スプレッド全面） */
-          var layoutEl = document.getElementById('electron-layout');
-          if (layoutEl) {
-            layoutEl.classList.toggle('etb-settings', s);
-            layoutEl.classList.toggle('etb-preview', pv);
-            layoutEl.classList.toggle('etb-notepad', notepadMode);
-          }
-          notepad.setActive(notepadMode);
-          /* スプレッド表示の描画ループ ON/OFF */
-          if (window.__setSpreadActive) window.__setSpreadActive(pv);
-          /* osu! モード以外・設定/プレビュー中は再生ヘッドを隠す */
-          if (!isOsu || s || pv || notepadMode) hideAllPlayheads();
-          else schedulePlayheadRefresh(); // チェック表示に戻ったら保持時刻で復帰
-          /* チェックリストカードのタイトル切替 */
-          var clT = document.getElementById('etb-title-checklist');
-          if (clT) {
-            var checklistKey = s ? 'electronChecklistDisplay' : 'electronChecklist';
-            clT.setAttribute('data-i18n', checklistKey);
-            clT.textContent = electronText(checklistKey);
-          }
-          /* チェック/プレビュー/設定ボタンのアクティブ表示（今どこを見ているか） */
-          var sBtn = document.getElementById('toggleTabSettings');
-          if (sBtn) sBtn.classList.toggle('active', s);
-          var mBtn = document.getElementById('etb-tab-main');
-          if (mBtn) mBtn.classList.toggle('active', !s && !pv && !notepadMode);
-          var pvBtn = document.getElementById('etb-tab-preview');
-          if (pvBtn) pvBtn.classList.toggle('active', pv);
-          var npBtn = document.getElementById('etb-tab-notepad');
-          if (npBtn) npBtn.classList.toggle('active', notepadMode);
-        };
+        var lastMapMeta = null;
+        var displayModes = createElectronDisplayModes({
+          text: electronText, layout: desktopLayout, dropArea, metadataCard, diffOrderCard, notepad,
+          getState: function() { return { viewMode, panelMode, settingsMode, previewMode, notepadMode }; },
+          getMetadata: function() { return lastMapMeta; },
+          hideAllPlayheads, schedulePlayheadRefresh
+        });
+        var updateCompactMeta = displayModes.updateMetadata;
+        var applyViewModeUi = displayModes.applyView;
+        var applyPanelModeUi = displayModes.applyPanel;
         var clearMetaToWaiting = metadataCard.clear;
         applyPanelModeUi();
 

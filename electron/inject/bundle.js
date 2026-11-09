@@ -8,7 +8,7 @@ const JS_FILES = ['metadataCard.js', 'diffOrderCard.js', 'previewSettings.js',
   'previewAudio.js', 'previewHitTesting.js', 'previewDiffData.js',
   'previewLayout.js', 'previewHitSounds.js', 'previewInput.js', 'previewController.js',
   'spectrogramController.js', 'notepadController.js',
-  'playheadController.js', 'navigation.js', 'titlebar.js', 'ui.js'];
+  'playheadController.js', 'navigation.js', 'titlebar.js', 'layout.js', 'displayModes.js', 'ui.js'];
 let css;
 let script;
 

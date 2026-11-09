@@ -28,8 +28,13 @@ require a bundler for the web app.
 `electron/inject/bundle.js` is the single entry point for loading desktop CSS and
 initialization scripts. Production and the Electron smoke test use this loader.
 
-- `ui.js`: creates the application layout and connects display modes, navigation,
-  timing notifications, playheads, and the following components.
+- `ui.js`: wires layout, display modes, navigation, timing notifications, playheads,
+  and the following components.
+- `layout.js`: builds desktop columns/cards and relocates existing tabs, loading
+  controls, and visibility settings. Returns shared element/component references.
+- `displayModes.js`: applies compact/wide and top-tab visibility, relocates the
+  existing map actions/drop area, and updates compact metadata. Reads current mode
+  and metadata through getters and delegates preview/notepad/playhead activation.
 - `titlebar.js`: titlebar DOM, window controls, and update progress display.
   Its `connect()` method attaches window events after the layout has been inserted.
 - `navigation.js`: top-level tabs, language/manual links, and realtime-window state.
