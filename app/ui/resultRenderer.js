@@ -1,5 +1,33 @@
 // 各チェックの再描画と、派生するチェック結果の更新を取りまとめる。
 function createResultRenderer({ state, dom, t, getBnCompareUi }) {
+  function renderLoadedFileResults() {
+    renderResult();
+    renderShiftResult();
+    renderDoubleSvResult();
+    renderBarlineResult();
+    renderUnappliedSvResult();
+    renderKiaiResult();
+    renderKiaiSnapResult();
+    renderSvVolumeResult();
+    renderVolumeCompareResult();
+    renderRedGreenMatchResult();
+    renderSampleSetResult();
+    renderSliderSettingsResult();
+    renderEarlyNoteResult();
+    renderArtistResult();
+    renderTitleResult();
+    renderSourceResult();
+    renderTagResult();
+    renderPreviewPointResult();
+    renderBgOffsetResult();
+    renderFileCheckResult();
+    renderEpilepsyWarningResult();
+    renderSpreadResult();
+    renderOffsetWaveformResult();
+    renderContentPermissionResult();
+    updateTabIssueStates(state);
+  }
+
   function renderAllDiffResults() {
     renderResult();
     renderShiftResult();
@@ -252,5 +280,5 @@ function createResultRenderer({ state, dom, t, getBnCompareUi }) {
     renderEarlyNoteResultFromResults(state.earlyNote, dom, t);
   }
 
-  return { renderAllDiffResults, renderResult, renderShiftResult, renderDoubleSvResult, renderBarlineResult, renderUnappliedSvResult, renderKiaiResult, renderKiaiSnapResult, renderSvVolumeResult, renderVolumeCompareResult, renderRedGreenMatchResult, renderSampleSetResult, renderSliderSettingsResult, renderArtistResult, renderTitleResult, renderSourceResult, renderTagResult, renderPreviewPointResult, renderBgOffsetResult, renderFileCheckResult, renderEpilepsyWarningResult, renderSpreadResult, renderOffsetWaveformResult, renderContentPermissionResult, renderTimelineResult, renderResultAndUpdateTabs, renderShiftResultAndUpdateTabs, renderDoubleSvResultAndUpdateTabs, renderSvVolumeResultAndUpdateTabs, renderVolumeCompareResultAndUpdateTabs, renderSpreadResultAndUpdateTabs, renderEarlyNoteResult };
+  return { renderLoadedFileResults, renderAllDiffResults, renderResult, renderShiftResult, renderDoubleSvResult, renderBarlineResult, renderUnappliedSvResult, renderKiaiResult, renderKiaiSnapResult, renderSvVolumeResult, renderVolumeCompareResult, renderRedGreenMatchResult, renderSampleSetResult, renderSliderSettingsResult, renderArtistResult, renderTitleResult, renderSourceResult, renderTagResult, renderPreviewPointResult, renderBgOffsetResult, renderFileCheckResult, renderEpilepsyWarningResult, renderSpreadResult, renderOffsetWaveformResult, renderContentPermissionResult, renderTimelineResult, renderResultAndUpdateTabs, renderShiftResultAndUpdateTabs, renderDoubleSvResultAndUpdateTabs, renderSvVolumeResultAndUpdateTabs, renderVolumeCompareResultAndUpdateTabs, renderSpreadResultAndUpdateTabs, renderEarlyNoteResult };
 }

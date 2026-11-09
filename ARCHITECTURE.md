@@ -6,13 +6,19 @@ require a bundler for the web app.
 
 ## Application startup
 
-- `app/main.js`: DOM references, application state, file processing, and wiring.
+- `app/main.js`: DOM references, application state, and controller/event wiring.
 - `app/ui/resultRenderer.js`: redraws individual checks or all related results.
   It receives the application state, DOM references, translator, and BN UI accessor.
+  `renderLoadedFileResults()` preserves the initial render order without invoking
+  BN or SR work.
 - `app/electron/osuSourceController.js`: source-mode settings, osu! notifications,
   reload sequencing, and load-status text. File processing and state reset are
   callbacks supplied by startup.
 - `app/files/mapMetadata.js`: metadata/background extraction from `.osu` and `.osz`.
+- `app/files/fileSessionController.js`: file-load sequencing, applying check results,
+  restoring/saving mapset Diff preferences, preview audio URL ownership, and file
+  metadata/chart-source publication. Startup supplies source-mode and popout-order
+  getters, order synchronization, rendering, and reset callbacks.
 
 ## Electron layout
 
