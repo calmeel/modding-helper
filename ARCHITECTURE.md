@@ -21,6 +21,13 @@ initialization scripts. Production and the Electron smoke test use this loader.
 
 - `ui.js`: creates the application layout and connects display modes, navigation,
   timing notifications, playheads, and the following components.
+- `titlebar.js`: titlebar DOM, window controls, and update progress display.
+  Its `connect()` method attaches window events after the layout has been inserted.
+- `navigation.js`: top-level tabs, language/manual links, and realtime-window state.
+  View selection and language refreshes are delegated to startup callbacks.
+- `playheadController.js`: graph playheads and current-Diff markers, including
+  repositioning after chart redraws, tab changes, and resize. It receives visibility
+  and current-difficulty getters rather than owning the application's display mode.
 - `metadataCard.js`: creates the metadata card; owns tag marks and map-action buttons.
 - `diffOrderCard.js`: creates the Diff order card and moves its existing controls
   between wide and compact layouts without replacing their event handlers.

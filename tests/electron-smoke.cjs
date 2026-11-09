@@ -144,6 +144,7 @@ app.whenReady().then(async () => {
   main.unmaximize();
   main.maximize();
   await until(async () => (await evaluate(main, 'window.__maximizeEvents')) > 0, 'maximize IPC callback');
+  assert.equal(await evaluate(main, `!!document.querySelector('#etb-max svg path')`), true);
 
   await evaluate(main, `window.open('https://osu.ppy.sh/beatmapsets/456', '_blank') === null`);
   await until(() => openedLinks.length, 'external link');
