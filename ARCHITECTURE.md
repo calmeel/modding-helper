@@ -85,6 +85,15 @@ The scroll chart files under `app/charts/` share `spreadScrollChartState`:
 - `spreadScrollDrawing.js`: speed/delta chart rendering and drawing helpers.
 - `spreadScrollTooltip.js`: tooltip content and coordinate helpers.
 
+The volume chart files share `volumeCompareChartState` and use the same explicit
+script order in `index.html`:
+
+- `volumeCompareChart.js`: state, initialization, series toggles, and pointer/wheel input.
+- `volumeCompareDrawing.js`: colors, stepped volume lines, background bands, visible
+  difference sections, and playhead/marker geometry.
+- `volumeCompareTooltip.js`: visible-series tooltip content, interval annotations,
+  and positioning within the chart wrapper.
+
 ## Verification
 
 - `npm test`: parser/check/order/persistence regression tests.
