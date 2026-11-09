@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { app, BrowserWindow, clipboard, shell } = require('electron');
+const { withTimeout, waitFor } = require('./helpers/wait.cjs');
 const sourceRoot = path.resolve(__dirname, '..');
 const root = process.env.MODDING_HELPER_SMOKE_APP || sourceRoot;
 const output = path.join(sourceRoot, 'electron', 'dist-verify', 'smoke');
@@ -29,9 +30,24 @@ shell.openExternal = async url => { openedLinks.push(url); };
 const openedFolders = [];
 shell.openPath = async folder => { openedFolders.push(folder); return ''; };
 const runtimeErrors = [];
+const windowEvents = [];
 app.on('browser-window-created', (_, win) => {
   win.show = () => { win.__smokeRevealed = true; }; // Run without interrupting the user's desktop.
+  win.showInactive = () => {};
+  // Native maximize() can reveal a hidden window on Windows. Exercise the app's
+  // maximize-event/IPC path without performing the OS window operation.
+  let maximized = false;
+  win.isMaximized = () => maximized;
+  win.maximize = () => { maximized = true; win.emit('maximize'); };
+  win.unmaximize = () => { maximized = false; win.emit('unmaximize'); };
+  win.on('show', () => runtimeErrors.push(`Unexpected visible test window: ${win.id}`));
   win.webContents.setBackgroundThrottling(false);
+  for (const name of ['did-start-loading', 'did-stop-loading', 'did-finish-load', 'did-fail-load', 'will-navigate']) {
+    win.webContents.on(name, () => {
+      windowEvents.push({ time: Date.now(), window: win.id, event: name, url: win.webContents.getURL() });
+      if (windowEvents.length > 40) windowEvents.shift();
+    });
+  }
   win.webContents.on('preload-error', (_, file, error) => runtimeErrors.push(`${file}: ${error}`));
   win.webContents.on('render-process-gone', (_, details) => runtimeErrors.push(JSON.stringify(details)));
   win.webContents.debugger.attach('1.3');
@@ -67,15 +83,21 @@ SliderTickRate:1
 256,192,1500,1,0,0:0:0:0:
 256,192,2000,1,0,0:0:0:0:
 `;
-const deadline = setTimeout(() => { console.error('Electron smoke test timed out'); app.exit(1); }, 90000);
-async function until(predicate, description) {
-  for (let i = 0; i < 200; i++) {
-    if (await predicate()) return;
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
-  throw new Error(`Timed out: ${description}`);
+function describeWindow(win) {
+  if (win.isDestroyed() || win.webContents.isDestroyed()) return `window=${win.id}, destroyed=true`;
+  return `window=${win.id}, url=${win.webContents.getURL()}, loading=${win.webContents.isLoading()}`;
 }
-function evaluate(win, code) { return win.webContents.executeJavaScript(code); }
+const deadline = setTimeout(() => {
+  console.error('Electron smoke test timed out');
+  console.error(BrowserWindow.getAllWindows().map(describeWindow));
+  console.error(JSON.stringify(windowEvents));
+  app.exit(1);
+}, 90000);
+const until = waitFor;
+function evaluate(win, code) {
+  return withTimeout(() => win.webContents.executeJavaScript(code), 5000,
+    () => `renderer evaluation: ${describeWindow(win)}, code=${code.slice(0, 180)}`);
+}
 async function selectFile(win, filePath, expectedName = path.basename(filePath)) {
   const { root: document } = await win.webContents.debugger.sendCommand('DOM.getDocument');
   const { nodeId } = await win.webContents.debugger.sendCommand('DOM.querySelector', {
@@ -178,14 +200,18 @@ app.whenReady().then(async () => {
   assert.equal(openedLinks.at(-1), 'https://osu.ppy.sh/beatmapsets/456#taiko/123');
 
   const popouts = require(path.join(root, 'electron', 'windows', 'popouts'));
-  popouts.openPopout('metadata', 'ja');
-  popouts.openPopout('timing', 'en');
+  await evaluate(main, `document.getElementById('etb-tab-realtime').click(); true`);
   popouts.openChartPopout('kiaiCompareChart', 'ja');
-  await until(() => BrowserWindow.getAllWindows().length === 4, 'popout creation');
+  await until(() => BrowserWindow.getAllWindows().length === 3, 'timing and chart popout creation');
   for (const win of BrowserWindow.getAllWindows().filter(win => win !== main)) {
     await until(async () => !win.webContents.isLoading() && await evaluate(win, '!!window.electronAPI'), 'popout preload');
     assert.equal(win.webContents.getLastWebPreferences().sandbox, true);
   }
+  const timing = BrowserWindow.getAllWindows().find(win => win.webContents.getURL().includes('panel=timing'));
+  popouts.broadcastOsuData('osu-timing-info', { time: 1234, bpm: 180, sv: 1, vbpm: 180, volume: 80 });
+  await until(async () => await evaluate(timing, `document.getElementById('osu-t-timing').textContent === '00:01:234'`), 'realtime timing update');
+  assert.equal(await evaluate(main, `document.getElementById('etb-tab-realtime').getAttribute('aria-expanded')`), 'true');
+  console.log('PASS realtime popout and timing updates');
   const chart = BrowserWindow.getAllWindows().find(win => win.webContents.getURL().includes('popoutChart'));
   await until(async () => (await evaluate(chart, 'window.__loadedDiffs?.length')) === 1, 'chart source synchronization');
   await clickTimestamp(chart, '01:23:456');
@@ -197,12 +223,11 @@ app.whenReady().then(async () => {
 
   const unsafeMeta = { artist: '<img src=x onerror="window.__unsafeMetadata=true">', tags: '<svg/onload=window.__unsafeMetadata=true>', title: 'A & B <test>', creator: 'Test' };
   await evaluate(main, `window.__osuPanel.renderFileMeta(${JSON.stringify(unsafeMeta)}); true`);
-  const metadata = BrowserWindow.getAllWindows().find(win => win.webContents.getURL().includes('panel=metadata'));
-  await until(async () => (await evaluate(metadata, `document.getElementById('osu-map-meta').textContent.includes('A & B <test>')`)), 'metadata popout synchronization');
-  for (const win of [main, metadata]) {
-    assert.equal(await evaluate(win, `document.querySelectorAll('#osu-map-meta img, #osu-map-meta svg').length`), 0);
-    assert.equal(await evaluate(win, '!!window.__unsafeMetadata'), false);
-  }
+  assert.equal(await evaluate(main, `document.getElementById('osu-map-meta').textContent.includes('A & B <test>')`), true);
+  assert.equal(await evaluate(main, `document.querySelectorAll('#osu-map-meta img, #osu-map-meta svg').length`), 0);
+  assert.equal(await evaluate(main, '!!window.__unsafeMetadata'), false);
+  assert.equal(await evaluate(main, 'typeof window.electronAPI.sendMapMetaToPopout'), 'undefined');
+  console.log('PASS metadata card escaped text');
 
   const JSZip = require('jszip');
   const zip = new JSZip();
@@ -293,7 +318,8 @@ app.whenReady().then(async () => {
   assert.equal(await evaluate(main, 'window.__loadedDiffs.length'), 2);
   // Production injects the desktop layout once per window. Recreate that layout
   // explicitly after reload so we can verify renderer startup with saved values.
-  const loadedAgain = new Promise(resolve => main.webContents.once('did-finish-load', resolve));
+  const loadedAgain = withTimeout(() => new Promise(resolve => main.webContents.once('did-finish-load', resolve)),
+    20000, 'main window reload');
   main.webContents.reload();
   await loadedAgain;
   const injection = require(path.join(root, 'electron/inject/bundle'));
@@ -305,9 +331,21 @@ app.whenReady().then(async () => {
   assert.deepEqual(await optionState(), { checked: false, disabled: true });
   await sourceMode('osu');
   await until(skipped, 'preference persists after reload');
-  await evaluate(main, `document.getElementById('langJa').click(); document.getElementById('toggleTabSettings').click()`);
-  await evaluate(main, `new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
-  assert.equal(await evaluate(main, `getComputedStyle(document.getElementById('etb-card-loadsettings')).display !== 'none'`), true);
+  // Hidden windows may stop producing animation frames, even with background
+  // throttling disabled. Prove settings work without them, and wait on the actual
+  // DOM/style condition rather than an unrelated pair of rendering callbacks.
+  await evaluate(main, `window.__smokeSavedRaf = window.requestAnimationFrame;
+    window.requestAnimationFrame = () => 0;
+    document.getElementById('langJa').click(); document.getElementById('toggleTabSettings').click()`);
+  try {
+    await until(async () => await evaluate(main, `
+      document.getElementById('electron-layout').classList.contains('etb-settings') &&
+      getComputedStyle(document.getElementById('etb-card-loadsettings')).display !== 'none'
+    `), 'reloaded settings visible without animation frames');
+  } finally {
+    await evaluate(main, 'window.requestAnimationFrame = window.__smokeSavedRaf; delete window.__smokeSavedRaf; true');
+  }
+  console.log('PASS reload and settings without animation frames');
   fs.writeFileSync(path.join(output, 'mapset-loading-settings.png'), (await main.webContents.capturePage()).toPNG());
   console.log('PASS multiple-audio loading policy and saved settings');
   // ブラウザ版と同じ、preload・Electronレイアウトなしの画面でも読み込めること。
@@ -318,17 +356,19 @@ app.whenReady().then(async () => {
   assert.deepEqual(await evaluate(browser, 'window.__loadedDiffOrder'), ['Browser [Oni].osu']);
   assert.equal(await evaluate(browser, `document.querySelectorAll('#spreadOrderOutput pre').length`), 1);
   assert.equal(await evaluate(browser, `document.getElementById('electron-layout')`), null);
+  assert.ok(BrowserWindow.getAllWindows().every(win => !win.isVisible()), 'all smoke windows stay hidden');
   browser.destroy();
   console.log('PASS browser layout and file loading');
   assert.deepEqual(runtimeErrors, []);
   console.log(JSON.stringify({ status: 'passed', versions: process.versions,
     checks: ['startup', 'sandbox/preload', '.osu native paths and folder actions', 'clipboard IPC', 'SR calculator', 'preview drawing', 'preview settings', 'notepad', 'browser file loading',
-      'external links', 'osu timestamp clicks and chart navigation', 'metadata/timing/chart popouts', 'chart synchronization', '.osz loading', 'language switching', 'multiple-audio mapset policy and persistence'] }));
+      'external links', 'osu timestamp clicks and chart navigation', 'timing/chart popouts', 'metadata card escaping', 'hidden test windows', 'chart synchronization', '.osz loading', 'language switching', 'multiple-audio mapset policy and persistence'] }));
   clearTimeout(deadline);
   app.exit(0);
 }).catch(error => {
   console.error(error);
   console.error(runtimeErrors);
+  console.error(JSON.stringify(windowEvents));
   clearTimeout(deadline);
   app.exit(1);
 });

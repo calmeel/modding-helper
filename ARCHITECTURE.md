@@ -123,3 +123,15 @@ The offset waveform files share `offsetWaveformChartState`:
 - `npm test`: parser/check/order/persistence regression tests.
 - `npm run test:electron`: hidden Electron smoke test, including preview drawing,
   desktop cards, source modes, chart popouts, reload, and a browser-style window.
+  Only realtime timing and graph popouts are supported; the retired metadata
+  popout is rejected. Popouts are created hidden and shown after loading so the
+  smoke test's show override also prevents constructor-time windows from appearing.
+  The smoke test simulates maximize/unmaximize events to test the app's IPC path
+  without OS maximization revealing hidden windows, and asserts that no window
+  became visible. Native OS maximize behavior is outside this hidden test.
+  Wait for observable DOM/style conditions rather than animation frames: hidden
+  windows can stop producing frames, including after reload. The settings check
+  explicitly disables frame callbacks to cover this failure mode.
+- `tests/helpers/wait.cjs`: condition deadlines also bound unresolved probes.
+  Renderer evaluations have a separate 5-second limit; failure logs include the
+  window URL/loading state, executed code, and recent window loading events.

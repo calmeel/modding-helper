@@ -365,7 +365,7 @@
               if (panelMode !== 'file') return;
               if (!data) { clearMetaToWaiting(); }
               else { renderMapPanel(data); }
-              window.electronAPI.sendMapMetaToPopout(data);
+              window.electronAPI.setFileBeatmapMeta(data);
               refreshMapActionState();
             }
           };

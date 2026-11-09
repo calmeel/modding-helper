@@ -1,4 +1,4 @@
-// 分離ポップアウト（メタデータ / リアルタイム表示 / 各グラフ）を管理するモジュール。
+// 分離ポップアウト（リアルタイム表示 / 各グラフ）を管理するモジュール。
 //
 // メインウィンドウから切り離した小窓を開き、osu! のデータを配信する。
 // mainWin は main.js 側が持つので init({getMainWin}) で参照方法だけ受け取る。
@@ -14,8 +14,8 @@ let getMainWin = () => null;
 function init(opts) {
   if (opts && typeof opts.getMainWin === 'function') getMainWin = opts.getMainWin;
 }
-// 分離ポップアウト（メタデータ / リアルタイム）と最新データのキャッシュ
-const popoutWindows = { metadata: null, timing: null };
+// リアルタイム表示窓と最新データのキャッシュ
+const popoutWindows = { timing: null };
 const chartPopouts = {};  // chartId -> BrowserWindow（グラフ分離窓）
 let lastMapInfo = null;
 let lastTimingInfo = null;
@@ -36,7 +36,6 @@ function setDiffOrder(payload) {
     if (!win.isDestroyed()) win.webContents.send('diff-order-changed', lastDiffOrder);
   }
 }
-let popoutMetaChecked = [];  // メタデータ分離窓と同期する Tags チェック状態（タグ文字列の配列）
 
 function chartSourceBuffer(value) {
   if (Buffer.isBuffer(value)) return Buffer.from(value);
@@ -131,7 +130,7 @@ function setChartSourceMode(mode) {
 // osu! データをメインウィンドウ＋開いているポップアウトへ配信し、最新値をキャッシュする
 function broadcastOsuData(channel, data) {
   const targets = [getMainWin()];
-  if (channel === 'osu-map-info')        { lastMapInfo    = data; targets.push(popoutWindows.metadata); }
+  if (channel === 'osu-map-info')        { lastMapInfo    = data; }
   else if (channel === 'osu-timing-info') { lastTimingInfo = data; targets.push(popoutWindows.timing); }
   // グラフ分離窓は譜面追従(osu-map-info)と再生ヘッド(osu-timing-info)の両方を受ける
   if (chartSourceMode === 'osu') {
@@ -486,7 +485,7 @@ function injectChartPopout(pop, chartId) {
 
 // injectChartPopout は CSS 注入 + JS 注入を行い、JS 注入完了の Promise を返す
 function openPopout(name, lang) {
-  if (name !== 'metadata' && name !== 'timing') return;
+  if (name !== 'timing') return;
   if (popoutWindows[name] && !popoutWindows[name].isDestroyed()) {
     popoutWindows[name].focus();
     const main = getMainWin();
@@ -494,10 +493,7 @@ function openPopout(name, lang) {
     return;
   }
   const isEn = lang === 'en';
-  const conf = {
-    metadata: { width: 360, height: 820, title: isEn ? 'Metadata' : 'メタデータ' },
-    timing:   { width: 230, height: 200, title: isEn ? 'Real-time' : 'リアルタイム表示' },
-  }[name];
+  const conf = { width: 230, height: 200, title: isEn ? 'Real-time' : 'リアルタイム表示' };
 
   // 画面の作業領域からはみ出さないよう高さをクランプ
   const waHeight = screen.getPrimaryDisplay().workAreaSize.height;
@@ -507,12 +503,13 @@ function openPopout(name, lang) {
     width: conf.width,
     height: popHeight,
     // リアルタイム表示窓: 最小サイズを現在サイズに固定し、高さは現在値で上限固定（横のみ拡張可）
-    minWidth:  name === 'timing' ? conf.width  : undefined,
-    minHeight: name === 'timing' ? popHeight    : undefined,
-    maxHeight: name === 'timing' ? popHeight    : undefined,
+    minWidth: conf.width,
+    minHeight: popHeight,
+    maxHeight: popHeight,
+    show: false,
     title: conf.title,
     backgroundColor: '#1e1e1e',
-    alwaysOnTop: name === 'timing',  // リアルタイム表示窓は最前面に固定
+    alwaysOnTop: true,  // リアルタイム表示窓は最前面に固定
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -523,7 +520,7 @@ function openPopout(name, lang) {
   });
   pop.setMenu(null);
   // 全画面アプリ(osu! 等)の上にも重ねたいので最前面レベルを少し上げる
-  if (name === 'timing') pop.setAlwaysOnTop(true, 'screen-saver');
+  pop.setAlwaysOnTop(true, 'screen-saver');
   popoutWindows[name] = pop;
   const main = getMainWin();
   if (main && !main.isDestroyed()) main.webContents.send('panel-opened', name);
@@ -536,37 +533,20 @@ function openPopout(name, lang) {
   // 読み込み完了時に最新データを送って即時反映
   pop.webContents.on('did-finish-load', () => {
     if (pop.isDestroyed()) return;
-    if (name === 'metadata') {
-      pop.webContents.send('osu-map-info', lastMapInfo);
-      pop.webContents.send('popout-set-checked', popoutMetaChecked);  // Tags チェック状態を引き継ぐ
-    } else {
-      pop.webContents.send('osu-timing-info', lastTimingInfo);
-    }
+    pop.webContents.send('osu-timing-info', lastTimingInfo);
+    if (!pop.isVisible()) pop.show();
   });
 
   pop.on('closed', () => {
     popoutWindows[name] = null;
     if (getMainWin() && !getMainWin().isDestroyed()) {
-      // メイン側でカードを復帰。メタデータは最新のチェック状態を渡す
-      getMainWin().webContents.send('panel-redocked', name, name === 'metadata' ? popoutMetaChecked : null);
+      getMainWin().webContents.send('panel-redocked', name);
     }
   });
 }
-// ── main.js / IPC から使う補助 ──
-// Tags チェック状態（メタデータ窓と本体で引き継ぐ）
-function setMetaChecked(arr) { popoutMetaChecked = Array.isArray(arr) ? arr : []; }
-function getMetaChecked() { return popoutMetaChecked; }
-
-// file モードのメタデータをメタデータ窓へ転送し、最新値としても保持する
-function sendMapMetaToPopout(data) {
-  lastMapInfo = data;
-  const w = popoutWindows.metadata;
-  if (w && !w.isDestroyed()) { try { w.webContents.send('osu-map-info', data); } catch (_) {} }
-}
-
 // メインを閉じる時に全ての分離窓を閉じる
 function closeAll() {
-  ['metadata', 'timing'].forEach((n) => {
+  ['timing'].forEach((n) => {
     if (popoutWindows[n] && !popoutWindows[n].isDestroyed()) popoutWindows[n].destroy();
     popoutWindows[n] = null;
   });
@@ -584,8 +564,5 @@ module.exports = {
   setDiffOrder,
   openPopout,
   openChartPopout,
-  setMetaChecked,
-  getMetaChecked,
-  sendMapMetaToPopout,
   closeAll,
 };

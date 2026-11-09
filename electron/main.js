@@ -302,9 +302,8 @@ app.whenReady().then(() => {
     }
   });
 
-  // パネルを別ウィンドウに分離（メタデータは現在のチェック状態を引き継ぐ）
-  ipcMain.on('detach-panel', (e, name, lang, checked) => {
-    if (name === 'metadata') popouts.setMetaChecked(checked);
+  // リアルタイム表示を別ウィンドウで開く
+  ipcMain.on('detach-panel', (e, name, lang) => {
     popouts.openPopout(name, lang);
   });
 
@@ -331,17 +330,11 @@ app.whenReady().then(() => {
      監視は譜面が変わった時しか送らないので、これが無いと切替時に空のままになる。 */
   ipcMain.on('osu-request-map-info', () => osuWatcher.resendMapInfo());
 
-  // 分離窓での Tags チェック状態の変化を保持（復帰時にメインへ反映するため）
-  ipcMain.on('popout-checked-changed', (e, arr) => {
-    popouts.setMetaChecked(arr);
-  });
-
-  // file モードのメタデータをメタデータ・ポップアウトへ転送（osu モードは osuWatcher 経由）
-  ipcMain.on('popout-map-meta', (e, data) => {
+  // file モードの譜面ページを開く操作に使うメタデータを保持する。
+  ipcMain.on('file-beatmap-meta', (e, data) => {
     if (mainWin && !mainWin.isDestroyed() && e.sender === mainWin.webContents) {
       fileBeatmapMeta = data || null;
     }
-    popouts.sendMapMetaToPopout(data);
   });
 
   // 現在 osu! で開いている譜面のフォルダを .osz 相当の zip にまとめて返す。
