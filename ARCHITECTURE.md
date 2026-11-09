@@ -33,9 +33,15 @@ initialization scripts. Production and the Electron smoke test use this loader.
   between wide and compact layouts without replacing their event handlers.
 - `previewController.js`: preview playback, seeking, input handling, and live
   preview option state. It receives playback state and parent-owned display callbacks.
+- `previewAudio.js`: music decoding, playback, and pitch-preserving speed changes.
+  Its audio-like API uses the shared AudioContext clock for playback position.
+- `previewHitTesting.js`: point and rectangle queries against rendered note geometry;
+  selection state remains in the preview controller.
+- `previewDiffData.js`: prepares parsed notes, timing, markers, and the preview time
+  range. Cache invalidation and difficulty ordering remain in the controller.
 - `previewSettings.js`: settings-card DOM and input handlers. It receives only
   preview options, display callbacks, audio callbacks, and visibility/order callbacks;
-  audio playback and parsed-difficulty caches remain in the preview controller.
+  the preview controller connects these callbacks to playback and difficulty caches.
 - `spectrogramController.js`: audio decoding, color selection, and redraw monitoring
   for the spectrogram. Audio context and playhead changes use explicit callbacks.
 - `notepadController.js`: raw beatmap sections, difficulty selection, and virtualized
