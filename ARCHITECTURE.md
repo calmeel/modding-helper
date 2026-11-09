@@ -7,6 +7,9 @@ require a bundler for the web app.
 ## Application startup
 
 - `app/main.js`: DOM references, application state, and controller/event wiring.
+- `app/ui/languageController.js`: translates labels/titles, updates language buttons,
+  manual/history and empty-state text, and synchronizes the desktop language before
+  requesting a result redraw. Queries labels on each application to include injected UI.
 - `app/ui/resultRenderer.js`: redraws individual checks or all related results.
   It receives the application state, DOM references, translator, and BN UI accessor.
   `renderLoadedFileResults()` preserves the initial render order without invoking

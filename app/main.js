@@ -161,6 +161,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const dom = {
+    langEn,
+    langJa,
+    manualLink,
+    updateHistoryContent,
     fileName,
     openBeatmapPage,
     output,
@@ -369,7 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
     state, dom, t, isChartPopout,
     getSourceMode: () => osuSource.mode,
     getReceivedDiffOrder: () => receivedDiffOrder,
-    synchronizeDiffOrder, renderLoadedFileResults, onCleared: applyLanguage
+    synchronizeDiffOrder, renderLoadedFileResults, onCleared: () => languageController.apply()
   });
 
   const osuSource = createOsuSourceController({
@@ -391,7 +395,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
   const applyOsuSourceMode = osuSource.setMode;
-  const refreshOsuSourceStatus = osuSource.refreshStatus;
+  const languageController = createLanguageController({
+    state, dom, t, getLanguage: () => currentLang,
+    refreshSourceStatus: osuSource.refreshStatus, renderResults: renderAllDiffResults
+  });
 
   // ユーザーが手動でファイルを選択/ドロップしたら自動でファイルモードに戻す
   const userFileHandler = async (file) => {
@@ -415,7 +422,7 @@ document.addEventListener("DOMContentLoaded", () => {
     (lang) => {
       currentLang = lang;
     },
-    applyLanguage
+    languageController.apply
   );
   revealElectronOnlyFeatures();
 
@@ -521,139 +528,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function applyLanguage() {
-    document.documentElement.lang = currentLang === "ja" ? "ja" : "en";
-
-    document.querySelectorAll("[data-i18n]").forEach(el => {
-      const key = el.dataset.i18n;
-      el.textContent = t(key);
-    });
-
-    document.querySelectorAll("[data-i18n-title]").forEach(el => {
-      const key = el.dataset.i18nTitle;
-      el.title = t(key);
-    });
-
-    refreshOsuSourceStatus();
-
-    if (fileName) {
-      fileName.textContent = state.selectedFileName || t("noFileSelected");
-    }
-
-    if (langEn) langEn.classList.toggle("active", currentLang === "en");
-    if (langJa) langJa.classList.toggle("active", currentLang === "ja");
-    if (window.electronAPI &&
-        typeof window.electronAPI.setLanguage === "function") {
-      window.electronAPI.setLanguage(currentLang);
-    }
-    if (manualLink) {
-      const docsBase = window.electronAPI
-        ? "https://calmeel.github.io/modding-helper/docs/"
-        : "docs/";
-      manualLink.href = docsBase + (currentLang === "ja" ? "docs.html" : "docs-en.html");
-    }
-    if (updateHistoryContent) {
-      renderUpdateHistory(updateHistoryContent, currentLang);
-    }
-
-    if (!state.clapWhistle && output) {
-      output.textContent = t("noFileLoaded");
-    }
-
-    if (!state.offset && shiftOutput) {
-      shiftOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.kiaiCompare && kiaiOutput) {
-      kiaiOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.kiaiSnap && kiaiSnapOutput) {
-      kiaiSnapOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.doubleSvSources && doubleSvOutput) {
-      doubleSvOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.barlineSources && barlineOutput) {
-      barlineOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.unappliedSv && unappliedSvOutput) {
-      unappliedSvOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.redGreenMatch && redGreenMatchOutput) {
-      redGreenMatchOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.sampleSet && sampleSetOutput) {
-      sampleSetOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.sliderSettings && sliderSettingsOutput) {
-      sliderSettingsOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.earlyNote && earlyNoteOutput) {
-      earlyNoteOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.artist && artistOutput) {
-      artistOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.title && titleOutput) {
-      titleOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.source && sourceOutput) {
-      sourceOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.tag && tagOutput) {
-      tagOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.previewPoint && previewPointOutput) {
-      previewPointOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.bgOffset && bgOffsetOutput) {
-      bgOffsetOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.fileCheck && fileCheckOutput) {
-      fileCheckOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.epilepsyWarning && epilepsyWarningOutput) {
-      epilepsyWarningOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.spread && spreadOdHpOutput) {
-      spreadOdHpOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.offsetWaveformSources && offsetWaveformEmpty) {
-      offsetWaveformEmpty.textContent = t("noFileLoaded");
-    }
-
-    if (!state.contentPermission && contentPermissionOutput) {
-      contentPermissionOutput.textContent = t("noFileLoaded");
-    }
-
-    if (!state.timeline && timelineOutput) {
-      timelineOutput.textContent = t("timelineNotRendered");
-    }
-
-    renderAllDiffResults();
-  }
-
   // did-finish-load 後に追加される Electron 専用 DOM へも、
   // 現在言語を初回適用できるよう公開する。
-  window.applyModdingHelperLanguage = applyLanguage;
+  window.applyModdingHelperLanguage = languageController.apply;
 
   if (isChartPopout && window.electronAPI?.onDiffOrder) {
     window.electronAPI.onDiffOrder(payload => {
@@ -708,5 +585,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
   osuSource.setup();
 
-  applyLanguage();
+  languageController.apply();
 });
