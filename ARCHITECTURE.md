@@ -33,6 +33,11 @@ initialization scripts. Production and the Electron smoke test use this loader.
   between wide and compact layouts without replacing their event handlers.
 - `previewController.js`: preview playback, seeking, input handling, and live
   preview option state. It receives playback state and parent-owned display callbacks.
+- `previewLayout.js`: preview panel, toolbar, canvas, and playback-bar DOM;
+  event handlers and state stay in the controller.
+- `previewHitSounds.js`: lookahead scheduling of note sounds on the shared audio
+  clock, including playback-speed corrections, roll/swell hits, and seek resets.
+  It owns reservation state; the controller supplies playback and kit settings.
 - `previewAudio.js`: music decoding, playback, and pitch-preserving speed changes.
   Its audio-like API uses the shared AudioContext clock for playback position.
 - `previewHitTesting.js`: point and rectangle queries against rendered note geometry;
