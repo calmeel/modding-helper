@@ -120,10 +120,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const offsetWaveformEmpty = document.getElementById("offsetWaveformEmpty");
   const offsetWaveformInfo = document.getElementById("offsetWaveformInfo");
   const offsetWaveformEstimate = document.getElementById("offsetWaveformEstimate");
-  const srCalculatorOutput = document.getElementById("srCalculatorOutput");
-  const srCalculatorTabButton = document.querySelector('.tab-button[data-tab="srCalculator"]');
-  const srCalculatorModInputs = [...document.querySelectorAll(".sr-calculator-mod")];
-  const srCalculatorRuleset = document.getElementById("srCalculatorRuleset");
   const contentPermissionOutput = document.getElementById("contentPermissionOutput");
   const timelineOutput = document.getElementById("timelineOutput");
   const timelineRunButton = document.getElementById("timelineRunButton");
@@ -269,7 +265,6 @@ document.addEventListener("DOMContentLoaded", () => {
     offsetWaveformEmpty,
     offsetWaveformInfo,
     offsetWaveformEstimate,
-    srCalculatorOutput,
     contentPermissionOutput,
     timelineOutput,
     timelineRunButton,
@@ -316,7 +311,6 @@ document.addEventListener("DOMContentLoaded", () => {
       diffOrder: [],
       manualCategories: {}
     },
-    srCalculator: createSrCalculatorState(),
     offsetWaveformSources: null,
     contentPermission: null,
     timelineSources: null,
@@ -442,71 +436,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (timelineRunButton) {
     timelineRunButton.addEventListener("click", renderTimelineResult);
-  }
-
-  function getSelectedSrMods() {
-    return srCalculatorModInputs
-      .filter(input => input.checked)
-      .map(input => input.value);
-  }
-
-  function startSrCalculationIfReady() {
-    if (state.srCalculator.status !== "ready") return;
-
-    void startSrCalculation(
-      state.offsetSources, state.srCalculator, srCalculatorOutput, t,
-      state.spread.diffOrder, getSelectedSrMods(),
-      srCalculatorRuleset?.value || "current"
-    );
-  }
-
-  if (srCalculatorTabButton) {
-    srCalculatorTabButton.addEventListener("click", startSrCalculationIfReady);
-  }
-
-  const srModConflicts = {
-    EZ: ["HR"],
-    HR: ["EZ"],
-    HT: ["DT"],
-    DT: ["HT"]
-  };
-
-  for (const input of srCalculatorModInputs) {
-    input.addEventListener("change", () => {
-      if (input.checked) {
-        for (const conflict of srModConflicts[input.value] || []) {
-          const conflictingInput = srCalculatorModInputs.find(item => item.value === conflict);
-          if (conflictingInput) conflictingInput.checked = false;
-        }
-      }
-
-      prepareSrCalculation(
-        state.offsetSources, state.srCalculator, srCalculatorOutput, t,
-        state.spread.diffOrder, true
-      );
-
-      if (document.getElementById("tab-srCalculator")?.classList.contains("active")) {
-        startSrCalculationIfReady();
-      }
-    });
-  }
-
-  if (srCalculatorRuleset) {
-    const savedRuleset = localStorage.getItem("srCalculatorRuleset");
-    if (savedRuleset && [...srCalculatorRuleset.options].some(option => option.value === savedRuleset && !option.disabled)) {
-      srCalculatorRuleset.value = savedRuleset;
-    }
-    srCalculatorRuleset.addEventListener("change", () => {
-      localStorage.setItem("srCalculatorRuleset", srCalculatorRuleset.value);
-      prepareSrCalculation(
-        state.offsetSources, state.srCalculator, srCalculatorOutput, t,
-        state.spread.diffOrder, true
-      );
-
-      if (document.getElementById("tab-srCalculator")?.classList.contains("active")) {
-        startSrCalculationIfReady();
-      }
-    });
   }
 
   // did-finish-load 後に追加される Electron 専用 DOM へも、

@@ -51,7 +51,6 @@ function createResultRenderer({ state, dom, t, getBnCompareUi }) {
     renderFileCheckResult();
     renderEpilepsyWarningResult();
     renderSpreadResult();
-    renderSrCalculator(state.srCalculator, dom.srCalculatorOutput, t, state.spread.diffOrder);
     renderOffsetWaveformResult();
     renderContentPermissionResult();
 

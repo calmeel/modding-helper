@@ -10,7 +10,6 @@ const { createDiffOrderPreferences } = require('./services/diffOrderPreferences'
 const updater = require('./services/updater');
 const windowState = require('./services/windowState');
 const { configureWindowLinks } = require('./services/windowLinks');
-const { createSrCalculatorService } = require('./services/srCalculator');
 // リアルタイム(osu!メモリ監視)は非公開ファイル（GitHub には上げない方針）。
 // 欠落していても web プレビュー等は動くよう no-op スタブにフォールバックする。
 let osuWatcher;
@@ -28,7 +27,6 @@ try {
 
 const root     = path.join(__dirname, '..');
 const { version } = require('../package.json');
-const srCalculator = createSrCalculatorService({ app, root });
 const iconUrl  = 'file:///' + path.join(root, 'images', 'icon.png').replace(/\\/g, '/');
 const docsPath = path.join(root, 'docs', 'docs.html');
 let beatmapActionMode = 'file';
@@ -246,9 +244,6 @@ app.whenReady().then(() => {
     return true;
   });
 
-  ipcMain.handle('sr-calculate', (event, payload) =>
-    srCalculator.calculate(payload));
-  ipcMain.on('sr-cancel', () => srCalculator.cancel());
   ipcMain.on('app-language-changed', (event, lang) => updater.setLanguage(lang));
 
   ipcMain.on('win-minimize',  () => { if (mainWin) mainWin.minimize(); });
@@ -353,5 +348,4 @@ app.whenReady().then(() => {
   });
 });
 
-app.on('before-quit', () => srCalculator.dispose());
 app.on('window-all-closed', () => app.quit());

@@ -103,23 +103,6 @@ test('move, category replacement, and reset notify the application for a full re
   assert.equal(redraws, 3);
 });
 
-test('SR completion keeps an order changed while the asynchronous calculation was running', async () => {
-  const ctx = context();
-  vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'app/tools/srCalculator.js'), 'utf8'), ctx);
-  let finish;
-  ctx.window.electronAPI = { calculateSr: () => new Promise(resolve => finish = resolve) };
-  ctx.parseMetadataValue = () => 'Oni';
-  const state = ctx.createSrCalculatorState();
-  const oldOrder = [map('Kantan').fileName, map('Oni').fileName];
-  const latestOrder = [...oldOrder].reverse();
-  const pending = ctx.startSrCalculation([{fileName: oldOrder[1], text: ''}], state, null, key => key, oldOrder);
-  ctx.renderSrCalculator(state, null, key => key, latestOrder);
-  finish({ results: [] });
-  await pending;
-  assert.equal(state.status, 'complete');
-  assert.deepEqual(Array.from(state.diffOrder), latestOrder);
-});
-
 test('Electron preview reorders its existing cache when a new order is published', () => {
   const ctx = context();
   const source = fs.readFileSync(path.join(__dirname, '..', 'electron/inject/previewController.js'), 'utf8');

@@ -129,9 +129,11 @@ app.whenReady().then(async () => {
   await until(async () => (await evaluate(main, 'window.electronAPI.getCurrentMapActions()')).canOpenBeatmapPage, 'beatmap metadata actions');
   assert.equal(await evaluate(main, `window.electronAPI.copyText('smoke test 日本語')`), true);
   assert.equal(copiedText, 'smoke test 日本語');
-  const result = await evaluate(main, `window.electronAPI.calculateSr([{fileName:'test.osu', content:${JSON.stringify(beatmap)}}], [], 'current')`);
-  assert.ok(!result.error, JSON.stringify(result));
-  console.log('PASS file loading, clipboard IPC, current SR');
+  assert.equal(await evaluate(main, 'typeof window.electronAPI.calculateSr'), 'undefined');
+  assert.equal(await evaluate(main, 'typeof window.electronAPI.cancelSrCalculation'), 'undefined');
+  assert.equal(await evaluate(main, 'document.getElementById("tab-srCalculator")'), null);
+  assert.equal(await evaluate(main, `document.querySelector('.tab-button[data-tab="spectrogram"]').hasAttribute("data-electron-only")`), false);
+  console.log('PASS file loading, clipboard IPC and desktop tools');
   await evaluate(main, `document.getElementById('etb-tab-preview').click(); true`);
   await until(async () => await evaluate(main, `document.getElementById('etb-spread-canvas').__spreadGeom?.n === 1`), 'preview canvas drawing');
   await evaluate(main, `document.getElementById('etb-tab-main').click(); true`);
@@ -158,10 +160,6 @@ app.whenReady().then(async () => {
   assert.equal(await evaluate(main, `document.getElementById('etb-sfx-vol-input').parentElement.querySelector('input[type=range]').value`), '73');
   await evaluate(main, `document.getElementById('etb-tab-main').click(); window.__smokeRestorePreviewDraw(); true`);
   console.log('PASS preview settings and notepad controller');
-  for (const ruleset of ['livePP2510', 'livePP2503', 'livePP2410After', 'livePP2410Before', 'livePP2208', 'livePP2021', 'livePP2020']) {
-    const historical = await evaluate(main, `window.electronAPI.calculateSr([{fileName:'test.osu', content:${JSON.stringify(beatmap)}}], [], ${JSON.stringify(ruleset)})`);
-    assert.ok(!historical.error, `${ruleset}: ${JSON.stringify(historical)}`);
-  }
   await evaluate(main, `window.__maximizeEvents = 0; window.electronAPI.onMaximize(() => window.__maximizeEvents++);`);
   main.unmaximize();
   main.maximize();
@@ -361,7 +359,7 @@ app.whenReady().then(async () => {
   console.log('PASS browser layout and file loading');
   assert.deepEqual(runtimeErrors, []);
   console.log(JSON.stringify({ status: 'passed', versions: process.versions,
-    checks: ['startup', 'sandbox/preload', '.osu native paths and folder actions', 'clipboard IPC', 'SR calculator', 'preview drawing', 'preview settings', 'notepad', 'browser file loading',
+    checks: ['startup', 'sandbox/preload', '.osu native paths and folder actions', 'clipboard IPC', 'preview drawing', 'preview settings', 'notepad', 'browser file loading',
       'external links', 'osu timestamp clicks and chart navigation', 'timing/chart popouts', 'metadata card escaping', 'hidden test windows', 'chart synchronization', '.osz loading', 'language switching', 'multiple-audio mapset policy and persistence'] }));
   clearTimeout(deadline);
   app.exit(0);

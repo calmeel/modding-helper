@@ -13,7 +13,7 @@ require a bundler for the web app.
 - `app/ui/resultRenderer.js`: redraws individual checks or all related results.
   It receives the application state, DOM references, translator, and BN UI accessor.
   `renderLoadedFileResults()` preserves the initial render order without invoking
-  BN or SR work.
+  BN comparison work.
 - `app/electron/osuSourceController.js`: source-mode settings, osu! notifications,
   reload sequencing, and load-status text. File processing and state reset are
   callbacks supplied by startup.

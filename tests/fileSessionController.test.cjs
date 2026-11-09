@@ -11,17 +11,16 @@ function deferred() {
   return { promise, resolve, reject };
 }
 function fixture({ api, popout = false } = {}) {
-  const events = [], revoked = [], published = [], sr = [], errors = [];
+  const events = [], revoked = [], published = [], errors = [];
   const button = { disabled: false, addEventListener: (name, fn) => events.push(fn) };
   const dom = { openBeatmapPage: button, fileName: {}, output: {}, timelineOutput: {} };
   const state = { spread: { results: null, diffOrder: [], manualCategories: {} },
-    bnCompare: {}, srCalculator: {} };
+    bnCompare: {} };
   let mode = 'file', received = null, renders = 0, clears = 0, synchronizations = 0, nextUrl = 0;
   const scope = vm.createContext({
     window: { electronAPI: api, open: url => published.push(url) },
     URL: { createObjectURL: () => `blob:${++nextUrl}`, revokeObjectURL: url => revoked.push(url) },
     console: { warn() {}, error: error => errors.push(error) },
-    prepareSrCalculation: (...args) => sr.push(args),
     getBeatmapPageUrlFromSources: sources => sources?.[0]?.fileName || null,
     getNativeFilePath: file => file.path,
     extractMapMetaFromFile: async file => ({ title: file.name })
@@ -43,12 +42,12 @@ function fixture({ api, popout = false } = {}) {
     synchronizeDiffOrder: () => synchronizations++, renderLoadedFileResults: () => renders++,
     onCleared: () => clears++
   });
-  return { controller, state, scope, dom, result, events, published, revoked, sr, errors,
+  return { controller, state, scope, dom, result, events, published, revoked, errors,
     setMode: value => { mode = value; }, setReceived: value => { received = value; },
     renders: () => renders, clears: () => clears, syncs: () => synchronizations };
 }
 
-test('file loading publishes results and replaces audio URLs while deferring SR calculation', async () => {
+test('file loading publishes results and replaces audio URLs', async () => {
   const f = fixture();
   await f.controller.handleFile({ name: 'Oni' });
   assert.equal(f.state.selectedFileName, 'Oni');
@@ -59,9 +58,6 @@ test('file loading publishes results and replaces audio URLs while deferring SR 
   assert.equal(f.dom.timelineOutput.textContent, 'timelineNotRendered');
   assert.equal(f.scope.window.__loadedAudio.durationMs, 1234);
   assert.equal(f.renders(), 1);
-  assert.equal(f.sr.length, 2);
-  assert.equal(f.sr[0][0], null);
-  assert.equal(f.sr[1][0], f.state.offsetSources);
   f.events[0]();
   assert.deepEqual(f.published, ['Oni.osu']);
   f.scope.processFile = async () => ({ ...f.result('Inner Oni'), offsetWaveformSources: [] });
@@ -134,10 +130,10 @@ test('chart popouts use the received order without loading or saving mapset pref
   assert.equal(preferenceCalls, 0);
 });
 
-test('clearing results preserves BN and SR state, releases audio and invalidates pending loads', async () => {
+test('clearing results preserves BN state, releases audio and invalidates pending loads', async () => {
   const f = fixture();
   await f.controller.handleFile({ name: 'Oni' });
-  const bn = f.state.bnCompare, sr = f.state.srCalculator;
+  const bn = f.state.bnCompare;
   const old = deferred();
   f.scope.processFile = () => old.promise;
   const pending = f.controller.handleFile({ name: 'old' });
@@ -145,7 +141,6 @@ test('clearing results preserves BN and SR state, releases audio and invalidates
   old.resolve(f.result('Kantan'));
   await pending;
   assert.equal(f.state.bnCompare, bn);
-  assert.equal(f.state.srCalculator, sr);
   assert.equal(f.scope.window.__loadedDiffs, null);
   assert.equal(f.scope.window.__loadedAudio, null);
   assert.deepEqual(f.revoked, ['blob:1']);

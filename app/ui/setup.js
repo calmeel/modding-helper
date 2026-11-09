@@ -1,3 +1,10 @@
+// Desktop-only controls depend on the Electron bridge.
+function revealElectronOnlyFeatures() {
+  if (!window.electronAPI) return;
+  for (const element of document.querySelectorAll('[data-electron-only]')) {
+    element.removeAttribute('data-electron-only');
+  }
+}
 
 /** UI初期化・イベント登録系 */
 function setupTabs() {

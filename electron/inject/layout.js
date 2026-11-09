@@ -94,7 +94,7 @@ function createElectronLayout({ appEl, titlebar, dropArea, text: electronText,
   tabsCol.appendChild(tabsSettingsBody);
 
   /* ツールカード（中央カラム・チェックリストの下）。
-     緑のツールボタン群（音声波形/スペクトログラム/SR計算/BN評価）をここへ移す。
+     緑のツールボタン群（音声波形/スペクトログラム/BN評価）をここへ移す。
      中身のタブグループは DOM 挿入後（タイムライン除去の後）に移設する。 */
   var toolsCard = document.createElement('div');
   toolsCard.className = 'etb-card';
@@ -110,7 +110,7 @@ function createElectronLayout({ appEl, titlebar, dropArea, text: electronText,
   toolsCard.appendChild(toolsBody);
 
   /* ツールの表示設定カード（設定モード時のみ表示。中央カラム・チェックリストの表示設定の下）。
-     音声波形/スペクトログラム/SR計算/BN評価 の表示トグルをここへ振り分ける。 */
+     音声波形/スペクトログラム/BN評価 の表示トグルをここへ振り分ける。 */
   var toolsSettingsCard = document.createElement('div');
   toolsSettingsCard.className = 'etb-card';
   toolsSettingsCard.id = 'etb-card-toolsettings';
@@ -181,7 +181,7 @@ function createElectronLayout({ appEl, titlebar, dropArea, text: electronText,
     /* ツール系タブの表示トグルは「ツールの表示設定」カードへ、
        それ以外は「チェックリストの表示設定」へ振り分ける。 */
     var toolToggleTabs = {
-      offsetWaveform: 1, spectrogram: 1, srCalculator: 1, timeline: 1, bnCompare: 1
+      offsetWaveform: 1, spectrogram: 1, timeline: 1, bnCompare: 1
     };
     Array.prototype.slice.call(tabSettingsPanelEl.querySelectorAll('label')).forEach(function(lb) {
       var inp = lb.querySelector('.tab-visibility-toggle');
@@ -215,7 +215,7 @@ function createElectronLayout({ appEl, titlebar, dropArea, text: electronText,
     if (typeof applyTabVisibilitySettings === 'function') applyTabVisibilitySettings();
   } catch (e) { /* 失敗しても他のUIは動かす */ }
 
-  /* 緑のツールボタン群（音声波形/スペクトログラム/SR計算/BN評価）のタブグループを
+  /* 緑のツールボタン群（音声波形/スペクトログラム/BN評価）のタブグループを
      中央カラムの「ツール」カードへ丸ごと移す。bnCompare を目印にグループを特定する。
      タブ切替はイベント委譲（closest('.tab-button')）なので、置き場所が変わっても動く。
      .tab-group ごと移すので hidden-tab-group 等の既存ロジックもそのまま効く。 */

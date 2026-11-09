@@ -1,7 +1,7 @@
 // ファイル読み込みの世代管理、結果反映、Diff設定と音源・メタデータの公開を管理する。
 function createFileSessionController({ state, dom, t, isChartPopout,
   getSourceMode, getReceivedDiffOrder, synchronizeDiffOrder, renderLoadedFileResults, onCleared }) {
-  const { openBeatmapPage, srCalculatorOutput, fileName, timelineOutput, output } = dom;
+  const { openBeatmapPage, fileName, timelineOutput, output } = dom;
   let activeMapsetFolder = null;
   async function persistDiffPreferences() {
     if (isChartPopout || !activeMapsetFolder || getSourceMode() !== 'osu' ||
@@ -27,8 +27,6 @@ function createFileSessionController({ state, dom, t, isChartPopout,
     const pageLoadId = ++beatmapPageLoadId;
     beatmapPageUrl = null;
     if (openBeatmapPage) openBeatmapPage.disabled = true;
-
-    prepareSrCalculation(null, state.srCalculator, srCalculatorOutput, t);
 
     state.selectedFileName = file.name;
 
@@ -124,12 +122,6 @@ function createFileSessionController({ state, dom, t, isChartPopout,
 
       renderLoadedFileResults();
 
-      // SR calculation is deliberately deferred until the user requests it.
-      prepareSrCalculation(
-        result.offsetSources, state.srCalculator, srCalculatorOutput, t,
-        state.spread.diffOrder
-      );
-
       // file モードのときは読み込んだファイルのメタデータを左パネルに表示
       lastLoadedFileForMeta = file;
       if (getSourceMode() === "file") {
@@ -193,10 +185,9 @@ function createFileSessionController({ state, dom, t, isChartPopout,
     ++beatmapPageLoadId;
     beatmapPageUrl = null;
     if (openBeatmapPage) openBeatmapPage.disabled = true;
-    prepareSrCalculation(null, state.srCalculator, srCalculatorOutput, t);
-    // Preserve independent BN comparison inputs and the SR calculator's state object.
+    // Preserve independent BN comparison inputs.
     for (const key of Object.keys(state)) {
-      if (!["bnCompare", "srCalculator", "spread"].includes(key)) state[key] = null;
+      if (!["bnCompare", "spread"].includes(key)) state[key] = null;
     }
     state.spread = { results: null, diffOrder: [], manualCategories: {} };
     activeMapsetFolder = null;
