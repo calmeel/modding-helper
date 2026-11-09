@@ -94,6 +94,15 @@ script order in `index.html`:
 - `volumeCompareTooltip.js`: visible-series tooltip content, interval annotations,
   and positioning within the chart wrapper.
 
+The density chart follows the same split and shares `spreadDensityChartState`:
+
+- `spreadDensityChart.js`: state, Diff order/filtering, inversion-only visibility,
+  initialization, and pointer/wheel input. Owns the shared measure-boundary tolerance.
+- `spreadDensityDrawing.js`: stepped measure densities, inversion bands, axis scales,
+  and playhead/marker geometry.
+- `spreadDensityTooltip.js`: measure-group lookup, visible-Diff and inversion details,
+  and tooltip positioning. Both drawing and tooltips use the existing density analysis.
+
 ## Verification
 
 - `npm test`: parser/check/order/persistence regression tests.
