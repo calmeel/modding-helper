@@ -16,12 +16,6 @@ function renderClapWhistleResult(results, dom, t) {
   );
 }
 
-function renderOffsetResult(results, dom, t) {
-  if (!results || !dom.shiftOutput) return;
-
-  dom.shiftOutput.innerHTML = formatMultipleShiftResults(results, t);
-}
-
 function renderOffsetResultFromSources(sources, dom, t) {
   if (!dom.shiftOutput) return null;
 
@@ -495,4 +489,3 @@ function renderTimelineResultFromSources(sources, dom, t, options = {}) {
 
   return result;
 }
-

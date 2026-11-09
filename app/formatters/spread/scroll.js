@@ -327,15 +327,6 @@ function formatSpreadScrollSpeedSummaryTable(results, t, manualCategories = {}) 
   for (const row of rows) {
     const isWarn = row.tooFastLevel === "warn";
 
-    const p90Html =
-      isWarn
-        ? `<span class="result-warn">${row.p90}</span>`
-        : row.p90;
-
-    const statusHtml = isWarn
-      ? `<span class="result-warn">${row.status}</span>`
-      : row.status;
-
     lines.push(
       `${getDifficultyName(row.result.fileName)}${" ".repeat(widths.diff - visibleWidth(row.diff))} | ` +
       `${padStartVisual(row.min, widths.min)} | ` +

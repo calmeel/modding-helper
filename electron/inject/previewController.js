@@ -1,4 +1,4 @@
-// プレビューの再生、シーク、入力操作と表示設定を管理する。
+// プレビューの再生・描画・設定を連携し、入力操作はpreviewInputに委譲する。
 function createElectronPreview({ outBody, previewSettingsBody, viewSettingsBody,
   text: electronText, playback, getSpreadTime, getPanelMode,
   getViewMode, setViewMode, applyViewModeUi, getTagDisplayMode, setTagDisplayMode, redrawMetadata }) {
@@ -11,7 +11,6 @@ function createElectronPreview({ outBody, previewSettingsBody, viewSettingsBody,
     var spPreviewOn = false;
 
     var previewLayout = createElectronPreviewLayout(outBody, electronText);
-    var spPanel = previewLayout.panel;
     var spBar = previewLayout.toolbar;
     var spCanvas = previewLayout.canvas;
 
@@ -233,9 +232,8 @@ function createElectronPreview({ outBody, previewSettingsBody, viewSettingsBody,
       for (var i = 0; i < spSfxSets.length; i++) if (spSfxSets[i].id === spSfxSetId) return spSfxSets[i];
       return spSfxSets[0];
     };
-    /* 音楽と効果音で共有する AudioContext。
-       別々のクロックだと長い曲で徐々にズレるため、音楽(<audio>)も同じ ctx に通して
-       時計と出力レイテンシを完全に共通化する。ctx は作り直さず使い回す。 */
+    /* 音楽のPCM再生と効果音でAudioContextを共有し、
+       再生位置の時計と出力レイテンシを共通化する。ctxは作り直さず使い回す。 */
     var spSharedCtx = null;
     var ensureSpreadAudioCtx = function () {
       if (!spSharedCtx) {

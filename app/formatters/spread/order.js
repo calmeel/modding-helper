@@ -492,15 +492,3 @@ function formatSpreadNoteStatus(level, rule = null) {
 
   return `${base} (recommended: x${rule.warnLow.toFixed(2)}–${rule.warnHigh.toFixed(2)})`;
 }
-
-function formatSpreadOdHpDelta(odDelta, hpDelta) {
-  if (odDelta === null && hpDelta === null) return "N/A";
-
-  const odText =
-    odDelta === null ? "-" : (odDelta >= 0 ? `+${odDelta}` : `${odDelta}`);
-
-  const hpText =
-    hpDelta === null ? "-" : (hpDelta >= 0 ? `+${hpDelta}` : `${hpDelta}`);
-
-  return `OD:${odText} HP:${hpText}`;
-}

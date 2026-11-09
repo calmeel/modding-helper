@@ -88,7 +88,7 @@
                 cb.checked = true;
               }
             });
-            /* change を発火して ui.js 側の保存(applyTabVisibilitySettings 含む)を実行 */
+            /* changeを発火してapp/ui/setup.jsの保存・表示設定を適用する。 */
             if (dispatchTarget) dispatchTarget.dispatchEvent(new Event('change', { bubbles: true }));
           }
         } catch (e) {}

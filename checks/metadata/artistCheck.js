@@ -288,16 +288,6 @@ function hasValidMarkerSpacing(text, index, length) {
   return true;
 }
 
-function hasValidCvVoSpacing(text, index, length) {
-  const after = text[index + length];
-
-  if (after && /\S/.test(after)) {
-    return false;
-  }
-
-  return true;
-}
-
 function getArtistIssueContext(text, index) {
   const start = Math.max(0, index - 16);
   const end = Math.min(text.length, index + 24);

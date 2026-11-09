@@ -339,34 +339,16 @@ document.addEventListener("DOMContentLoaded", () => {
     renderResult,
     renderShiftResult,
     renderDoubleSvResult,
-    renderBarlineResult,
-    renderUnappliedSvResult,
-    renderKiaiResult,
-    renderKiaiSnapResult,
     renderSvVolumeResult,
     renderVolumeCompareResult,
-    renderRedGreenMatchResult,
-    renderSampleSetResult,
-    renderSliderSettingsResult,
-    renderArtistResult,
-    renderTitleResult,
-    renderSourceResult,
-    renderTagResult,
-    renderPreviewPointResult,
-    renderBgOffsetResult,
-    renderFileCheckResult,
-    renderEpilepsyWarningResult,
     renderSpreadResult,
-    renderOffsetWaveformResult,
-    renderContentPermissionResult,
     renderTimelineResult,
     renderResultAndUpdateTabs,
     renderShiftResultAndUpdateTabs,
     renderDoubleSvResultAndUpdateTabs,
     renderSvVolumeResultAndUpdateTabs,
     renderVolumeCompareResultAndUpdateTabs,
-    renderSpreadResultAndUpdateTabs,
-    renderEarlyNoteResult
+    renderSpreadResultAndUpdateTabs
   } = createResultRenderer({ state, dom, t, getBnCompareUi: () => bnCompareUi });
 
   const fileSession = createFileSessionController({
@@ -418,7 +400,6 @@ document.addEventListener("DOMContentLoaded", () => {
   setupLanguageButtons(
     langEn,
     langJa,
-    () => currentLang,
     (lang) => {
       currentLang = lang;
     },

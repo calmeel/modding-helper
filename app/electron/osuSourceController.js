@@ -92,7 +92,7 @@ function createOsuSourceController({ t, invalidateLoads, handleFile, clearResult
       osuLastLoadedFolder = res.folder;
       // フォルダ監視による再解析では osu! 側のファイルパス自体は変わらないため、
       // osuWatcher はメタデータを自動では読み直さない。現在開いている .osu を
-      // 明示的に再読込し、メタデータカード（分離窓を含む）とTiming情報を更新する。
+      // 明示的に再読込し、メタデータカードとリアルタイム表示のTiming情報を更新する。
       if (typeof window.electronAPI.requestMapInfo === "function") {
         window.electronAPI.requestMapInfo();
       }

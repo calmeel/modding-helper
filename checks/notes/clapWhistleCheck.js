@@ -1,9 +1,6 @@
 const HITSND_WHISTLE = 2;
 const HITSND_CLAP = 8;
 
-const showClap = document.getElementById("showClap");
-const showWhistle = document.getElementById("showWhistle");
-
 function isTargetCircle(objType) {
   return objType === 1 || objType === 5;
 }

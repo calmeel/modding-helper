@@ -115,14 +115,6 @@ function getUnappliedSvCurrentGreenLine(greenLines, redLines, targetTime) {
   return getCurrentSpreadInheritedTimingPoint(greenLines, targetTime, redTime);
 }
 
-function buildUnappliedSvBarlineTimes(text) {
-  const timelines = buildBarlineTimelines(text);
-  return {
-    stable: getUniqueUnappliedSvBarlineTimes(timelines.stable.events),
-    lazer: getUniqueUnappliedSvBarlineTimes(timelines.lazer.events)
-  };
-}
-
 function detectUnappliedSvBarlineIssues(
   events,
   client,

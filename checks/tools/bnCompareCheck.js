@@ -488,15 +488,6 @@ function normalizeBnTimingPoint(point) {
   };
 }
 
-function isSameBnTimingPoint(a, b) {
-  return (
-    a.beatLength === b.beatLength &&
-    a.volume === b.volume &&
-    a.kiai === b.kiai &&
-    a.sampleSet === b.sampleSet
-  );
-}
-
 function compareBnMetadata(beforeText, afterText) {
   const before = parseBnMetadata(beforeText);
   const after = parseBnMetadata(afterText);

@@ -68,7 +68,7 @@ function setupDropArea(dropArea, onFileSelected) {
 }
 
 /** 言語切替処理 */
-function setupLanguageButtons(langEn, langJa, getCurrentLang, setCurrentLang, applyLanguage) {
+function setupLanguageButtons(langEn, langJa, setCurrentLang, applyLanguage) {
   if (langEn) {
     langEn.addEventListener("click", () => {
       setCurrentLang("en");

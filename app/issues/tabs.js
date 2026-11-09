@@ -487,27 +487,6 @@ function getSourceIssueLevel(results) {
   return hasWarn ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
 }
 
-function getMiscIssueLevel(state) {
-  const previewPointLevel = getPreviewPointIssueLevel(state.previewPoint);
-  const bgOffsetLevel = getBgOffsetIssueLevel(state.bgOffset);
-
-  if (
-    previewPointLevel === TAB_LEVEL_ERROR ||
-    bgOffsetLevel === TAB_LEVEL_ERROR
-  ) {
-    return TAB_LEVEL_ERROR;
-  }
-
-  if (
-    previewPointLevel === TAB_LEVEL_WARN ||
-    bgOffsetLevel === TAB_LEVEL_WARN
-  ) {
-    return TAB_LEVEL_WARN;
-  }
-
-  return TAB_LEVEL_NONE;
-}
-
 function getPreviewPointIssueLevel(results) {
   if (!results) return TAB_LEVEL_NONE;
 

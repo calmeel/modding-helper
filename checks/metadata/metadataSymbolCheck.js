@@ -230,25 +230,6 @@ function dedupeMetadataSymbolIssues(issues) {
   return deduped;
 }
 
-function buildSuggestedRomanised(original, romanised, symbol, replacement) {
-  const originalText = String(original ?? "");
-  const romanisedText = String(romanised ?? "");
-
-  if (!symbol || !replacement) {
-    return romanisedText;
-  }
-
-  if (originalText.startsWith(symbol)) {
-    return replacement + romanisedText;
-  }
-
-  if (originalText.endsWith(symbol)) {
-    return romanisedText + replacement;
-  }
-
-  return romanisedText;
-}
-
 /** ダブル半角スペース・全角スペースの検知 */
 function findMetadataSpacingIssues(value, fieldName) {
   const text = String(value ?? "");

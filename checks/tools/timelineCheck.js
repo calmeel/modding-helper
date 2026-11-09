@@ -161,7 +161,6 @@ function buildTimelineMeasures(redLines, minTime, maxTime) {
     const red = redLines[i];
     const nextRed = redLines[i + 1];
 
-    const startLimit = Math.max(red.time, minTime - 1);
     const endLimit = nextRed ? nextRed.time : maxTime + red.beatLength * 4;
 
     const beatLength = red.beatLength;
@@ -367,34 +366,6 @@ function parseTimelineRedLines(text) {
 }
 
 /** 1/6と1/8同時に存在する時用 */
-function gcd(a, b) {
-  a = Math.abs(a);
-  b = Math.abs(b);
-
-  while (b !== 0) {
-    const t = b;
-    b = a % b;
-    a = t;
-  }
-
-  return a;
-}
-
-function lcm(a, b) {
-  if (!a || !b) return Math.max(a, b);
-  return Math.abs(a * b) / gcd(a, b);
-}
-
-function lcmArray(values) {
-  const filtered = values.filter(v => Number.isFinite(v) && v > 0);
-
-  if (!filtered.length) {
-    return TIMELINE_MIN_RESOLUTION;
-  }
-
-  return filtered.reduce((acc, v) => lcm(acc, v), 1);
-}
-
 function sortTimelineDiffs(diffs, diffOrder = []) {
   return sortResultsForDisplay(diffs, diffOrder);
 }

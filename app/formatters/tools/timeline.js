@@ -1,20 +1,6 @@
 /** タイムライン表示 */
 const TIMELINE_WRAP_CELLS = 36;
 
-function chunkTimelineCells(cells, size = TIMELINE_WRAP_CELLS) {
-  const chunks = [];
-
-  for (let i = 0; i < cells.length; i += size) {
-    chunks.push({
-      start: i,
-      end: Math.min(i + size, cells.length),
-      cells: cells.slice(i, i + size)
-    });
-  }
-
-  return chunks;
-}
-
 function formatTimelineResult(result, t) {
   if (!result || !result.measures.length) {
     return t("timelineNoData");

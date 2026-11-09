@@ -112,14 +112,11 @@ function updateSpreadSubtabIssueStates(spreadState) {
     }
   }
 
-  const densityMinDiff = document.getElementById("spreadDensityMinDiff")
-    ? parseInt(document.getElementById("spreadDensityMinDiff").value, 10)
-    : 1;
-
+  // サブタブの警告は、結果表示の絞り込み設定にかかわらず1ノーツ差から判定する。
   const densityAnalysis = analyzeSpreadDensityInversions(
     sortedResults,
     manualCategories,
-    1 /**  ノーツ密度 サブタブも常に 警告表示は +1 で固定（変えたいときはここを densityMinDiff にする）　*/
+    1
   );
 
   if (densityAnalysis.issueGroups.length) {

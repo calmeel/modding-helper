@@ -196,7 +196,7 @@ function createElectronLayout({ appEl, titlebar, dropArea, text: electronText,
   /* exe では「タイムライン」タブを完全に出さない（web ツール側はそのまま）。
      設定のチェックボックスとタブボタンを DOM から取り除き、パネルは隠したままにする。
      パネル自体を消さないのは、チェック処理が結果を書き込む先だから（消すと落ちる）。
-     この時点で ui.js の復元処理は既に走っているので、保存設定で表示 ON に
+     この時点で app/ui/setup.js の復元処理は既に走っているので、保存設定で表示 ON に
      なっていた場合に備えて hidden-tab を明示的に付け直す。 */
   try {
     var tlToggle = document.querySelector('.tab-visibility-toggle[data-target-tab="timeline"]');

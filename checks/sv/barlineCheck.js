@@ -30,10 +30,6 @@ function runBarlineCheck(text, fileName) {
   };
 }
 
-function parseBarlineRedLines(text) {
-  return parseBarlineTimingRedLines(text);
-}
-
 function detectBarlineIssues(
   timelines,
   greenLines,
