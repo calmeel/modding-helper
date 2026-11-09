@@ -40,8 +40,11 @@ initialization scripts. Production and the Electron smoke test use this loader.
 - `metadataCard.js`: creates the metadata card; owns tag marks and map-action buttons.
 - `diffOrderCard.js`: creates the Diff order card and moves its existing controls
   between wide and compact layouts without replacing their event handlers.
-- `previewController.js`: preview playback, seeking, input handling, and live
+- `previewController.js`: preview playback, drawing coordination, and live
   preview option state. It receives playback state and parent-owned display callbacks.
+- `previewInput.js`: note selection and marquee state, canvas clicks/drags/wheel,
+  progress-bar seeking, and preview keyboard shortcuts. Playback, zoom, sound resets,
+  and timestamp copying use controller callbacks; drawing reads its selection getters.
 - `previewLayout.js`: preview panel, toolbar, canvas, and playback-bar DOM;
   event handlers and state stay in the controller.
 - `previewHitSounds.js`: lookahead scheduling of note sounds on the shared audio
@@ -50,7 +53,7 @@ initialization scripts. Production and the Electron smoke test use this loader.
 - `previewAudio.js`: music decoding, playback, and pitch-preserving speed changes.
   Its audio-like API uses the shared AudioContext clock for playback position.
 - `previewHitTesting.js`: point and rectangle queries against rendered note geometry;
-  selection state remains in the preview controller.
+  selection state belongs to the input controller.
 - `previewDiffData.js`: prepares parsed notes, timing, markers, and the preview time
   range. Cache invalidation and difficulty ordering remain in the controller.
 - `previewSettings.js`: settings-card DOM and input handlers. It receives only

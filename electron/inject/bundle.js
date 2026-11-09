@@ -6,7 +6,7 @@ const CSS_FILES = ['base.css', 'titlebar.css', 'layout.css', 'metadata.css',
   'checklist.css', 'preview.css', 'titlebarOverrides.css', 'ui.css'];
 const JS_FILES = ['metadataCard.js', 'diffOrderCard.js', 'previewSettings.js',
   'previewAudio.js', 'previewHitTesting.js', 'previewDiffData.js',
-  'previewLayout.js', 'previewHitSounds.js', 'previewController.js',
+  'previewLayout.js', 'previewHitSounds.js', 'previewInput.js', 'previewController.js',
   'spectrogramController.js', 'notepadController.js',
   'playheadController.js', 'navigation.js', 'titlebar.js', 'ui.js'];
 let css;
