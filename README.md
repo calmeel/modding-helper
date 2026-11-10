@@ -23,7 +23,7 @@
 
 ## Usage
 
-You can use [Modding Helper in your browser](https://calmeel.github.io/modding-helper/) without installing anything.
+You can use [Modding Helper in your browser](https://calmeel.github.io/modding-helper/) without installing anything.<br>
 To use the Windows desktop app, download it from the [latest release](https://github.com/calmeel/modding-helper/releases/latest).
 
 After opening the app, load a `.osu` or `.osz` file and select the checks you want to run.
@@ -34,7 +34,8 @@ Detailed instructions are available in the [English documentation](https://calme
 
 ## Development
 
-Use Node.js 24.22.2 or newer (see `.node-version`). The desktop app uses its own Node.js runtime bundled with Electron.
+Use Node.js 24.22.2 or newer (see `.node-version`).<br>
+The desktop app uses its own Node.js runtime bundled with Electron.
 
 ```sh
 npm ci
