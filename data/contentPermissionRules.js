@@ -409,7 +409,8 @@ const CONTENT_PERMISSION_RULES = [
 
   links: [
     {
-      label: "DMCA notice",
+      label: "DMCA notice (2013)",
+      labelJa: "DMCA 通知（2013年）",
       url: "https://gist.githubusercontent.com/peppy/65634825af9a9f237407/raw"
     }
   ]
@@ -467,7 +468,8 @@ const CONTENT_PERMISSION_RULES = [
 
   links: [
     {
-      label: "DMCA notice",
+      label: "DMCA notice (2014)",
+      labelJa: "DMCA 通知（2014年）",
       url: "https://gist.githubusercontent.com/peppy/15bd77feb938322e05e6ef18a99b1572/raw"
     }
   ]
@@ -493,7 +495,8 @@ const CONTENT_PERMISSION_RULES = [
 
   links: [
     {
-      label: "DMCA notice",
+      label: "DMCA notice (2022)",
+      labelJa: "DMCA 通知（2022年）",
       url: "https://gist.githubusercontent.com/peppy/418364abd1b74b95150b87b7c831001a/raw/dmca_20221208.txt"
     }
   ]
@@ -518,7 +521,8 @@ const CONTENT_PERMISSION_RULES = [
 
   links: [
     {
-      label: "DMCA notice",
+      label: "DMCA notice (2022)",
+      labelJa: "DMCA 通知（2022年）",
       url: "https://gist.githubusercontent.com/peppy/6b91dea9835cd49ddee13794f6deeb5a/raw/dmca_20221005.txt"
     }
   ]
@@ -772,7 +776,8 @@ const CONTENT_PERMISSION_RULES = [
 
   links: [
     {
-      label: "DMCA notice",
+      label: "DMCA notice (2022)",
+      labelJa: "DMCA 通知（2022年）",
       url: "https://gist.githubusercontent.com/peppy/78f4764e7aa299a700767d51f0d064c3/raw/dmca_20220921.txt"
     }
   ]

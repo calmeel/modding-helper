@@ -123,7 +123,7 @@ function formatMultipleContentPermissionResults(results, t) {
           );
           lines.push(
             `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">` +
-            `${escapeHtml(link.label)}` +
+            `${escapeHtml(lang === "en" ? link.label : (link.labelJa ?? link.label))}` +
             `</a>`
           );
         }
