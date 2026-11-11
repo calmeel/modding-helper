@@ -1453,4 +1453,90 @@ const CONTENT_PERMISSION_RULES = [
       }
     ]
   },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "source",
+      "tags"
+    ],
+    "keywords": [
+      "1/2 summer"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice",
+        "labelJa": "DMCA通知",
+        "url": "https://gist.githubusercontent.com/peppy/a06d56c0ce15929fb2f8/raw"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "木漏れ日フレネル"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice",
+        "labelJa": "DMCA通知",
+        "url": "https://gist.githubusercontent.com/peppy/a06d56c0ce15929fb2f8/raw"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "source",
+      "tags"
+    ],
+    "keywords": [
+      "リアル妹がいる大泉くんのばあい",
+      "死神の接吻は別離の味"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice",
+        "labelJa": "DMCA通知",
+        "url": "https://gist.githubusercontent.com/peppy/88aa53abb51d2718244f/raw"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "your little sister",
+      "Distant Promise"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice",
+        "labelJa": "DMCA通知",
+        "url": "https://gist.githubusercontent.com/peppy/88aa53abb51d2718244f/raw"
+      }
+    ]
+  },
 ];
