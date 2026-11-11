@@ -7,6 +7,150 @@ const CONTENT_PERMISSION_RULES = [
       "tags"
     ],
     "keywords": [
+      "乙女とふれあう、ひとつ屋根の下"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2023)",
+        "labelJa": "DMCA通知（2023年）",
+        "url": "https://gist.githubusercontent.com/peppy/75eafd6c36dc1805381ca295f11208d9/raw/dmca_2023-03-03.txt"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "Can't stop love"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2023)",
+        "labelJa": "DMCA通知（2023年）",
+        "url": "https://gist.githubusercontent.com/peppy/75eafd6c36dc1805381ca295f11208d9/raw/dmca_2023-03-03.txt"
+      }
+    ]
+  },
+  {
+    category: "personalBan",
+    level: "warn",
+    fields: ["source", "tags"],
+    keywords: ["ウィルプラス", "WillPlus"],
+    title: "Music redistribution restriction",
+    messageJa:
+      "ガイドラインにより楽曲の転載・配布は全面的に禁止されています。",
+    messageEn:
+      "Reposting and distribution of music are entirely prohibited by the guidelines.",
+    links: [{
+      label: "Guidelines",
+      labelJa: "ガイドライン",
+      url: "https://www.will-japan.co.jp/guidelines/"
+    }]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "source",
+      "tags"
+    ],
+    "keywords": [
+      "響け！ユーフォニアム３",
+      "響け！ユーフォニアム3"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2024)",
+        "labelJa": "DMCA通知（2024年）",
+        "url": "https://gist.githubusercontent.com/peppy/4bbf655b3badfba15392c272bb472af4/raw/dmca_20240622.txt"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "ReCoda"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2024)",
+        "labelJa": "DMCA通知（2024年）",
+        "url": "https://gist.githubusercontent.com/peppy/8b003a4537f5bd20d515eb1d02205a84/raw/dmca_20240822.txt"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "source",
+      "tags"
+    ],
+    "keywords": [
+      "君のことが大大大大大好きな100人の彼女"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2024)",
+        "labelJa": "DMCA通知（2024年）",
+        "url": "https://gist.githubusercontent.com/peppy/f6f1f818fe455f0ce948fe13aac0014b/raw/dmca_20240717.txt"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "大大大大大好きな君へ♡",
+      "Dai Dai Dai Dai Daisuki na Kimi e <3"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2024)",
+        "labelJa": "DMCA通知（2024年）",
+        "url": "https://gist.githubusercontent.com/peppy/f6f1f818fe455f0ce948fe13aac0014b/raw/dmca_20240717.txt"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "source",
+      "tags"
+    ],
+    "keywords": [
       "ましろ色シンフォニー",
       "ましろ色シンフォニー SANA EDITION"
     ],
