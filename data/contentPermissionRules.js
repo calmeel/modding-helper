@@ -853,7 +853,6 @@ const CONTENT_PERMISSION_RULES = [
     "love gotcha!",
     "ブルーカーペット",
     "きみがいちばんばんばんざ～い!",
-    "オープニングセレモニー",
     "cinderella street",
     "girls’ carnival",
     "ハレノヒステップ"
@@ -1532,6 +1531,97 @@ const CONTENT_PERMISSION_RULES = [
         "label": "DMCA notice",
         "labelJa": "DMCA通知",
         "url": "https://gist.githubusercontent.com/peppy/88aa53abb51d2718244f/raw"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "source",
+      "tags"
+    ],
+    "keywords": [
+      "オレンジポケット",
+      "OrangePocket",
+      "LikeLife",
+      "_summer",
+      "HoneyComing",
+      "FairlyLife",
+      "さくらビットマップ",
+      "SuGirly Wish",
+      "ストロベリーノーツ",
+      "Strawberry Nauts",
+      "LOVELY QUEST",
+      "PriministAr",
+      "MeltyMoment",
+      "トラベリングスターズ",
+      "Amenity's Life",
+      "よりこりまくり。",
+      "思い出抱えてアイにコイ!!",
+      "ゆびさきコネクション",
+      "放課後シンデレラ",
+      "ハジラブ -Making*Lovers-",
+      "HaremKingdom-ハーレムキングダム-",
+      "Sugar*Style",
+      "ピュア×コネクト",
+      "同棲ラブラブル",
+      "ラブラブル～lover able～",
+      "めいくるッ！",
+      "恋愛０キロメートル",
+      "スキとスキとでサンカク恋愛",
+      "恋愛、借りちゃいました",
+      "フタマタ恋愛",
+      "かりぐらし恋愛",
+      "恋愛×ロワイアル",
+      "アッチむいて恋",
+      "IxSHE Tell"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2023)",
+        "labelJa": "DMCA通知（2023年）",
+        "url": "https://gist.githubusercontent.com/peppy/e34cbd3f9a30cc41b327d4f2555cd29e/raw/dmca_20230306.txt"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "マル秘☆恋愛法則",
+      "ふわり恋模様",
+      "KIRA＊LIRA",
+      "Girls Life",
+      "_summer",
+      "FairlyLife",
+      "恋をしよーよ",
+      "恋のレシピ",
+      "a little more",
+      "Pure Love, True Love",
+      "虹色の季節へ",
+      "small star",
+      "MeltyMoment",
+      "Photograph",
+      "君と世界と物語",
+      "Ever After School",
+      "オープニングセレモニー"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2023)",
+        "labelJa": "DMCA通知（2023年）",
+        "url": "https://gist.githubusercontent.com/peppy/e34cbd3f9a30cc41b327d4f2555cd29e/raw/dmca_20230306.txt"
       }
     ]
   },
