@@ -760,19 +760,15 @@ const CONTENT_PERMISSION_RULES = [
     "alcot"
   ],
 
-  title: "Past DMCA / music usage restriction",
+  title: "Music usage restriction",
 
   messageJa:
-    "過去にDMCA申立てがあり、ガイドラインにより楽曲の使用は原則禁止されています。使用・アップロード前に権利状況を確認してください。",
+    "ガイドラインにより楽曲の使用は原則禁止されています。使用・アップロード前に権利状況を確認してください。",
 
   messageEn:
-    "This content has been subject to a past DMCA notice, and music usage is generally prohibited by the guidelines. Please verify the rights status before use or upload.",
+    "Music usage is generally prohibited by the guidelines. Please verify the rights status before use or upload.",
 
   links: [
-    {
-      label: "DMCA notice",
-      url: "https://gist.githubusercontent.com/peppy/88aa53abb51d2718244f/raw"
-    },
     {
       label: "Guidelines",
       url: "https://www.alcot.biz/information.html"
