@@ -1294,4 +1294,93 @@ const CONTENT_PERMISSION_RULES = [
       }
     ]
   },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "source",
+      "tags"
+    ],
+    "keywords": [
+      "サクラノ詩",
+      "サクラノ刻"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2023)",
+        "labelJa": "DMCA通知（2023年）",
+        "url": "https://gist.githubusercontent.com/peppy/c67355b9d2e170e98f4681b8112531a4/raw/dmca_20230301-2.txt"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "櫻ノ詩",
+      "刻ト詩"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2023)",
+        "labelJa": "DMCA通知（2023年）",
+        "url": "https://gist.githubusercontent.com/peppy/c67355b9d2e170e98f4681b8112531a4/raw/dmca_20230301-2.txt"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "source",
+      "tags"
+    ],
+    "keywords": [
+      "素晴らしき日々"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2023)",
+        "labelJa": "DMCA通知（2023年）",
+        "url": "https://gist.githubusercontent.com/peppy/bdf2cf1647765cf692664871d73d451b/raw/dmca_2023-03-03.txt"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "夜の向日葵",
+      "空気力学少女と少年の詩",
+      "終末の微笑",
+      "音に出来る事"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2023)",
+        "labelJa": "DMCA通知（2023年）",
+        "url": "https://gist.githubusercontent.com/peppy/bdf2cf1647765cf692664871d73d451b/raw/dmca_2023-03-03.txt"
+      }
+    ]
+  },
 ];
