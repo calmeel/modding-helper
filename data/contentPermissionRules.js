@@ -813,19 +813,15 @@ const CONTENT_PERMISSION_RULES = [
     "hooksoft"
   ],
 
-  title: "Past DMCA / derivative work restriction",
+  title: "Derivative work restriction",
 
   messageJa:
-    "過去にDMCA申立てがあり、ガイドラインにより利用が制限されています。使用・アップロード前に権利状況を確認してください。",
+    "ガイドラインにより利用が制限されています。使用・アップロード前に権利状況を確認してください。",
 
   messageEn:
-    "This content has been subject to a past DMCA notice and usage is restricted by the guidelines. Please verify the rights status before use or upload.",
+    "Usage is restricted by the guidelines. Please verify the rights status before use or upload.",
 
   links: [
-    {
-      label: "DMCA notice",
-      url: "https://gist.githubusercontent.com/peppy/e34cbd3f9a30cc41b327d4f2555cd29e/raw/dmca_20230306.txt"
-    },
     {
       label: "Guidelines",
       url: "https://www.hook-net.jp/htm/about.htm"
@@ -858,19 +854,15 @@ const CONTENT_PERMISSION_RULES = [
     "ハレノヒステップ"
   ],
 
-  title: "Past DMCA / derivative work restriction",
+  title: "Derivative work restriction",
 
   messageJa:
-    "過去にDMCA申立てがあり、ガイドラインにより利用が制限されています。使用・アップロード前に権利状況を確認してください。",
+    "ガイドラインにより利用が制限されています。使用・アップロード前に権利状況を確認してください。",
 
   messageEn:
-    "This content has been subject to a past DMCA notice and usage is restricted by the guidelines. Please verify the rights status before use or upload.",
+    "Usage is restricted by the guidelines. Please verify the rights status before use or upload.",
 
   links: [
-    {
-      label: "DMCA notice",
-      url: "https://gist.githubusercontent.com/peppy/e34cbd3f9a30cc41b327d4f2555cd29e/raw/dmca_20230306.txt"
-    },
     {
       label: "Guidelines",
       url: "https://www.hook-net.jp/htm/about.htm"
