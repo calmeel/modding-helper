@@ -1,5 +1,59 @@
 const CONTENT_PERMISSION_RULES = [
   {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "source",
+      "tags"
+    ],
+    "keywords": [
+      "ましろ色シンフォニー",
+      "ましろ色シンフォニー SANA EDITION"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2024)",
+        "labelJa": "DMCA通知（2024年）",
+        "url": "https://gist.githubusercontent.com/peppy/8b003a4537f5bd20d515eb1d02205a84/raw/dmca_20240822.txt"
+      },
+      {
+        "label": "DMCA notice (2026)",
+        "labelJa": "DMCA通知（2026年）",
+        "url": "https://gist.githubusercontent.com/peppy/99eaa61fb80115b0b18d92db9d2d2d17/raw/gistfile1.txt"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "雪は何色",
+      "Yuki wa Naniiro"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2024)",
+        "labelJa": "DMCA通知（2024年）",
+        "url": "https://gist.githubusercontent.com/peppy/8b003a4537f5bd20d515eb1d02205a84/raw/dmca_20240822.txt"
+      },
+      {
+        "label": "DMCA notice (2026)",
+        "labelJa": "DMCA通知（2026年）",
+        "url": "https://gist.githubusercontent.com/peppy/99eaa61fb80115b0b18d92db9d2d2d17/raw/gistfile1.txt"
+      }
+    ]
+  },
+  {
     category: "personalBan",
     level: "warn",
     fields: ["source", "tags"],
