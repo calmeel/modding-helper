@@ -1011,6 +1011,7 @@ const CONTENT_PERMISSION_RULES = [
   keywords: [
     "株式会社葉月",
     "オーガスト",
+    "AUGUST",
     "あいりすミスティリア！",
     "千の刃濤、桃花染の皇姫",
     "大図書館の羊飼い",
@@ -1022,31 +1023,15 @@ const CONTENT_PERMISSION_RULES = [
     "バイナリィ・ポット"
   ],
 
-  title: "Past DMCA / music usage restriction",
+  title: "Music usage restriction",
 
   messageJa:
-    "過去にDMCA申立てがあり、ガイドラインにより楽曲の使用は原則禁止されています。使用・アップロード前に権利状況を確認してください。",
+    "ガイドラインにより楽曲の使用は原則禁止されています。使用・アップロード前に権利状況を確認してください。",
 
   messageEn:
-    "This content has been subject to past DMCA notices, and music usage is generally prohibited by the guidelines. Please verify the rights status before use or upload.",
+    "Music usage is generally prohibited by the guidelines. Please verify the rights status before use or upload.",
 
   links: [
-    {
-      label: "DMCA notice 1",
-      url: "https://gist.githubusercontent.com/peppy/e0e8a7a9c92abaa21615eb5ca63746e6/raw/917d7f4c6a92390fb2feb86c894df366c1aadf56/DMCA_Hazuki_Asphodelus.txt"
-    },
-    {
-      label: "DMCA notice 2",
-      url: "https://gist.githubusercontent.com/peppy/3005a6911c6c49b48f059b577e430046/raw"
-    },
-    {
-      label: "DMCA notice 3",
-      url: "https://gist.githubusercontent.com/peppy/94239ad1225812e0e40e4d51ec564bd1/raw"
-    },
-    {
-      label: "DMCA notice 4",
-      url: "https://gist.githubusercontent.com/peppy/4f44ac2336f4ee18ffb967055ce490c4/raw"
-    },
     {
       label: "Guidelines",
       url: "https://august-soft.com/about/fanfic_guideline"
@@ -1194,5 +1179,74 @@ const CONTENT_PERMISSION_RULES = [
         "url": "https://gist.githubusercontent.com/peppy/86c30346d749ae39c2ab6bcb4e906442/raw/dmca-20240419.txt"
       }
     ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "Asphodelus"
+    ],
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。但し、Short Ver. の利用は黙認されています。",
+    "messageEn": "This content has been subject to past DMCA notices. However, use of the Short Ver. is tacitly permitted.",
+    "links": [
+      {
+        "label": "DMCA notice (2013)",
+        "labelJa": "DMCA通知（2013年）",
+        "url": "https://gist.githubusercontent.com/peppy/e0e8a7a9c92abaa21615eb5ca63746e6/raw/917d7f4c6a92390fb2feb86c894df366c1aadf56/DMCA_Hazuki_Asphodelus.txt"
+      },
+      {
+        "label": "DMCA notice (2015)",
+        "labelJa": "DMCA通知（2015年）",
+        "url": "https://gist.githubusercontent.com/peppy/94239ad1225812e0e40e4d51ec564bd1/raw"
+      }
+    ],
+    "title": "Past DMCA notice"
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "Stigmata"
+    ],
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2016)",
+        "labelJa": "DMCA通知（2016年）",
+        "url": "https://gist.githubusercontent.com/peppy/4f44ac2336f4ee18ffb967055ce490c4/raw"
+      }
+    ],
+    "title": "Past DMCA notice"
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "親愛なる世界へ",
+      "扉ひらいて、ふたり未来へ"
+    ],
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2016)",
+        "labelJa": "DMCA通知（2016年）",
+        "url": "https://gist.githubusercontent.com/peppy/3005a6911c6c49b48f059b577e430046/raw"
+      }
+    ],
+    "title": "Past DMCA notice"
   },
 ];
