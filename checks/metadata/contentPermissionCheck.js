@@ -1,20 +1,5 @@
 const CONTENT_PERMISSION_RULES = [
   {
-    category: "personalBan",
-    level: "warn",
-    fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
-    keywords: ["ゆこぴ", "yukopi"],
-    title: "Custom map redistribution restriction",
-    messageJa:
-      "このアーティストは楽曲の再配布を伴うカスタムマップの作製を制限しています。使用前に確認してください。",
-    messageEn:
-      "This artist restricts the creation of custom maps that involve redistribution of their music. Please check before use.",
-    links: [{
-      label: "osu! discussion",
-      url: "https://osu.ppy.sh/beatmapsets/1979883/discussion/-/generalAll#/3752514"
-    }]
-  },
-  {
     category: "disallowedArtist",
     level: "error",
 
@@ -198,6 +183,36 @@ const CONTENT_PERMISSION_RULES = [
 
     link:
       "https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"
+  },
+    {
+    category: "personalBan",
+    level: "warn",
+    fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
+    keywords: ["ゆこぴ", "yukopi"],
+    title: "Custom map redistribution restriction",
+    messageJa:
+      "このアーティストは楽曲の再配布を伴うカスタムマップの作製を制限しています。使用前に確認してください。",
+    messageEn:
+      "This artist restricts the creation of custom maps that involve redistribution of their music. Please check before use.",
+    links: [{
+      label: "osu! discussion",
+      url: "https://osu.ppy.sh/beatmapsets/1979883/discussion/-/generalAll#/3752514"
+    }]
+  },
+  {
+    category: "personalBan",
+    level: "warn",
+    fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
+    keywords: ["Avans"],
+    title: "Music usage not agreed",
+    messageJa:
+      "このアーティストは楽曲の利用に同意していません。使用前に確認してください。",
+    messageEn:
+      "This artist has not agreed to the use of their music. Please check before use.",
+    links: [{
+      label: "osu! discussion",
+      url: "https://osu.ppy.sh/beatmapsets/2297629/discussion/-/generalAll#/5628154"
+    }]
   },
 {
   category: "personalBan",

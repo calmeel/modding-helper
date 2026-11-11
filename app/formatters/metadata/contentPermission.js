@@ -117,8 +117,12 @@ function formatMultipleContentPermissionResults(results, t) {
         lines.push("");
 
         for (const link of links) {
+          const url = link.url.replace(
+            /^https:\/\/osu\.ppy\.sh\/wiki\/(?:en|ja)\/Rules\/Content_usage_permissions(?=[#?]|$)/,
+            `https://osu.ppy.sh/wiki/${lang === "en" ? "en" : "ja"}/Rules/Content_usage_permissions`
+          );
           lines.push(
-            `<a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer">` +
+            `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">` +
             `${escapeHtml(link.label)}` +
             `</a>`
           );
