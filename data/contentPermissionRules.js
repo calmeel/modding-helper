@@ -1427,4 +1427,30 @@ const CONTENT_PERMISSION_RULES = [
       }
     ]
   },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "Entrance",
+      "iL",
+      "Wings of Piano"
+    ],
+    "keywordMatchModes": {
+      "iL": "word"
+    },
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2022)",
+        "labelJa": "DMCA通知（2022年）",
+        "url": "https://gist.githubusercontent.com/peppy/55e7ee271342766a80f3596d8e5c83fa/raw/dmca_20220328.txt"
+      }
+    ]
+  },
 ];

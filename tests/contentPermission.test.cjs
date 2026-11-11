@@ -40,6 +40,24 @@ test("selected artist keywords require boundaries in every configured field", ()
   }
 });
 
+test("Rayark iL requires word boundaries only in title fields", () => {
+  for (const field of ["Title", "TitleUnicode"]) {
+    for (const value of ["iL", "IL", "(il)", "iL (Remix)", "iL_remix"]) {
+      assert.equal(detects(field, value, "iL"), true, `${field}: ${value}`);
+    }
+    for (const value of ["Silentroom", "Lilac for Anabel", "xiL", "iLx", "2iL", "iL2"]) {
+      assert.equal(detects(field, value, "iL"), false, `${field}: ${value}`);
+    }
+    assert.equal(detects(field, "xEntrance2", "Entrance"), true);
+    assert.equal(detects(field, "xWings of Piano2", "Wings of Piano"), true);
+  }
+  for (const field of ["Artist", "ArtistUnicode", "Source", "Tags"]) {
+    for (const keyword of ["Entrance", "iL", "Wings of Piano"]) {
+      assert.equal(detects(field, keyword, keyword), false, `${field}: ${keyword}`);
+    }
+  }
+});
+
 test("NOMA and Avans do not match inside unrelated names or words", () => {
   assert.equal(detects("Artist", "Tsunomaki Watame", "NOMA"), false);
   assert.equal(detects("Title", "caravans", "Avans"), false);
