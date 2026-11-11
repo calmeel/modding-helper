@@ -1,5 +1,33 @@
 const CONTENT_PERMISSION_RULES = [
   {
+    category: "personalBan",
+    level: "warn",
+    fields: ["source", "tags"],
+    keywords: [
+      "クリアレーヴ",
+      "Clearave",
+      "ぱれっと",
+      "キャラメリア",
+      "スミレ",
+      "ぱれっとクオリア",
+      "SWEET&TEA",
+      "バグシステム",
+      "Lamia",
+      "娘娘",
+      "Recette",
+      "Lovelet"
+    ],
+    title: "Music usage restriction",
+    messageJa:
+      "ガイドラインにより楽曲の使用は原則禁止されています。",
+    messageEn:
+      "Music usage is generally prohibited by the guidelines.",
+    links: [{
+      label: "Guidelines",
+      url: "https://www.clearrave.co.jp/contact/"
+    }]
+  },
+  {
     category: "disallowedArtist",
     level: "error",
 
