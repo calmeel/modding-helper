@@ -1380,4 +1380,51 @@ const CONTENT_PERMISSION_RULES = [
       }
     ]
   },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "source",
+      "tags"
+    ],
+    "keywords": [
+      "アイドルマスター シンデレラガールズ",
+      "THE IDOLM@STER"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice",
+        "labelJa": "DMCA通知",
+        "url": "https://gist.githubusercontent.com/peppy/b077bcef445c2312b7973c52f67b0ed0/raw"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "Star!!",
+      "M@GIC☆",
+      "お願い！シンデレラ",
+      "Shine!!",
+      "GO MY WAY!!"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice",
+        "labelJa": "DMCA通知",
+        "url": "https://gist.githubusercontent.com/peppy/b077bcef445c2312b7973c52f67b0ed0/raw"
+      }
+    ]
+  },
 ];
