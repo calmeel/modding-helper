@@ -792,19 +792,15 @@ const CONTENT_PERMISSION_RULES = [
     "voez"
   ],
 
-  title: "Past DMCA / derivative work restriction",
+  title: "Derivative work restriction",
 
   messageJa:
-    "過去にDMCA申立てがあり、ガイドラインによりアップロードが制限されています。Featured Artist かどうか確認してください。",
+    "ガイドラインによりアップロードが制限されています。Featured Artist かどうか確認してください。",
 
   messageEn:
-    "This content has been subject to a past DMCA notice and upload is restricted by the guidelines. Please verify whether it is a Featured Artist track.",
+    "Upload is restricted by the guidelines. Please verify whether it is a Featured Artist track.",
 
   links: [
-    {
-      label: "DMCA notice",
-      url: "https://gist.githubusercontent.com/peppy/55e7ee271342766a80f3596d8e5c83fa/raw/dmca_20220328.txt"
-    },
     {
       label: "Guidelines (EN)",
       url: "https://www.terms.rayark.com/terms-en"
@@ -1084,4 +1080,28 @@ const CONTENT_PERMISSION_RULES = [
     }
   ]
 },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "Re:incRnaTiØN ～夕焼ケ世界ノ決別ヲ～",
+      "SECRET;WEAPON",
+      "saihate",
+      "Lilac for Anabel"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2022)",
+        "labelJa": "DMCA通知（2022年）",
+        "url": "https://gist.githubusercontent.com/peppy/1e3d2e896ef4f8c6386aa7ae1ef6b5c8/raw/dmca_20220517.txt"
+      }
+    ]
+  },
 ];
