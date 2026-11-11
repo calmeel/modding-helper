@@ -5,9 +5,14 @@ const vm = require("node:vm");
 const { test } = require("node:test");
 
 const context = vm.createContext({});
-for (const file of ["tagCheck.js", "contentPermissionCheck.js"]) {
+for (const file of [
+  "data/tagRules.js",
+  "checks/metadata/tagCheck.js",
+  "data/contentPermissionRules.js",
+  "checks/metadata/contentPermissionCheck.js"
+]) {
   vm.runInContext(fs.readFileSync(
-    path.join(__dirname, "..", "checks", "metadata", file), "utf8"
+    path.join(__dirname, "..", file), "utf8"
   ), context);
 }
 

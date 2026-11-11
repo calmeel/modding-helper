@@ -6,9 +6,11 @@ const { test } = require("node:test");
 
 function suggestions(metadata, tags = "") {
   const context = vm.createContext({});
-  vm.runInContext(fs.readFileSync(
-    path.join(__dirname, "..", "checks/metadata/tagCheck.js"), "utf8"
-  ), context);
+  for (const file of ["data/tagRules.js", "checks/metadata/tagCheck.js"]) {
+    vm.runInContext(fs.readFileSync(
+      path.join(__dirname, "..", file), "utf8"
+    ), context);
+  }
   context.text = "[Metadata]\n" + Object.entries(metadata)
     .map(([field, value]) => `${field}:${value}`).join("\n") + `\nTags:${tags}\n`;
   return JSON.parse(vm.runInContext(
