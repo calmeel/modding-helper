@@ -957,7 +957,8 @@ const CONTENT_PERMISSION_RULES = [
   fields: ["artist", "artistUnicode", "tags"],
 
   keywords: [
-    "まずらぼ"
+    "まずらぼ",
+    "muzzle-lab"
   ],
 
   title: "Past DMCA notice",
@@ -1248,5 +1249,49 @@ const CONTENT_PERMISSION_RULES = [
       }
     ],
     "title": "Past DMCA notice"
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "SELFISH",
+      "Just a fool loves you"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2022)",
+        "labelJa": "DMCA 通知（2022年）",
+        "url": "https://gist.githubusercontent.com/peppy/78f4764e7aa299a700767d51f0d064c3/raw/dmca_20220921.txt"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "Chase You Down",
+      "Tear Me Up"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice",
+        "labelJa": "DMCA通知",
+        "url": "https://gist.githubusercontent.com/peppy/495e1f664f94d7f204fdd94d1cd8cb55/raw"
+      }
+    ]
   },
 ];
