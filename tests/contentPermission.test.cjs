@@ -112,7 +112,7 @@ test("KeroQ DMCA titles no longer duplicate guideline warnings", () => {
       assert.equal(results[0].links[0].labelJa, "DMCA通知（2023年）");
     }
   }
-  for (const [field, value] of [["Source", "ケロQ"], ["Tags", "枕"], ["Title", "ナグルファルの船上にて"], ["TitleUnicode", "機械人形"]]) {
+  for (const [field, value] of [["Source", "ケロQ"], ["Tags", "枕"]]) {
     const item = context.runContentPermissionCheck(
       `[Metadata]\n${field}:${value}\n`, "test.osu"
     ).results.find(result => result.links.some(link => link.url === guideline));
@@ -120,6 +120,52 @@ test("KeroQ DMCA titles no longer duplicate guideline warnings", () => {
     assert.equal(item.links.length, 1);
     assert.ok(!item.messageJa.includes("DMCA"));
     assert.ok(!item.messageEn.includes("DMCA"));
+  }
+});
+
+test("disabled guideline titles and AUGUST works no longer trigger their guideline rules", () => {
+  const groups = [
+    {
+      url: "https://www.hook-net.jp/htm/about.htm",
+      fields: ["Title", "TitleUnicode"],
+      values: ["Love Loading!!!", "サニスコープ", "Girls’ Carnival", "ハレノヒステップ"]
+    },
+    {
+      url: "https://www.keromakura.net/support/support/guideline.html",
+      fields: ["Title", "TitleUnicode"],
+      values: ["ナグルファルの船上にて", "登れない坂道", "片翼のイカロス", "カザハネ", "スイッチ・オン♪", "機械人形"]
+    },
+    {
+      url: "https://august-soft.com/about/fanfic_guideline",
+      fields: ["Source", "Tags"],
+      values: ["あいりすミスティリア！", "千の刃濤、桃花染の皇姫", "大図書館の羊飼い", "穢翼のユースティア", "FORTUNE ARTERIAL", "夜明け前より瑠璃色な", "月は東に日は西に", "Princess Holiday", "バイナリィ・ポット"]
+    }
+  ];
+  for (const { url, fields, values } of groups) {
+    for (const field of fields) {
+      for (const value of values) {
+        const results = context.runContentPermissionCheck(
+          `[Metadata]\n${field}:${value}\n`, "test.osu"
+        ).results;
+        assert.ok(!results.some(item => item.links.some(link => link.url === url)), `${field}: ${value}`);
+      }
+    }
+  }
+  for (const [value, url] of [
+    ["HOOKSOFT", groups[0].url], ["ケロQ", groups[1].url],
+    ["株式会社葉月", groups[2].url], ["オーガスト", groups[2].url], ["AUGUST", groups[2].url]
+  ]) {
+    for (const field of ["Source", "Tags"]) {
+      const results = context.runContentPermissionCheck(
+        `[Metadata]\n${field}:${value}\n`, "test.osu"
+      ).results;
+      assert.ok(results.some(item => item.links.some(link => link.url === url)), `${field}: ${value}`);
+    }
+  }
+  for (const title of ["オープニングセレモニー", "Asphodelus", "櫻ノ詩"]) {
+    assert.ok(context.runContentPermissionCheck(
+      `[Metadata]\nTitle:${title}\n`, "test.osu"
+    ).results.some(item => item.category === "pastDmca"), title);
   }
 });
 

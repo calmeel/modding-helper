@@ -828,47 +828,48 @@ const CONTENT_PERMISSION_RULES = [
     }
   ]
 },
-{
-  category: "personalBan",
-  level: "warn",
-
-  fields: ["title", "titleUnicode"],
-
-  keywords: [
-    "love loading!!!",
-    "サニスコープ",
-    "カナリーブロッサム",
-    "one two trap!!",
-    "春は詩と共に",
-    "僕らのwatercolor",
-    "ultimate breaKING",
-    "day before memory",
-    "ヒミツプラネット",
-    "それが恋になった日",
-    "ミリオンタイムズ",
-    "love gotcha!",
-    "ブルーカーペット",
-    "きみがいちばんばんばんざ～い!",
-    "cinderella street",
-    "girls’ carnival",
-    "ハレノヒステップ"
-  ],
-
-  title: "Derivative work restriction",
-
-  messageJa:
-    "ガイドラインにより利用が制限されています。使用・アップロード前に権利状況を確認してください。",
-
-  messageEn:
-    "Usage is restricted by the guidelines. Please verify the rights status before use or upload.",
-
-  links: [
-    {
-      label: "Guidelines",
-      url: "https://www.hook-net.jp/htm/about.htm"
-    }
-  ]
-},
+// HOOKSOFT：タイトルによるガイドライン検出を無効化。復活用にルールと曲名を保存。
+// {
+//   category: "personalBan",
+//   level: "warn",
+//
+//   fields: ["title", "titleUnicode"],
+//
+//   keywords: [
+//     "love loading!!!",
+//     "サニスコープ",
+//     "カナリーブロッサム",
+//     "one two trap!!",
+//     "春は詩と共に",
+//     "僕らのwatercolor",
+//     "ultimate breaKING",
+//     "day before memory",
+//     "ヒミツプラネット",
+//     "それが恋になった日",
+//     "ミリオンタイムズ",
+//     "love gotcha!",
+//     "ブルーカーペット",
+//     "きみがいちばんばんばんざ～い!",
+//     "cinderella street",
+//     "girls’ carnival",
+//     "ハレノヒステップ"
+//   ],
+//
+//   title: "Derivative work restriction",
+//
+//   messageJa:
+//     "ガイドラインにより利用が制限されています。使用・アップロード前に権利状況を確認してください。",
+//
+//   messageEn:
+//     "Usage is restricted by the guidelines. Please verify the rights status before use or upload.",
+//
+//   links: [
+//     {
+//       label: "Guidelines",
+//       url: "https://www.hook-net.jp/htm/about.htm"
+//     }
+//   ]
+// },
 {
   category: "personalBan",
   level: "warn",
@@ -904,36 +905,37 @@ const CONTENT_PERMISSION_RULES = [
     }
   ]
 },
-{
-  category: "personalBan",
-  level: "warn",
-
-  fields: ["title", "titleUnicode"],
-
-  keywords: [
-    "ナグルファルの船上にて",
-    "登れない坂道",
-    "片翼のイカロス",
-    "カザハネ",
-    "スイッチ・オン♪",
-    "機械人形"
-  ],
-
-  title: "Music usage restriction",
-
-  messageJa:
-    "ガイドラインにより楽曲の使用は原則禁止されています。使用・アップロード前に権利状況を確認してください。",
-
-  messageEn:
-    "Music usage is generally prohibited by the guidelines. Please verify the rights status before use or upload.",
-
-  links: [
-    {
-      label: "Guidelines",
-      url: "https://www.keromakura.net/support/support/guideline.html"
-    }
-  ]
-},
+// ケロQ / 枕：タイトルによるガイドライン検出を無効化。復活用にルールと曲名を保存。
+// {
+//   category: "personalBan",
+//   level: "warn",
+//
+//   fields: ["title", "titleUnicode"],
+//
+//   keywords: [
+//     "ナグルファルの船上にて",
+//     "登れない坂道",
+//     "片翼のイカロス",
+//     "カザハネ",
+//     "スイッチ・オン♪",
+//     "機械人形"
+//   ],
+//
+//   title: "Music usage restriction",
+//
+//   messageJa:
+//     "ガイドラインにより楽曲の使用は原則禁止されています。使用・アップロード前に権利状況を確認してください。",
+//
+//   messageEn:
+//     "Music usage is generally prohibited by the guidelines. Please verify the rights status before use or upload.",
+//
+//   links: [
+//     {
+//       label: "Guidelines",
+//       url: "https://www.keromakura.net/support/support/guideline.html"
+//     }
+//   ]
+// },
 {
   category: "personalBan",
   level: "warn",
@@ -997,15 +999,16 @@ const CONTENT_PERMISSION_RULES = [
     "株式会社葉月",
     "オーガスト",
     "AUGUST",
-    "あいりすミスティリア！",
-    "千の刃濤、桃花染の皇姫",
-    "大図書館の羊飼い",
-    "穢翼のユースティア",
-    "fortune arterial",
-    "夜明け前より瑠璃色な",
-    "月は東に日は西に",
-    "princess holiday",
-    "バイナリィ・ポット"
+    // 以下の作品名による検出は無効化。将来の復活用に保存。
+//     "あいりすミスティリア！",
+//     "千の刃濤、桃花染の皇姫",
+//     "大図書館の羊飼い",
+//     "穢翼のユースティア",
+//     "fortune arterial",
+//     "夜明け前より瑠璃色な",
+//     "月は東に日は西に",
+//     "princess holiday",
+//     "バイナリィ・ポット"
   ],
 
   title: "Music usage restriction",
@@ -1614,6 +1617,27 @@ const CONTENT_PERMISSION_RULES = [
         "label": "DMCA notice (2023)",
         "labelJa": "DMCA通知（2023年）",
         "url": "https://gist.githubusercontent.com/peppy/e34cbd3f9a30cc41b327d4f2555cd29e/raw/dmca_20230306.txt"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "eternal feather"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2008)",
+        "labelJa": "DMCA通知（2008年）",
+        "url": "https://osu.ppy.sh/community/forums/topics/10998?n=1"
       }
     ]
   },
