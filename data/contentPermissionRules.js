@@ -673,10 +673,10 @@ const CONTENT_PERMISSION_RULES = [
   ]
 },
 {
-  category: "personalBan",
+  category: "pastDmca",
   level: "warn",
 
-  fields: ["artist", "artistUnicode", "tags"],
+  fields: ["artist", "artistUnicode"],
   matchMode: "word",
 
   keywords: [
@@ -694,19 +694,19 @@ const CONTENT_PERMISSION_RULES = [
   links: [
     {
       label: "DMCA notice (2022)",
-      labelJa: "DMCA 通知（2022年）",
+      labelJa: "DMCA通知（2022年）",
       url: "https://gist.githubusercontent.com/peppy/418364abd1b74b95150b87b7c831001a/raw/dmca_20221208.txt"
     }
   ]
 },
 {
-  category: "personalBan",
+  category: "pastDmca",
   level: "warn",
 
   fields: ["source", "tags"],
 
   keywords: [
-    "アイドルマスター"
+    "アイドルマスター ミリオンライブ！"
   ],
 
   title: "Past DMCA notice",
@@ -720,7 +720,7 @@ const CONTENT_PERMISSION_RULES = [
   links: [
     {
       label: "DMCA notice (2022)",
-      labelJa: "DMCA 通知（2022年）",
+      labelJa: "DMCA通知（2022年）",
       url: "https://gist.githubusercontent.com/peppy/6b91dea9835cd49ddee13794f6deeb5a/raw/dmca_20221005.txt"
     }
   ]
@@ -1101,6 +1101,97 @@ const CONTENT_PERMISSION_RULES = [
         "label": "DMCA notice (2022)",
         "labelJa": "DMCA通知（2022年）",
         "url": "https://gist.githubusercontent.com/peppy/1e3d2e896ef4f8c6386aa7ae1ef6b5c8/raw/dmca_20220517.txt"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "新時代",
+      "踊",
+      "うっせぇわ",
+      "阿修羅ちゃん"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2022)",
+        "labelJa": "DMCA通知（2022年）",
+        "url": "https://gist.githubusercontent.com/peppy/418364abd1b74b95150b87b7c831001a/raw/dmca_20221208.txt"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "百花は月下に散りぬるを",
+      "Brand New Theater!",
+      "Flyers!!!",
+      "Dreaming!"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2022)",
+        "labelJa": "DMCA通知（2022年）",
+        "url": "https://gist.githubusercontent.com/peppy/6b91dea9835cd49ddee13794f6deeb5a/raw/dmca_20221005.txt"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "UNION!!"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice",
+        "labelJa": "DMCA通知",
+        "url": "https://gist.githubusercontent.com/peppy/ac8678e18b66acec8a9529a0cc6fd44a/raw"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "source",
+      "tags"
+    ],
+    "keywords": [
+      "メイプルストーリー",
+      "MapleStory"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2024)",
+        "labelJa": "DMCA通知（2024年）",
+        "url": "https://gist.githubusercontent.com/peppy/86c30346d749ae39c2ab6bcb4e906442/raw/dmca-20240419.txt"
       }
     ]
   },
