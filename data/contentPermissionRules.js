@@ -893,19 +893,15 @@ const CONTENT_PERMISSION_RULES = [
     "枕"
   ],
 
-  title: "Past DMCA / music usage restriction",
+  title: "Music usage restriction",
 
   messageJa:
-    "過去にDMCA申立てがあり、ガイドラインにより楽曲の使用は原則禁止されています。使用・アップロード前に権利状況を確認してください。",
+    "ガイドラインにより楽曲の使用は原則禁止されています。使用・アップロード前に権利状況を確認してください。",
 
   messageEn:
-    "This content has been subject to a past DMCA notice, and music usage is generally prohibited by the guidelines. Please verify the rights status before use or upload.",
+    "Music usage is generally prohibited by the guidelines. Please verify the rights status before use or upload.",
 
   links: [
-    {
-      label: "DMCA notice",
-      url: "https://gist.githubusercontent.com/peppy/bdf2cf1647765cf692664871d73d451b/raw/dmca_2023-03-03.txt"
-    },
     {
       label: "Guidelines",
       url: "https://www.keromakura.net/support/support/guideline.html"
@@ -919,31 +915,23 @@ const CONTENT_PERMISSION_RULES = [
   fields: ["title", "titleUnicode"],
 
   keywords: [
-    "櫻ノ詩",
-    "空気力学少女と少年の詩",
-    "刻ト詩",
     "ナグルファルの船上にて",
     "登れない坂道",
-    "終末の微笑",
     "片翼のイカロス",
     "カザハネ",
     "スイッチ・オン♪",
     "機械人形"
   ],
 
-  title: "Past DMCA / music usage restriction",
+  title: "Music usage restriction",
 
   messageJa:
-    "過去にDMCA申立てがあり、ガイドラインにより楽曲の使用は原則禁止されています。使用・アップロード前に権利状況を確認してください。",
+    "ガイドラインにより楽曲の使用は原則禁止されています。使用・アップロード前に権利状況を確認してください。",
 
   messageEn:
-    "This content has been subject to a past DMCA notice, and music usage is generally prohibited by the guidelines. Please verify the rights status before use or upload.",
+    "Music usage is generally prohibited by the guidelines. Please verify the rights status before use or upload.",
 
   links: [
-    {
-      label: "DMCA notice",
-      url: "https://gist.githubusercontent.com/peppy/bdf2cf1647765cf692664871d73d451b/raw/dmca_2023-03-03.txt"
-    },
     {
       label: "Guidelines",
       url: "https://www.keromakura.net/support/support/guideline.html"

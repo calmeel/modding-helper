@@ -82,6 +82,29 @@ test("Million Live DMCA notice matches the specific source and its song titles",
   }
 });
 
+test("KeroQ DMCA titles no longer duplicate guideline warnings", () => {
+  const guideline = "https://www.keromakura.net/support/support/guideline.html";
+  for (const title of ["櫻ノ詩", "空気力学少女と少年の詩", "刻ト詩", "終末の微笑"]) {
+    for (const field of ["Title", "TitleUnicode"]) {
+      const results = context.runContentPermissionCheck(
+        `[Metadata]\n${field}:${title}\n`, "test.osu"
+      ).results;
+      assert.equal(results.length, 1, `${field}: ${title}`);
+      assert.equal(results[0].category, "pastDmca");
+      assert.equal(results[0].links[0].labelJa, "DMCA通知（2023年）");
+    }
+  }
+  for (const [field, value] of [["Source", "ケロQ"], ["Tags", "枕"], ["Title", "ナグルファルの船上にて"], ["TitleUnicode", "機械人形"]]) {
+    const item = context.runContentPermissionCheck(
+      `[Metadata]\n${field}:${value}\n`, "test.osu"
+    ).results.find(result => result.links.some(link => link.url === guideline));
+    assert.ok(item, `${field}: ${value}`);
+    assert.equal(item.links.length, 1);
+    assert.ok(!item.messageJa.includes("DMCA"));
+    assert.ok(!item.messageEn.includes("DMCA"));
+  }
+});
+
 test("other keywords in shared rules and work titles retain substring matching", () => {
   for (const [field, value, keyword] of [
     ["Artist", "xkozato2", "kozato"],
