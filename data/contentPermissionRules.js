@@ -890,7 +890,16 @@ const CONTENT_PERMISSION_RULES = [
 
   keywords: [
     "ケロq",
-    "枕"
+    "枕",
+    "モエとら",
+    "二重箱",
+    "終ノ空",
+    "テレビの消えた日",
+    "コトバの消えた日",
+    "向日葵の教会と長い夏休み",
+    "いきなりあなたに恋している",
+    "√after and another",
+    "しゅぷれ〜むキャンディ"
   ],
 
   title: "Music usage restriction",
