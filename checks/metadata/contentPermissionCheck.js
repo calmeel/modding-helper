@@ -16,6 +16,7 @@ const CONTENT_PERMISSION_RULES = [
       "kozato",
       "NOMA"
     ],
+    keywordMatchModes: { NOMA: "word" },
 
     title: "Disallowed artists",
 
@@ -115,6 +116,7 @@ const CONTENT_PERMISSION_RULES = [
       "Blacklolita",
       "YUKIYANAGI"
     ],
+    keywordMatchModes: { lapix: "word" },
 
     title: "MEGAREX affiliated artists",
 
@@ -172,6 +174,7 @@ const CONTENT_PERMISSION_RULES = [
       "DJ'TEKINA//SOMETHING",
       "Zekk"
     ],
+    keywordMatchModes: { "ak+q": "word", Frums: "word", Zekk: "word" },
 
     title: "Conditional artist permissions",
 
@@ -204,6 +207,7 @@ const CONTENT_PERMISSION_RULES = [
     level: "warn",
     fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
     keywords: ["Avans"],
+    matchMode: "word",
     title: "Music usage not agreed",
     messageJa:
       "このアーティストは楽曲の利用に同意していません。使用前に確認してください。",
@@ -754,6 +758,7 @@ const CONTENT_PERMISSION_RULES = [
   keywords: [
     "tydi"
   ],
+  matchMode: "word",
 
   title: "Past DMCA notice",
 
@@ -922,7 +927,7 @@ function runContentPermissionCheck(text, fileName) {
         matchesContentPermissionKeyword(
           targetText,
           keyword,
-          rule.matchMode
+          rule.keywordMatchModes?.[keyword] ?? rule.matchMode
         )
       );
 
