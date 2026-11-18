@@ -1641,4 +1641,25 @@ const CONTENT_PERMISSION_RULES = [
       }
     ]
   },
+  {
+    "category": "personalBan",
+    "level": "warn",
+    "fields": [
+      "artist",
+      "artistUnicode"
+    ],
+    "keywords": [
+      "雨部冷キザミ"
+    ],
+    "title": "Map and audio redistribution restriction",
+    "messageJa": "このアーティストは map の配布および音源データの二次配布を禁止しています。使用前にガイドラインを確認してください。",
+    "messageEn": "This artist prohibits distribution of maps and redistribution of audio files. Please check the guidelines before use.",
+    "links": [
+      {
+        "label": "Guidelines",
+        "labelJa": "ガイドライン",
+        "url": "https://note.com/amebre_kizami/n/n6f7be160788a"
+      }
+    ]
+  },
 ];
