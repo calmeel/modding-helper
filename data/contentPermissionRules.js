@@ -1665,4 +1665,28 @@ const CONTENT_PERMISSION_RULES = [
       }
     ]
   },
+  {
+    "category": "personalBan",
+    "level": "warn",
+    "fields": [
+      "artist",
+      "artistUnicode",
+      "source",
+      "tags"
+    ],
+    "keywords": [
+      "OpenTracks",
+      "DOVA-SYNDROME"
+    ],
+    "title": "Rhythm game audio usage restriction",
+    "messageJa": "このサイトは音楽ゲームへの音源利用を制限しています。使用前にガイドラインを確認してください。",
+    "messageEn": "This site restricts the use of its audio in rhythm games. Please check the guidelines before use.",
+    "links": [
+      {
+        "label": "Guidelines",
+        "labelJa": "ガイドライン",
+        "url": "https://opentracks.com/help/articles/game_trpg/#section-6"
+      }
+    ]
+  },
 ];
