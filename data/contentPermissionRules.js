@@ -622,6 +622,7 @@ const CONTENT_PERMISSION_RULES = [
   keywords: [
     "cosmograph",
     "lunatic sounds",
+    "Lunatic Sound",
     "ArcadeStuff",
     "HousePlan"
   ],
