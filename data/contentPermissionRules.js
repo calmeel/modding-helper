@@ -1646,7 +1646,10 @@ const CONTENT_PERMISSION_RULES = [
     "level": "warn",
     "fields": [
       "artist",
-      "artistUnicode"
+      "artistUnicode",
+      "title",
+      "titleUnicode",
+      "tags"
     ],
     "keywords": [
       "雨部冷キザミ"
