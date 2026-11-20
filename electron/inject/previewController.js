@@ -34,17 +34,13 @@ function createElectronPreview({ outBody, previewSettingsBody, viewSettingsBody,
     /* Diff順: true=難→易(上が難しい / 既定), false=易→難(上が易しい) */
     options.diffDescending = true;
     try { if (localStorage.getItem('moddingHelperPreviewDiffDesc') === '0') options.diffDescending = false; } catch (e) {}
-    /* 非表示にする Diff（fileName→true）。localStorage に永続化 */
-    options.hiddenDiffs = Object.create(null);
+    /* 非表示にするDiffは、曲フォルダごとのDiff設定から復元する。 */
+    options.hiddenDiffs = window.__previewHiddenDiffs || Object.create(null);
     var spVisibleDiffsRef = null;
     var spVisibleDiffs = [];
     var spVisibleDiffsDirty = true;
-    try {
-      var hd0 = JSON.parse(localStorage.getItem('moddingHelperPreviewHiddenDiffs') || '{}');
-      if (hd0 && typeof hd0 === 'object') for (var hk in hd0) if (hd0[hk]) options.hiddenDiffs[hk] = true;
-    } catch (e) {}
     var saveHiddenDiffs = function () {
-      try { localStorage.setItem('moddingHelperPreviewHiddenDiffs', JSON.stringify(options.hiddenDiffs)); } catch (e) {}
+      if (window.__setPreviewHiddenDiffs) window.__setPreviewHiddenDiffs(options.hiddenDiffs);
     };
     var SP_FALLBACK_BASE_PX = 0.32;
     var SP_ZOOM_RATIO_MIN = 0.06 / SP_FALLBACK_BASE_PX;
@@ -321,6 +317,7 @@ function createElectronPreview({ outBody, previewSettingsBody, viewSettingsBody,
     /* 難易度キャッシュ（__loadedDiffs が差し替わった時だけ再解析） */
     var spCacheRef = null, spCacheDiffs = [];
     window.addEventListener('modding-helper-diff-order-changed', function() {
+      options.hiddenDiffs = window.__previewHiddenDiffs || Object.create(null);
       sortSpreadDiffs(spCacheDiffs);
       spVisibleDiffsDirty = true;
     });

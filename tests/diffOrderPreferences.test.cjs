@@ -198,6 +198,34 @@ function result(ctx, name) {
 }
 const plain = value => JSON.parse(JSON.stringify(value));
 
+test('hidden diffs survive restart and filename changes, remain folder scoped and prune removed Versions', async t => {
+  const ctx = restoreContext();
+  const { store, reopen } = temporaryStore(t);
+  const sources = ['Oni', 'Kantan'].map(version => ({
+    fileName: `old [${version}].osu`, text: `[Metadata]\nVersion:${version}\n`
+  }));
+  const encoded = ctx.serializeSpreadDiffPreferences(sources, {
+    diffOrder: sources.map(source => source.fileName), manualCategories: {},
+    hiddenDiffs: [sources[0].fileName]
+  });
+  assert.deepEqual(plain(encoded.hiddenDiffs), ['Oni']);
+  await store.save('C:\\Songs\\A', encoded);
+  await store.save('C:\\Songs\\B', { ...plain(encoded), hiddenDiffs: [] });
+  await store.flush();
+  const restarted = reopen();
+  assert.deepEqual((await restarted.load('C:\\Songs\\B')).hiddenDiffs, []);
+  const renamed = sources.map(source => ({ ...source, fileName: source.fileName.replace('old', 'new') }));
+  const saved = await restarted.load('C:\\Songs\\A');
+  const decoded = ctx.resolveSpreadDiffPreferences(renamed, saved);
+  assert.deepEqual(plain(decoded.hiddenDiffs), [renamed[0].fileName]);
+  const changedVersion = renamed.map(source => ({ ...source, text: source.text.replace('Version:Oni', 'Version:New') }));
+  assert.deepEqual(plain(ctx.resolveSpreadDiffPreferences(changedVersion, saved).hiddenDiffs), []);
+  const results = renamed.map(source => ({ fileName: source.fileName, sortInfo: ctx.getSpreadSortInfo(source.fileName) }));
+  assert.deepEqual(plain(ctx.restoreSpreadDiffPreferences(results.slice(1), decoded).hiddenDiffs), []);
+  await restarted.save('C:\\Songs\\A', { ...plain(encoded), hiddenDiffs: ['Oni', 'Oni', 'missing', null] });
+  assert.deepEqual((await restarted.load('C:\\Songs\\A')).hiddenDiffs, ['Oni']);
+});
+
 test('Version keys survive title/artist/creator filename changes and restart', async t => {
   const ctx = restoreContext();
   const { store, reopen } = temporaryStore(t);

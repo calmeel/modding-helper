@@ -16,6 +16,9 @@ function sanitizePreferences(value) {
   return {
     ...(value.keyType === 'version' ? { keyType: 'version' } : {}),
     diffOrder,
+    ...(Array.isArray(value.hiddenDiffs) ? {
+      hiddenDiffs: [...new Set(value.hiddenDiffs.filter(name => names.has(name)))]
+    } : {}),
     manualCategories: Object.fromEntries(Object.entries(value.manualCategories || {})
       .filter(([name, category]) => names.has(name) && CATEGORIES.has(category)))
   };

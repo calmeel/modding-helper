@@ -125,6 +125,9 @@ function serializeSpreadDiffPreferences(sources, preferences) {
   return {
     keyType: 'version',
     diffOrder: preferences.diffOrder.map(name => versions.get(name)).filter(Boolean),
+    ...(Array.isArray(preferences.hiddenDiffs) ? {
+      hiddenDiffs: preferences.hiddenDiffs.map(name => versions.get(name)).filter(Boolean)
+    } : {}),
     manualCategories: Object.fromEntries(Object.entries(preferences.manualCategories)
       .filter(([name]) => versions.get(name))
       .map(([name, category]) => [versions.get(name), category]))
@@ -138,6 +141,9 @@ function resolveSpreadDiffPreferences(sources, saved) {
     [parseMetadataValue(source.text, 'Version'), source.fileName]));
   return {
     diffOrder: saved.diffOrder.map(version => files.get(version)).filter(Boolean),
+    ...(Array.isArray(saved.hiddenDiffs) ? {
+      hiddenDiffs: saved.hiddenDiffs.map(version => files.get(version)).filter(Boolean)
+    } : {}),
     manualCategories: Object.fromEntries(Object.entries(saved.manualCategories || {})
       .filter(([version]) => files.has(version))
       .map(([version, category]) => [files.get(version), category]))
@@ -148,10 +154,12 @@ function restoreSpreadDiffPreferences(results, saved) {
   const automatic = createSpreadDiffOrder(results);
   if (!saved) return { diffOrder: automatic, manualCategories: {} };
   const present = new Set(automatic);
+  const visibility = Array.isArray(saved.hiddenDiffs)
+    ? { hiddenDiffs: [...new Set(saved.hiddenDiffs.filter(name => present.has(name)))] } : {};
   const manualCategories = Object.fromEntries(Object.entries(saved.manualCategories || {})
     .filter(([name, category]) => present.has(name) && Object.prototype.hasOwnProperty.call(SPREAD_CATEGORY_ORDER, category)));
   let diffOrder = [...new Set((saved.diffOrder || []).filter(name => present.has(name)))];
-  if (!diffOrder.length) return { diffOrder: automatic, manualCategories };
+  if (!diffOrder.length) return { diffOrder: automatic, manualCategories, ...visibility };
   // 既存Diff同士の順番を保ち、新規Diffだけ自動判定のカテゴリへ差し込む。
   for (const name of automatic) {
     if (diffOrder.includes(name)) continue;
@@ -159,7 +167,7 @@ function restoreSpreadDiffPreferences(results, saved) {
     diffOrder = moveSpreadDiffToCategory(diffOrder, results, name,
       getSpreadEffectiveCategory(result, manualCategories), manualCategories);
   }
-  return { diffOrder, manualCategories };
+  return { diffOrder, manualCategories, ...visibility };
 }
 
 function applySpreadDiffOrder(results, diffOrder) {

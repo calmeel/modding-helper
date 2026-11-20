@@ -3,6 +3,15 @@ function createFileSessionController({ state, dom, t, isChartPopout,
   getSourceMode, getReceivedDiffOrder, synchronizeDiffOrder, renderLoadedFileResults, onCleared }) {
   const { openBeatmapPage, fileName, timelineOutput, output } = dom;
   let activeMapsetFolder = null;
+  // プレビュー側はファイル名を使い、永続化時にDiff順と同じVersionキーへ変換する。
+  window.__setPreviewHiddenDiffs = function (hiddenDiffs) {
+    state.spread.hiddenDiffs = Object.keys(hiddenDiffs).filter(name => hiddenDiffs[name]);
+    void persistDiffPreferences();
+  };
+  function publishPreviewVisibility() {
+    window.__previewHiddenDiffs = Object.assign(Object.create(null),
+      Object.fromEntries((state.spread.hiddenDiffs || []).map(name => [name, true])));
+  }
   async function persistDiffPreferences() {
     if (isChartPopout || !activeMapsetFolder || getSourceMode() !== 'osu' ||
         !window.electronAPI?.saveDiffOrderPreferences) return;
@@ -104,6 +113,8 @@ function createFileSessionController({ state, dom, t, isChartPopout,
         resolveSpreadDiffPreferences(result.offsetSources, savedPreferences));
       state.spread.diffOrder = restoredPreferences.diffOrder;
       state.spread.manualCategories = restoredPreferences.manualCategories;
+      state.spread.hiddenDiffs = restoredPreferences.hiddenDiffs || [];
+      publishPreviewVisibility();
       activeMapsetFolder = preferencesFolder;
       const receivedDiffOrder = getReceivedDiffOrder();
       if (isChartPopout && receivedDiffOrder) {
@@ -190,6 +201,7 @@ function createFileSessionController({ state, dom, t, isChartPopout,
       if (!["bnCompare", "spread"].includes(key)) state[key] = null;
     }
     state.spread = { results: null, diffOrder: [], manualCategories: {} };
+    publishPreviewVisibility();
     activeMapsetFolder = null;
     window.__loadedDiffs = null;
     synchronizeDiffOrder();

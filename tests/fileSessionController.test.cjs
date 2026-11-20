@@ -117,6 +117,32 @@ test('mapset preferences restore Version categories and retain in-memory overrid
   assert.equal(saves.length, count);
 });
 
+test('preview visibility saves with order, restores per folder and resets for file mode', async () => {
+  const stored = new Map();
+  const f = fixture({ api: {
+    loadDiffOrderPreferences: async folder => stored.get(folder),
+    saveDiffOrderPreferences: async (folder, value) => { stored.set(folder, plain(value)); return true; }
+  } });
+  f.setMode('osu');
+  await f.controller.handleFile({ name: 'Oni' }, { mapsetFolder: 'A' });
+  f.scope.window.__setPreviewHiddenDiffs({ 'Oni.osu': true });
+  await f.controller.persistDiffPreferences();
+  assert.deepEqual(stored.get('A').hiddenDiffs, ['Oni']);
+  await f.controller.handleFile({ name: 'Oni' }, { mapsetFolder: 'A' });
+  assert.deepEqual(plain(f.scope.window.__previewHiddenDiffs), { 'Oni.osu': true });
+  await f.controller.handleFile({ name: 'Oni' }, { mapsetFolder: 'B' });
+  assert.deepEqual(plain(f.scope.window.__previewHiddenDiffs), {});
+  f.scope.window.__setPreviewHiddenDiffs({ 'Oni.osu': true });
+  await f.controller.persistDiffPreferences();
+  await f.controller.handleFile({ name: 'Oni' }, { mapsetFolder: 'B' });
+  assert.equal(f.scope.window.__previewHiddenDiffs['Oni.osu'], true);
+  f.setMode('file');
+  await f.controller.handleFile({ name: 'Oni' });
+  assert.deepEqual(plain(f.scope.window.__previewHiddenDiffs), {});
+  f.controller.clearResults();
+  assert.deepEqual(plain(f.scope.window.__previewHiddenDiffs), {});
+});
+
 test('chart popouts use the received order without loading or saving mapset preferences', async () => {
   let preferenceCalls = 0;
   const f = fixture({ popout: true, api: {

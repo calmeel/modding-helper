@@ -158,6 +158,13 @@ app.whenReady().then(async () => {
   })()`);
   await until(async () => await evaluate(main, `window.__smokePreviewOptions?.transparentSliders === true && window.__smokePreviewOptions.highlightKiai === false && window.__smokePreviewOptions.showTimingInfo === true`), 'settings update preview drawing');
   assert.equal(await evaluate(main, `document.getElementById('etb-sfx-vol-input').parentElement.querySelector('input[type=range]').value`), '73');
+  await evaluate(main, `document.querySelector('#etb-diffvis-list input').click(); true`);
+  await until(async () => await evaluate(main, `document.getElementById('etb-spread-canvas').__spreadGeom?.n === 0`), 'hidden preview diff');
+  assert.equal(await evaluate(main, `window.__smokePreviewOptions.emptyText.includes('全Diffが非表示') || window.__smokePreviewOptions.emptyText.includes('All diffs are hidden')`), true);
+  await evaluate(main, `publishDisplayDiffOrder(window.__loadedDiffOrder); true`);
+  assert.equal(await evaluate(main, `!!window.__previewHiddenDiffs[window.__loadedDiffs[0].fileName]`), true);
+  await evaluate(main, `document.querySelector('#etb-diffvis-list input').click(); true`);
+  await until(async () => await evaluate(main, `document.getElementById('etb-spread-canvas').__spreadGeom?.n === 1`), 'restored preview diff');
   await evaluate(main, `document.getElementById('etb-tab-main').click(); window.__smokeRestorePreviewDraw(); true`);
   console.log('PASS preview settings and notepad controller');
   await evaluate(main, `window.__maximizeEvents = 0; window.electronAPI.onMaximize(() => window.__maximizeEvents++);`);
