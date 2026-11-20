@@ -562,7 +562,10 @@ function createElectronPreview({ outBody, previewSettingsBody, viewSettingsBody,
         transparentSliders: options.transparentSliders,
         isSelected: previewInput.notes.length ? previewInput.isSelected : null,
         marquee: previewInput.marquee,
-        emptyText: isEn ? 'No beatmap loaded' : '譜面が読み込まれていません',
+        emptyText: allDiffs.length
+          ? (isEn ? 'All diffs are hidden. Enable a diff in Preview Settings → Shown diffs.'
+            : '全Diffが非表示です。プレビュー設定の「表示するDiff」でチェックをオンにしてください。')
+          : (isEn ? 'No beatmap loaded' : '譜面が読み込まれていません'),
         idleText: getPanelMode() === 'osu'
           ? (isEn ? 'Play in osu! to scroll' : 'osu! を再生すると流れます')
           : (isEn ? 'Use the preview controls to seek or play' : 'プレビューの操作で再生・シークできます')
