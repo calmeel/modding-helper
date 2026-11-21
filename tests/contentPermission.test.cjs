@@ -85,6 +85,32 @@ test("RIAJ listed song titles replace series detection and match only title fiel
   }
 });
 
+test("COVER Palette DMCA notice requires Tokoyami Towa and the song title", () => {
+  const url = "https://gist.githubusercontent.com/peppy/129db574a72b4510eba096049835d6c5/raw";
+  const matches = metadata => context.runContentPermissionCheck(
+    `[Metadata]\n${metadata}`, "test.osu"
+  ).results.filter(item => item.links.some(link => link.url === url));
+  for (const artistField of ["Artist", "ArtistUnicode"]) {
+    for (const titleField of ["Title", "TitleUnicode"]) {
+      for (const title of ["Palette", "PALETTE", "Palette (Remix)"]) {
+        const results = matches(`${artistField}:常闇トワ\n${titleField}:${title}\n`);
+        assert.equal(results.length, 1);
+        assert.equal(results[0].category, "pastDmca");
+        assert.ok(results[0].matchedKeywords.includes("常闇トワ"));
+        assert.ok(results[0].matchedKeywords.includes("Palette"));
+        assert.equal(results[0].links[0].labelJa, "DMCA通知（2021年）");
+      }
+      for (const artist of ["", "Other Artist"]) {
+        assert.equal(matches(`${artistField}:${artist}\n${titleField}:Palette\nTags:常闇トワ\n`).length, 0);
+      }
+      assert.equal(matches(`${artistField}:常闇トワ\n${titleField}:Other Song\n`).length, 0);
+    }
+  }
+  for (const field of ["Artist", "ArtistUnicode", "Source", "Tags"]) {
+    assert.equal(matches(`${field}:常闇トワ - Palette\n`).length, 0);
+  }
+});
+
 test("selected artist keywords require boundaries in every configured field", () => {
   for (const keyword of ["NOMA", "Avans", "Zekk", "tyDi", "lapix", "Frums", "ak+q", "Ado"]) {
     const fields = ["Artist", "ArtistUnicode"];

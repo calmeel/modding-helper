@@ -1,5 +1,24 @@
 const CONTENT_PERMISSION_RULES = [
   {
+    category: "pastDmca",
+    level: "warn",
+    fields: ["title", "titleUnicode"],
+    keywords: ["Palette"],
+    keywordArtists: {
+      "Palette": ["常闇トワ"]
+    },
+    title: "Past DMCA notice",
+    messageJa: "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    messageEn: "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    links: [
+      {
+        label: "DMCA notice (2021)",
+        labelJa: "DMCA通知（2021年）",
+        url: "https://gist.githubusercontent.com/peppy/129db574a72b4510eba096049835d6c5/raw"
+      }
+    ]
+  },
+  {
     "category": "pastDmca",
     "level": "warn",
     "fields": [
