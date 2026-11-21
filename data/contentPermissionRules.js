@@ -2,6 +2,175 @@ const CONTENT_PERMISSION_RULES = [
   {
     category: "pastDmca",
     level: "warn",
+    fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
+    keywords: ["Alon Mor"],
+    title: "Past DMCA notice",
+    messageJa: "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    messageEn: "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    links: [
+      {
+        label: "DMCA notice",
+        labelJa: "DMCA通知",
+        url: "https://gist.githubusercontent.com/peppy/3cc5a15a3be9f2a01336ae93322033f0/raw"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2026)",
+        "labelJa": "DMCA通知（2026年）",
+        "url": "https://gist.githubusercontent.com/peppy/84f4cf009fe88a9d61b13b58dc53dea8/raw/dmca_20260922.txt"
+      }
+    ],
+    "fields": [
+      "source",
+      "tags"
+    ],
+    "keywords": [
+      "EZ2ON"
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。\n備考：SHIKI - AIR は削除対象ではありませんでした。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.\nNote: SHIKI - AIR was not subject to removal.",
+    "links": [
+      {
+        "label": "DMCA notice (2026)",
+        "labelJa": "DMCA通知（2026年）",
+        "url": "https://gist.githubusercontent.com/peppy/84f4cf009fe88a9d61b13b58dc53dea8/raw/dmca_20260922.txt"
+      }
+    ],
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "AIR (EZ2ON Ver.)",
+      "Holic",
+      "LIMBO",
+      "Le grand Bleu",
+      "Minus 2",
+      "The back of Beyond",
+      "The Prince of Darkness",
+      "Energy Flower 3007",
+      "G.O.A",
+      "Fallen Angel",
+      "Zeroize",
+      "開花"
+    ]
+  },
+  {
+    category: "pastDmca",
+    level: "warn",
+    fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
+    keywords: ["אייל גולן"],
+    title: "Past DMCA notice",
+    messageJa: "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    messageEn: "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    links: [
+      {
+        label: "DMCA notice (2015)",
+        labelJa: "DMCA通知（2015年）",
+        url: "https://web.archive.org/web/20250820195303/https://gist.githubusercontent.com/peppy/884920598cbc3b9e4b08/raw/2b8ed13ac10c2111862b8bd547d6e892f4d78960/dmca_2015-06-14_eyal.txt"
+      }
+    ]
+  },
+  {
+    category: "pastDmca",
+    level: "warn",
+    fields: ["title", "titleUnicode"],
+    keywords: ["赤い約束"],
+    title: "Past DMCA notice",
+    messageJa: "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    messageEn: "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    links: [
+      {
+        label: "DMCA notice (2015)",
+        labelJa: "DMCA通知（2015年）",
+        url: "https://gist.githubusercontent.com/peppy/6ce590aee2b91bb630f4c25ab85d0aa7/raw"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "source",
+      "tags"
+    ],
+    "keywords": [
+      "Clover Day’s"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2015)",
+        "labelJa": "DMCA通知（2015年）",
+        "url": "https://gist.githubusercontent.com/peppy/74435fabd5b8b0da3eff947e2fa69cf2/raw"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "Clover Day’s"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。但し、Short Ver. の利用は黙認されています。",
+    "messageEn": "This content has been subject to past DMCA notices. However, use of the Short Ver. is tacitly permitted.",
+    "links": [
+      {
+        "label": "DMCA notice (2014)",
+        "labelJa": "DMCA通知（2014年）",
+        "url": "https://web.archive.org/web/20230805004109/https://gist.githubusercontent.com/peppy/d98148dbb5bcec4d2d9e/raw/c47c04d3afd4d79644d471f086735d9d0b86b0e7/gistfile1.txt"
+      },
+      {
+        "label": "DMCA notice (2015)",
+        "labelJa": "DMCA通知（2015年）",
+        "url": "https://gist.githubusercontent.com/peppy/74435fabd5b8b0da3eff947e2fa69cf2/raw"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
+    "fields": [
+      "title",
+      "titleUnicode"
+    ],
+    "keywords": [
+      "しあわせがたり"
+    ],
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2015)",
+        "labelJa": "DMCA通知（2015年）",
+        "url": "https://gist.githubusercontent.com/peppy/74435fabd5b8b0da3eff947e2fa69cf2/raw"
+      }
+    ]
+  },
+  {
+    category: "pastDmca",
+    level: "warn",
     fields: ["title", "titleUnicode"],
     keywords: ["Palette"],
     keywordArtists: {
@@ -1101,7 +1270,8 @@ const CONTENT_PERMISSION_RULES = [
 
   links: [
     {
-      label: "DMCA notice",
+      label: "DMCA notice (2015)",
+      labelJa: "DMCA通知（2015年）",
       url: "https://gist.githubusercontent.com/peppy/eef03a270bcb776f7a5503b8217dfcc6/raw"
     }
   ]

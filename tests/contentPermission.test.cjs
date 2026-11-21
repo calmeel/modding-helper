@@ -111,6 +111,116 @@ test("COVER Palette DMCA notice requires Tokoyami Towa and the song title", () =
   }
 });
 
+test("ALcot 2015 notice checks Clover Days sources and song titles without artist requirements", () => {
+  const url = "https://gist.githubusercontent.com/peppy/74435fabd5b8b0da3eff947e2fa69cf2/raw";
+  for (const [keyword, fields] of [
+    ["Clover Day’s", ["Source", "Tags", "Title", "TitleUnicode"]],
+    ["しあわせがたり", ["Title", "TitleUnicode"]]
+  ]) {
+    for (const field of ["Source", "Tags", "Title", "TitleUnicode", "Artist", "ArtistUnicode"]) {
+      const results = context.runContentPermissionCheck(
+        `[Metadata]\n${field}:${keyword}\n`, "test.osu"
+      ).results.filter(item => item.links.some(link => link.url === url));
+      assert.equal(results.length, fields.includes(field) ? 1 : 0, `${field}: ${keyword}`);
+      if (results.length) {
+        assert.equal(results[0].category, "pastDmca");
+        assert.ok(results[0].links.some(link => link.url === url && link.labelJa === "DMCA通知（2015年）"));
+        assert.ok(results[0].matchedKeywords.includes(keyword));
+        const shortVersion = keyword === "Clover Day’s" && ["Title", "TitleUnicode"].includes(field);
+        assert.equal(results[0].messageJa.includes("Short Ver. の利用は黙認されています。"), shortVersion);
+        assert.equal(results[0].messageEn.includes("use of the Short Ver. is tacitly permitted."), shortVersion);
+        assert.equal(results[0].links.some(link => link.labelJa === "DMCA通知（2014年）"), shortVersion);
+      }
+    }
+  }
+  for (const title of ["CLOVER DAY’S (Remix)", "しあわせがたり (Remix)"]) {
+    assert.ok(context.runContentPermissionCheck(
+      `[Metadata]\nArtist:Other Artist\nTitle:${title}\n`, "test.osu"
+    ).results.some(item => item.links.some(link => link.url === url)));
+  }
+});
+
+test("AUGUST Akai Yakusoku notice matches title fields without requiring Lia", () => {
+  const url = "https://gist.githubusercontent.com/peppy/6ce590aee2b91bb630f4c25ab85d0aa7/raw";
+  for (const field of ["Title", "TitleUnicode", "Artist", "ArtistUnicode", "Source", "Tags"]) {
+    const results = context.runContentPermissionCheck(
+      `[Metadata]\n${field}:赤い約束\n`, "test.osu"
+    ).results.filter(item => item.links.some(link => link.url === url));
+    assert.equal(results.length, ["Title", "TitleUnicode"].includes(field) ? 1 : 0, field);
+    if (results.length) {
+      assert.equal(results[0].category, "pastDmca");
+      assert.equal(results[0].links[0].labelJa, "DMCA通知（2015年）");
+    }
+  }
+  assert.ok(context.runContentPermissionCheck(
+    "[Metadata]\nArtist:Other Artist\nTitle:赤い約束 (Remix)\n", "test.osu"
+  ).results.some(item => item.links.some(link => link.url === url)));
+});
+
+test("Eyal Golan notice matches the Hebrew keyword only in the configured fields", () => {
+  const url = "https://web.archive.org/web/20250820195303/https://gist.githubusercontent.com/peppy/884920598cbc3b9e4b08/raw/2b8ed13ac10c2111862b8bd547d6e892f4d78960/dmca_2015-06-14_eyal.txt";
+  for (const field of ["Artist", "ArtistUnicode", "Title", "TitleUnicode", "Tags", "Source"]) {
+    for (const value of ["אייל גולן", "Someone feat. אייל גולן (Remix)", "Eyal Golan", "Other Artist"]) {
+      const results = context.runContentPermissionCheck(
+        `[Metadata]\n${field}:${value}\n`, "test.osu"
+      ).results.filter(item => item.links.some(link => link.url === url));
+      const expected = field !== "Source" && value.includes("אייל גולן");
+      assert.equal(results.length, expected ? 1 : 0, `${field}: ${value}`);
+      if (results.length) {
+        assert.equal(results[0].category, "pastDmca");
+        assert.equal(results[0].links[0].labelJa, "DMCA通知（2015年）");
+        assert.ok(results[0].matchedKeywords.includes("אייל גולן"));
+      }
+    }
+  }
+});
+
+test("EZ2ON notice checks source tags and listed titles without requiring artists", () => {
+  const url = "https://gist.githubusercontent.com/peppy/84f4cf009fe88a9d61b13b58dc53dea8/raw/dmca_20260922.txt";
+  const matches = metadata => context.runContentPermissionCheck(
+    `[Metadata]\n${metadata}`, "test.osu"
+  ).results.filter(item => item.links.some(link => link.url === url));
+  const titles = ["AIR (EZ2ON Ver.)", "Holic", "LIMBO", "Le grand Bleu", "Minus 2", "The back of Beyond", "The Prince of Darkness", "Energy Flower 3007", "G.O.A", "Fallen Angel", "Zeroize", "開花"];
+  for (const field of ["Source", "Tags", "Title", "TitleUnicode", "Artist", "ArtistUnicode"]) {
+    assert.equal(matches(`${field}:ez2on\n`).length, ["Source", "Tags"].includes(field) ? 1 : 0, field);
+  }
+  for (const title of titles) {
+    for (const field of ["Title", "TitleUnicode"]) {
+      const results = matches(`Artist:Other Artist\n${field}:${title.toUpperCase()} (Remix)\n`);
+      assert.equal(results.length, 1, `${field}: ${title}`);
+      assert.ok(results[0].matchedKeywords.includes(title));
+      assert.equal(results[0].links[0].labelJa, "DMCA通知（2026年）");
+      assert.ok(results[0].messageJa.includes("SHIKI - AIR は削除対象ではありませんでした。"));
+    }
+    for (const field of ["Artist", "ArtistUnicode", "Source", "Tags"]) {
+      const results = matches(`${field}:${title}\n`);
+      assert.ok(!results.some(item => item.matchedKeywords.includes(title)), `${field}: ${title}`);
+    }
+  }
+  for (const field of ["Title", "TitleUnicode"]) {
+    for (const title of ["AIR", "AIR (Original Mix)", "AIR (Remix)"]) {
+      assert.equal(matches(`Artist:SHIKI\n${field}:${title}\n`).length, 0, title);
+    }
+  }
+});
+
+test("Alon Mor notice matches only the five configured fields with case-insensitive substrings", () => {
+  const url = "https://gist.githubusercontent.com/peppy/3cc5a15a3be9f2a01336ae93322033f0/raw";
+  for (const field of ["Artist", "ArtistUnicode", "Title", "TitleUnicode", "Tags", "Source"]) {
+    for (const value of ["Alon Mor", "ALON MOR", "Someone feat. alon mor", "xAlon Mor2", "Other Artist"]) {
+      const results = context.runContentPermissionCheck(
+        `[Metadata]\n${field}:${value}\n`, "test.osu"
+      ).results.filter(item => item.links.some(link => link.url === url));
+      assert.equal(results.length, field !== "Source" && value !== "Other Artist" ? 1 : 0, `${field}: ${value}`);
+      if (results.length) {
+        assert.equal(results[0].category, "pastDmca");
+        assert.equal(results[0].links[0].labelJa, "DMCA通知");
+        assert.ok(results[0].matchedKeywords.includes("Alon Mor"));
+      }
+    }
+  }
+});
+
 test("selected artist keywords require boundaries in every configured field", () => {
   for (const keyword of ["NOMA", "Avans", "Zekk", "tyDi", "lapix", "Frums", "ak+q", "Ado"]) {
     const fields = ["Artist", "ArtistUnicode"];
