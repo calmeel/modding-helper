@@ -1,23 +1,26 @@
 node_modules/
 dist/
 
-# ビルド成果物（電子ビルド出力・検証ビルド）
+# Build artifacts
 electron/dist/
 electron/dist-verify/
 
-# Claude Code (ローカル設定)
+# Claude Code
 .claude/
 CLAUDE.md
 
-# リアルタイム (osu!メモリ監視)関連は非公開（第三者に依る悪用禁止）
+# Features related to real-time monitoring (osu! memory monitoring) are kept private (to prevent misuse by third parties).
 electron/osu/osuMemory.ps1
 electron/osu/osuWatcher.js
 
-# VSCode (launch.json / tasks.json / extensions.json は共有のため除外しない)
+# VSCode (Do not exclude launch.json / tasks.json / extensions.json as it is for sharing.)
 .vscode/*
 !.vscode/launch.json
 !.vscode/tasks.json
 !.vscode/extensions.json
 
-# アイコン設定
+# Archived raw text of the DMCA notice
+docs/dmca/raw
+
+# Icon Settings
 desktop.ini
