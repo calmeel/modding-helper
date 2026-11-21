@@ -71,7 +71,10 @@ function runContentPermissionCheck(text, fileName) {
           targetText,
           keyword,
           rule.keywordMatchModes?.[keyword] ?? rule.matchMode
-        )
+        ) && (!rule.keywordArtists?.[keyword] || rule.keywordArtists[keyword].some(name =>
+          matchesContentPermissionKeyword(artist, name, "word") ||
+          matchesContentPermissionKeyword(artistUnicode, name, "word")
+        ))
       );
 
       if (matchedKeywords.length) {
@@ -84,12 +87,24 @@ function runContentPermissionCheck(text, fileName) {
 
     if (!matchedFields.length) continue;
 
+    if (rule.keywordArtists) {
+      const names = [...new Set(matchedFields.flatMap(matched =>
+        matched.keywords.flatMap(keyword => rule.keywordArtists[keyword] ?? [])
+      ))];
+      for (const [field, value] of [["artist", artist], ["artistUnicode", artistUnicode]]) {
+        const keywords = names.filter(name => matchesContentPermissionKeyword(value, name, "word"));
+        if (keywords.length) matchedFields.push({ field, keywords });
+      }
+    }
+
     results.push({
       category: rule.category,
       level: rule.level,
       title: rule.title,
       messageJa: rule.messageJa,
       messageEn: rule.messageEn,
+      removedSongsPage: rule.removedSongsPage,
+      removedSongsPageEn: rule.removedSongsPageEn,
       link: rule.link,
       links: rule.links ?? [],
       matchedFields,

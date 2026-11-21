@@ -16,13 +16,74 @@ for (const file of [
   ), context);
 }
 
-function detects(field, value, keyword) {
+function detects(field, value, keyword, artist = "") {
   return context.runContentPermissionCheck(
-    `[Metadata]\n${field}:${value}\n`, "test.osu"
+    `[Metadata]\n${artist ? `Artist:${artist}\n` : ""}${field}:${value}\n`, "test.osu"
   ).results.some(item => item.matchedKeywords.some(
     matched => matched.toLowerCase() === keyword.toLowerCase()
   ));
 }
+
+test("KONAMI and RIAJ warnings link to localized song pages in both app modes", () => {
+  const formatterContext = vm.createContext({
+    escapeHtml: value => String(value).replace(/[&<>"']/g, char => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[char])),
+    sortResultsForDisplay: results => results,
+    getDifficultyNameText: value => value,
+    formatSectionTitle: value => value,
+    formatSeparator: () => "---",
+    window: {}
+  });
+  vm.runInContext(fs.readFileSync(path.join(
+    __dirname, "..", "app/formatters/metadata/contentPermission.js"
+  ), "utf8"), formatterContext);
+  for (const [metadata, pageName] of [["Source:beatmania", "dmca/dmcaBeatmania"], ["Title:future gazer", "dmca/dmcaRiaj"]]) {
+    const result = context.runContentPermissionCheck(`[Metadata]\n${metadata}\n`, "test.osu");
+    assert.equal(result.results[0].removedSongsPage, `${pageName}.html`);
+    assert.equal(result.results[0].removedSongsPageEn, `${pageName}.en.html`);
+    for (const lang of ["ja", "en"]) {
+      formatterContext.localStorage = { getItem: () => lang };
+      for (const electron of [false, true]) {
+        formatterContext.window.electronAPI = electron ? {} : undefined;
+        const html = formatterContext.formatMultipleContentPermissionResults([result], () => "");
+        const base = electron ? "https://calmeel.github.io/modding-helper/docs/" : "docs/";
+        const page = lang === "en" ? `${pageName}.en.html` : `${pageName}.html`;
+        assert.ok(html.includes(`href="${base}${page}"`));
+        assert.ok(html.includes(lang === "ja" ? ">こちら</a>から確認できます。" : ">here</a>."));
+      }
+    }
+  }
+  const unrelated = context.runContentPermissionCheck("[Metadata]\nArtist:Ado\n", "other.osu");
+  assert.ok(!formatterContext.formatMultipleContentPermissionResults([unrelated], () => "").includes("dmcaBeatmania.html"));
+});
+
+test("RIAJ listed song titles replace series detection and match only title fields", () => {
+  const url = "https://gist.githubusercontent.com/peppy/eef03a270bcb776f7a5503b8217dfcc6/raw";
+  const titles = fs.readFileSync(path.join(__dirname, "..", "docs/dmca/DMCA_RIAJ.txt"), "utf8")
+    .replace(/^\uFEFF/, "").split(/\r?\n/).map(line => line.trim())
+    .filter(line => line && !line.startsWith("https://"))
+    .map(line => line.slice(line.indexOf(" - ") + 3));
+  const matches = metadata => context.runContentPermissionCheck(
+    `[Metadata]\n${metadata}`, "test.osu"
+  ).results.filter(item => item.links.some(link => link.url === url));
+  for (const title of titles) {
+    for (const field of ["Title", "TitleUnicode"]) {
+      const results = matches(`${field}:${title.toUpperCase()} (Remix)\n`);
+      assert.equal(results.length, 1, `${field}: ${title}`);
+      assert.equal(results[0].category, "pastDmca");
+      assert.ok(results[0].matchedKeywords.includes(title));
+    }
+    for (const field of ["Artist", "ArtistUnicode", "Source", "Tags"]) {
+      assert.equal(matches(`${field}:${title}\n`).length, 0, `${field}: ${title}`);
+    }
+  }
+  for (const series of ["とある科学の超電磁砲", "涼宮ハルヒの憂鬱", "艦隊これくしょん"]) {
+    for (const field of ["Title", "TitleUnicode", "Source", "Tags"]) {
+      assert.equal(matches(`${field}:${series}\n`).length, 0, `${field}: ${series}`);
+    }
+  }
+});
 
 test("selected artist keywords require boundaries in every configured field", () => {
   for (const keyword of ["NOMA", "Avans", "Zekk", "tyDi", "lapix", "Frums", "ak+q", "Ado"]) {
@@ -43,18 +104,91 @@ test("selected artist keywords require boundaries in every configured field", ()
 test("Rayark iL requires word boundaries only in title fields", () => {
   for (const field of ["Title", "TitleUnicode"]) {
     for (const value of ["iL", "IL", "(il)", "iL (Remix)", "iL_remix"]) {
-      assert.equal(detects(field, value, "iL"), true, `${field}: ${value}`);
+      assert.equal(detects(field, value, "iL", "Ice"), true, `${field}: ${value}`);
     }
     for (const value of ["Silentroom", "Lilac for Anabel", "xiL", "iLx", "2iL", "iL2"]) {
-      assert.equal(detects(field, value, "iL"), false, `${field}: ${value}`);
+      assert.equal(detects(field, value, "iL", "Ice"), false, `${field}: ${value}`);
     }
-    assert.equal(detects(field, "xEntrance2", "Entrance"), true);
-    assert.equal(detects(field, "xWings of Piano2", "Wings of Piano"), true);
+    assert.equal(detects(field, "xEntrance2", "Entrance", "Ice"), true);
+    assert.equal(detects(field, "xWings of Piano2", "Wings of Piano", "V.K"), true);
   }
   for (const field of ["Artist", "ArtistUnicode", "Source", "Tags"]) {
     for (const keyword of ["Entrance", "iL", "Wings of Piano"]) {
       assert.equal(detects(field, keyword, keyword), false, `${field}: ${keyword}`);
     }
+  }
+});
+
+test("Rayark DMCA songs require their corresponding artist in either artist field", () => {
+  const url = "https://gist.githubusercontent.com/peppy/55e7ee271342766a80f3596d8e5c83fa/raw/dmca_20220328.txt";
+  for (const [name, song] of [["Ice", "Entrance"], ["Ice", "iL"], ["V.K", "Wings of Piano"]]) {
+    for (const artistField of ["Artist", "ArtistUnicode"]) {
+      for (const titleField of ["Title", "TitleUnicode"]) {
+        for (const artist of [name.toUpperCase(), `Someone feat. ${name}`]) {
+          const results = context.runContentPermissionCheck(
+            `[Metadata]\n${artistField}:${artist}\n${titleField}:${song}\n`, "test.osu"
+          ).results.filter(item => item.links.some(link => link.url === url));
+          assert.equal(results.length, 1, `${artistField}: ${artist}, ${titleField}: ${song}`);
+          assert.ok(results[0].matchedFields.some(item => item.field === artistField.charAt(0).toLowerCase() + artistField.slice(1) && item.keywords.includes(name)));
+        }
+        for (const artist of ["", "Other Artist", name === "Ice" ? "V.K" : "Ice", `x${name}`, `${name}x`]) {
+          const results = context.runContentPermissionCheck(
+            `[Metadata]\n${artistField}:${artist}\n${titleField}:${song}\nTags:${name}\n`, "test.osu"
+          ).results;
+          assert.ok(!results.some(item => item.links.some(link => link.url === url)), `${artist}: ${song}`);
+        }
+      }
+    }
+  }
+});
+
+test("NEXON DMCA songs require the matching artist and retain MapleStory detection", () => {
+  const url = "https://gist.githubusercontent.com/peppy/86c30346d749ae39c2ab6bcb4e906442/raw/dmca-20240419.txt";
+  const matches = metadata => context.runContentPermissionCheck(
+    `[Metadata]\n${metadata}`, "test.osu"
+  ).results.filter(item => item.links.some(link => link.url === url));
+  for (const [artist, song] of [["보라", "Shine"], ["타루", "Catch Your Dreams!"]]) {
+    for (const artistField of ["Artist", "ArtistUnicode"]) {
+      for (const titleField of ["Title", "TitleUnicode"]) {
+        const result = matches(`${artistField}:${artist}\n${titleField}:${song.toUpperCase()}\n`);
+        assert.equal(result.length, 1);
+        assert.ok(result[0].matchedKeywords.includes(artist));
+        assert.ok(result[0].matchedKeywords.includes(song));
+        for (const wrongArtist of ["", "Other", artist === "보라" ? "타루" : "보라"]) {
+          assert.equal(matches(`${artistField}:${wrongArtist}\n${titleField}:${song}\nTags:${artist}\n`).length, 0);
+        }
+        assert.equal(matches(`${artistField}:${artist}\n${titleField}:x${song}x\n`).length, 0);
+      }
+    }
+    assert.equal(matches(`Artist:${artist}\nTags:${song}\n`).length, 0);
+    assert.equal(matches(`Artist:${artist}\nSource:${song}\n`).length, 0);
+  }
+  for (const field of ["Source", "Tags"]) {
+    for (const source of ["MapleStory", "メイプルストーリー"]) {
+      assert.equal(matches(`${field}:${source}\n`).length, 1);
+    }
+  }
+});
+
+test("Muzzle-lab song rules require the corresponding artist in either metadata field", () => {
+  for (const [artist, song] of [["C.I.L. Café", "Just a fool loves you"], ["まずらぼ", "SELFISH"]]) {
+    const songMatches = metadata => context.runContentPermissionCheck(
+      `[Metadata]\n${metadata}`, "test.osu"
+    ).results.filter(item => item.matchedKeywords.includes(song));
+    for (const artistField of ["Artist", "ArtistUnicode"]) {
+      for (const titleField of ["Title", "TitleUnicode"]) {
+        for (const name of [artist, artist.toUpperCase(), `Someone feat. ${artist}`]) {
+          const results = songMatches(`${artistField}:${name}\n${titleField}:${song.toUpperCase()}\n`);
+          assert.equal(results.length, 1);
+          assert.ok(results[0].matchedKeywords.includes(artist));
+        }
+        for (const name of ["", "Other Artist", artist === "まずらぼ" ? "C.I.L. Café" : "まずらぼ", `x${artist}`, `${artist}x`]) {
+          assert.equal(songMatches(`${artistField}:${name}\n${titleField}:${song}\n`).length, 0);
+        }
+      }
+    }
+    assert.equal(songMatches(`Title:${song}\nTags:${artist}\n`).length, 0);
+    assert.equal(songMatches(`Artist:${artist}\nTags:${song}\n`).length, 0);
   }
 });
 

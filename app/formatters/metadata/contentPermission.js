@@ -92,6 +92,18 @@ function formatMultipleContentPermissionResults(results, t) {
         `</span>`
       );
 
+      if (item.removedSongsPage) {
+        const docsBase = typeof window !== "undefined" && window.electronAPI
+          ? "https://calmeel.github.io/modding-helper/docs/"
+          : "docs/";
+        const page = lang === "en" ? (item.removedSongsPageEn ?? item.removedSongsPage) : item.removedSongsPage;
+        const link = `<a href="${escapeHtml(docsBase + page)}" target="_blank" rel="noopener noreferrer">` +
+          `${lang === "en" ? "here" : "こちら"}</a>`;
+        lines.push(lang === "en"
+          ? `You can view the list of songs that were actually removed ${link}.`
+          : `実際に削除された楽曲のリストは${link}から確認できます。`);
+      }
+
       if (item.matchedFields?.length) {
         lines.push("");
 
@@ -161,6 +173,8 @@ function groupContentPermissionRows(rows) {
         item.title,
         item.messageJa,
         item.messageEn,
+        item.removedSongsPage,
+        item.removedSongsPageEn,
         linkKey,
         matchedKey
       ].join("::");

@@ -96,7 +96,7 @@ const CONTENT_PERMISSION_RULES = [
       {
         "label": "DMCA notice (2024)",
         "labelJa": "DMCA通知（2024年）",
-        "url": "https://gist.githubusercontent.com/peppy/8b003a4537f5bd20d515eb1d02205a84/raw/dmca_20240822.txt"
+        "url": "https://gist.githubusercontent.com/peppy/4bbf655b3badfba15392c272bb472af4/raw/dmca_20240622.txt"
       }
     ]
   },
@@ -129,8 +129,7 @@ const CONTENT_PERMISSION_RULES = [
       "titleUnicode"
     ],
     "keywords": [
-      "大大大大大好きな君へ♡",
-      "Dai Dai Dai Dai Daisuki na Kimi e <3"
+      "大大大大大好きな君へ♡"
     ],
     "title": "Past DMCA notice",
     "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
@@ -178,8 +177,7 @@ const CONTENT_PERMISSION_RULES = [
       "titleUnicode"
     ],
     "keywords": [
-      "雪は何色",
-      "Yuki wa Naniiro"
+      "雪は何色"
     ],
     "title": "Past DMCA notice",
     "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
@@ -649,13 +647,11 @@ const CONTENT_PERMISSION_RULES = [
   fields: ["source", "tags"],
 
   keywords: [
-    "konami",
-    "beatmania",
-    "jubeat",
-    "sound voltex",
-    "dance dance revolution",
-    "reflect beat"
+    "beatmania"
   ],
+
+  removedSongsPage: "dmca/dmcaBeatmania.html",
+  removedSongsPageEn: "dmca/dmcaBeatmania.en.html",
 
   title: "Past DMCA notice",
 
@@ -1028,15 +1024,51 @@ const CONTENT_PERMISSION_RULES = [
   ]
 },
 {
-  category: "personalBan",
+  category: "pastDmca",
   level: "warn",
 
-  fields: ["source", "tags"],
+  fields: ["title", "titleUnicode"],
+
+  removedSongsPage: "dmca/dmcaRiaj.html",
+  removedSongsPageEn: "dmca/dmcaRiaj.en.html",
 
   keywords: [
-    "とある科学の超電磁砲",
-    "涼宮ハルヒの憂鬱",
-    "艦隊これくしょん"
+    "future gazer",
+    "LEVEL5 -judgelight-",
+    "memory of snow",
+    "only my railgun",
+    "way to answer",
+    "God knows...",
+    "Be Starters!",
+    "ライオン",
+    "Chase the world",
+    "Scarlet Ballet",
+    "Black † White",
+    "Born to be",
+    "magenta",
+    "Nevereverland",
+    "Now or Never",
+    "No pain, No game",
+    "エグジスト",
+    "SAVIOR OF SONG",
+    "にんじゃりばんばん",
+    "You & Me",
+    "Brand-new World",
+    "吹雪",
+    "agony",
+    "CHA-LA HEAD-CHA-LA",
+    "トライアングラー",
+    "奇跡の海",
+    "Just Awake",
+    "Scream Hard as You Can",
+    "Rave-up Tonight",
+    "君のとなりに",
+    "Sparkling Daydream",
+    "SAVE MY HEART",
+    "境界の彼方",
+    "アクアテラリウム",
+    "夢色パレード",
+    "海色"
   ],
 
   title: "Past DMCA notice",
@@ -1172,6 +1204,27 @@ const CONTENT_PERMISSION_RULES = [
   {
     "category": "pastDmca",
     "level": "warn",
+    "fields": ["title", "titleUnicode"],
+    "keywords": ["Shine", "Catch Your Dreams!"],
+    "keywordArtists": {
+      "Shine": ["보라"],
+      "Catch Your Dreams!": ["타루"]
+    },
+    "matchMode": "word",
+    "title": "Past DMCA notice",
+    "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    "links": [
+      {
+        "label": "DMCA notice (2024)",
+        "labelJa": "DMCA通知（2024年）",
+        "url": "https://gist.githubusercontent.com/peppy/86c30346d749ae39c2ab6bcb4e906442/raw/dmca-20240419.txt"
+      }
+    ]
+  },
+  {
+    "category": "pastDmca",
+    "level": "warn",
     "fields": [
       "title",
       "titleUnicode"
@@ -1249,6 +1302,10 @@ const CONTENT_PERMISSION_RULES = [
       "SELFISH",
       "Just a fool loves you"
     ],
+    "keywordArtists": {
+      "SELFISH": ["まずらぼ"],
+      "Just a fool loves you": ["C.I.L. Café"]
+    },
     "title": "Past DMCA notice",
     "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
     "messageEn": "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
@@ -1313,6 +1370,7 @@ const CONTENT_PERMISSION_RULES = [
     ],
     "keywords": [
       "櫻ノ詩",
+      "櫻ト向日葵",
       "刻ト詩"
     ],
     "title": "Past DMCA notice",
@@ -1430,6 +1488,11 @@ const CONTENT_PERMISSION_RULES = [
       "iL",
       "Wings of Piano"
     ],
+    "keywordArtists": {
+      "Entrance": ["Ice"],
+      "iL": ["Ice"],
+      "Wings of Piano": ["V.K"]
+    },
     "keywordMatchModes": {
       "iL": "word"
     },
@@ -1608,7 +1671,8 @@ const CONTENT_PERMISSION_RULES = [
       "Photograph",
       "君と世界と物語",
       "Ever After School",
-      "オープニングセレモニー"
+      "オープニングセレモニー",
+      "恋の未来図"
     ],
     "title": "Past DMCA notice",
     "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
@@ -1629,7 +1693,7 @@ const CONTENT_PERMISSION_RULES = [
       "titleUnicode"
     ],
     "keywords": [
-      "eternal feather"
+      "悠久の翼"
     ],
     "title": "Past DMCA notice",
     "messageJa": "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
