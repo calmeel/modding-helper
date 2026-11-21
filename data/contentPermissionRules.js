@@ -1,5 +1,35 @@
 const CONTENT_PERMISSION_RULES = [
   {
+    category: "personalBan",
+    level: "warn",
+    fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
+    keywords: ["RouteSeven"],
+    title: "Music usage restriction",
+    messageJa: "osu! における楽曲使用を禁止しています。使用前に確認してください。",
+    messageEn: "This artist prohibits the use of their music in osu!. Please check before use.",
+    links: [{
+      label: "Music usage terms",
+      labelJa: "楽曲利用規約",
+      url: "https://z-siecle.net/about.html"
+    }]
+  },
+  {
+    category: "pastDmca",
+    level: "warn",
+    fields: ["title", "titleUnicode"],
+    keywords: ["鏡の世界には私しかいない"],
+    title: "Past DMCA notice",
+    messageJa: "過去にDMCA申立てがあったコンテンツです。使用・アップロード前に権利状況を確認してください。",
+    messageEn: "This content has been subject to a past DMCA notice. Please verify the rights status before use or upload.",
+    links: [
+      {
+        label: "osu! beatmap",
+        labelJa: "osu! ビートマップ",
+        url: "https://osu.ppy.sh/beatmapsets/685725#osu/1478540"
+      }
+    ]
+  },
+  {
     category: "pastDmca",
     level: "warn",
     fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
@@ -236,9 +266,9 @@ const CONTENT_PERMISSION_RULES = [
     keywords: ["ウィルプラス", "WillPlus"],
     title: "Music redistribution restriction",
     messageJa:
-      "ガイドラインにより楽曲の転載・配布は全面的に禁止されています。",
+      "ゲームで使用している音楽の転載・配布は全面的に禁止されています。ガイドラインを確認してください。\nまた、特定楽曲については過去にDMCA削除通知が行われています。\n{contentPermissionListLink}から当該リストを確認できます。",
     messageEn:
-      "Reposting and distribution of music are entirely prohibited by the guidelines.",
+      "Reposting or distributing music used in the games is entirely prohibited. Please check the guidelines.\nCertain songs have also been subject to DMCA takedown notices in the past.\nYou can view the list {contentPermissionListLink}.",
     links: [{
       label: "Guidelines",
       labelJa: "ガイドライン",
@@ -403,9 +433,9 @@ const CONTENT_PERMISSION_RULES = [
     ],
     title: "Music usage restriction",
     messageJa:
-      "ガイドラインにより楽曲の使用は原則禁止されています。",
+      "楽曲の転用、ウェブ上での公開を許諾なしに行うことは禁止されています。ガイドラインを確認してください。\nまた、特定楽曲については過去にDMCA削除通知が行われています。\n{contentPermissionListLink}から当該リストを確認できます。",
     messageEn:
-      "Music usage is generally prohibited by the guidelines.",
+      "Repurposing the music or publishing it on the web without permission is prohibited. Please check the guidelines.\nCertain songs have also been subject to DMCA takedown notices in the past.\nYou can view the list {contentPermissionListLink}.",
     links: [{
       label: "Guidelines",
       url: "https://www.clearrave.co.jp/contact/"
@@ -606,9 +636,9 @@ const CONTENT_PERMISSION_RULES = [
     keywords: ["ゆこぴ", "yukopi"],
     title: "Custom map redistribution restriction",
     messageJa:
-      "このアーティストは楽曲の再配布を伴うカスタムマップの作製を制限しています。使用前に確認してください。",
+      "このアーティストは楽曲の再配布を伴うカスタムマップの作製を許可していません。当該ポストを確認してください。",
     messageEn:
-      "This artist restricts the creation of custom maps that involve redistribution of their music. Please check before use.",
+      "This artist does not permit the creation of custom maps involving redistribution of their music. Please check the linked post.",
     links: [{
       label: "osu! discussion",
       url: "https://osu.ppy.sh/beatmapsets/1979883/discussion/-/generalAll#/3752514"
@@ -622,9 +652,9 @@ const CONTENT_PERMISSION_RULES = [
     matchMode: "word",
     title: "Music usage not agreed",
     messageJa:
-      "このアーティストは楽曲の利用に同意していません。使用前に確認してください。",
+      "このアーティストはosu! への楽曲利用に同意していません。当該ポストを確認してください。",
     messageEn:
-      "This artist has not agreed to the use of their music. Please check before use.",
+      "This artist has not agreed to the use of their music in osu!. Please check the linked post.",
     links: [{
       label: "osu! discussion",
       url: "https://osu.ppy.sh/beatmapsets/2297629/discussion/-/generalAll#/5628154"
@@ -644,10 +674,10 @@ const CONTENT_PERMISSION_RULES = [
   title: "Personal upload ban",
 
   messageJa:
-    "このアーティストは osu! へのアップロードを禁止しています。使用前にガイドラインを確認してください。",
+    "このアーティストは osu! への楽曲アップロードを禁止しています。当該ポストを確認してください。",
 
   messageEn:
-    "This artist prohibits uploads to osu!. Please check the guidelines before use.",
+    "This artist prohibits uploads of their music to osu!. Please check the linked post.",
 
   link:
     "https://x.com/zenerat/status/1621121410361065472"
@@ -665,10 +695,10 @@ const CONTENT_PERMISSION_RULES = [
   title: "Permission required",
 
   messageJa:
-    "このアーティストは、再配布や mod 使用に許可を要求しています。使用前に確認してください。",
+    "楽曲の再アップロードには許可が必要です。確認してください。",
 
   messageEn:
-    "This artist requires permission before reuploads or mod usage. Please check before use.",
+    "Permission is required to reupload the music. Please check before use.",
 
   link:
     "https://www.youtube.com/channel/UC9EQzfp2ibv8JnP4ZXjwPyg"
@@ -686,10 +716,10 @@ const CONTENT_PERMISSION_RULES = [
   title: "Derivative work restriction",
 
   messageJa:
-    "このコンテンツには二次利用ガイドラインがあります。Featured Artist かどうか確認してください。",
+    "Arcaeaアプリ内または公式サウンドトラックに含まれる音楽を用いた、音楽ゲームにおける二次創作を禁止しています。ガイドラインを確認してください。",
 
   messageEn:
-    "This content has derivative work restrictions. Please verify whether it is a Featured Artist track.",
+    "Derivative works in rhythm games using music included in the Arcaea app or official soundtracks are prohibited. Please check the guidelines.",
 
   links: [
     {
@@ -715,10 +745,10 @@ const CONTENT_PERMISSION_RULES = [
   title: "Derivative work restriction",
 
   messageJa:
-    "このレーベルには利用ガイドラインがあります。Featured Artist かどうか確認してください。",
+    "当レーベルが許可した場合を除き、楽曲の再配布は禁止されています。ガイドラインを確認してください。",
 
   messageEn:
-    "This label has usage restrictions. Please verify whether it is a Featured Artist track.",
+    "Redistribution of the music is prohibited unless permitted by the label. Please check the guidelines.",
 
   link:
     "https://www.tano-c.net/copyright/"
@@ -736,10 +766,10 @@ const CONTENT_PERMISSION_RULES = [
   title: "Personal upload restriction",
 
   messageJa:
-    "このアーティストには楽曲利用ガイドラインがあります。使用前に確認してください。",
+    "ゲーム（非商用含む）における曲の使用は全面的に禁止です。ガイドラインを確認してください。",
 
   messageEn:
-    "This artist has music usage guidelines. Please check them before use.",
+    "All use of the music in games, including non-commercial games, is prohibited. Please check the guidelines.",
 
   links: [
     {
@@ -765,10 +795,10 @@ const CONTENT_PERMISSION_RULES = [
   title: "Derivative work restriction",
 
   messageJa:
-    "このコンテンツには利用ガイドラインがあります。使用前に確認してください。",
+    "本作品の楽曲をそのまま二次創作物の素材として使用・転載・再公開することは禁止されています。ガイドラインを確認してください。",
 
   messageEn:
-    "This content has usage guidelines. Please check them before use.",
+    "Using, reposting, or republishing music from this work as-is as material for derivative works is prohibited. Please check the guidelines.",
 
   link:
     "https://manosaba.com/guidelines"
@@ -948,10 +978,10 @@ const CONTENT_PERMISSION_RULES = [
   title: "Music usage restriction",
 
   messageJa:
-    "ガイドラインにより楽曲の使用は原則禁止されています。使用・アップロード前に権利状況を確認してください。",
+    "音楽の直接的な引用および転載は禁止されています。ガイドラインを確認してください。\nまた、特定楽曲については過去にDMCA削除通知が行われています。\n{contentPermissionListLink}から当該リストを確認できます。",
 
   messageEn:
-    "Music usage is generally prohibited by the guidelines. Please verify the rights status before use or upload.",
+    "Direct quotation and reproduction of music are prohibited. Please check the guidelines.\nCertain songs have also been subject to DMCA takedown notices in the past.\nYou can view the list {contentPermissionListLink}.",
 
   links: [
     {
@@ -976,10 +1006,10 @@ const CONTENT_PERMISSION_RULES = [
   title: "Derivative work restriction",
 
   messageJa:
-    "ガイドラインによりアップロードが制限されています。Featured Artist かどうか確認してください。",
+    "二次創作は文字または視覚芸術に関するものに限定されています。ガイドラインを確認してください。\nまた、特定楽曲については過去にDMCA削除通知が行われています。\n{contentPermissionListLink}から当該リストを確認できます。",
 
   messageEn:
-    "Upload is restricted by the guidelines. Please verify whether it is a Featured Artist track.",
+    "Derivative works are limited to literary or visual art. Please check the guidelines.\nCertain songs have also been subject to DMCA takedown notices in the past.\nYou can view the list {contentPermissionListLink}.",
 
   links: [
     {
@@ -1001,10 +1031,10 @@ const CONTENT_PERMISSION_RULES = [
   title: "Derivative work restriction",
 
   messageJa:
-    "ガイドラインにより利用が制限されています。使用・アップロード前に権利状況を確認してください。",
+    "音楽の直接的な引用および転載は禁止されています。ガイドラインを確認してください。\nまた、特定楽曲については過去にDMCA削除通知が行われています。\n{contentPermissionListLink}から当該リストを確認できます。",
 
   messageEn:
-    "Usage is restricted by the guidelines. Please verify the rights status before use or upload.",
+    "Direct quotation and reproduction of music are prohibited. Please check the guidelines.\nCertain songs have also been subject to DMCA takedown notices in the past.\nYou can view the list {contentPermissionListLink}.",
 
   links: [
     {
@@ -1079,10 +1109,10 @@ const CONTENT_PERMISSION_RULES = [
   title: "Music usage restriction",
 
   messageJa:
-    "ガイドラインにより楽曲の使用は原則禁止されています。使用・アップロード前に権利状況を確認してください。",
+    "音楽をネットワーク上で不特定多数が閲覧・転送できる状態にする行為は禁止されています。ガイドラインを確認してください。\nまた、特定楽曲については過去にDMCA削除通知が行われています。\n{contentPermissionListLink}から当該リストを確認できます。",
 
   messageEn:
-    "Music usage is generally prohibited by the guidelines. Please verify the rights status before use or upload.",
+    "Making music available for an unspecified number of people to access or transfer over a network is prohibited. Please check the guidelines.\nCertain songs have also been subject to DMCA takedown notices in the past.\nYou can view the list {contentPermissionListLink}.",
 
   links: [
     {
@@ -1200,15 +1230,15 @@ const CONTENT_PERMISSION_RULES = [
   title: "Music usage restriction",
 
   messageJa:
-    "ガイドラインにより楽曲の使用は原則禁止されています。使用・アップロード前に権利状況を確認してください。",
+    "楽曲そのものを再配布する行為は禁止されています。ガイドラインを確認してください。\nまた、特定楽曲については過去にDMCA削除通知が行われています。\n{contentPermissionListLink}から当該リストを確認できます。",
 
   messageEn:
-    "Music usage is generally prohibited by the guidelines. Please verify the rights status before use or upload.",
+    "Redistribution of the music itself is prohibited. Please check the guidelines.\nCertain songs have also been subject to DMCA takedown notices in the past.\nYou can view the list {contentPermissionListLink}.",
 
   links: [
     {
       label: "Guidelines",
-      url: "https://august-soft.com/about/fanfic_guideline"
+      url: "https://august-soft.com/about/terms_guideline"
     }
   ]
 },
@@ -1910,13 +1940,38 @@ const CONTENT_PERMISSION_RULES = [
       "雨部冷キザミ"
     ],
     "title": "Map and audio redistribution restriction",
-    "messageJa": "このアーティストは map の配布および音源データの二次配布を禁止しています。使用前にガイドラインを確認してください。",
-    "messageEn": "This artist prohibits distribution of maps and redistribution of audio files. Please check the guidelines before use.",
+    "messageJa": "このアーティストは osu! における map の配布および音源データの二次配布を禁止しています。ガイドラインを確認してください。",
+    "messageEn": "This artist prohibits the distribution of maps and redistribution of audio data in osu!. Please check the guidelines.",
     "links": [
       {
         "label": "Guidelines",
         "labelJa": "ガイドライン",
         "url": "https://note.com/amebre_kizami/n/n6f7be160788a"
+      }
+    ]
+  },
+  {
+    "category": "personalBan",
+    "level": "warn",
+    "fields": [
+      "artist",
+      "artistUnicode",
+      "title",
+      "titleUnicode",
+      "tags"
+    ],
+    "keywords": [
+      "ころんば",
+      "Koronba"
+    ],
+    "title": "Artist credit and music redistribution restrictions",
+    "messageJa": "アーティスト名をクレジットすることはタブーとされています。Tags から削除し、アーティスト名には「Unknown Artist」を用いることを検討して下さい。\nまた、「ヤツメ穴」「クロマグロがとんでくる」「イワシがつちからはえてくるんだ」「　.　」の4曲以外は転載が許可されていません。",
+    "messageEn": "Crediting the artist by name is considered taboo. Consider removing the name from Tags and using “Unknown Artist” as the artist name.\nReuploads are not permitted except for these four songs: “ヤツメ穴”, “クロマグロがとんでくる”, “イワシがつちからはえてくるんだ”, and “　.　”.",
+    "links": [
+      {
+        "label": "Pixiv Encyclopedia",
+        "labelJa": "ピクシブ大百科",
+        "url": "https://dic.pixiv.net/a/%E3%81%93%E3%82%8D%E3%82%93%E3%81%B0"
       }
     ]
   },
@@ -1933,14 +1988,14 @@ const CONTENT_PERMISSION_RULES = [
       "OpenTracks",
       "DOVA-SYNDROME"
     ],
-    "title": "Rhythm game audio usage restriction",
-    "messageJa": "このサイトは音楽ゲームへの音源利用を制限しています。使用前にガイドラインを確認してください。",
-    "messageEn": "This site restricts the use of its audio in rhythm games. Please check the guidelines before use.",
+    "title": "Rhythm game music credit requirement",
+    "messageJa": "音楽ゲームで利用する際は楽曲名・作曲者名のクレジットが必須です。確認して下さい。",
+    "messageEn": "Credits for the song title and composer are required when using music in rhythm games. Please check the requirements.",
     "links": [
       {
-        "label": "Guidelines",
-        "labelJa": "ガイドライン",
-        "url": "https://opentracks.com/help/articles/game_trpg/#section-6"
+        "label": "Notice",
+        "labelJa": "お知らせ",
+        "url": "https://opentracks.com/news/detail/17"
       }
     ]
   },

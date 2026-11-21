@@ -1,0 +1,108 @@
+.permission-layout {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+body {
+  max-width: 1512px;
+}
+
+.permission-content { min-width: 0; }
+.permission-table { overflow-x: auto; }
+.permission-content h2,
+.permission-content h3 { scroll-margin-top: var(--permission-scroll-offset, 24px); }
+
+.permission-sidebar {
+  position: sticky;
+  top: 24px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  padding: 16px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  background: #181818;
+}
+
+.permission-nav-title {
+  margin: 0 0 12px;
+  color: #ccc;
+  font-size: 13px;
+}
+
+.permission-toc,
+.permission-toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.permission-toc > li + li { margin-top: 8px; }
+.permission-toc ul { margin: 6px 0 10px 12px; }
+.permission-toc > li:not(.is-active) ul { display: none; }
+.permission-toc a {
+  display: block;
+  padding: 8px 10px;
+  border-left: 3px solid transparent;
+  border-radius: 0 4px 4px 0;
+  color: #aaa;
+  overflow-wrap: anywhere;
+}
+.permission-toc a:visited { color: #aaa; }
+.permission-toc a:hover,
+.permission-toc a:focus-visible { color: #eee; background: #252535; }
+.permission-toc > .is-active > a {
+  color: #9fdcff;
+  background: #202d38;
+  border-left-color: #9fdcff;
+  font-weight: bold;
+}
+.permission-toc ul a[aria-current="location"] {
+  color: #eee;
+  background: #292939;
+  border-left-color: #cfd6ff;
+}
+.permission-mobile-nav { display: none; }
+
+@media (max-width: 1100px) {
+  body { padding-top: 88px; }
+  .permission-layout { display: block; }
+  .permission-sidebar { display: none; }
+  .permission-mobile-nav {
+    display: block;
+    position: fixed;
+    z-index: 10;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #181818;
+    border-bottom: 1px solid #3a3a48;
+    box-shadow: 0 4px 16px #0006;
+  }
+  .permission-mobile-nav summary {
+    padding: 12px 16px;
+    color: #9fdcff;
+    cursor: pointer;
+    font-weight: bold;
+    overflow-wrap: anywhere;
+  }
+  .permission-mobile-nav nav {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 0 16px 16px;
+  }
+  .permission-current-label {
+    display: inline-block;
+    width: calc(100% - 24px);
+    vertical-align: top;
+  }
+  .permission-current-label > span {
+    display: block;
+    min-height: 1.55em;
+    line-height: 1.55;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

@@ -24,6 +24,25 @@ function detects(field, value, keyword, artist = "") {
   ));
 }
 
+test("Koronba credit and redistribution warning matches either alias in the five specified fields", () => {
+  const url = "https://dic.pixiv.net/a/%E3%81%93%E3%82%8D%E3%82%93%E3%81%B0";
+  for (const keyword of ["ころんば", "Koronba", "KORONBA", "koronba"]) {
+    for (const field of ["Artist", "ArtistUnicode", "Title", "TitleUnicode", "Tags", "Source"]) {
+      const items = context.runContentPermissionCheck(
+        `[Metadata]\n${field}:${keyword}\n`, "test.osu"
+      ).results.filter(item => item.links.some(link => link.url === url));
+      assert.equal(items.length, field === "Source" ? 0 : 1, `${field}: ${keyword}`);
+      if (items.length) {
+        assert.equal(items[0].category, "personalBan");
+        assert.equal(items[0].level, "warn");
+        assert.ok(items[0].messageJa.includes("\nまた、"));
+        assert.ok(items[0].messageJa.includes("「　.　」"));
+        assert.ok(items[0].messageEn.includes("\nReuploads"));
+      }
+    }
+  }
+});
+
 test("KONAMI and RIAJ warnings link to localized song pages in both app modes", () => {
   const formatterContext = vm.createContext({
     escapeHtml: value => String(value).replace(/[&<>"']/g, char => ({
@@ -50,7 +69,12 @@ test("KONAMI and RIAJ warnings link to localized song pages in both app modes", 
         const base = electron ? "https://calmeel.github.io/modding-helper/docs/" : "docs/";
         const page = lang === "en" ? `${pageName}.en.html` : `${pageName}.html`;
         assert.ok(html.includes(`href="${base}${page}"`));
-        assert.ok(html.includes(lang === "ja" ? ">こちら</a>から確認できます。" : ">here</a>."));
+        assert.ok(html.includes(lang === "ja" ? ">削除された楽曲のリスト</a>" : ">List of removed songs</a>"));
+        const lines = html.split("\n");
+        const listIndex = lines.findIndex(line => line.includes(`href="${base}${page}"`));
+        assert.ok(lines[listIndex - 1].includes(`href="${result.results[0].links[0].url}"`));
+        assert.ok(!html.includes("実際に削除された楽曲のリストは"));
+        assert.ok(!html.includes("You can view the list of songs that were actually removed"));
       }
     }
   }
@@ -221,6 +245,23 @@ test("Alon Mor notice matches only the five configured fields with case-insensit
   }
 });
 
+test("Kagami no Sekai notice checks only titles without requiring monet", () => {
+  const url = "https://osu.ppy.sh/beatmapsets/685725#osu/1478540";
+  for (const field of ["Title", "TitleUnicode", "Artist", "ArtistUnicode", "Source", "Tags"]) {
+    const results = context.runContentPermissionCheck(
+      `[Metadata]\n${field}:鏡の世界には私しかいない\n`, "test.osu"
+    ).results.filter(item => item.links.some(link => link.url === url));
+    assert.equal(results.length, ["Title", "TitleUnicode"].includes(field) ? 1 : 0, field);
+    if (results.length) {
+      assert.equal(results[0].category, "pastDmca");
+      assert.equal(results[0].links[0].labelJa, "osu! ビートマップ");
+    }
+  }
+  assert.ok(context.runContentPermissionCheck(
+    "[Metadata]\nArtist:Other Artist\nTitle:鏡の世界には私しかいない (Remix)\n", "test.osu"
+  ).results.some(item => item.links.some(link => link.url === url)));
+});
+
 test("selected artist keywords require boundaries in every configured field", () => {
   for (const keyword of ["NOMA", "Avans", "Zekk", "tyDi", "lapix", "Frums", "ak+q", "Ado"]) {
     const fields = ["Artist", "ArtistUnicode"];
@@ -388,8 +429,10 @@ test("KeroQ DMCA titles no longer duplicate guideline warnings", () => {
     ).results.find(result => result.links.some(link => link.url === guideline));
     assert.ok(item, `${field}: ${value}`);
     assert.equal(item.links.length, 1);
-    assert.ok(!item.messageJa.includes("DMCA"));
-    assert.ok(!item.messageEn.includes("DMCA"));
+    assert.equal(item.category, "personalBan");
+    assert.notEqual(item.title, "Past DMCA notice");
+    assert.ok(item.messageJa.includes("{contentPermissionListLink}"));
+    assert.ok(item.messageEn.includes("{contentPermissionListLink}"));
   }
 });
 
@@ -406,7 +449,7 @@ test("disabled guideline titles and AUGUST works no longer trigger their guideli
       values: ["ナグルファルの船上にて", "登れない坂道", "片翼のイカロス", "カザハネ", "スイッチ・オン♪", "機械人形"]
     },
     {
-      url: "https://august-soft.com/about/fanfic_guideline",
+      url: "https://august-soft.com/about/terms_guideline",
       fields: ["Source", "Tags"],
       values: ["あいりすミスティリア！", "千の刃濤、桃花染の皇姫", "大図書館の羊飼い", "穢翼のユースティア", "FORTUNE ARTERIAL", "夜明け前より瑠璃色な", "月は東に日は西に", "Princess Holiday", "バイナリィ・ポット"]
     }

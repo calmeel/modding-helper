@@ -1,24 +1,19 @@
 /** コンテンツ使用許可 */
-const CONTENT_PERMISSION_CATEGORY_ORDER = [
-  "conditionalArtist",
-  "disallowedArtist",
-  "conditionalLabel",
-  "permissionRequired",
-  "pastDmca",
-  "personalBan"
+const CONTENT_PERMISSION_SECTIONS = [
+  "contentPermissionOfficial",
+  "contentPermissionGuidelines",
+  "contentPermissionPastDmca"
 ];
 
-function getContentPermissionCategoryTitle(category, t) {
-  const keyMap = {
-    conditionalArtist: "contentPermissionConditionalArtists",
-    disallowedArtist: "contentPermissionDisallowedArtists",
-    conditionalLabel: "contentPermissionConditionalLabels",
-    pastDmca: "contentPermissionPastDmca",
-    personalBan: "contentPermissionPersonalBans",
-    permissionRequired: "contentPermissionPermissionRequired"
-  };
-
-  return t(keyMap[category] ?? "contentPermissionOther");
+function getContentPermissionSection(item) {
+  // Some older DMCA rules still use the personalBan category.
+  if (item.category === "pastDmca" || item.title === "Past DMCA notice") {
+    return "contentPermissionPastDmca";
+  }
+  if (["conditionalArtist", "disallowedArtist", "conditionalLabel"].includes(item.category)) {
+    return "contentPermissionOfficial";
+  }
+  return "contentPermissionGuidelines";
 }
 
 function formatMultipleContentPermissionResults(results, t) {
@@ -29,10 +24,6 @@ function formatMultipleContentPermissionResults(results, t) {
   const matchedResults = sortResultsForDisplay(results).filter(result =>
     result.results?.length
   );
-
-  if (!matchedResults.length) {
-    return escapeHtml(t("noContentPermissionIssues"));
-  }
 
   const rows = [];
 
@@ -45,19 +36,35 @@ function formatMultipleContentPermissionResults(results, t) {
     }
   }
 
-  const lines = [];
+  const lang = localStorage.getItem("moddingHelperLang") || "ja";
+  const docsBase = typeof window !== "undefined" && window.electronAPI
+    ? "https://calmeel.github.io/modding-helper/docs/"
+    : "docs/";
+  const listPage = lang === "en" ? "contentPermissionList.en.html" : "contentPermissionList.html";
+  const listLink = `<a href="${escapeHtml(docsBase + listPage)}" target="_blank" rel="noopener noreferrer">` +
+    `${escapeHtml(t("contentPermissionCheckListLinkText"))}</a>`;
+  const lines = [
+    escapeHtml(t("contentPermissionCheckListLink")).replace("{link}", () => listLink),
+    "",
+    formatSeparator()
+  ];
 
-  for (const category of CONTENT_PERMISSION_CATEGORY_ORDER) {
+  for (const section of CONTENT_PERMISSION_SECTIONS) {
     const categoryRows = rows.filter(row =>
-      row.item.category === category
+      getContentPermissionSection(row.item) === section
     );
 
-    if (!categoryRows.length) continue;
-
     lines.push(formatSectionTitle(
-      getContentPermissionCategoryTitle(category, t)
+      t(section)
     ));
     lines.push("");
+
+    if (!categoryRows.length) {
+      lines.push(escapeHtml(t("noContentPermissionIssues")));
+      lines.push("");
+      lines.push(formatSeparator());
+      continue;
+    }
 
     const groupedRows = groupContentPermissionRows(categoryRows);
 
@@ -77,8 +84,6 @@ function formatMultipleContentPermissionResults(results, t) {
 
       lines.push("");
 
-      const lang = localStorage.getItem("moddingHelperLang") || "ja";
-
       const message =
         t(item.messageKey) ||
         (lang === "en" ? item.messageEn : item.messageJa) ||
@@ -88,21 +93,9 @@ function formatMultipleContentPermissionResults(results, t) {
 
       lines.push(
         `<span class="${cls}">` +
-        `${escapeHtml(message)}` +
+        escapeHtml(message).replace("{contentPermissionListLink}", () => listLink) +
         `</span>`
       );
-
-      if (item.removedSongsPage) {
-        const docsBase = typeof window !== "undefined" && window.electronAPI
-          ? "https://calmeel.github.io/modding-helper/docs/"
-          : "docs/";
-        const page = lang === "en" ? (item.removedSongsPageEn ?? item.removedSongsPage) : item.removedSongsPage;
-        const link = `<a href="${escapeHtml(docsBase + page)}" target="_blank" rel="noopener noreferrer">` +
-          `${lang === "en" ? "here" : "こちら"}</a>`;
-        lines.push(lang === "en"
-          ? `You can view the list of songs that were actually removed ${link}.`
-          : `実際に削除された楽曲のリストは${link}から確認できます。`);
-      }
 
       if (item.matchedFields?.length) {
         lines.push("");
@@ -139,6 +132,15 @@ function formatMultipleContentPermissionResults(results, t) {
             `</a>`
           );
         }
+      }
+
+      if (item.removedSongsPage) {
+        if (!links.length) lines.push("");
+        const page = lang === "en" ? (item.removedSongsPageEn ?? item.removedSongsPage) : item.removedSongsPage;
+        lines.push(
+          `<a href="${escapeHtml(docsBase + page)}" target="_blank" rel="noopener noreferrer">` +
+          `${lang === "en" ? "List of removed songs" : "削除された楽曲のリスト"}</a>`
+        );
       }
 
       lines.push("");

@@ -2,6 +2,7 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>
       Content Permission Check 一覧
     </title>
@@ -30,6 +31,13 @@
         padding-left: 10px;
         margin-top: 34px;
         margin-bottom: 14px;
+      }
+
+      h3 {
+        color: #cfd6ff;
+        margin-top: 26px;
+        margin-bottom: 10px;
+        font-size: 17px;
       }
 
       p {
@@ -162,8 +170,20 @@
         line-height: 1.6;
       }
     </style>
+    <link rel="stylesheet" href="contentPermissionNavigation.css"/>
+    <script src="contentPermissionNavigation.js" defer></script>
   </head>
   <body>
+    <details class="permission-mobile-nav">
+      <summary aria-label="現在位置と目次"><span class="permission-current-label">目次</span></summary>
+      <nav aria-label="目次"></nav>
+    </details>
+    <div class="permission-layout">
+      <aside class="permission-sidebar">
+        <p class="permission-nav-title">目次</p>
+        <nav aria-label="目次"></nav>
+      </aside>
+      <main class="permission-content">
     <h1>
       Content Permission Check 一覧
     </h1>
@@ -184,6 +204,7 @@
     <h2>
       osu!official の Content Usage Permissions
     </h2>
+    <div class="permission-table">
     <table>
       <thead>
         <tr>
@@ -356,9 +377,12 @@
         </tr>
       </tbody>
     </table>
+    </div>
     <h2>
       ガイドライン / 個別制限
     </h2>
+    <h3>アーティスト</h3>
+    <div class="permission-table">
     <table>
       <thead>
         <tr>
@@ -386,39 +410,20 @@
           <td class="keywords-cell">
             <span class="keyword-tag">Avans</span>
           </td>
-          <td>このアーティストは楽曲の利用に同意していません。使用前に確認してください。</td>
+          <td>このアーティストはosu! への楽曲利用に同意していません。</td>
           <td>
             <a href="https://osu.ppy.sh/beatmapsets/2297629/discussion/-/generalAll#/5628154" rel="noopener noreferrer" target="_blank">osu! discussion</a>
           </td>
         </tr>
         <tr>
-          <td class="target-name">ゆこぴ</td>
+          <td class="target-name">RouteSeven (iF)</td>
           <td><code>Artist / ArtistUnicode / Title / TitleUnicode / Tags</code></td>
           <td class="keywords-cell">
-            <span class="keyword-tag">ゆこぴ</span>
-            <span class="keyword-tag">yukopi</span>
+            <span class="keyword-tag">RouteSeven</span>
           </td>
-          <td>このアーティストは楽曲の再配布を伴うカスタムマップの作製を制限しています。使用前に確認してください。</td>
+          <td>osu! における楽曲使用を禁止しています。</td>
           <td>
-            <a href="https://osu.ppy.sh/beatmapsets/1979883/discussion/-/generalAll#/3752514" rel="noopener noreferrer" target="_blank">osu! discussion</a>
-          </td>
-        </tr>
-        <tr>
-          <td class="target-name">
-            ぱらどっと
-          </td>
-          <td>
-            <code>Artist / ArtistUnicode / Title / TitleUnicode / Tags</code>
-          </td>
-          <td class="keywords-cell">
-            <span class="keyword-tag">ぱらどっと</span>
-            <span class="keyword-tag">Para Dot.</span>
-          </td>
-          <td>
-            このアーティストは osu! へのアップロードを禁止しています。使用前にガイドラインを確認してください。
-          </td>
-          <td>
-            <a href="https://x.com/zenerat/status/1621121410361065472" rel="noopener noreferrer" target="_blank">告知</a>
+            <a href="https://z-siecle.net/about.html" rel="noopener noreferrer" target="_blank">楽曲利用規約</a>
           </td>
         </tr>
         <tr>
@@ -431,9 +436,7 @@
           <td class="keywords-cell">
             <span class="keyword-tag">SmilyBruh</span>
           </td>
-          <td>
-            再配布や mod 使用に許可を要求しているため、使用前に確認してください。
-          </td>
+          <td>楽曲の再アップロードには許可が必要です。</td>
           <td>
             <a href="https://www.youtube.com/channel/UC9EQzfp2ibv8JnP4ZXjwPyg" rel="noopener noreferrer" target="_blank">YouTube channel</a>
           </td>
@@ -448,9 +451,7 @@
           <td class="keywords-cell">
             <span class="keyword-tag">SLAVE.V-V-R</span>
           </td>
-          <td>
-            このアーティストには楽曲利用ガイドラインがあります。使用前に確認してください。
-          </td>
+          <td>ゲーム（非商用含む）における曲の使用は全面的に禁止です。</td>
           <td>
             <a href="https://slave-vvr.jimdofree.com/%E6%A5%BD%E6%9B%B2%E5%88%A9%E7%94%A8%E6%99%82%E3%81%AE%E3%82%AC%E3%82%A4%E3%83%89%E3%83%A9%E3%82%A4%E3%83%B3-guidelines-for-using-music/" rel="noopener noreferrer" target="_blank">日本語ガイドライン</a>
             <br/>
@@ -463,11 +464,78 @@
           <td class="keywords-cell">
             <span class="keyword-tag">雨部冷キザミ</span>
           </td>
-          <td>このアーティストは map の配布および音源データの二次配布を禁止しています。使用前にガイドラインを確認してください。</td>
+          <td>このアーティストは osu! における map の配布および音源データの二次配布を禁止しています。</td>
           <td>
             <a href="https://note.com/amebre_kizami/n/n6f7be160788a" rel="noopener noreferrer" target="_blank">ガイドライン</a>
           </td>
         </tr>
+        <tr>
+          <td class="target-name">ころんば</td>
+          <td><code>Artist / ArtistUnicode / Title / TitleUnicode / Tags</code></td>
+          <td class="keywords-cell">
+            <span class="keyword-tag">ころんば</span>
+            <span class="keyword-tag">Koronba</span>
+          </td>
+          <td>アーティスト名をクレジットすることはタブーとされています。Tags から削除し、アーティスト名には「Unknown Artist」を用いることを検討して下さい。<br/>
+            また、「ヤツメ穴」「クロマグロがとんでくる」「イワシがつちからはえてくるんだ」「　.　」の4曲以外は転載が許可されていません。</td>
+          <td>
+            <a href="https://dic.pixiv.net/a/%E3%81%93%E3%82%8D%E3%82%93%E3%81%B0" rel="noopener noreferrer" target="_blank">ピクシブ大百科</a>
+          </td>
+        </tr>
+        <tr>
+          <td class="target-name">
+            ぱらどっと
+          </td>
+          <td>
+            <code>Artist / ArtistUnicode / Title / TitleUnicode / Tags</code>
+          </td>
+          <td class="keywords-cell">
+            <span class="keyword-tag">ぱらどっと</span>
+            <span class="keyword-tag">Para Dot.</span>
+          </td>
+          <td>このアーティストは osu! への楽曲アップロードを禁止しています。</td>
+          <td>
+            <a href="https://x.com/zenerat/status/1621121410361065472" rel="noopener noreferrer" target="_blank">告知</a>
+          </td>
+        </tr>
+        <tr>
+          <td class="target-name">ゆこぴ</td>
+          <td><code>Artist / ArtistUnicode / Title / TitleUnicode / Tags</code></td>
+          <td class="keywords-cell">
+            <span class="keyword-tag">ゆこぴ</span>
+            <span class="keyword-tag">yukopi</span>
+          </td>
+          <td>このアーティストは楽曲の再配布を伴うカスタムマップの作製を許可していません。</td>
+          <td>
+            <a href="https://osu.ppy.sh/beatmapsets/1979883/discussion/-/generalAll#/3752514" rel="noopener noreferrer" target="_blank">osu! discussion</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <h3>音楽ゲーム</h3>
+    <div class="permission-table">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 18%;">
+            対象
+          </th>
+          <th style="width: 16%;">
+            検出フィールド
+          </th>
+          <th style="width: 26%;">
+            キーワード
+          </th>
+          <th style="width: 25%;">
+            内容
+          </th>
+          <th style="width: 15%;">
+            リンク
+          </th>
+        </tr>
+      </thead>
+      <tbody>
         <tr>
           <td class="target-name">
             Arcaea
@@ -478,9 +546,7 @@
           <td class="keywords-cell">
             <span class="keyword-tag">arcaea</span>
           </td>
-          <td>
-            ガイドラインによりアップロードが制限されています。Featured Artist かどうか確認してください。
-          </td>
+          <td>Arcaeaアプリ内または公式サウンドトラックに含まれる音楽を用いた、音楽ゲームにおける二次創作を禁止しています。</td>
           <td>
             <a href="https://arcaea.lowiro.com/ja/derivative_policy" rel="noopener noreferrer" target="_blank">日本語ガイドライン</a>
             <br/>
@@ -500,30 +566,37 @@
             <span class="keyword-tag">deemo</span>
             <span class="keyword-tag">voez</span>
           </td>
-          <td>
-            ガイドラインによりアップロードが制限されています。Featured Artist かどうか確認してください。
-          </td>
+          <td>二次創作は文字または視覚芸術に関するものに限定されています。また、特定楽曲については過去にDMCA削除通知が行われています。</td>
           <td>
             <a href="https://www.terms.rayark.com/terms-en" rel="noopener noreferrer" target="_blank">ガイドライン</a>
           </td>
         </tr>
+      </tbody>
+    </table>
+    </div>
+    <h3>ゲーム</h3>
+    <div class="permission-table">
+    <table>
+      <thead>
         <tr>
-          <td class="target-name">
-            HARDCORE TANO*C
-          </td>
-          <td>
-            <code>Source / Tags</code>
-          </td>
-          <td class="keywords-cell">
-            <span class="keyword-tag">hardcore tano*c</span>
-          </td>
-          <td>
-            このレーベルには利用ガイドラインがあります。Featured Artist かどうか確認してください。
-          </td>
-          <td>
-            <a href="https://www.tano-c.net/copyright/" rel="noopener noreferrer" target="_blank">ガイドライン</a>
-          </td>
+          <th style="width: 18%;">
+            対象
+          </th>
+          <th style="width: 16%;">
+            検出フィールド
+          </th>
+          <th style="width: 26%;">
+            キーワード
+          </th>
+          <th style="width: 25%;">
+            内容
+          </th>
+          <th style="width: 15%;">
+            リンク
+          </th>
         </tr>
+      </thead>
+      <tbody>
         <tr>
           <td class="target-name">
             魔法少女ノ魔女裁判
@@ -534,13 +607,90 @@
           <td class="keywords-cell">
             <span class="keyword-tag">魔法少女ノ魔女裁判</span>
           </td>
-          <td>
-            このコンテンツには利用ガイドラインがあります。使用前に確認してください。
-          </td>
+          <td>本作品の楽曲をそのまま二次創作物の素材として使用・転載・再公開することは禁止されています。</td>
           <td>
             <a href="https://manosaba.com/guidelines" rel="noopener noreferrer" target="_blank">ガイドライン</a>
           </td>
         </tr>
+      </tbody>
+    </table>
+    </div>
+    <h3>音楽レーベル</h3>
+    <div class="permission-table">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 18%;">
+            対象
+          </th>
+          <th style="width: 16%;">
+            検出フィールド
+          </th>
+          <th style="width: 26%;">
+            キーワード
+          </th>
+          <th style="width: 25%;">
+            内容
+          </th>
+          <th style="width: 15%;">
+            リンク
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="target-name">
+            HARDCORE TANO*C
+          </td>
+          <td>
+            <code>Source / Tags</code>
+          </td>
+          <td class="keywords-cell">
+            <span class="keyword-tag">hardcore tano*c</span>
+          </td>
+          <td>当レーベルが許可した場合を除き、楽曲の再配布は禁止されています。</td>
+          <td>
+            <a href="https://www.tano-c.net/copyright/" rel="noopener noreferrer" target="_blank">ガイドライン</a>
+          </td>
+        </tr>
+        <tr>
+          <td class="target-name">OpenTracks / DOVA-SYNDROME</td>
+          <td><code>Artist / ArtistUnicode / Source / Tags</code></td>
+          <td class="keywords-cell">
+            <span class="keyword-tag">OpenTracks</span>
+            <span class="keyword-tag">DOVA-SYNDROME</span>
+          </td>
+          <td>音楽ゲームで利用する際は楽曲名・作曲者名のクレジットが必須です。</td>
+          <td>
+            <a href="https://opentracks.com/news/detail/17" rel="noopener noreferrer" target="_blank">お知らせ</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <h3>アダルトゲームブランド</h3>
+    <div class="permission-table">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 18%;">
+            対象
+          </th>
+          <th style="width: 16%;">
+            検出フィールド
+          </th>
+          <th style="width: 26%;">
+            キーワード
+          </th>
+          <th style="width: 25%;">
+            内容
+          </th>
+          <th style="width: 15%;">
+            リンク
+          </th>
+        </tr>
+      </thead>
+      <tbody>
         <tr>
           <td class="target-name">
             ALcot
@@ -551,9 +701,7 @@
           <td class="keywords-cell">
             <span class="keyword-tag">alcot</span>
           </td>
-          <td>
-            ガイドラインにより楽曲の使用は原則禁止されています。
-          </td>
+          <td>音楽の直接的な引用および転載は禁止されています。また、特定楽曲については過去にDMCA削除通知が行われています。</td>
           <td>
             <a href="https://www.alcot.biz/information.html" rel="noopener noreferrer" target="_blank">ガイドライン</a>
           </td>
@@ -568,9 +716,7 @@
           <td class="keywords-cell">
             <span class="keyword-tag">HOOKSOFT</span>
           </td>
-          <td>
-            ガイドラインにより利用が制限されています。
-          </td>
+          <td>音楽の直接的な引用および転載は禁止されています。また、特定楽曲については過去にDMCA削除通知が行われています。</td>
           <td>
             <a href="https://www.hook-net.jp/htm/about.htm" rel="noopener noreferrer" target="_blank">ガイドライン</a>
           </td>
@@ -587,11 +733,9 @@
             <span class="keyword-tag">オーガスト</span>
             <span class="keyword-tag">AUGUST</span>
           </td>
+          <td>楽曲そのものを再配布する行為は禁止されています。また、特定楽曲については過去にDMCA削除通知が行われています。</td>
           <td>
-            ガイドラインにより楽曲の使用は原則禁止されています。
-          </td>
-          <td>
-            <a href="https://august-soft.com/about/fanfic_guideline" rel="noopener noreferrer" target="_blank">ガイドライン</a>
+            <a href="https://august-soft.com/about/terms_guideline" rel="noopener noreferrer" target="_blank">ガイドライン</a>
           </td>
         </tr>
         <tr>
@@ -615,9 +759,7 @@
             <span class="keyword-tag">√after and another</span>
             <span class="keyword-tag">しゅぷれ〜むキャンディ</span>
           </td>
-          <td>
-            ガイドラインにより楽曲の使用は原則禁止されています。
-          </td>
+          <td>音楽をネットワーク上で不特定多数が閲覧・転送できる状態にする行為は禁止されています。また、特定楽曲については過去にDMCA削除通知が行われています。</td>
           <td>
             <a href="https://www.keromakura.net/support/support/guideline.html" rel="noopener noreferrer" target="_blank">ガイドライン</a>
           </td>
@@ -629,7 +771,7 @@
             <span class="keyword-tag">ウィルプラス</span>
             <span class="keyword-tag">WillPlus</span>
           </td>
-          <td>ガイドラインにより楽曲の転載・配布は全面的に禁止されています。</td>
+          <td>ゲームで使用している音楽の転載・配布は全面的に禁止されています。また、特定楽曲については過去にDMCA削除通知が行われています。</td>
           <td>
             <a href="https://www.will-japan.co.jp/guidelines/" rel="noopener noreferrer" target="_blank">ガイドライン</a>
           </td>
@@ -651,28 +793,19 @@
             <span class="keyword-tag">Recette</span>
             <span class="keyword-tag">Lovelet</span>
           </td>
-          <td>ガイドラインにより楽曲の使用は原則禁止されています。</td>
+          <td>楽曲の転用、ウェブ上での公開を許諾なしに行うことは禁止されています。また、特定楽曲については過去にDMCA削除通知が行われています。</td>
           <td>
             <a href="https://www.clearrave.co.jp/contact/" rel="noopener noreferrer" target="_blank">ガイドライン</a>
           </td>
         </tr>
-        <tr>
-          <td class="target-name">OpenTracks / DOVA-SYNDROME</td>
-          <td><code>Artist / ArtistUnicode / Source / Tags</code></td>
-          <td class="keywords-cell">
-            <span class="keyword-tag">OpenTracks</span>
-            <span class="keyword-tag">DOVA-SYNDROME</span>
-          </td>
-          <td>このサイトは音楽ゲームへの音源利用を制限しています。使用前にガイドラインを確認してください。</td>
-          <td>
-            <a href="https://opentracks.com/help/articles/game_trpg/#section-6" rel="noopener noreferrer" target="_blank">ガイドライン</a>
-          </td>
-        </tr>
       </tbody>
     </table>
+    </div>
     <h2>
       過去のDMCA申立て
     </h2>
+    <h3>アーティスト</h3>
+    <div class="permission-table">
     <table>
       <thead>
         <tr>
@@ -728,6 +861,81 @@
             <a href="https://gist.githubusercontent.com/peppy/5d72d1e7f743c7ed0709a1d2983e8429/raw" rel="noopener noreferrer" target="_blank">DMCA通知</a>
           </td>
         </tr>
+        <tr>
+          <td class="target-name">Eyal Golan</td>
+          <td><code>Artist / ArtistUnicode / Title / TitleUnicode / Tags</code></td>
+          <td class="keywords-cell">
+            <span class="keyword-tag">אייל גולן</span>
+          </td>
+          <td></td>
+          <td>
+            <a href="https://web.archive.org/web/20250820195303/https://gist.githubusercontent.com/peppy/884920598cbc3b9e4b08/raw/2b8ed13ac10c2111862b8bd547d6e892f4d78960/dmca_2015-06-14_eyal.txt" rel="noopener noreferrer" target="_blank">DMCA通知（2015年）</a>
+          </td>
+        </tr>
+        <tr>
+          <td class="target-name">Alon Mor</td>
+          <td><code>Artist / ArtistUnicode / Title / TitleUnicode / Tags</code></td>
+          <td class="keywords-cell">
+            <span class="keyword-tag">Alon Mor</span>
+          </td>
+          <td></td>
+          <td>
+            <a href="https://gist.githubusercontent.com/peppy/3cc5a15a3be9f2a01336ae93322033f0/raw" rel="noopener noreferrer" target="_blank">DMCA通知</a>
+          </td>
+        </tr>
+        <tr>
+          <td class="target-name" rowspan="2">
+            まずらぼ
+          </td>
+          <td>
+            <code>Artist / ArtistUnicode / Tags</code>
+          </td>
+          <td class="keywords-cell">
+            <span class="keyword-tag">まずらぼ</span>
+            <span class="keyword-tag">muzzle-lab</span>
+          </td>
+          <td></td>
+          <td>
+            <a href="https://gist.githubusercontent.com/peppy/78f4764e7aa299a700767d51f0d064c3/raw/dmca_20220921.txt" rel="noopener noreferrer" target="_blank">DMCA通知（2022年）</a>
+          </td>
+        </tr>
+        <tr>
+          <td><code>Artist / ArtistUnicode + Title / TitleUnicode</code></td>
+          <td class="keywords-cell">
+            <span class="keyword-tag">C.I.L. Café - Just a fool loves you</span>
+            <span class="keyword-tag">まずらぼ - SELFISH</span>
+          </td>
+          <td></td>
+          <td>
+            <a href="https://gist.githubusercontent.com/peppy/78f4764e7aa299a700767d51f0d064c3/raw/dmca_20220921.txt" rel="noopener noreferrer" target="_blank">DMCA通知（2022年）</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <h3>音楽ゲーム</h3>
+    <div class="permission-table">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 18%;">
+            対象
+          </th>
+          <th style="width: 16%;">
+            検出フィールド
+          </th>
+          <th style="width: 26%;">
+            キーワード
+          </th>
+          <th style="width: 25%;">
+            内容
+          </th>
+          <th style="width: 15%;">
+            リンク
+          </th>
+        </tr>
+      </thead>
+      <tbody>
         <tr>
           <td class="target-name">
             KONAMI
@@ -797,6 +1005,32 @@
           <td>備考：SHIKI - AIR は削除対象ではありませんでした。</td>
           <td><a href="https://gist.githubusercontent.com/peppy/84f4cf009fe88a9d61b13b58dc53dea8/raw/dmca_20260922.txt" rel="noopener noreferrer" target="_blank">DMCA通知（2026年）</a></td>
         </tr>
+      </tbody>
+    </table>
+    </div>
+    <h3>ソーシャルゲーム</h3>
+    <div class="permission-table">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 18%;">
+            対象
+          </th>
+          <th style="width: 16%;">
+            検出フィールド
+          </th>
+          <th style="width: 26%;">
+            キーワード
+          </th>
+          <th style="width: 25%;">
+            内容
+          </th>
+          <th style="width: 15%;">
+            リンク
+          </th>
+        </tr>
+      </thead>
+      <tbody>
         <tr>
           <td class="target-name" rowspan="3">バンダイナムコミュージックライブ株式会社</td>
           <td>
@@ -854,6 +1088,32 @@
           <td></td>
           <td><a href="https://gist.githubusercontent.com/peppy/86c30346d749ae39c2ab6bcb4e906442/raw/dmca-20240419.txt" rel="noopener noreferrer" target="_blank">DMCA通知（2024年）</a></td>
         </tr>
+      </tbody>
+    </table>
+    </div>
+    <h3>レコード会社</h3>
+    <div class="permission-table">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 18%;">
+            対象
+          </th>
+          <th style="width: 16%;">
+            検出フィールド
+          </th>
+          <th style="width: 26%;">
+            キーワード
+          </th>
+          <th style="width: 25%;">
+            内容
+          </th>
+          <th style="width: 15%;">
+            リンク
+          </th>
+        </tr>
+      </thead>
+      <tbody>
         <tr>
           <td class="target-name" rowspan="9">
             日本レコード協会 (RIAJ)
@@ -1036,28 +1296,32 @@
             <a href="https://gist.githubusercontent.com/peppy/495e1f664f94d7f204fdd94d1cd8cb55/raw" rel="noopener noreferrer" target="_blank">DMCA通知</a>
           </td>
         </tr>
+      </tbody>
+    </table>
+    </div>
+    <h3>タレント事務所</h3>
+    <div class="permission-table">
+    <table>
+      <thead>
         <tr>
-          <td class="target-name">Eyal Golan</td>
-          <td><code>Artist / ArtistUnicode / Title / TitleUnicode / Tags</code></td>
-          <td class="keywords-cell">
-            <span class="keyword-tag">אייל גולן</span>
-          </td>
-          <td></td>
-          <td>
-            <a href="https://web.archive.org/web/20250820195303/https://gist.githubusercontent.com/peppy/884920598cbc3b9e4b08/raw/2b8ed13ac10c2111862b8bd547d6e892f4d78960/dmca_2015-06-14_eyal.txt" rel="noopener noreferrer" target="_blank">DMCA通知（2015年）</a>
-          </td>
+          <th style="width: 18%;">
+            対象
+          </th>
+          <th style="width: 16%;">
+            検出フィールド
+          </th>
+          <th style="width: 26%;">
+            キーワード
+          </th>
+          <th style="width: 25%;">
+            内容
+          </th>
+          <th style="width: 15%;">
+            リンク
+          </th>
         </tr>
-        <tr>
-          <td class="target-name">Alon Mor</td>
-          <td><code>Artist / ArtistUnicode / Title / TitleUnicode / Tags</code></td>
-          <td class="keywords-cell">
-            <span class="keyword-tag">Alon Mor</span>
-          </td>
-          <td></td>
-          <td>
-            <a href="https://gist.githubusercontent.com/peppy/3cc5a15a3be9f2a01336ae93322033f0/raw" rel="noopener noreferrer" target="_blank">DMCA通知</a>
-          </td>
-        </tr>
+      </thead>
+      <tbody>
         <tr>
           <td class="target-name">カバー株式会社</td>
           <td><code>Artist / ArtistUnicode + Title / TitleUnicode</code></td>
@@ -1069,6 +1333,32 @@
             <a href="https://gist.githubusercontent.com/peppy/129db574a72b4510eba096049835d6c5/raw" rel="noopener noreferrer" target="_blank">DMCA通知（2021年）</a>
           </td>
         </tr>
+      </tbody>
+    </table>
+    </div>
+    <h3>アダルトゲームブランド</h3>
+    <div class="permission-table">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 18%;">
+            対象
+          </th>
+          <th style="width: 16%;">
+            検出フィールド
+          </th>
+          <th style="width: 26%;">
+            キーワード
+          </th>
+          <th style="width: 25%;">
+            内容
+          </th>
+          <th style="width: 15%;">
+            リンク
+          </th>
+        </tr>
+      </thead>
+      <tbody>
         <tr>
           <td class="target-name">minori</td>
           <td><code>Title / TitleUnicode</code></td>
@@ -1267,34 +1557,7 @@
           </td>
         </tr>
         <tr>
-          <td class="target-name" rowspan="2">
-            まずらぼ
-          </td>
-          <td>
-            <code>Artist / ArtistUnicode / Tags</code>
-          </td>
-          <td class="keywords-cell">
-            <span class="keyword-tag">まずらぼ</span>
-            <span class="keyword-tag">muzzle-lab</span>
-          </td>
-          <td></td>
-          <td>
-            <a href="https://gist.githubusercontent.com/peppy/78f4764e7aa299a700767d51f0d064c3/raw/dmca_20220921.txt" rel="noopener noreferrer" target="_blank">DMCA通知（2022年）</a>
-          </td>
-        </tr>
-        <tr>
-          <td><code>Artist / ArtistUnicode + Title / TitleUnicode</code></td>
-          <td class="keywords-cell">
-            <span class="keyword-tag">C.I.L. Café - Just a fool loves you</span>
-            <span class="keyword-tag">まずらぼ - SELFISH</span>
-          </td>
-          <td></td>
-          <td>
-            <a href="https://gist.githubusercontent.com/peppy/78f4764e7aa299a700767d51f0d064c3/raw/dmca_20220921.txt" rel="noopener noreferrer" target="_blank">DMCA通知（2022年）</a>
-          </td>
-        </tr>
-        <tr>
-          <td class="target-name" rowspan="4">ケロQ / 枕</td>
+          <td class="target-name" rowspan="5">ケロQ / 枕</td>
           <td><code>Source / Tags</code></td>
           <td class="keywords-cell">
             <span class="keyword-tag">サクラノ詩</span>
@@ -1338,6 +1601,16 @@
           <td></td>
           <td>
             <a href="https://gist.githubusercontent.com/peppy/bdf2cf1647765cf692664871d73d451b/raw/dmca_2023-03-03.txt" rel="noopener noreferrer" target="_blank">DMCA通知（2023年）</a>
+          </td>
+        </tr>
+        <tr>
+          <td><code>Title / TitleUnicode</code></td>
+          <td class="keywords-cell">
+            <span class="keyword-tag">monet - 鏡の世界には私しかいない</span>
+          </td>
+          <td></td>
+          <td>
+            <a href="https://osu.ppy.sh/beatmapsets/685725#osu/1478540" rel="noopener noreferrer" target="_blank">osu! ビートマップ</a>
           </td>
         </tr>
         <tr>
@@ -1389,6 +1662,7 @@
         </tr>
       </tbody>
     </table>
+    </div>
     <div class="notes">
       <div class="notes-title">
         実装上のメモ
@@ -1401,6 +1675,8 @@
           <code>Ado</code> / <code>NOMA</code> / <code>Avans</code> / <code>Zekk</code> / <code>tyDi</code> / <code>lapix</code> / <code>Frums</code> / <code>ak+q</code> / <code>iL</code> は、キーワードの直前・直後に半角英数字がある場合は検出しません。それ以外は部分一致で検出します。
         </li>
       </ul>
+    </div>
+    </main>
     </div>
   </body>
 </html>
