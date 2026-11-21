@@ -272,7 +272,7 @@ test("KeroQ DMCA titles no longer duplicate guideline warnings", () => {
       assert.equal(results[0].links[0].labelJa, "DMCA通知（2023年）");
     }
   }
-  for (const [field, value] of [["Source", "ケロQ"], ["Tags", "枕"]]) {
+  for (const [field, value] of [["Source", "ケロQ"], ["Tags", "枕"], ["Source", "KeroQ"], ["Tags", "keroq"], ["Source", "KEROQ"]]) {
     const item = context.runContentPermissionCheck(
       `[Metadata]\n${field}:${value}\n`, "test.osu"
     ).results.find(result => result.links.some(link => link.url === guideline));

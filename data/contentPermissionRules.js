@@ -894,6 +894,7 @@ const CONTENT_PERMISSION_RULES = [
 
   keywords: [
     "ケロq",
+    "KeroQ",
     "枕",
     "モエとら",
     "二重箱",
