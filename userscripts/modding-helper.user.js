@@ -2,6 +2,8 @@
 // @name         Modding Helper — taiko mapset check
 // @namespace    https://github.com/calmeel/modding-helper
 // @version      0.1.0
+// @updateURL    https://calmeel.github.io/modding-helper/userscripts/modding-helper.user.js
+// @downloadURL  https://calmeel.github.io/modding-helper/userscripts/modding-helper.user.js
 // @description  Open all taiko difficulties in Modding Helper without downloading audio or backgrounds.
 // @match        https://osu.ppy.sh/*
 // @match        https://calmeel.github.io/modding-helper/*
