@@ -43,6 +43,39 @@ test('unknown website filenames are reported as skipped without a warning badge'
   assert.equal(scope.formatFileCheckResult(results, null, key => key), 'websiteImportFileNamesUnavailable');
 });
 
+test('app DOM bridge rejects mismatched beatmaps before loading any files', async () => {
+  const token = '12345678-1234-1234-1234-123456789abc';
+  const nodes = [], timers = [];
+  class Element extends EventTarget {
+    dataset = {};
+    textContent = '';
+    setAttribute() {}
+    after(node) { nodes.push(node); }
+  }
+  let loads = 0;
+  const scope = vm.createContext({ Event,
+    document: { createElement: () => new Element(), querySelector: () => new Element(),
+      body: { append: node => nodes.push(node) } }, window: {},
+    location: { hash: '#osu-import=' + token }, URLSearchParams,
+    setTimeout: fn => { timers.push(fn); return timers.length; }, clearTimeout() {}
+  });
+  for (const file of ['parsers/osuParser.js', 'app/files/websiteImport.js']) {
+    vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), scope);
+  }
+  scope.setupWebsiteImport({ loadFile: () => { loads++; }, t: key => key });
+  const bridge = nodes.find(node => node.id === 'modding-helper-import-bridge');
+  assert.equal(bridge.dataset.state, 'ready');
+  bridge.dataset.token = 'different-transfer';
+  bridge.textContent = JSON.stringify({ setId: 20, maps: [map(10, 1, 21)] });
+  bridge.dispatchEvent(new Event('modding-helper-import-data'));
+  assert.equal(bridge.dataset.state, 'ready');
+  bridge.dataset.token = token;
+  bridge.dispatchEvent(new Event('modding-helper-import-data'));
+  assert.equal(bridge.dataset.state, 'error');
+  assert.equal(bridge.textContent, '');
+  assert.equal(loads, 0);
+});
+
 function sourceFixture({ failSecond = false } = {}) {
   const elements = new Map(), requests = [], stored = new Map(), tabs = [];
   const makeElement = () => ({ dataset: {}, style: {}, children: [],
@@ -94,17 +127,20 @@ test('userscript never opens a partial set when a difficulty fetch fails', async
   assert.equal(f.wrapper.children[0].disabled, false);
 });
 
-test('userscript bridge retries readiness and deletes only its acknowledged transfer', () => {
+test('userscript DOM bridge waits for readiness and deletes only its acknowledged transfer', () => {
   const token = '12345678-1234-1234-1234-123456789abc';
   const key = 'modding-helper-import:' + token;
   const stored = new Map([[key, { createdAt: Date.now(), payload: { setId: 20, maps: [map()] } }],
     ['modding-helper-import:expired', { createdAt: 1 }], ['unrelated', 123]]);
   const listeners = new Map(), messages = [];
-  const window = { addEventListener: (name, fn) => listeners.set(name, fn),
-    removeEventListener: name => listeners.delete(name), postMessage: message => messages.push(message) };
-  const scope = vm.createContext({ window,
+  const bridge = { dataset: { token: 'wrong', state: 'ready' }, textContent: '',
+    dispatchEvent(event) { messages.push({ type: event.type, payload: JSON.parse(this.textContent) }); },
+    remove() { this.removed = true; } };
+  const scope = vm.createContext({ Event,
     location: { origin: 'https://calmeel.github.io', pathname: '/modding-helper/', hash: '#osu-import=' + token },
-    document: { documentElement: { lang: 'en' } }, URL, URLSearchParams,
+    document: { documentElement: { lang: 'en' }, getElementById: () => bridge,
+      addEventListener: (name, fn) => listeners.set(name, fn),
+      removeEventListener: name => listeners.delete(name) }, URL, URLSearchParams,
     GM_listValues: () => [...stored.keys()], GM_getValue: key => stored.get(key),
     GM_deleteValue: key => stored.delete(key),
     setInterval: () => 1, setTimeout: () => 2, clearInterval() {}, clearTimeout() {}
@@ -112,20 +148,18 @@ test('userscript bridge retries readiness and deletes only its acknowledged tran
   vm.runInContext(fs.readFileSync(path.join(root, 'userscripts/modding-helper.user.js'), 'utf8'), scope);
   assert.equal(stored.has('modding-helper-import:expired'), false);
   assert.equal(stored.has('unrelated'), true);
-  assert.equal(messages[0].type, 'hello');
-  const receive = listeners.get('message');
-  const event = type => ({ source: window, origin: 'https://calmeel.github.io',
-    data: { channel: 'modding-helper-import', token, type } });
-  receive({ ...event('ready'), origin: 'https://other.example' });
-  receive({ ...event('ready'), source: {} });
-  receive({ ...event('ready'), data: { ...event('ready').data, token: 'wrong' } });
-  assert.equal(messages.length, 1);
-  receive(event('ready'));
-  receive(event('ready'));
-  assert.equal(messages.length, 2, 'payload is sent once even if readiness repeats');
-  assert.equal(messages[1].payload.maps.length, 1);
+  assert.equal(messages.length, 0, 'ignore a bridge for a different transfer');
+  const receive = listeners.get('modding-helper-import-state');
+  bridge.dataset.token = token;
+  receive();
+  receive();
+  assert.equal(messages.length, 1, 'payload is sent once even if readiness repeats');
+  assert.equal(messages[0].type, 'modding-helper-import-data');
+  assert.equal(messages[0].payload.maps.length, 1);
   assert.equal(stored.has(key), true, 'keep data until the app acknowledges loading');
-  receive(event('complete'));
+  bridge.dataset.state = 'complete';
+  receive();
   assert.equal(stored.has(key), false);
+  assert.equal(bridge.removed, true);
   assert.equal(listeners.size, 0);
 });

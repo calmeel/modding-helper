@@ -173,23 +173,41 @@ async function run() {
     })()`);
     await until(async () => await evaluate('window.__loadedDiffs?.[0]?.fileName') === 'Dropped [Oni].osu', 'browser drag and drop');
     if (pageUrl.startsWith('http')) {
-      // Exercise the same window-message bridge used by Tampermonkey, with the
-      // actual ZIP loader, checks, renderers and two distinct difficulties.
-      await evaluate(`(() => {
-        const token = '12345678-1234-1234-1234-123456789abc';
-        location.hash = 'osu-import=' + token;
-        setupWebsiteImport({ loadFile: window.__loadModdingHelperFile, t: key => window.i18n.en[key] || key });
-        window.__importMessages = [];
-        window.addEventListener('message', event => {
-          if (event.data?.channel === 'modding-helper-import') window.__importMessages.push(event.data.type);
-        });
-        window.postMessage({ channel: 'modding-helper-import', token, type: 'data', payload: {
-          setId: 456,
-          maps: [{ id: 123, text: ${JSON.stringify(beatmap)} },
-            { id: 124, text: ${JSON.stringify(beatmap)}.replace('BeatmapID:123', 'BeatmapID:124').replace('Version:Oni', 'Version:Kantan') }]
-        } }, location.origin);
-      })()`);
-      await until(async () => await evaluate(`window.__importMessages.includes('complete')`), 'website import acknowledgment');
+      // Run the actual userscript in a different JS world from the app, as in a
+      // browser extension. Test both startup orders with real DOM events and ZIPs.
+      const { frameTree } = await command('Page.getFrameTree');
+      const { executionContextId } = await command('Page.createIsolatedWorld', {
+        frameId: frameTree.frame.id, worldName: 'userscript-bridge-test'
+      });
+      const isolated = async expression => {
+        const result = await command('Runtime.evaluate', { expression, contextId: executionContextId,
+          awaitPromise: true, returnByValue: true });
+        if (result.exceptionDetails) throw new Error(JSON.stringify(result.exceptionDetails));
+        return result.result.value;
+      };
+      // Adapt only the deployment URL/path to the local smoke server.
+      const userscript = fs.readFileSync(path.join(root, 'userscripts/modding-helper.user.js'), 'utf8')
+        .replace('const helperUrl = "https://calmeel.github.io/modding-helper/";', `const helperUrl = ${JSON.stringify(pageUrl)};`)
+        .replace('location.pathname.startsWith("/modding-helper/")', 'location.pathname.startsWith("/")');
+      for (const appFirst of [true, false]) {
+        await evaluate(`location.hash = 'osu-import=12345678-1234-1234-1234-123456789abc';
+          document.getElementById('websiteImportStatus')?.remove(); true`);
+        const startApp = () => evaluate(`setupWebsiteImport({ loadFile: window.__loadModdingHelperFile,
+          t: key => window.i18n.en[key] || key }); true`);
+        if (appFirst) await startApp();
+        await isolated(`window.__bridgeDeleted = false;
+          window.GM_listValues = () => [];
+          window.GM_getValue = () => ({ createdAt: Date.now(), payload: { setId: 456, maps: [
+            { id: 123, text: ${JSON.stringify(beatmap)} },
+            { id: 124, text: ${JSON.stringify(beatmap)}.replace('BeatmapID:123', 'BeatmapID:124').replace('Version:Oni', 'Version:Kantan') }
+          ] } });
+          window.GM_deleteValue = () => { window.__bridgeDeleted = true; };
+          ${userscript}
+          true`);
+        if (!appFirst) await startApp();
+        await until(() => isolated('window.__bridgeDeleted'), `isolated userscript acknowledgment (appFirst=${appFirst})`);
+        assert.equal(await evaluate(`document.getElementById('modding-helper-import-bridge')`), null);
+      }
       assert.equal(await evaluate('window.__loadedDiffs.length'), 2);
       assert.equal(await evaluate('window.__loadedAudio'), null);
       assert.equal(await evaluate('location.hash'), '');

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Modding Helper — taiko mapset check
 // @namespace    https://github.com/calmeel/modding-helper
-// @version      0.1.0
+// @version      0.1.1
 // @updateURL    https://calmeel.github.io/modding-helper/userscripts/modding-helper.user.js
 // @downloadURL  https://calmeel.github.io/modding-helper/userscripts/modding-helper.user.js
 // @description  Open all taiko difficulties in Modding Helper without downloading audio or backgrounds.
@@ -48,32 +48,35 @@
       return;
     }
     let sent = false;
-    const send = type => window.postMessage({ channel: "modding-helper-import", token, type, ...(type === "data" ? { payload: transfer.payload } : {}) }, location.origin);
+    let finished = false;
     const stop = () => {
+      finished = true;
       clearInterval(timer);
       clearTimeout(deadline);
-      window.removeEventListener("message", receive);
+      document.removeEventListener("modding-helper-import-state", receive);
     };
-    function receive(event) {
-      const data = event.data;
-      if (event.source !== window || event.origin !== location.origin ||
-          data?.channel !== "modding-helper-import" || data.token !== token) return;
-      if (data.type === "ready" && !sent) {
+    function receive() {
+      if (finished) return;
+      const bridge = document.getElementById("modding-helper-import-bridge");
+      if (!bridge || bridge.dataset.token !== token) return;
+      if (bridge.dataset.state === "ready" && !sent) {
         sent = true;
-        clearInterval(timer);
-        send("data");
-      } else if (data.type === "complete") {
+        bridge.textContent = JSON.stringify(transfer.payload);
+        bridge.dispatchEvent(new Event("modding-helper-import-data"));
+      } else if (bridge.dataset.state === "complete" && sent) {
         GM_deleteValue(keyFor(token));
         stop();
-      } else if (data.type === "error") stop();
+        bridge.remove();
+      } else if (bridge.dataset.state === "error") stop();
     }
-    window.addEventListener("message", receive);
-    const timer = setInterval(() => send("hello"), 250);
+    document.addEventListener("modding-helper-import-state", receive);
+    // Read persistent state as well as events, so either side may start first.
+    const timer = setInterval(receive, 250);
     const deadline = setTimeout(() => {
       stop();
-      showError(label("連携に失敗しました。対応版の Modding Helper が公開されているか確認し、osu! のページから再実行してください。", "Import timed out. Check that the updated Modding Helper is deployed, then retry from osu!."));
+      showError(label("連携がタイムアウトしました。スクリプトと Web 版の両方を更新し、osu! のページから再実行してください。", "Import timed out. Update both the userscript and web app, then retry from osu!."));
     }, 60000);
-    send("hello");
+    receive();
     return;
   }
 

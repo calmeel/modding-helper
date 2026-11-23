@@ -20,7 +20,8 @@ require a bundler for the web app.
 - `app/files/mapMetadata.js`: metadata/background extraction from `.osu` and `.osz`.
 - `userscripts/modding-helper.user.js`: optional Tampermonkey bridge; fetches native
   taiko `.osu` files on osu! and transfers them through temporary userscript storage.
-- `app/files/websiteImport.js`: validates the import message and packages the texts
+- `app/files/websiteImport.js`: receives JSON text through a shared hidden DOM node
+  (compatible with userscript sandboxes), validates it, and packages the texts
   into an in-memory archive for the existing loader. Website imports skip original
   file/folder name checks because those names are unavailable.
 - `app/files/fileSessionController.js`: file-load sequencing, applying check results,

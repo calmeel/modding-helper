@@ -1,4 +1,5 @@
-// The userscript bridges its private GM storage to this page. No opener is required.
+// Share JSON text through DOM, which is visible across userscript sandboxes.
+// Do not pass JS objects or compare sandboxed window identities.
 function validateWebsiteImport(payload) {
   if (!payload || !Number.isSafeInteger(payload.setId) || payload.setId <= 0 ||
       !Array.isArray(payload.maps) || !payload.maps.length || payload.maps.length > 256) {
@@ -29,22 +30,30 @@ function setupWebsiteImport({ loadFile, t }) {
   status.setAttribute("role", "status");
   document.querySelector(".drop-area").after(status);
   status.textContent = t("websiteImportLoading");
+  const bridge = document.createElement("div");
+  bridge.id = "modding-helper-import-bridge";
+  bridge.hidden = true;
+  bridge.dataset.token = token;
   let busy = false;
-  const reply = (type, extra = {}) => window.postMessage({ channel: "modding-helper-import", token, type, ...extra }, location.origin);
+  const reply = state => {
+    bridge.dataset.state = state;
+    bridge.dispatchEvent(new Event("modding-helper-import-state", { bubbles: true }));
+  };
   const timeout = setTimeout(() => {
-    window.removeEventListener("message", receive);
+    bridge.removeEventListener("modding-helper-import-data", receive);
+    reply("error");
     status.textContent = t("websiteImportError").replace("{error}", "Tampermonkey との接続がタイムアウトしました / Userscript connection timed out.");
   }, 60000);
-  async function receive(event) {
-    const data = event.data;
-    if (event.source !== window || event.origin !== location.origin ||
-        data?.channel !== "modding-helper-import" || data.token !== token) return;
-    if (data.type === "hello" && !busy) reply("ready");
-    if (data.type !== "data" || busy) return;
+  async function receive() {
+    if (bridge.dataset.token !== token || busy) return;
     busy = true;
     clearTimeout(timeout);
+    reply("loading");
     try {
-      const payload = validateWebsiteImport(data.payload);
+      const json = bridge.textContent;
+      bridge.textContent = "";
+      if (json.length > 64 * 1024 * 1024) throw new Error("Beatmap transfer is too large.");
+      const payload = validateWebsiteImport(JSON.parse(json));
       const zip = new JSZip();
       // IDs are unique; display labels come from Version inside each .osu.
       for (const map of payload.maps) zip.file(`${map.id}.osu`, map.text);
@@ -53,16 +62,19 @@ function setupWebsiteImport({ loadFile, t }) {
       const loaded = await loadFile(file, { websiteImport: true });
       if (loaded !== true) throw new Error("Beatmap checks could not be loaded.");
       status.textContent = t("websiteImportLoaded").replace("{count}", payload.maps.length);
-      reply("complete");
       const url = new URL(location.href);
       url.hash = "";
       history.replaceState(null, "", url);
+      reply("complete");
     } catch (error) {
       status.textContent = t("websiteImportError").replace("{error}", error.message);
       reply("error");
     } finally {
-      window.removeEventListener("message", receive);
+      bridge.textContent = "";
+      bridge.removeEventListener("modding-helper-import-data", receive);
     }
   }
-  window.addEventListener("message", receive);
+  bridge.addEventListener("modding-helper-import-data", receive);
+  document.body.append(bridge);
+  reply("ready");
 }
