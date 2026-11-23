@@ -470,8 +470,10 @@ const updateModal = document.getElementById("updateModal");
 const closeUpdate = document.getElementById("closeUpdate");
 
 if (updateBtn && updateModal && closeUpdate) {
+  const updateNotification = createUpdateHistoryNotification(updateBtn);
   updateBtn.addEventListener("click", () => {
     updateModal.classList.remove("hidden");
+    updateNotification.markRead();
   });
 
   closeUpdate.addEventListener("click", () => {

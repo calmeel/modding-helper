@@ -355,6 +355,65 @@ const updateHistoryTypeLabels = {
   }
 };
 
+// 日付だけでなく項目数も記録し、同日の追記も通知する。
+function getUpdateHistoryItemIds(entries) {
+  const occurrences = new Map();
+  return entries.flatMap(entry => {
+    const base = `${entry.date}:${entry.type}`;
+    const occurrence = occurrences.get(base) || 0;
+    occurrences.set(base, occurrence + 1);
+    const id = entry.id || `${base}:${occurrence}`;
+    const count = Math.max(entry.items.en.length, entry.items.ja.length);
+    return [id, ...Array.from({ length: count }, (_, index) => `${id}:item:${index}`)];
+  });
+}
+
+function createUpdateHistoryNotification(button, {
+  entries = updateHistoryEntries,
+  getStorage = () => window.localStorage
+} = {}) {
+  const storageKey = "moddingHelperReadUpdateHistory";
+  const currentIds = getUpdateHistoryItemIds(entries);
+  let unread = false;
+
+  function saveReadState() {
+    try {
+      getStorage().setItem(storageKey, JSON.stringify(currentIds));
+    } catch (_) {
+      // 保存が許可されていなくても、履歴を開く操作は妨げない。
+    }
+  }
+
+  try {
+    const saved = getStorage().getItem(storageKey);
+    const readIds = saved === null ? null : JSON.parse(saved);
+    if (Array.isArray(readIds) && readIds.every(id => typeof id === "string")) {
+      const readSet = new Set(readIds);
+      unread = currentIds.some(id => !readSet.has(id));
+    } else {
+      // 初回は現時点の履歴を基準とし、次回の追加から通知する。
+      saveReadState();
+    }
+  } catch (_) {
+    saveReadState();
+  }
+
+  function render() {
+    button.classList.toggle("has-unread-updates", unread);
+    if (unread) button.setAttribute("aria-describedby", "updateHistoryUnread");
+    else button.removeAttribute("aria-describedby");
+  }
+
+  render();
+  return {
+    markRead() {
+      unread = false;
+      saveReadState();
+      render();
+    }
+  };
+}
+
 function renderUpdateHistory(container, lang) {
   const resolvedLang = lang === "ja" ? "ja" : "en";
   const fragment = document.createDocumentFragment();
