@@ -41,6 +41,7 @@ function createFileSessionController({ state, dom, t, isChartPopout,
 
     if (fileName) {
       fileName.textContent = state.selectedFileName;
+      fileName.title = state.selectedFileName;
     }
 
     try {

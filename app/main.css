@@ -35,6 +35,7 @@ body {
 }
 
 .file-button {
+  flex-shrink: 0;
   padding: 6px 12px;
   border-radius: 4px;
   background: #666;
@@ -51,10 +52,18 @@ body {
   display: none;
 }
 
-.file-name {
-  flex: 1;
+.file-selection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   min-width: 0;
-  overflow-wrap: anywhere;
+}
+
+.file-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: #f0f0f0;
 }
 
@@ -63,39 +72,24 @@ body {
   background: #2d2d38;
 }
 
-.web-beatmap-actions {
-  margin-top: 20px;
-}
-
 .beatmap-page-button {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border: 1px solid #555;
-  border-radius: 6px;
-  background: transparent;
-  color: #ddd;
-  font: inherit;
-  font-size: 13px;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 30px;
+  height: 30px;
   cursor: pointer;
 }
 
-.beatmap-page-button:hover:not(:disabled) {
-  background: #2d2d38;
-  border-color: #9fdcff;
-  color: #9fdcff;
-}
-
 .beatmap-page-button:focus-visible {
-  outline: 2px solid #9fdcff;
+  outline: 2px solid currentColor;
   outline-offset: 2px;
 }
 
 .beatmap-page-button:disabled {
-  color: #888;
-  border-color: #444;
-  cursor: default;
+  display: none;
 }
 
 .tabs {
