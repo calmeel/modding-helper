@@ -638,6 +638,18 @@ input[type="file"]::file-selector-button:hover {
   overflow-y: auto;
 }
 
+#updateHistoryContent a,
+#updateHistoryContent a:visited {
+  color: #7fd1ff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+#updateHistoryContent a:hover,
+#updateHistoryContent a:focus-visible {
+  color: #c3eaff;
+}
+
 .update-date {
   margin-top: 24px;
   margin-bottom: 8px;
