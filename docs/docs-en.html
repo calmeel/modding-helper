@@ -1471,7 +1471,7 @@ Example:<br>
 
 <div class="section section-detect">
 <span class="label label-detect">■ Common Check</span><br>
-This check first verifies whether the Source field is consistent across all difficulties
+This check verifies whether the Source field is consistent across all difficulties
 (same functionality as Mapset Verifier).
 </div>
 
@@ -1482,11 +1482,10 @@ The Source field is compared against a list of known Touhou titles.<br>
   Checklist
 </a><br><br>
 
+If the Source appears to reference a Touhou work but differs from the official title,
+the tool warns about possible spelling mistakes or incorrect full-width / half-width spacing.
+In such cases, the recommended title and a reference link are displayed.<br>
 If the Source matches exactly, it is displayed as OK.<br><br>
-
-If the Source appears to reference a Touhou work but differs slightly from a known title,
-the tool warns about possible spelling mistakes or incorrect full-width / half-width spacing.<br>
-In such cases, the recommended formatting and a reference link are displayed.<br><br>
 
 Generic labels such as <code>東方</code> or <code>Touhou</code> are also displayed as confirmation targets,
 since they may lack a sufficiently specific work title.

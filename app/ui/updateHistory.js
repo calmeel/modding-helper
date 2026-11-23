@@ -319,10 +319,12 @@ const updateHistoryEntries = [
     type: "update",
     items: {
       en: [
-        "Added and revised checklist items for content usage permission"
+        "Added and revised checklist items for content usage permission",
+        "Expanded spelling error detection for Touhou source check"
       ],
       ja: [
-        "コンテンツ利用許可のチェック項目を追加、修正"
+        "コンテンツ利用許可のチェック項目を追加、修正",
+        "東方ソースチェックのスペルミス判定を拡大"
       ]
     }
   },

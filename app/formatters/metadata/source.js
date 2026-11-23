@@ -197,9 +197,11 @@ function formatSourceGroupResult(group, t) {
     return lines.join("\n");
   }
 
-  if (result.type === "partial") {
+  if (result.type === "partial" || result.type === "typo") {
     lines.push(
-      `<span class="result-error">${escapeHtml(t("sourceInvalidTouhou"))}</span>`
+      result.type === "typo"
+        ? `<span class="result-warn">${escapeHtml(t("sourcePossibleTypo"))}</span>`
+        : `<span class="result-error">${escapeHtml(t("sourceInvalidTouhou"))}</span>`
     );
 
     lines.push(
