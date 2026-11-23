@@ -139,6 +139,7 @@ function createFileSessionController({ state, dom, t, isChartPopout,
         publishChartSourceFile(file);
         await renderFileMetaToPanel(file);
       }
+      return true;
     } catch (err) {
       if (pageLoadId !== beatmapPageLoadId) return;
       if (err.message === "invalidFile") {
@@ -147,6 +148,7 @@ function createFileSessionController({ state, dom, t, isChartPopout,
         output.textContent = `Error:\n${err.message}`;
         console.error(err);
       }
+      return false;
     }
   }
 

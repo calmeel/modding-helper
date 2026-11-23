@@ -18,6 +18,11 @@ require a bundler for the web app.
   reload sequencing, and load-status text. File processing and state reset are
   callbacks supplied by startup.
 - `app/files/mapMetadata.js`: metadata/background extraction from `.osu` and `.osz`.
+- `userscripts/modding-helper.user.js`: optional Tampermonkey bridge; fetches native
+  taiko `.osu` files on osu! and transfers them through temporary userscript storage.
+- `app/files/websiteImport.js`: validates the import message and packages the texts
+  into an in-memory archive for the existing loader. Website imports skip original
+  file/folder name checks because those names are unavailable.
 - `app/files/fileSessionController.js`: file-load sequencing, applying check results,
   restoring/saving mapset Diff preferences, preview audio URL ownership, and file
   metadata/chart-source publication. Startup supplies source-mode and popout-order

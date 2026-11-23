@@ -54,7 +54,7 @@ const server = http.createServer((request, response) => {
   const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
   const target = path.resolve(root, '.' + (pathname === '/' ? '/index.html' : pathname));
   // Match the published static site: no access to node_modules or Electron files.
-  if (!target.startsWith(root + path.sep) || !/^\/(index\.html|app\/|checks\/|parsers\/|images\/|docs\/)/.test(pathname === '/' ? '/index.html' : pathname)) {
+  if (!target.startsWith(root + path.sep) || !/^\/(index\.html|app\/|checks\/|parsers\/|images\/|docs\/|data\/)/.test(pathname === '/' ? '/index.html' : pathname)) {
     response.writeHead(404).end(); return;
   }
   fs.readFile(target, (error, data) => {
@@ -172,6 +172,33 @@ async function run() {
       document.querySelector('.drop-area').dispatchEvent(new DragEvent('drop', {dataTransfer: files, bubbles: true, cancelable: true}));
     })()`);
     await until(async () => await evaluate('window.__loadedDiffs?.[0]?.fileName') === 'Dropped [Oni].osu', 'browser drag and drop');
+    if (pageUrl.startsWith('http')) {
+      // Exercise the same window-message bridge used by Tampermonkey, with the
+      // actual ZIP loader, checks, renderers and two distinct difficulties.
+      await evaluate(`(() => {
+        const token = '12345678-1234-1234-1234-123456789abc';
+        location.hash = 'osu-import=' + token;
+        setupWebsiteImport({ loadFile: window.__loadModdingHelperFile, t: key => window.i18n.en[key] || key });
+        window.__importMessages = [];
+        window.addEventListener('message', event => {
+          if (event.data?.channel === 'modding-helper-import') window.__importMessages.push(event.data.type);
+        });
+        window.postMessage({ channel: 'modding-helper-import', token, type: 'data', payload: {
+          setId: 456,
+          maps: [{ id: 123, text: ${JSON.stringify(beatmap)} },
+            { id: 124, text: ${JSON.stringify(beatmap)}.replace('BeatmapID:123', 'BeatmapID:124').replace('Version:Oni', 'Version:Kantan') }]
+        } }, location.origin);
+      })()`);
+      await until(async () => await evaluate(`window.__importMessages.includes('complete')`), 'website import acknowledgment');
+      assert.equal(await evaluate('window.__loadedDiffs.length'), 2);
+      assert.equal(await evaluate('window.__loadedAudio'), null);
+      assert.equal(await evaluate('location.hash'), '');
+      assert.match(await evaluate(`document.getElementById('websiteImportStatus').textContent`), /2 taiko difficulties/);
+      assert.match(await evaluate(`document.getElementById('fileCheckOutput').textContent`), /skipped/);
+      assert.equal(await evaluate(`document.getElementById('openBeatmapPage').disabled`), false);
+      await selectFile(osuFile, path.basename(osuFile));
+      assert.doesNotMatch(await evaluate(`document.getElementById('fileCheckOutput').textContent`), /website import/);
+    }
     console.log(`PASS ${version.product} ${pageUrl.startsWith('http') ? 'HTTP site' : 'local HTML'}: CDN ZIP, .osu/.osz, Japanese filenames, audio, drop, tabs, docs/languages, timestamps`);
   }
   assert.deepEqual(failedAssets, []);

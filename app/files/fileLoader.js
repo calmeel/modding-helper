@@ -218,10 +218,14 @@ async function analyzeOszFile(file, options = {}) {
     });
 
     contentPermissionResults.push(runContentPermissionCheck(text, entry.name));
-    fileCheckResults.push(runOsuFileNameCheck(text, entry.name));
+    fileCheckResults.push(options.websiteImport
+      ? { fileName: entry.name, checked: false, level: "ok" }
+      : runOsuFileNameCheck(text, entry.name));
 
     if (songFolderCheckResult === null) {
-      songFolderCheckResult = options.songFolderName
+      songFolderCheckResult = options.websiteImport
+        ? { checked: false }
+        : options.songFolderName
         ? runSongFolderNameCheck(text, options.songFolderName)
         : runOszFileNameCheck(text, file.name);
     }

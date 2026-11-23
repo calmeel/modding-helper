@@ -1,5 +1,6 @@
 function formatFileCheckResult(results, songFolderResult, t) {
   if (!results || !results.length) return t("noOsuFiles");
+  if (results.every(result => result.checked === false)) return t("websiteImportFileNamesUnavailable");
 
   const sortedResults = sortResultsForDisplay(results);
   const lines = [formatSectionTitle(t("osuFileNameCheckTitle"))];

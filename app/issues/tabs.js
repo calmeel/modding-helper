@@ -81,7 +81,7 @@ function updateTabIssueStates(state) {
 
 function getFileCheckIssueLevel(results, songFolderResult) {
   return (
-    results?.some(result => !result.matches) ||
+    results?.some(result => result.checked !== false && !result.matches) ||
     (songFolderResult?.checked && !songFolderResult.matches)
   )
     ? TAB_LEVEL_WARN

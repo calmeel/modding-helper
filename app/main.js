@@ -377,14 +377,15 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ユーザーが手動でファイルを選択/ドロップしたら自動でファイルモードに戻す
-  const userFileHandler = async (file) => {
+  const userFileHandler = async (file, processOptions = {}) => {
+    if (!processOptions.websiteImport) document.getElementById("websiteImportStatus")?.remove();
     const osuRadio = document.querySelector('input[name="osuSource"][value="osu"]');
     if (osuRadio && osuRadio.checked) {
       const fileRadio = document.querySelector('input[name="osuSource"][value="file"]');
       if (fileRadio) fileRadio.checked = true;
       applyOsuSourceMode("file");
     }
-    await fileSession.handleFile(file);
+    return await fileSession.handleFile(file, processOptions);
   };
   // グラフ分離ウィンドウでも、通常画面と同じ読込処理を再利用する。
   window.__loadModdingHelperFile = userFileHandler;
@@ -496,4 +497,5 @@ document.addEventListener("DOMContentLoaded", () => {
   osuSource.setup();
 
   languageController.apply();
+  setupWebsiteImport({ loadFile: userFileHandler, t });
 });
