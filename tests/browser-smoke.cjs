@@ -54,7 +54,7 @@ const server = http.createServer((request, response) => {
   const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
   const target = path.resolve(root, '.' + (pathname === '/' ? '/index.html' : pathname));
   // Match the published static site: no access to node_modules or Electron files.
-  if (!target.startsWith(root + path.sep) || !/^\/(index\.html|app\/|checks\/|parsers\/|images\/|docs\/|data\/)/.test(pathname === '/' ? '/index.html' : pathname)) {
+  if (!target.startsWith(root + path.sep) || !/^\/(index\.html|app\/|checks\/|parsers\/|images\/|docs\/|data\/|vendor\/)/.test(pathname === '/' ? '/index.html' : pathname)) {
     response.writeHead(404).end(); return;
   }
   fs.readFile(target, (error, data) => {
@@ -121,15 +121,16 @@ async function run() {
     }
   };
   await command('Runtime.enable'); await command('Page.enable'); await command('Network.enable');
+  await command('Network.setBlockedURLs', { urls: ['https://cdn.jsdelivr.net/*'] });
   const version = await command('Browser.getVersion');
   for (const pageUrl of [`http://127.0.0.1:${server.address().port}/`, pathToFileURL(path.join(root, 'index.html')).href]) {
     await command('Page.navigate', { url: pageUrl });
-    await until(async () => await evaluate(`document.readyState === 'complete' && typeof JSZip === 'function' && typeof window.__loadModdingHelperFile === 'function'`), 'web initialization and CDN ZIP library');
+    await until(async () => await evaluate(`document.readyState === 'complete' && typeof JSZip === 'function' && typeof window.__loadModdingHelperFile === 'function'`), 'web initialization and bundled ZIP library');
     assert.equal(await evaluate('typeof window.electronAPI'), 'undefined');
     assert.equal(await evaluate('typeof require'), 'undefined');
     assert.equal(await evaluate('JSZip.version'), '3.10.2');
     assert.equal(await evaluate(`getNativeFilePath(new File(['test'], 'test.osu'))`), '');
-    assert.equal(await evaluate(`document.querySelector('script[src*="jszip"]').src`), 'https://cdn.jsdelivr.net/npm/jszip@3.10.2/dist/jszip.min.js');
+    assert.equal(await evaluate(`document.querySelector('script[src*="jszip"]').src`), new URL('vendor/jszip/jszip.min.js', pageUrl).href);
     for (const language of ['Ja', 'Ja', 'En', 'En']) {
       await evaluate(`document.getElementById('lang${language}').click(); true`);
       const docsPath = language === 'Ja' ? 'docs/docs.html' : 'docs/docs-en.html';
@@ -202,7 +203,7 @@ async function run() {
             { id: 124, text: ${JSON.stringify(beatmap)}.replace('BeatmapID:123', 'BeatmapID:124').replace('Version:Oni', 'Version:Kantan') }
           ] } });
           window.GM_deleteValue = () => { window.__bridgeDeleted = true; };
-          ${userscript}
+          ${appFirst ? userscript : userscript.replace('bridge.dispatchEvent(new Event("modding-helper-import-data"));', '/* Simulate a suppressed sandbox event. */')}
           true`);
         if (!appFirst) await startApp();
         await until(() => isolated('window.__bridgeDeleted'), `isolated userscript acknowledgment (appFirst=${appFirst})`);
@@ -217,7 +218,7 @@ async function run() {
       await selectFile(osuFile, path.basename(osuFile));
       assert.doesNotMatch(await evaluate(`document.getElementById('fileCheckOutput').textContent`), /website import/);
     }
-    console.log(`PASS ${version.product} ${pageUrl.startsWith('http') ? 'HTTP site' : 'local HTML'}: CDN ZIP, .osu/.osz, Japanese filenames, audio, drop, tabs, docs/languages, timestamps`);
+    console.log(`PASS ${version.product} ${pageUrl.startsWith('http') ? 'HTTP site' : 'local HTML'}: bundled ZIP, .osu/.osz, Japanese filenames, audio, drop, tabs, docs/languages, timestamps`);
   }
   assert.deepEqual(failedAssets, []);
   assert.deepEqual(errors, []);

@@ -57,7 +57,8 @@ test('app DOM bridge rejects mismatched beatmaps before loading any files', asyn
     document: { createElement: () => new Element(), querySelector: () => new Element(),
       body: { append: node => nodes.push(node) } }, window: {},
     location: { hash: '#osu-import=' + token }, URLSearchParams,
-    setTimeout: fn => { timers.push(fn); return timers.length; }, clearTimeout() {}
+    setTimeout: fn => { timers.push(fn); return timers.length; }, clearTimeout() {},
+    setInterval: () => 1, clearInterval() {}
   });
   for (const file of ['parsers/osuParser.js', 'app/files/websiteImport.js']) {
     vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), scope);
@@ -76,8 +77,9 @@ test('app DOM bridge rejects mismatched beatmaps before loading any files', asyn
   assert.equal(loads, 0);
 });
 
-function sourceFixture({ failSecond = false } = {}) {
-  const elements = new Map(), requests = [], stored = new Map(), tabs = [];
+function sourceFixture({ failSecond = false, responseDelay = 0 } = {}) {
+  const elements = new Map(), requests = [], requestTimes = [], stored = new Map(), tabs = [];
+  let clock = 100000;
   const makeElement = () => ({ dataset: {}, style: {}, children: [],
     append(...nodes) { this.children.push(...nodes); for (const node of nodes) if (node.id) elements.set(node.id, node); },
     contains(node) { return this.children.includes(node); },
@@ -92,7 +94,8 @@ function sourceFixture({ failSecond = false } = {}) {
     window: { addEventListener() {} }, navigator: { language: 'en' }, URL, URLSearchParams,
     AbortSignal, crypto: { randomUUID: () => '12345678-1234-1234-1234-123456789abc' },
     MutationObserver: class { observe() {} }, requestAnimationFrame: fn => fn(),
-    setTimeout: fn => { fn(); },
+    Date: class extends Date { static now() { return clock; } },
+    setTimeout: (fn, ms) => { clock += ms; fn(); },
     GM_listValues: () => [], GM_getValue: key => stored.get(key),
     GM_setValue: (key, value) => stored.set(key, value), GM_deleteValue: key => stored.delete(key),
     GM_openInTab: url => tabs.push(url),
@@ -100,12 +103,16 @@ function sourceFixture({ failSecond = false } = {}) {
       beatmaps: [{ id: 10, mode: 'taiko' }, { id: 12, mode: 'osu' }, { id: 11, mode_int: 1 }] }) }) }; } },
     fetch: async url => {
       requests.push(url);
+      requestTimes.push(clock);
       return { ok: !(failSecond && url.endsWith('/osu/11')), status: 503,
-        text: async () => url.includes('/osu/') ? map(Number(url.split('/').pop())).text : 'HTML' };
+        text: async () => {
+          clock += responseDelay;
+          return url.includes('/osu/') ? map(Number(url.split('/').pop())).text : 'HTML';
+        } };
     }
   });
   vm.runInContext(fs.readFileSync(path.join(root, 'userscripts/modding-helper.user.js'), 'utf8'), scope);
-  return { requests, stored, tabs, wrapper: elements.get('modding-helper-launch') };
+  return { requests, requestTimes, stored, tabs, wrapper: elements.get('modding-helper-launch') };
 }
 
 test('userscript fetches every taiko difficulty and opens an isolated transfer', async () => {
@@ -118,6 +125,16 @@ test('userscript fetches every taiko difficulty and opens an isolated transfer',
   assert.equal(f.wrapper.children[0].disabled, false);
 });
 
+test('userscript waits one second after each response, including the set listing and repeated clicks', async () => {
+  const f = sourceFixture({ responseDelay: 700 });
+  await f.wrapper.children[0].click();
+  await f.wrapper.children[0].click();
+  assert.equal(f.requestTimes.length, 6);
+  for (let i = 1; i < f.requestTimes.length; i++) {
+    assert.equal(f.requestTimes[i] - f.requestTimes[i - 1], 1700);
+  }
+});
+
 test('userscript never opens a partial set when a difficulty fetch fails', async () => {
   const f = sourceFixture({ failSecond: true });
   await f.wrapper.children[0].click();
@@ -125,6 +142,8 @@ test('userscript never opens a partial set when a difficulty fetch fails', async
   assert.equal(f.stored.size, 0);
   assert.match(f.wrapper.children[1].textContent, /HTTP 503/);
   assert.equal(f.wrapper.children[0].disabled, false);
+  await f.wrapper.children[0].click();
+  assert.equal(f.requestTimes[3] - f.requestTimes[2], 1000, 'failure does not bypass the retry interval');
 });
 
 test('userscript DOM bridge waits for readiness and deletes only its acknowledged transfer', () => {

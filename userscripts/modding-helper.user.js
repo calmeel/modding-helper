@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Modding Helper — taiko mapset check
 // @namespace    https://github.com/calmeel/modding-helper
-// @version      0.1.1
+// @version      0.1.2
 // @updateURL    https://calmeel.github.io/modding-helper/userscripts/modding-helper.user.js
 // @downloadURL  https://calmeel.github.io/modding-helper/userscripts/modding-helper.user.js
 // @description  Open all taiko difficulties in Modding Helper without downloading audio or backgrounds.
@@ -80,10 +80,25 @@
     return;
   }
 
-  async function fetchText(url) {
-    const response = await fetch(url, { credentials: "same-origin", signal: AbortSignal.timeout(30000) });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return response.text();
+  // Share a queue across button clicks and SPA navigation in this tab. Leave
+  // at least one second after every response (including failures) before retrying.
+  const requestIntervalMs = 1000;
+  let nextRequestAt = 0;
+  let requestQueue = Promise.resolve();
+  function fetchText(url) {
+    const request = requestQueue.then(async () => {
+      const waitMs = nextRequestAt - Date.now();
+      if (waitMs > 0) await new Promise(resolve => setTimeout(resolve, waitMs));
+      try {
+        const response = await fetch(url, { credentials: "same-origin", signal: AbortSignal.timeout(30000) });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return await response.text();
+      } finally {
+        nextRequestAt = Date.now() + requestIntervalMs;
+      }
+    });
+    requestQueue = request.catch(() => {});
+    return request;
   }
 
   function mount() {
@@ -128,7 +143,6 @@
           size += text.length;
           if (text.length > 10 * 1024 * 1024 || size > 32 * 1024 * 1024) throw new Error("Beatmap set is too large.");
           payload.maps.push({ id: map.id, text });
-          if (payload.maps.length < maps.length) await new Promise(resolve => setTimeout(resolve, 150));
         }
         const token = crypto.randomUUID();
         GM_setValue(keyFor(token), { createdAt: Date.now(), payload });

@@ -4,6 +4,10 @@ The browser and Electron renderers use classic scripts loaded explicitly by
 `index.html`. Keep their order when adding dependencies. This project does not
 require a bundler for the web app.
 
+`vendor/jszip/` contains the pinned browser ZIP library and its license. Both web
+and Electron load this local copy; updating the npm dependency alone does not
+update the vendored file.
+
 ## Application startup
 
 - `app/main.js`: DOM references, application state, and controller/event wiring.

@@ -4,6 +4,7 @@ const i18n = {
   en: {
     websiteImportFileNamesUnavailable: "File and folder name checks are skipped: the osu! website import does not provide the original file or folder names.",
     websiteImportLoading: "Loading taiko difficulties from osu!…",
+    websiteImportProcessing: "Beatmaps received. Running checks…",
     websiteImportLoaded: "Loaded {count} taiko difficulties from osu!. Audio and BG images were not fetched. Checks requiring these assets or original file/folder names are unavailable.",
     websiteImportError: "Could not import beatmaps from osu!. {error}",
     subtitle: "osu!taiko modding support tool",
@@ -682,6 +683,7 @@ const i18n = {
   ja: {
     websiteImportFileNamesUnavailable: "osu! サイトからの読み込みでは元のファイル名・フォルダ名を取得できないため、名称チェックを省略しました。",
     websiteImportLoading: "osu! から taiko 全難易度を読み込み中…",
+    websiteImportProcessing: "譜面を受信しました。チェックを実行中…",
     websiteImportLoaded: "osu! から taiko {count} 難易度を読み込みました。音源・BG 画像は取得していません。それらのデータや元のファイル名・フォルダ名が必要なチェックは利用できません。",
     websiteImportError: "osu! からの読み込みに失敗しました。{error}",
     subtitle: "osu!taiko modding 支援ツール",
