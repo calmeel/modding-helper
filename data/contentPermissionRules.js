@@ -463,10 +463,10 @@ const CONTENT_PERMISSION_RULES = [
     title: "Disallowed artists",
 
     messageJa:
-      "このアーティストは osu!official 上で使用が許可されていません。使用しないでください。",
+      "osu!official 上で使用が許可されていないアーティストです。",
 
     messageEn:
-      "This artist is disallowed by osu!official. Do not use this content.",
+      "These artists are disallowed by osu!official.",
 
     link: "https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"
   },
@@ -474,6 +474,32 @@ const CONTENT_PERMISSION_RULES = [
     category: "disallowedArtist",
     level: "error",
 
+    fields: ["title", "titleUnicode"],
+    keywords: ["青春のアーカイブ"],
+    title: "Disallowed artists",
+    messageJa: "40mPが作詞・作曲・編曲しているため使用できません。",
+    messageEn: "This song cannot be used because 40mP wrote the lyrics, composed, and arranged it.",
+    links: [{
+      label: "osu! discussion",
+      url: "https://osu.ppy.sh/beatmapsets/2163686/discussion/-/generalAll#/4302139"
+    }]
+  },
+  {
+    category: "disallowedArtist",
+    level: "error",
+    fields: ["title", "titleUnicode"],
+    keywords: ["The Glorious Octagon of Destiny", "8 Awesome Angles of YouTube"],
+    title: "Disallowed artists",
+    messageJa: "NOMA が作曲しているため使用できません。",
+    messageEn: "This song cannot be used because it was composed by NOMA.",
+    links: [{
+      label: "osu! discussion",
+      url: "https://osu.ppy.sh/beatmapsets/2556596/discussion/-/generalAll#/5860913"
+    }]
+  },
+  {
+    category: "disallowedArtist",
+    level: "error",
     fields: ["source", "tags"],
 
     keywords: [
@@ -485,10 +511,10 @@ const CONTENT_PERMISSION_RULES = [
     title: "Disallowed labels",
 
     messageJa:
-      "このレーベルは osu!official 上で使用が許可されていません。使用しないでください。",
+      "osu!official 上で使用が許可されていないレーベルです。",
 
     messageEn:
-      "This label is disallowed by osu!official. Do not use this content.",
+      "These labels are disallowed by osu!official.",
 
     link: "https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"
   },
@@ -505,10 +531,10 @@ const CONTENT_PERMISSION_RULES = [
     title: "Conditional label permissions",
 
     messageJa:
-      "このレーベルは osu!official 上で条件付きで使用が許可されています。使用条件を確認してください。",
+      "osu!official 上で条件付きで使用が許可されているレーベルです。使用条件を確認してください。",
 
     messageEn:
-      "This label is conditionally allowed by osu!official. Please verify the usage conditions.",
+      "These labels are allowed by osu!official, with exceptions. Please verify the usage conditions.",
 
     link: "https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"
   },
@@ -532,18 +558,18 @@ const CONTENT_PERMISSION_RULES = [
       "encore -Emotional Vocal Pop"
     ],
 
-    title: "MEGAREX albums",
+    title: "Conditional label permissions",
 
     messageJa:
-      "MEGAREX のアルバムです。osu!official 上で条件付きで使用が許可されているレーベルです。使用条件を確認してください。Featured Artist 楽曲一覧に含まれる場合は使用できます。",
+      "MEGAREX のアルバムです。osu!official 上で条件付きで使用が許可されているレーベルです。使用条件を確認してください。",
 
     messageEn:
-      "This album is released by MEGAREX, a label that is conditionally allowed by osu!official. Please verify the usage conditions. If the track is listed as a Featured Artist track, it can be used.",
+      "This is a MEGAREX album. MEGAREX is a label allowed by osu!official, with exceptions. Please verify the usage conditions.",
 
     link: "https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"
   },
   {
-    category: "conditionalArtist",
+    category: "conditionalLabel",
     level: "warn",
 
     fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
@@ -560,18 +586,18 @@ const CONTENT_PERMISSION_RULES = [
     ],
     keywordMatchModes: { lapix: "word" },
 
-    title: "MEGAREX affiliated artists",
+    title: "Conditional label permissions",
 
     messageJa:
       "MEGAREX 所属のアーティストです。osu!official 上で条件付きで使用が許可されているレーベルです。使用条件を確認してください。",
 
     messageEn:
-      "This artist is affiliated with MEGAREX, a label that is conditionally allowed by osu!official. Please verify the usage conditions.",
+      "This artist is affiliated with MEGAREX, a label allowed by osu!official, with exceptions. Please verify the usage conditions.",
 
     link: "https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"
   },
   {
-    category: "conditionalArtist",
+    category: "conditionalLabel",
     level: "warn",
 
     fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
@@ -581,13 +607,13 @@ const CONTENT_PERMISSION_RULES = [
       "rejection"
     ],
 
-    title: "MEGAREX affiliated Featured Artists",
+    title: "Conditional label permissions",
 
     messageJa:
-      "MEGAREX 所属のアーティストです。osu!official 上で条件付きで使用が許可されているレーベルです。使用条件を確認してください。Featured Artist 楽曲一覧に含まれる場合は使用できます。",
+      "MEGAREX 所属のアーティストです。osu!official 上で条件付きで使用が許可されているレーベルです。使用条件を確認してください。",
 
     messageEn:
-      "This artist is affiliated with MEGAREX, a label that is conditionally allowed by osu!official. Please verify the usage conditions. If the track is listed as a Featured Artist track, it can be used.",
+      "This artist is affiliated with MEGAREX, a label allowed by osu!official, with exceptions. Please verify the usage conditions.",
 
     link: "https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"
   },
@@ -621,10 +647,10 @@ const CONTENT_PERMISSION_RULES = [
     title: "Conditional artist permissions",
 
     messageJa:
-      "このアーティストは osu!official 上で条件付きで使用が許可されています。使用条件を確認してください。",
+      "osu!official 上で条件付きで使用が許可されているアーティストです。使用条件を確認してください。",
 
     messageEn:
-      "This artist is conditionally allowed by osu!official. Please verify the usage conditions.",
+      "These artists are allowed by osu!official, with exceptions. Please verify the usage conditions.",
 
     link:
       "https://osu.ppy.sh/wiki/en/Rules/Content_usage_permissions"

@@ -16,6 +16,13 @@ function getContentPermissionSection(item) {
   return "contentPermissionGuidelines";
 }
 
+function getContentPermissionOfficialOrder(item) {
+  if (item.category === "disallowedArtist") {
+    return item.title === "Disallowed labels" ? 1 : 0;
+  }
+  return item.category === "conditionalArtist" ? 2 : 3;
+}
+
 function formatMultipleContentPermissionResults(results, t) {
   if (!results.length) {
     return escapeHtml(t("noOsuFiles"));
@@ -53,6 +60,11 @@ function formatMultipleContentPermissionResults(results, t) {
     const categoryRows = rows.filter(row =>
       getContentPermissionSection(row.item) === section
     );
+    if (section === "contentPermissionOfficial") {
+      categoryRows.sort((a, b) =>
+        getContentPermissionOfficialOrder(a.item) - getContentPermissionOfficialOrder(b.item)
+      );
+    }
 
     lines.push(formatSectionTitle(
       t(section)

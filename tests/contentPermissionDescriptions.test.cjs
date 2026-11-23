@@ -20,6 +20,62 @@ const withoutPrompts = message => message
   .replace(/ You can view the list here\./g, "")
   .replace(/。\s+/g, "。").trim();
 
+test("official HTML and check messages agree except for the HTML-only Featured Artist note", () => {
+  const context = vm.createContext({
+    window: {}, escapeHtml,
+    sortResultsForDisplay: results => results,
+    getDifficultyNameText: value => value,
+    formatSectionTitle: value => value,
+    formatSeparator: () => "---"
+  });
+  for (const file of [
+    "app/i18n.js", "data/tagRules.js", "checks/metadata/tagCheck.js",
+    "data/contentPermissionRules.js", "checks/metadata/contentPermissionCheck.js",
+    "app/formatters/metadata/contentPermission.js"
+  ]) vm.runInContext(read(file), context);
+  const rules = vm.runInContext("CONTENT_PERMISSION_RULES", context)
+    .filter(rule => ["disallowedArtist", "conditionalArtist", "conditionalLabel"].includes(rule.category));
+
+  for (const lang of ["ja", "en"]) {
+    context.localStorage = { getItem: () => lang };
+    const html = read(`docs/contentPermissionList${lang === "en" ? ".en" : ""}.html`);
+    const table = html.slice(html.indexOf("<tbody>"), html.indexOf("</tbody>"));
+    const rows = [...table.matchAll(/<tr>([\s\S]*?)<\/tr>/g)].map(([, row]) => {
+      const cells = [...row.matchAll(/<td\b[^>]*>([\s\S]*?)<\/td>/g)].map(m => m[1]);
+      return {
+        keywords: [...cells[cells.length - 3].matchAll(/<span[^>]*>([\s\S]*?)<\/span>/g)]
+          .map(m => text(m[1]).toLowerCase()),
+        description: cells[cells.length - 2]
+      };
+    });
+    assert.equal(rows.length, 8);
+    assert.equal((table.match(/Featured Artist/g) || []).length, 1);
+    const note = lang === "ja"
+      ? "Mameyudoufu / rejection は Featured Artist 楽曲一覧に含まれる場合は使用できます。"
+      : "Mameyudoufu / rejection tracks may be used if they are included in the Featured Artist listing.";
+    assert.ok(table.includes(note));
+
+    for (const rule of rules) {
+      const row = rows.find(row => rule.keywords.some(keyword => row.keywords.some(display =>
+        display === keyword.toLowerCase() || display.endsWith(` - ${keyword.toLowerCase()}`)
+      )));
+      assert.ok(row, rule.keywords[0]);
+      const field = rule.fields[0][0].toUpperCase() + rule.fields[0].slice(1);
+      const checked = context.runContentPermissionCheck(`[Metadata]\n${field}:${rule.keywords[0]}\n`, "test.osu");
+      const item = checked.results.find(item => item.messageJa === rule.messageJa);
+      assert.ok(item, rule.keywords[0]);
+      const output = context.formatMultipleContentPermissionResults(
+        [{ fileName: checked.fileName, results: [item] }],
+        key => context.window.i18n[lang][key] || ""
+      );
+      const message = output.match(/<span class="result-(?:warn|error)">([\s\S]*?)<\/span>/)[1];
+      assert.equal(text(message), text(row.description.replace(note, "")), `${lang}: ${rule.keywords[0]}`);
+      assert.ok(!message.includes("Featured Artist"));
+    }
+    assert.equal(rules.length, 9);
+  }
+});
+
 test("guideline HTML retains check details while omitting prompts and self-links", () => {
   const context = vm.createContext({
     window: {}, escapeHtml,

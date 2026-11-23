@@ -43,6 +43,42 @@ test("Koronba credit and redistribution warning matches either alias in the five
   }
 });
 
+test("OctagonCollaboration songs are disallowed by title without an artist requirement", () => {
+  const url = "https://osu.ppy.sh/beatmapsets/2556596/discussion/-/generalAll#/5860913";
+  for (const title of ["The Glorious Octagon of Destiny", "8 Awesome Angles of YouTube"]) {
+    for (const field of ["Title", "TitleUnicode", "Artist", "ArtistUnicode", "Source", "Tags"]) {
+      const matches = context.runContentPermissionCheck(
+        `[Metadata]\n${field}:${title.toUpperCase()} (Remix)\n`, "test.osu"
+      ).results.filter(item => item.links.some(link => link.url === url));
+      assert.equal(matches.length, ["Title", "TitleUnicode"].includes(field) ? 1 : 0, `${field}: ${title}`);
+      if (matches.length) {
+        assert.equal(matches[0].category, "disallowedArtist");
+        assert.equal(matches[0].level, "error");
+        assert.equal(matches[0].messageJa, "NOMA が作曲しているため使用できません。");
+        assert.equal(matches[0].matchedKeywords[0], title);
+      }
+    }
+  }
+});
+
+test("Seishun no Archive is disallowed by title without requiring the credited artist", () => {
+  const url = "https://osu.ppy.sh/beatmapsets/2163686/discussion/-/generalAll#/4302139";
+  for (const field of ["Artist", "ArtistUnicode", "Title", "TitleUnicode", "Source", "Tags"]) {
+    for (const value of ["青春のアーカイブ", "青春のアーカイブ (TV Size)"]) {
+      const matches = context.runContentPermissionCheck(
+        `[Metadata]\n${field}:${value}\n`, "test.osu"
+      ).results.filter(item => item.links.some(link => link.url === url));
+      assert.equal(matches.length, ["Title", "TitleUnicode"].includes(field) ? 1 : 0, `${field}: ${value}`);
+      if (matches.length) {
+        assert.equal(matches[0].category, "disallowedArtist");
+        assert.equal(matches[0].level, "error");
+        assert.equal(matches[0].messageJa, "40mPが作詞・作曲・編曲しているため使用できません。");
+        assert.equal(matches[0].matchedKeywords[0], "青春のアーカイブ");
+      }
+    }
+  }
+});
+
 test("KONAMI and RIAJ warnings link to localized song pages in both app modes", () => {
   const formatterContext = vm.createContext({
     escapeHtml: value => String(value).replace(/[&<>"']/g, char => ({
