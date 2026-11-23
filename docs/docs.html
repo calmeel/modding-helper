@@ -1519,17 +1519,12 @@ osu! では、アーティスト・レーベル・作品によって、使用や
 このチェックは、osu!official の <code>Content usage permissions</code>、
 権利者による利用ガイドライン、
 過去の DMCA 申立て情報などをもとに、
-使用・アップロード時に注意が必要なコンテンツを検出します。<br><br>
-
-詳細な対応一覧・ガイドライン・DMCA 原文リンクは、
-<a href="contentPermissionList.html" target="_blank" rel="noopener noreferrer">Content Permission Check 一覧</a>
-を参照してください。
+使用・アップロード時に注意が必要なコンテンツを検出します。
 </div>
 
 <div class="section section-detect">
 <span class="label label-detect">■ 検出内容</span><br>
-各 difficulty の metadata から、以下の項目を確認します。<br><br>
-
+各 difficulty の metadata から、以下の項目を確認します。<br>
 <ul>
   <li><code>Artist</code></li>
   <li><code>ArtistUnicode</code></li>
@@ -1542,7 +1537,9 @@ osu! では、アーティスト・レーベル・作品によって、使用や
 これらの項目に、使用禁止・条件付き許可・利用制限・過去の DMCA 申立てに関連するキーワードが含まれている場合、
 warning または error として表示します。<br><br>
 
-一部のブランド・レーベルでは、代表的な楽曲タイトルも検出対象に含まれています。
+詳細な対応一覧・ガイドライン・DMCA 原文リンクは、
+<a href="contentPermissionList.html" target="_blank" rel="noopener noreferrer">Content Permission Check 一覧</a>
+を参照してください。
 </div>
 
 <div class="section section-warning">
@@ -1550,10 +1547,16 @@ warning または error として表示します。<br><br>
 このチェックは、使用・アップロード前の確認を補助するためのものです。<br>
 警告が出た場合でも、必ずしも使用不可であるとは限りません。<br><br>
 
-特に、Featured Artist や個別許諾などにより、例外的に使用できる場合があります。<br>
-warning が出た場合は、リンク先のガイドラインや DMCA 原文を確認し、現在の権利状況を確認してください。<br><br>
+特に、Featured Artist や個別許諾などにより、例外的に使用できる場合があります。
+</div>
 
-また、楽曲タイトルを複数記載している項目は、代表例を挙げているものであり、網羅的な一覧ではありません。
+<div class="section section-warning">
+<span class="label label-warning">■ 注意点：Ranked 可能かどうかについて</span><br>
+<ul>
+  <li>「osu!official のコンテンツ使用許可」に該当するもの：上記の例外を除き Ranked 不可。</li>
+  <li>「ガイドライン / 個別制限」「過去のDMCA申立て」に該当するもの：マナー上は使用を避けるべきですが、mapper と BN 2人が合意する場合は Ranked 可能です。</li>
+</ul>
+参考：<a href="https://osu.ppy.sh/beatmapsets/2395175/discussion/-/generalAll#/5216160/13797768" target="_blank" rel="noopener noreferrer">osu! discussion</a>
 </div>
 </section>
 
