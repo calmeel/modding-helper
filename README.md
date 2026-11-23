@@ -23,7 +23,7 @@
 
 ## Usage
 
-- **Web app (no installation required):** [Open Modding Helper](https://calmeel.github.io/modding-helper/)
+- **Web app (no installation required):** Open [Modding Helper](https://calmeel.github.io/modding-helper/)
 - **Browser extension:** [Tampermonkey userscript](userscripts/README.md)
 - **Desktop app:** Download from the [latest release](https://github.com/calmeel/modding-helper/releases/latest).
 
