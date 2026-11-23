@@ -369,3 +369,16 @@ code {
   color: #fff;
 }
 
+.tab-button.is-unavailable {
+  background: #242429;
+  border-color: #38383f;
+  color: #85858f;
+}
+
+.tab-button.is-unavailable:hover,
+.tab-button.is-unavailable.active {
+  background: #303038;
+  border-color: #656570;
+  color: #a0a0aa;
+}
+

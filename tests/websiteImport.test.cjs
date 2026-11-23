@@ -48,6 +48,7 @@ test('app DOM bridge rejects mismatched beatmaps before loading any files', asyn
   const nodes = [], timers = [];
   class Element extends EventTarget {
     dataset = {};
+    style = {};
     textContent = '';
     setAttribute() {}
     after(node) { nodes.push(node); }

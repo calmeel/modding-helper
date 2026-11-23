@@ -27,6 +27,7 @@ function setupWebsiteImport({ loadFile, t }) {
   if (!/^[a-f0-9-]{36}$/.test(token || "") || window.electronAPI) return;
   const status = document.createElement("p");
   status.id = "websiteImportStatus";
+  status.style.whiteSpace = "pre-line";
   status.setAttribute("role", "status");
   document.querySelector(".drop-area").after(status);
   status.textContent = t("websiteImportLoading");

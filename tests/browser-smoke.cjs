@@ -214,9 +214,19 @@ async function run() {
       assert.equal(await evaluate('location.hash'), '');
       assert.match(await evaluate(`document.getElementById('websiteImportStatus').textContent`), /2 taiko difficulties/);
       assert.match(await evaluate(`document.getElementById('fileCheckOutput').textContent`), /skipped/);
+      assert.match(await evaluate(`document.getElementById('offsetWaveformEmpty').textContent`), /Audio is not fetched/);
+      assert.doesNotMatch(await evaluate(`document.getElementById('offsetWaveformEmpty').textContent`), /not found/);
+      assert.equal(await evaluate(`document.querySelectorAll('.tab-button.is-unavailable').length`), 2);
+      await evaluate(`document.querySelector('.tab-button[data-tab="fileCheck"]').click(); window.scrollTo(0, 0); true`);
+      assert.equal(await evaluate(`document.getElementById('tab-fileCheck').classList.contains('active')`), true);
+      await command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
+      const importScreenshot = await command('Page.captureScreenshot', { format: 'png' });
+      fs.writeFileSync(path.join(output, 'website-import.png'), Buffer.from(importScreenshot.data, 'base64'));
       assert.equal(await evaluate(`document.getElementById('openBeatmapPage').disabled`), false);
       await selectFile(osuFile, path.basename(osuFile));
       assert.doesNotMatch(await evaluate(`document.getElementById('fileCheckOutput').textContent`), /website import/);
+      assert.equal(await evaluate(`document.querySelectorAll('.tab-button.is-unavailable').length`), 0);
+      assert.match(await evaluate(`document.getElementById('offsetWaveformEmpty').textContent`), /not found/);
     }
     console.log(`PASS ${version.product} ${pageUrl.startsWith('http') ? 'HTTP site' : 'local HTML'}: bundled ZIP, .osu/.osz, Japanese filenames, audio, drop, tabs, docs/languages, timestamps`);
   }

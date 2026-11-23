@@ -49,6 +49,16 @@ function setSubtabIssueLevel(subtabName, level) {
 }
 
 function updateTabIssueStates(state) {
+  const fileNamesUnavailable = Boolean(state.fileCheck?.length &&
+    state.fileCheck.every(result => result.checked === false));
+  const waveformUnavailable = Boolean(state.offsetWaveformSources?.length &&
+    state.offsetWaveformSources.every(source => source.websiteImport));
+  for (const [tabName, unavailable] of [["fileCheck", fileNamesUnavailable], ["offsetWaveform", waveformUnavailable]]) {
+    for (const button of document.querySelectorAll(`.tab-button[data-tab="${tabName}"]`)) {
+      // Keep tabs clickable so the panel can explain why the check is unavailable.
+      button.classList.toggle("is-unavailable", unavailable);
+    }
+  }
   setTabIssueLevel("clapWhistle", getClapWhistleIssueLevel(state.clapWhistle));
   setTabIssueLevel("coordinates", getCoordinateIssueLevel(state.coordinates));
   setTabIssueLevel("shift1ms", getOffsetIssueLevel(state.offset));

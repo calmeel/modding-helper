@@ -160,6 +160,7 @@ async function analyzeOszFile(file, options = {}) {
     offsetWaveformSources.push({
       text,
       fileName: entry.name,
+      websiteImport: Boolean(options.websiteImport),
       audioFileName,
       audioEntryName: audioEntry?.name ?? "",
       audioBlob,

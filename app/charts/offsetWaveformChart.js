@@ -105,7 +105,9 @@ async function renderSelectedOffsetWaveformSource(source) {
     source.offsetPeakWaveformBarlines = [];
     renderOffsetEstimate(null);
     setOffsetWaveformEmpty(
-      source.audioFileName
+      source.websiteImport
+        ? t("websiteImportWaveformUnavailable")
+        : source.audioFileName
         ? t("offsetWaveformAudioMissing").replace("{audio}", source.audioFileName)
         : t("offsetWaveformNoAudioFilename")
     );
