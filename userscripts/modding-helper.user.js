@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Modding Helper — taiko mapset check
 // @namespace    https://github.com/calmeel/modding-helper
-// @version      0.1.4
+// @version      0.1.5
 // @updateURL    https://calmeel.github.io/modding-helper/userscripts/modding-helper.user.js
 // @downloadURL  https://calmeel.github.io/modding-helper/userscripts/modding-helper.user.js
 // @description  Open all taiko difficulties in Modding Helper without downloading audio or backgrounds.
@@ -128,7 +128,23 @@
     const button = document.createElement("button");
     button.type = "button";
     button.className = "btn-osu-big btn-osu-big--beatmapset-header";
-    button.textContent = label("taiko 全難易度をチェック", "Check all taiko difficulties");
+    button.title = label("taiko 全難易度を Modding Helper で開く", "Open all taiko difficulties in Modding Helper");
+    const content = document.createElement("span");
+    content.className = "btn-osu-big__content";
+    const left = document.createElement("span");
+    left.className = "btn-osu-big__left";
+    const text = document.createElement("span");
+    text.className = "btn-osu-big__text-top";
+    text.textContent = "modding helper";
+    left.append(text);
+    const icon = document.createElement("span");
+    icon.className = "btn-osu-big__icon";
+    icon.setAttribute("aria-hidden", "true");
+    const check = document.createElement("i");
+    check.className = "fas fa-check fa-fw";
+    icon.append(check);
+    content.append(left, icon);
+    button.append(content);
     const status = document.createElement("span");
     status.setAttribute("role", "status");
     status.style.cssText = "display:block;font-size:12px;max-width:300px;white-space:normal";

@@ -1,6 +1,6 @@
 # Modding Helper Userscript
 
-Adds a button to osu! beatmapset pages to open all taiko difficulties in Modding Helper in a new tab.
+Adds a **modding helper** button to osu! beatmapset pages to open all taiko difficulties in Modding Helper in a new tab.
 
 ## Installation
 
