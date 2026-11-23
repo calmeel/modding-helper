@@ -314,6 +314,18 @@ const updateHistoryEntries = [
       ]
     }
   },
+  {
+    date: "2026/11/23",
+    type: "update",
+    items: {
+      en: [
+        "Added and revised checklist items for content usage permission"
+      ],
+      ja: [
+        "コンテンツ利用許可のチェック項目を追加、修正"
+      ]
+    }
+  },
 ];
 
 const updateHistoryTypeLabels = {
