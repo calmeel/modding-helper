@@ -210,6 +210,10 @@ async function run() {
         assert.equal(await evaluate(`document.getElementById('modding-helper-import-bridge')`), null);
       }
       assert.equal(await evaluate('window.__loadedDiffs.length'), 2);
+      assert.equal(await evaluate(`document.getElementById('fileName').textContent`), '456 Test - Browser regression test');
+      await evaluate(`document.getElementById('langJa').click(); true`);
+      assert.equal(await evaluate(`document.getElementById('fileName').textContent`), '456 Test - Browser regression test');
+      await evaluate(`document.getElementById('langEn').click(); true`);
       assert.equal(await evaluate('window.__loadedAudio'), null);
       assert.equal(await evaluate('location.hash'), '');
       assert.match(await evaluate(`document.getElementById('websiteImportStatus').textContent`), /2 taiko difficulties/);

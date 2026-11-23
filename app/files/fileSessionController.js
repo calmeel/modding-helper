@@ -37,7 +37,7 @@ function createFileSessionController({ state, dom, t, isChartPopout,
     beatmapPageUrl = null;
     if (openBeatmapPage) openBeatmapPage.disabled = true;
 
-    state.selectedFileName = file.name;
+    state.selectedFileName = processOptions.displayName || file.name;
 
     if (fileName) {
       fileName.textContent = state.selectedFileName;

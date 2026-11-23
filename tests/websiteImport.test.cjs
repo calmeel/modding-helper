@@ -15,6 +15,17 @@ function validator() {
 const map = (id = 10, mode = 1, set = 20) => ({ id,
   text: `osu file format v14\n[General]\nMode:${mode}\n[Metadata]\nBeatmapID:${id}\nBeatmapSetID:${set}\nVersion:Oni\n` });
 
+test('website import label prefers Unicode metadata and falls back to ordinary metadata', () => {
+  const scope = vm.createContext({});
+  for (const file of ['parsers/osuParser.js', 'app/files/websiteImport.js']) {
+    vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), scope);
+  }
+  const payload = { setId: 20, maps: [{ text: '[Metadata]\nArtist:Artist\nTitle:Title\nArtistUnicode:作曲者\nTitleUnicode:曲名\n' }] };
+  assert.equal(scope.getWebsiteImportDisplayName(payload), '20 作曲者 - 曲名');
+  payload.maps[0].text = '[Metadata]\nArtist:Artist\nTitle:Title\nArtistUnicode:\nTitleUnicode:\n';
+  assert.equal(scope.getWebsiteImportDisplayName(payload), '20 Artist - Title');
+});
+
 test('website import accepts all taiko difficulties from one set', () => {
   const payload = { setId: 20, maps: [map(), map(11)] };
   assert.equal(validator()(payload), payload);

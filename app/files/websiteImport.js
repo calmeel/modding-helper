@@ -22,6 +22,13 @@ function validateWebsiteImport(payload) {
   return payload;
 }
 
+function getWebsiteImportDisplayName(payload) {
+  const text = payload.maps[0].text;
+  const artist = parseMetadataValue(text, "ArtistUnicode") || parseMetadataValue(text, "Artist") || "Unknown Artist";
+  const title = parseMetadataValue(text, "TitleUnicode") || parseMetadataValue(text, "Title") || "Untitled";
+  return `${payload.setId} ${artist} - ${title}`;
+}
+
 function setupWebsiteImport({ loadFile, t }) {
   const token = new URLSearchParams(location.hash.slice(1)).get("osu-import");
   if (!/^[a-f0-9-]{36}$/.test(token || "") || window.electronAPI) return;
@@ -69,7 +76,10 @@ function setupWebsiteImport({ loadFile, t }) {
       const bytes = await zip.generateAsync({ type: "uint8array" });
       if (expired) return;
       const file = new File([bytes], `osu-${payload.setId}-taiko.osz`, { type: "application/zip" });
-      const loaded = await loadFile(file, { websiteImport: true });
+      const loaded = await loadFile(file, {
+        websiteImport: true,
+        displayName: getWebsiteImportDisplayName(payload)
+      });
       if (expired) return;
       if (loaded !== true) throw new Error("Beatmap checks could not be loaded.");
       status.textContent = t("websiteImportLoaded").replace("{count}", payload.maps.length);
