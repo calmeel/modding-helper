@@ -261,6 +261,7 @@ function renderSpreadResultFromResults(spreadState, dom, t) {
   const results = spreadState?.results;
 
   if (!results) {
+    updateSpreadSubtabIssueStates(spreadState);
     if (dom.spreadOrderOutput) dom.spreadOrderOutput.innerHTML = t("noFileLoaded");
     if (dom.spreadOdHpOutput) dom.spreadOdHpOutput.innerHTML = t("noFileLoaded");
     if (dom.spreadScrollSpeedOutput) dom.spreadScrollSpeedOutput.innerHTML = t("noFileLoaded");

@@ -265,8 +265,17 @@ app.whenReady().then(async () => {
   const togglePolicy = () => evaluate(main, `document.getElementById('skipMultipleAudioMapsets').click()`);
   const skipped = () => evaluate(main, `document.getElementById('osuSourceStatus').textContent === i18n[document.documentElement.lang].osuSourceMultipleAudioSkipped`);
   assert.deepEqual(await optionState(), { checked: false, disabled: true });
+  // Keep both warning severities on all six subtabs and their compact entries
+  // to verify that skipping a mapset clears every previous result indicator.
+  const spreadButtons = '.spread-subtab-button[data-spread-subtab]:not([data-spread-subtab="finishers"]), .tab-button[data-spread-subtab-target]:not([data-spread-subtab-target="finishers"])';
+  assert.equal(await evaluate(main, `document.querySelectorAll('.spread-subtab-button[data-spread-subtab]:not([data-spread-subtab="finishers"])').length`), 6);
+  await evaluate(main, `document.querySelectorAll('${spreadButtons}').forEach(button => button.classList.add('has-warnings', 'has-errors'))`);
   await sourceMode('osu');
   await until(skipped, 'multiple-audio mapset skipped');
+  assert.deepEqual(await evaluate(main, `Array.from(document.querySelectorAll('${spreadButtons}'))
+    .filter(button => button.classList.contains('has-warnings') || button.classList.contains('has-errors'))
+    .map(button => button.dataset.spreadSubtab || button.dataset.spreadSubtabTarget)`), [],
+    'skipping a multi-audio mapset clears all spread subtab warning colors');
   assert.deepEqual(await optionState(), { checked: true, disabled: false });
   assert.equal(await evaluate(main, 'window.__loadedDiffs'), null);
   assert.equal(await evaluate(main, 'window.__loadedAudio'), null);
