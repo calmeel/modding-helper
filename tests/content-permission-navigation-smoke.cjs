@@ -23,12 +23,12 @@ app.whenReady().then(async () => {
     for (const lang of ["ja", "en"]) {
       await win.loadFile(path.join(root, `docs/contentPermissionList${lang === "en" ? ".en" : ""}.html`));
       await waitFor(() => run('document.querySelectorAll(".permission-sidebar .permission-toc > li").length === 3'), "navigation setup");
-      assert.equal(await run('document.querySelectorAll(".permission-sidebar .permission-toc a").length'), 14);
+      assert.equal(await run('document.querySelectorAll(".permission-sidebar .permission-toc a").length'), 13);
       for (const width of [1600, 1200, 900, 390]) {
         win.setContentSize(width, 900);
         const narrow = width <= 1100;
         await waitFor(() => run(`window.innerWidth === ${width}`), "viewport resize");
-        for (const id of ["permission-section-1", "permission-section-2-1", "permission-section-2-5", "permission-section-3-1", "permission-section-3-6"]) {
+        for (const id of ["permission-section-1", "permission-section-2-1", "permission-section-2-4", "permission-section-3-1", "permission-section-3-6"]) {
           await run(`document.getElementById(${JSON.stringify(id)}).scrollIntoView()`);
           await waitFor(() => run(`document.querySelector('.permission-sidebar a[aria-current="location"]')?.getAttribute('href') === '#${id}'`), `active heading ${lang} ${width} ${id}`);
           assert.equal(await run('document.querySelectorAll(".permission-sidebar .permission-toc > .is-active").length'), 1);

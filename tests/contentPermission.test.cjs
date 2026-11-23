@@ -24,6 +24,17 @@ function detects(field, value, keyword, artist = "") {
   ));
 }
 
+test("removed music labels no longer produce content permission warnings", () => {
+  for (const keyword of ["HARDCORE TANO*C", "OpenTracks", "DOVA-SYNDROME"]) {
+    for (const field of ["Artist", "ArtistUnicode", "Title", "TitleUnicode", "Source", "Tags"]) {
+      const results = context.runContentPermissionCheck(
+        `[Metadata]\n${field}:${keyword}\n`, "test.osu"
+      ).results;
+      assert.equal(results.length, 0, `${field}: ${keyword}`);
+    }
+  }
+});
+
 test("Koronba credit and redistribution warning matches either alias in the five specified fields", () => {
   const url = "https://dic.pixiv.net/a/%E3%81%93%E3%82%8D%E3%82%93%E3%81%B0";
   for (const keyword of ["ころんば", "Koronba", "KORONBA", "koronba"]) {

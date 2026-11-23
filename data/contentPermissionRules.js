@@ -762,27 +762,6 @@ const CONTENT_PERMISSION_RULES = [
   category: "personalBan",
   level: "warn",
 
-  fields: ["source", "tags"],
-
-  keywords: [
-    "hardcore tano*c"
-  ],
-
-  title: "Derivative work restriction",
-
-  messageJa:
-    "当レーベルが許可した場合を除き、楽曲の再配布は禁止されています。ガイドラインを確認してください。",
-
-  messageEn:
-    "Redistribution of the music is prohibited unless permitted by the label. Please check the guidelines.",
-
-  link:
-    "https://www.tano-c.net/copyright/"
-},
-{
-  category: "personalBan",
-  level: "warn",
-
   fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
 
   keywords: [
@@ -1998,30 +1977,6 @@ const CONTENT_PERMISSION_RULES = [
         "label": "Pixiv Encyclopedia",
         "labelJa": "ピクシブ大百科",
         "url": "https://dic.pixiv.net/a/%E3%81%93%E3%82%8D%E3%82%93%E3%81%B0"
-      }
-    ]
-  },
-  {
-    "category": "personalBan",
-    "level": "warn",
-    "fields": [
-      "artist",
-      "artistUnicode",
-      "source",
-      "tags"
-    ],
-    "keywords": [
-      "OpenTracks",
-      "DOVA-SYNDROME"
-    ],
-    "title": "Rhythm game music credit requirement",
-    "messageJa": "音楽ゲームで利用する際は楽曲名・作曲者名のクレジットが必須です。確認して下さい。",
-    "messageEn": "Credits for the song title and composer are required when using music in rhythm games. Please check the requirements.",
-    "links": [
-      {
-        "label": "Notice",
-        "labelJa": "お知らせ",
-        "url": "https://opentracks.com/news/detail/17"
       }
     ]
   },

@@ -151,7 +151,7 @@ test("guideline HTML retains check details while omitting prompts and self-links
       }
       count++;
     }
-    assert.equal(count, 19);
+    assert.equal(count, 17);
     assert.equal(linkedCount, 7);
   }
 });
