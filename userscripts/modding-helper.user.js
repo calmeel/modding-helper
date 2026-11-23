@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Modding Helper — taiko mapset check
 // @namespace    https://github.com/calmeel/modding-helper
-// @version      0.1.2
+// @version      0.1.4
 // @updateURL    https://calmeel.github.io/modding-helper/userscripts/modding-helper.user.js
 // @downloadURL  https://calmeel.github.io/modding-helper/userscripts/modding-helper.user.js
 // @description  Open all taiko difficulties in Modding Helper without downloading audio or backgrounds.
@@ -80,21 +80,35 @@
     return;
   }
 
-  // Share a queue across button clicks and SPA navigation in this tab. Leave
-  // at least one second after every response (including failures) before retrying.
-  const requestIntervalMs = 1000;
-  let nextRequestAt = 0;
+  // Allow short bursts for small sets, but bound all requests in this tab to
+  // 60 per rolling minute, across button clicks and SPA navigation.
+  const requestTimes = [];
+  let lastRequestFinishedAt = null;
+  let retryNotBefore = 0;
   let requestQueue = Promise.resolve();
-  function fetchText(url) {
+  function fetchText(url, intervalMs = 1000) {
     const request = requestQueue.then(async () => {
-      const waitMs = nextRequestAt - Date.now();
-      if (waitMs > 0) await new Promise(resolve => setTimeout(resolve, waitMs));
+      while (true) {
+        const now = Date.now();
+        while (requestTimes.length && requestTimes[0] <= now - 60000) requestTimes.shift();
+        const nextRequestAt = Math.max(
+          lastRequestFinishedAt === null ? 0 : lastRequestFinishedAt + intervalMs,
+          retryNotBefore,
+          requestTimes.length >= 60 ? requestTimes[0] + 60000 : 0
+        );
+        if (nextRequestAt <= now) break;
+        await new Promise(resolve => setTimeout(resolve, nextRequestAt - now));
+      }
+      requestTimes.push(Date.now());
       try {
         const response = await fetch(url, { credentials: "same-origin", signal: AbortSignal.timeout(30000) });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return await response.text();
+      } catch (error) {
+        retryNotBefore = Date.now() + 1000;
+        throw error;
       } finally {
-        nextRequestAt = Date.now() + requestIntervalMs;
+        lastRequestFinishedAt = Date.now();
       }
     });
     requestQueue = request.catch(() => {});
@@ -133,12 +147,13 @@
         const maps = set.beatmaps.filter(map => map.mode === "taiko" || map.mode_int === 1);
         if (!maps.length) throw new Error(label("taiko の難易度がありません。", "No taiko difficulties found."));
         if (maps.length > 256) throw new Error("Too many difficulties.");
+        const intervalMs = maps.length < 10 ? 250 : 1000;
         const payload = { setId, maps: [] };
         let size = 0;
         for (const map of maps) {
           if (!Number.isSafeInteger(map.id) || map.id <= 0) throw new Error("Invalid beatmap ID.");
           status.textContent = label(`譜面を取得中… ${payload.maps.length + 1}/${maps.length}`, `Fetching beatmaps… ${payload.maps.length + 1}/${maps.length}`);
-          const text = await fetchText(`https://osu.ppy.sh/osu/${map.id}`);
+          const text = await fetchText(`https://osu.ppy.sh/osu/${map.id}`, intervalMs);
           if (!/^\uFEFF?osu file format v\d+/.test(text) || !/^Mode\s*:\s*1\s*$/m.test(text)) throw new Error(label("taiko 譜面を取得できませんでした。再実行してください。", "Could not fetch a taiko beatmap. Please retry."));
           size += text.length;
           if (text.length > 10 * 1024 * 1024 || size > 32 * 1024 * 1024) throw new Error("Beatmap set is too large.");

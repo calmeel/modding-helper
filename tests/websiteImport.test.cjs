@@ -77,7 +77,7 @@ test('app DOM bridge rejects mismatched beatmaps before loading any files', asyn
   assert.equal(loads, 0);
 });
 
-function sourceFixture({ failSecond = false, responseDelay = 0 } = {}) {
+function sourceFixture({ failSecond = false, responseDelay = 0, difficultyCount = null } = {}) {
   const elements = new Map(), requests = [], requestTimes = [], stored = new Map(), tabs = [];
   let clock = 100000;
   const makeElement = () => ({ dataset: {}, style: {}, children: [],
@@ -100,7 +100,9 @@ function sourceFixture({ failSecond = false, responseDelay = 0 } = {}) {
     GM_setValue: (key, value) => stored.set(key, value), GM_deleteValue: key => stored.delete(key),
     GM_openInTab: url => tabs.push(url),
     DOMParser: class { parseFromString() { return { querySelector: () => ({ textContent: JSON.stringify({ id: 20,
-      beatmaps: [{ id: 10, mode: 'taiko' }, { id: 12, mode: 'osu' }, { id: 11, mode_int: 1 }] }) }) }; } },
+      beatmaps: difficultyCount === null
+        ? [{ id: 10, mode: 'taiko' }, { id: 12, mode: 'osu' }, { id: 11, mode_int: 1 }]
+        : Array.from({ length: difficultyCount }, (_, i) => ({ id: 10 + i, mode: 'taiko' })) }) }) }; } },
     fetch: async url => {
       requests.push(url);
       requestTimes.push(clock);
@@ -125,13 +127,33 @@ test('userscript fetches every taiko difficulty and opens an isolated transfer',
   assert.equal(f.wrapper.children[0].disabled, false);
 });
 
-test('userscript waits one second after each response, including the set listing and repeated clicks', async () => {
+test('small sets use shorter waits while repeated listing requests retain a one second gap', async () => {
   const f = sourceFixture({ responseDelay: 700 });
   await f.wrapper.children[0].click();
   await f.wrapper.children[0].click();
   assert.equal(f.requestTimes.length, 6);
   for (let i = 1; i < f.requestTimes.length; i++) {
-    assert.equal(f.requestTimes[i] - f.requestTimes[i - 1], 1700);
+    assert.equal(f.requestTimes[i] - f.requestTimes[i - 1], i % 3 === 0 ? 1700 : 950);
+  }
+});
+
+test('nine difficulties use 250ms gaps and ten difficulties use one second gaps', async () => {
+  for (const count of [9, 10]) {
+    const f = sourceFixture({ difficultyCount: count });
+    await f.wrapper.children[0].click();
+    assert.equal(f.requestTimes.length, count + 1);
+    for (let i = 1; i < f.requestTimes.length; i++) {
+      assert.equal(f.requestTimes[i] - f.requestTimes[i - 1], count === 9 ? 250 : 1000);
+    }
+  }
+});
+
+test('repeated small imports never exceed sixty requests per rolling minute', async () => {
+  const f = sourceFixture();
+  for (let i = 0; i < 22; i++) await f.wrapper.children[0].click();
+  assert.equal(f.requestTimes.length, 66);
+  for (let i = 60; i < f.requestTimes.length; i++) {
+    assert.ok(f.requestTimes[i] - f.requestTimes[i - 60] >= 60000);
   }
 });
 
