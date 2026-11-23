@@ -38,7 +38,11 @@ test("official HTML and check messages agree except for the HTML-only Featured A
 
   for (const lang of ["ja", "en"]) {
     context.localStorage = { getItem: () => lang };
-    const html = read(`docs/contentPermissionList${lang === "en" ? ".en" : ""}.html`);
+    const source = read(`docs/contentPermissionList${lang === "en" ? ".en" : ""}.html`);
+    const archived = source.match(/<!--[\s\S]*?OctagonCollaboration[\s\S]*?-->/);
+    assert.ok(archived, "temporarily disabled songs remain available for restoration");
+    const html = source.replace(/<!--[\s\S]*?-->/g, "");
+    assert.ok(!html.includes("OctagonCollaboration"));
     const table = html.slice(html.indexOf("<tbody>"), html.indexOf("</tbody>"));
     const rows = [...table.matchAll(/<tr>([\s\S]*?)<\/tr>/g)].map(([, row]) => {
       const cells = [...row.matchAll(/<td\b[^>]*>([\s\S]*?)<\/td>/g)].map(m => m[1]);
@@ -48,7 +52,7 @@ test("official HTML and check messages agree except for the HTML-only Featured A
         description: cells[cells.length - 2]
       };
     });
-    assert.equal(rows.length, 8);
+    assert.equal(rows.length, 7);
     assert.equal((table.match(/Featured Artist/g) || []).length, 1);
     const note = lang === "ja"
       ? "Mameyudoufu / rejection は Featured Artist 楽曲一覧に含まれる場合は使用できます。"
@@ -72,7 +76,7 @@ test("official HTML and check messages agree except for the HTML-only Featured A
       assert.equal(text(message), text(row.description.replace(note, "")), `${lang}: ${rule.keywords[0]}`);
       assert.ok(!message.includes("Featured Artist"));
     }
-    assert.equal(rules.length, 9);
+    assert.equal(rules.length, 8);
   }
 });
 

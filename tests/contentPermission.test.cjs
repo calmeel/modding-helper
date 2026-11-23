@@ -54,7 +54,18 @@ test("Koronba credit and redistribution warning matches either alias in the five
   }
 });
 
-test("OctagonCollaboration songs are disallowed by title without an artist requirement", () => {
+test("OctagonCollaboration songs remain disabled while permission is under discussion", () => {
+  for (const title of ["The Glorious Octagon of Destiny", "8 Awesome Angles of YouTube"]) {
+    for (const field of ["Title", "TitleUnicode", "Artist", "ArtistUnicode", "Source", "Tags"]) {
+      assert.equal(context.runContentPermissionCheck(
+        `[Metadata]\n${field}:${title}\n`, "test.osu"
+      ).results.length, 0, `${field}: ${title}`);
+    }
+  }
+});
+
+// Restore this test together with the temporarily disabled rule.
+test.skip("OctagonCollaboration songs are disallowed by title without an artist requirement", () => {
   const url = "https://osu.ppy.sh/beatmapsets/2556596/discussion/-/generalAll#/5860913";
   for (const title of ["The Glorious Octagon of Destiny", "8 Awesome Angles of YouTube"]) {
     for (const field of ["Title", "TitleUnicode", "Artist", "ArtistUnicode", "Source", "Tags"]) {

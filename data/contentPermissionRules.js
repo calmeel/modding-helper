@@ -484,19 +484,20 @@ const CONTENT_PERMISSION_RULES = [
       url: "https://osu.ppy.sh/beatmapsets/2163686/discussion/-/generalAll#/4302139"
     }]
   },
-  {
-    category: "disallowedArtist",
-    level: "error",
-    fields: ["title", "titleUnicode"],
-    keywords: ["The Glorious Octagon of Destiny", "8 Awesome Angles of YouTube"],
-    title: "Disallowed artists",
-    messageJa: "NOMA が作曲しているため使用できません。",
-    messageEn: "This song cannot be used because it was composed by NOMA.",
-    links: [{
-      label: "osu! discussion",
-      url: "https://osu.ppy.sh/beatmapsets/2556596/discussion/-/generalAll#/5860913"
-    }]
-  },
+  // Temporarily disabled: permission status is under discussion. Uncomment to restore.
+  //   {
+  //     category: "disallowedArtist",
+  //     level: "error",
+  //     fields: ["title", "titleUnicode"],
+  //     keywords: ["The Glorious Octagon of Destiny", "8 Awesome Angles of YouTube"],
+  //     title: "Disallowed artists",
+  //     messageJa: "NOMA が作曲しているため使用できません。",
+  //     messageEn: "This song cannot be used because it was composed by NOMA.",
+  //     links: [{
+  //       label: "osu! discussion",
+  //       url: "https://osu.ppy.sh/beatmapsets/2556596/discussion/-/generalAll#/5860913"
+  //     }]
+  //   },
   {
     category: "disallowedArtist",
     level: "error",
