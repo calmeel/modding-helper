@@ -320,11 +320,19 @@ const updateHistoryEntries = [
     items: {
       en: [
         "Added and revised checklist items for content usage permission",
-        "Expanded spelling error detection for Touhou source check"
+        "Expanded spelling error detection for Touhou source check",
+        {
+          text: "Released a userscript to open beatmaps directly in Modding Helper from the osu! website",
+          url: "https://github.com/calmeel/modding-helper/blob/main/userscripts/README.md"
+        }
       ],
       ja: [
         "コンテンツ利用許可のチェック項目を追加、修正",
-        "東方ソースチェックのスペルミス判定を拡大"
+        "東方ソースチェックのスペルミス判定を拡大",
+        {
+          text: "osu! ブラウザから modding helper を直接開ける userscript を公開",
+          url: "https://github.com/calmeel/modding-helper/blob/main/userscripts/README.md"
+        }
       ]
     }
   },
@@ -359,7 +367,16 @@ function renderUpdateHistory(container, lang) {
     const list = document.createElement("ul");
     for (const item of items) {
       const listItem = document.createElement("li");
-      listItem.textContent = item;
+      if (typeof item === "string") {
+        listItem.textContent = item;
+      } else {
+        const link = document.createElement("a");
+        link.textContent = item.text;
+        link.href = item.url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        listItem.appendChild(link);
+      }
       list.appendChild(listItem);
     }
     fragment.appendChild(list);
