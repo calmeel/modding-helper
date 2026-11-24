@@ -250,6 +250,19 @@ input[type="file"]::file-selector-button:hover {
   color: #fbbc04;
 }
 
+/* A background also makes differences in whitespace visible. */
+.source-text-diff {
+  color: #fbbc04;
+  background: rgba(251, 188, 4, 0.18);
+  text-decoration: underline;
+  white-space: pre-wrap;
+}
+
+.source-text-diff-error {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.18);
+}
+
 .author {
   font-size: 0.45em;
   color: #666;

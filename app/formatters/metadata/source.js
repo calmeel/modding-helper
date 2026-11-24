@@ -41,23 +41,6 @@ function formatMultipleSourceResults(results, t) {
 
   lines.push("");
   lines.push(formatSeparator());
-  lines.push(formatSectionTitle(t("sourceFormattingCheck")));
-  lines.push("");
-
-  const formattingGroups = groupSourceFormattingResults(sortedResults);
-
-  if (!formattingGroups.length) {
-    lines.push(t("noSourceFormattingIssues"));
-  } else {
-    lines.push(
-      formattingGroups
-        .map(group => formatSourceFormattingGroup(group, t))
-        .join("\n\n" + formatSeparator() + "\n\n")
-    );
-  }
-
-  lines.push("");
-  lines.push(formatSeparator());
   lines.push(formatSectionTitle(t("sourceCheckTitle")));
   lines.push("");
 
@@ -69,6 +52,23 @@ function formatMultipleSourceResults(results, t) {
     lines.push(
       groups
         .map(group => formatSourceGroupResult(group, t))
+        .join("\n\n" + formatSeparator() + "\n\n")
+    );
+  }
+
+  lines.push("");
+  lines.push(formatSeparator());
+  lines.push(formatSectionTitle(t("sourceFormattingCheck")));
+  lines.push("");
+
+  const formattingGroups = groupSourceFormattingResults(sortedResults);
+
+  if (!formattingGroups.length) {
+    lines.push(t("noSourceFormattingIssues"));
+  } else {
+    lines.push(
+      formattingGroups
+        .map(group => formatSourceFormattingGroup(group, t))
         .join("\n\n" + formatSeparator() + "\n\n")
     );
   }
@@ -101,6 +101,7 @@ function groupSourceFormattingResults(results) {
 
 function formatSourceFormattingGroup(group, t) {
   const lines = [];
+  const difference = formatTextDiffPair(group.source, group.expected, "source-text-diff");
 
   lines.push(
     group.fileNames
@@ -108,14 +109,14 @@ function formatSourceFormattingGroup(group, t) {
       .join(", ")
   );
   lines.push("");
-  lines.push(`Source: <code>${escapeHtml(group.source)}</code>`);
+  lines.push(`Source: <code>${difference.actual}</code>`);
   lines.push("");
   lines.push(
     `<span class="result-warn">${escapeHtml(t("sourceRecommendedFormatting"))}</span>`
   );
   lines.push(
     `${escapeHtml(t("sourceExpected"))}: ` +
-    `<code>${escapeHtml(group.expected)}</code>`
+    `<code>${difference.expected}</code>`
   );
 
   return lines.join("\n");
@@ -161,6 +162,10 @@ function getSourceGroupKey(result) {
 function formatSourceGroupResult(group, t) {
   const result = group.results[0];
   const lines = [];
+  const difference = result.expected
+    ? formatTextDiffPair(result.source, result.expected,
+      result.level === "error" ? "source-text-diff source-text-diff-error" : "source-text-diff")
+    : null;
 
   // Diff一覧
   lines.push(
@@ -174,7 +179,7 @@ function formatSourceGroupResult(group, t) {
   if (result.source) {
     const sourceValue = result.type === "notTouhou" || result.level === "none"
       ? escapeHtml(result.source)
-      : `<code>${escapeHtml(result.source)}</code>`;
+      : `<code>${difference ? difference.actual : escapeHtml(result.source)}</code>`;
 
     lines.push(`Source: ${sourceValue}`);
     lines.push("");
@@ -206,7 +211,7 @@ function formatSourceGroupResult(group, t) {
 
     lines.push(
       `${escapeHtml(t("sourceExpected"))}: ` +
-      `<code>${escapeHtml(result.expected)}</code>`
+      `<code>${difference.expected}</code>`
     );
 
     lines.push("");

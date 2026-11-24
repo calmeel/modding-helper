@@ -17,7 +17,7 @@ function formatFileCheckResult(results, songFolderResult, t) {
       lines.push(`<span class="result-warn">${escapeHtml(t("osuFileNameMismatch"))}</span>`);
 
       if (result.expectedFileName) {
-        const difference = formatOsuFileNameDiffPair(
+        const difference = formatTextDiffPair(
           result.actualFileName,
           result.expectedFileName
         );
@@ -66,7 +66,7 @@ function appendSongFolderNameResult(lines, result, t) {
   lines.push(`<span class="result-warn">${escapeHtml(t(`${messagePrefix}Mismatch`))}</span>`);
 
   if (expectedName) {
-    const difference = formatOsuFileNameDiffPair(
+    const difference = formatTextDiffPair(
       actualName,
       expectedName
     );
@@ -109,76 +109,6 @@ function formatSongFolderNameSummaryTable(result) {
     `${"-".repeat(widths.folderName)}-+-${"-".repeat(widths.status)}`,
     `${formattedFolder} | ${formattedStatus}`
   ].join("\n");
-}
-
-function formatOsuFileNameDiffPair(actualValue, expectedValue) {
-  const actualChars = [...String(actualValue ?? "")];
-  const expectedChars = [...String(expectedValue ?? "")];
-  const actualMatched = new Array(actualChars.length).fill(false);
-  const expectedMatched = new Array(expectedChars.length).fill(false);
-  const lcs = Array.from(
-    { length: actualChars.length + 1 },
-    () => new Uint16Array(expectedChars.length + 1)
-  );
-
-  for (let i = actualChars.length - 1; i >= 0; i--) {
-    for (let j = expectedChars.length - 1; j >= 0; j--) {
-      lcs[i][j] = actualChars[i] === expectedChars[j]
-        ? lcs[i + 1][j + 1] + 1
-        : Math.max(lcs[i + 1][j], lcs[i][j + 1]);
-    }
-  }
-
-  let actualIndex = 0;
-  let expectedIndex = 0;
-
-  while (
-    actualIndex < actualChars.length &&
-    expectedIndex < expectedChars.length
-  ) {
-    if (actualChars[actualIndex] === expectedChars[expectedIndex]) {
-      actualMatched[actualIndex] = true;
-      expectedMatched[expectedIndex] = true;
-      actualIndex++;
-      expectedIndex++;
-    } else if (
-      lcs[actualIndex + 1][expectedIndex] >=
-      lcs[actualIndex][expectedIndex + 1]
-    ) {
-      actualIndex++;
-    } else {
-      expectedIndex++;
-    }
-  }
-
-  return {
-    actual: formatOsuFileNameDiffValue(actualChars, actualMatched),
-    expected: formatOsuFileNameDiffValue(expectedChars, expectedMatched)
-  };
-}
-
-function formatOsuFileNameDiffValue(chars, matched) {
-  const parts = [];
-  let start = 0;
-
-  while (start < chars.length) {
-    const isDifferent = !matched[start];
-    let end = start + 1;
-
-    while (end < chars.length && !matched[end] === isDifferent) {
-      end++;
-    }
-
-    const text = escapeHtml(chars.slice(start, end).join(""));
-    parts.push(
-      isDifferent
-        ? `<span class="result-warn">${text}</span>`
-        : text
-    );
-    start = end;
-  }
-
-  return parts.join("");
 }
 
 function formatOsuFileNameSummaryTable(results, t) {

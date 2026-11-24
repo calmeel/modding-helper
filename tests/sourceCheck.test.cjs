@@ -71,8 +71,43 @@ test('spelling suggestions display a yellow warning, expected title and referenc
     const html = scope.formatSourceGroupResult({ results: [result], fileNames: ['test.osu'] }, translate);
     assert.ok(html.includes('class="result-warn"'));
     assert.ok(!html.includes('class="result-error"'));
+    assert.match(html, /class="source-text-diff"/);
+    assert.doesNotMatch(html, /source-text-diff-error/);
     assert.ok(html.includes(translate('sourcePossibleTypo')));
-    assert.ok(html.includes(expected));
+    assert.ok(html.replace(/<[^>]*>/g, '').includes(expected));
     assert.ok(html.includes(result.link));
   }
+});
+
+test('Touhou suggestions highlight actual differences and missing characters in the recommendation', () => {
+  const result = check('東方輝針城 〜 Double Dealing Character');
+  assert.equal(result.type, 'partial');
+  const html = scope.formatSourceGroupResult({ results: [result], fileNames: ['test.osu'] }, key => key);
+  const values = [...html.matchAll(/<code>(.*?)<\/code>/g)].map(match => match[1]);
+  assert.equal(values.length, 2);
+  assert.equal(values[0].replace(/<[^>]*>/g, ''), result.source);
+  assert.equal(values[1].replace(/<[^>]*>/g, ''), result.expected);
+  assert.match(values[0], /class="source-text-diff source-text-diff-error"/);
+  assert.match(values[1], /class="source-text-diff source-text-diff-error"/);
+  assert.match(values[1], /<span class="source-text-diff source-text-diff-error">\.<\/span>/);
+  assert.ok(!/<span[^>]*>[^<]*Double Dealing Character/.test(values[1]), 'matching text is not highlighted');
+});
+
+test('a missing letter is highlighted in the recommended Touhou title', () => {
+  const result = check('東方夢時空　～ Pantasmagria of Dim.Dream');
+  assert.equal(result.type, 'typo');
+  const html = scope.formatSourceGroupResult({ results: [result], fileNames: ['test.osu'] }, key => key);
+  const values = [...html.matchAll(/<code>(.*?)<\/code>/g)].map(match => match[1]);
+  assert.equal(values[0], result.source, 'no changed character exists on the input side');
+  assert.match(values[1], /P<span class="source-text-diff">h<\/span>antasmag/);
+  assert.match(values[1], /<span class="source-text-diff">o<\/span>ria/);
+  assert.equal(values[1].replace(/<[^>]*>/g, ''), result.expected);
+});
+
+test('Source formatting escapes HTML in both the actual and recommended values', () => {
+  const html = scope.formatSourceFormattingGroup({ source: '<img src=x>', expected: '<script>&', fileNames: ['test.osu'] }, key => key);
+  assert.doesNotMatch(html, /<img|<script>/);
+  assert.match(html, /&lt;/);
+  assert.match(html, /&amp;/);
+  assert.match(html, /class="source-text-diff"/);
 });
