@@ -123,10 +123,17 @@ async function run() {
   await command('Runtime.enable'); await command('Page.enable'); await command('Network.enable');
   await command('Network.setBlockedURLs', { urls: ['https://cdn.jsdelivr.net/*'] });
   const version = await command('Browser.getVersion');
+  // Previously saved visibility settings must not restore the retired tab.
+  await command('Page.addScriptToEvaluateOnNewDocument', {
+    source: `localStorage.setItem('moddingHelperVisibleTabs', JSON.stringify({ timeline: true }));`
+  });
   for (const pageUrl of [`http://127.0.0.1:${server.address().port}/`, pathToFileURL(path.join(root, 'index.html')).href]) {
     await command('Page.navigate', { url: pageUrl });
     await until(async () => await evaluate(`document.readyState === 'complete' && typeof JSZip === 'function' && typeof window.__loadModdingHelperFile === 'function'`), 'web initialization and bundled ZIP library');
     assert.equal(await evaluate('typeof window.electronAPI'), 'undefined');
+    assert.equal(await evaluate(`document.querySelectorAll(
+      '.tab-visibility-toggle[data-target-tab="timeline"], .tab-button[data-tab="timeline"], #tab-timeline, #timelineRunButton'
+    ).length`), 0);
     assert.equal(await evaluate('typeof require'), 'undefined');
     assert.equal(await evaluate('JSZip.version'), '3.10.2');
     assert.equal(await evaluate(`getNativeFilePath(new File(['test'], 'test.osu'))`), '');

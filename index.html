@@ -192,10 +192,13 @@
           <span data-i18n="tabSpectrogram">Spectrogram</span>
         </label>
 
+        <!-- Timeline temporarily disabled. Uncomment its setting, tab button,
+             and panel to restore it; the check and formatter code is retained.
         <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="timeline">
           <span data-i18n="tabTimeline">Timeline</span>
         </label>
+        -->
 
         <label>
           <input type="checkbox" class="tab-visibility-toggle" data-target-tab="bnCompare">
@@ -268,7 +271,9 @@
           <div class="tab-group-title" data-i18n="tabGroupTools">Tools</div>
           <button class="tab-button timeline-tab-button" data-tab="offsetWaveform" data-i18n="tabOffsetWaveform">Audio waveform</button>
           <button class="tab-button spectrogram-tab-button" data-tab="spectrogram" data-i18n="tabSpectrogram" data-electron-only>Spectrogram</button>
+          <!-- Timeline temporarily disabled.
           <button class="tab-button timeline-tab-button hidden-tab" data-tab="timeline" data-i18n="tabTimeline">Timeline</button>
+          -->
           <button class="tab-button bn-tab-button hidden-tab" data-tab="bnCompare" data-i18n="tabBnCompare">BN Compare</button>
         </div>
       </div>
@@ -807,6 +812,7 @@
         </section>
       </section>
 
+      <!-- Timeline temporarily disabled.
       <section class="tab-panel hidden-tab" id="tab-timeline">
         <div class="options">
           <button id="timelineRunButton" class="doc-btn" type="button" data-i18n="timelineRun">
@@ -816,6 +822,7 @@
 
         <div id="timelineOutput" data-i18n="timelineNotRendered">タイムラインを表示するには、ボタンを押してください。</div>
       </section>
+      -->
 
       <section class="tab-panel hidden-tab" id="tab-bnCompare">
         <div class="bn-compare-panel">
