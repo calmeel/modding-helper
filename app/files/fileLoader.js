@@ -38,8 +38,7 @@ function createEmptyProcessResult() {
     epilepsyWarning: [],
     spread: [],
     contentPermission: [],
-    fileCheck: [],
-    songFolderCheck: null
+    fileCheck: []
   };
 }
 
@@ -91,7 +90,6 @@ async function analyzeOszFile(file, options = {}) {
   const spreadResults = [];
   const contentPermissionResults = [];
   const fileCheckResults = [];
-  let songFolderCheckResult = null;
 
   const osuFiles = Object.values(zip.files)
     .filter(entry => !entry.dir && entry.name.toLowerCase().endsWith(".osu"));
@@ -222,14 +220,6 @@ async function analyzeOszFile(file, options = {}) {
     fileCheckResults.push(options.websiteImport
       ? { fileName: entry.name, checked: false, level: "ok" }
       : runOsuFileNameCheck(text, entry.name));
-
-    if (songFolderCheckResult === null) {
-      songFolderCheckResult = options.websiteImport
-        ? { checked: false }
-        : options.songFolderName
-        ? runSongFolderNameCheck(text, options.songFolderName)
-        : runOszFileNameCheck(text, file.name);
-    }
   }
 
   return {
@@ -257,8 +247,7 @@ async function analyzeOszFile(file, options = {}) {
     epilepsyWarningResults,
     spreadResults,
     contentPermissionResults,
-    fileCheckResults,
-    songFolderCheckResult
+    fileCheckResults
   };
 }
 
@@ -367,11 +356,7 @@ async function processFile(file, options = {}) {
       ],
       fileCheck: [
         runOsuFileNameCheck(text, file.name)
-      ],
-      songFolderCheck: runSongFolderNameCheck(
-        text,
-        options.songFolderName || getParentFolderNameFromFilePath(getNativeFilePath(file))
-      ),
+      ]
     };
   }
 
@@ -404,8 +389,7 @@ async function processFile(file, options = {}) {
       epilepsyWarning: analyzed.epilepsyWarningResults,
       spread: analyzed.spreadResults,
       contentPermission: analyzed.contentPermissionResults,
-      fileCheck: analyzed.fileCheckResults,
-      songFolderCheck: analyzed.songFolderCheckResult,
+      fileCheck: analyzed.fileCheckResults
     };
   }
 
@@ -424,14 +408,6 @@ function getBeatmapPageUrlFromSources(sources) {
   return Number.isSafeInteger(beatmapId) && beatmapId > 0
     ? `${url}#taiko/${beatmapId}`
     : url;
-}
-
-function getParentFolderNameFromFilePath(filePath) {
-  const parts = String(filePath ?? "")
-    .split(/[\\/]/)
-    .filter(Boolean);
-
-  return parts.length >= 2 ? parts[parts.length - 2] : "";
 }
 
 async function attachBgImageTypesFromOsz(result, zip, osuEntryName, cache) {

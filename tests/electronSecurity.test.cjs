@@ -47,7 +47,7 @@ test('file paths use the isolated Electron bridge and preserve browser fallback'
   vm.runInContext(fs.readFileSync(path.join(root, 'app/files/fileLoader.js'), 'utf8'), context);
   assert.equal(vm.runInContext('getNativeFilePath({name:"test.osu"})', context), '');
   context.window.electronAPI = { getPathForFile: () => 'C:\\Songs\\Mapset\\test.osu' };
-  assert.equal(vm.runInContext('getParentFolderNameFromFilePath(getNativeFilePath({}))', context), 'Mapset');
+  assert.equal(vm.runInContext('getNativeFilePath({})', context), 'C:\\Songs\\Mapset\\test.osu');
   context.window.electronAPI.getPathForFile = () => { throw new Error('Not a native File'); };
   assert.equal(vm.runInContext('getNativeFilePath({})', context), '');
 });

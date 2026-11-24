@@ -50,8 +50,8 @@ test('unknown website filenames are reported as skipped without a warning badge'
     vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), scope);
   }
   const results = [{ fileName: '10.osu', checked: false, level: 'ok' }];
-  assert.equal(scope.getFileCheckIssueLevel(results, { checked: false }), 'none');
-  assert.equal(scope.formatFileCheckResult(results, null, key => key), 'websiteImportFileNamesUnavailable');
+  assert.equal(scope.getFileCheckIssueLevel(results), 'none');
+  assert.equal(scope.formatFileCheckResult(results, key => key), 'websiteImportFileNamesUnavailable');
 });
 
 test('app DOM bridge rejects mismatched beatmaps before loading any files', async () => {

@@ -1707,15 +1707,15 @@ osu! の <code>.osu</code> ファイルは、通常、次の命名規則で作�
 
 <code>Artist - Title (Creator) [Diff name].osu</code><br><br>
 
-ただし、osu!stable の editor で Artist や Title などの大文字・小文字だけを後から変更して上書き保存しても、実際のファイル名には反映されません。<br>
-これは Windows は通常、大文字・小文字だけが異なる名前を同じファイルとして扱い、元のファイル名の表記が保持されるためです。<br><br>
+ただし、osu!stable は、新旧のファイル名を <code>ToLower()</code> で小文字にしてから比較するため、<strong>大小文字だけの差ではファイル名を更新しません。</strong><br>
+そのため、editor で Artist や Title などの大文字・小文字だけを変更して上書き保存しても、実際のファイル名には反映されません。<br><br>
 
 また、他の mapper から Guest Difficulty を受け取った際に、ブラウザや OS が付けた
 <code>(1)</code> や <code>- コピー</code> などの文字がファイル名に残る場合があります。
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ 検出内容1：.osu ファイル名の表記チェック</span><br>
+<span class="label label-detect">■ 検出内容：.osu ファイル名の表記チェック</span><br>
 各 <code>.osu</code> ファイルの <code>[Metadata]</code> セクションから、次の値を読み取ります。
 
 <ul>
@@ -1740,54 +1740,9 @@ osu! の <code>.osu</code> ファイルは、通常、次の命名規則で作�
 → <code>Xeveir and Xeron -  Fateless War Machine  (komasy) [Mechanical Resolve].osu</code>
 </div>
 
-<div class="section section-detect">
-<span class="label label-detect">■ 検出内容2：song フォルダ名の表記チェック</span><br>
-song フォルダ名が、譜面の <code>BeatmapSetID</code>、<code>Artist</code>、<code>Title</code> から作られる
-次の命名規則と一致するか確認します。<br><br>
-
-提出済みの map：<br>
-<code>BeatmapSetID Artist - Title</code><br><br>
-
-未提出の map（<code>BeatmapSetID</code> が空、<code>0</code>、または負数）：<br>
-<code>Artist - Title</code><br><br>
-
-大文字・小文字の違い、末尾の <code>[no video]</code>、<code>(1)</code> などの余分な文字も
-不一致として検出し、warning を表示します。
-</div>
-
-<div class="section section-detect">
-<span class="label label-detect">■ 検出内容3：.osz ファイル名の表記チェック</span><br>
-<code>.osz</code> ファイルを読み込んだ場合は、ブラウザ版・デスクトップ版ともに、メタデータから別途作成する正しい <code>.osz</code> ファイル名と比較します。<br><br>
-
-提出済みの map：<br>
-<code>BeatmapSetID Artist - Title.osz</code><br><br>
-
-未提出の map（<code>BeatmapSetID</code> が空、<code>0</code>、または負数）：<br>
-<code>Artist - Title.osz</code>
-</div>
-
-<div class="section section-warning">
-<span class="label label-warning">■ song フォルダで使用できない文字</span><br>
-<code>.</code> は省略されます。<br>
-<code>\</code>、<code>/</code>、<code>:</code>、<code>*</code>、<code>?</code>、<code>&quot;</code>、
-<code>&lt;</code>、<code>&gt;</code>、<code>|</code> は <code>_</code> に変換されます。<br><br>
-
-例：<br>
-<code>2518995 ryo feat. Kaguya (CV: Yuko Natsuyoshi) - Melt CPK! Remix (Kaguya Ver.)</code><br>
-→ <code>2518995 ryo feat Kaguya (CV_ Yuko Natsuyoshi) - Melt CPK! Remix (Kaguya Ver)</code>
-</div>
-
-<div class="section section-warning">
-<span class="label label-warning">■ .osz ファイル名で使用できない文字</span><br>
-song フォルダ名とは異なり、ピリオド（<code>.</code>）は残されます。<br>
-<code>\</code>、<code>/</code>、<code>:</code>、<code>*</code>、<code>?</code>、<code>&quot;</code>、
-<code>&lt;</code>、<code>&gt;</code>、<code>|</code> は <code>_</code> に変換されます。<br><br>
-後から <code>.osz</code> のファイル名が変更された場合は、元の song フォルダ名が正しくても警告を表示する可能性があります。
-</div>
-
 <div class="section section-warning">
 <span class="label label-warning">■ 注意事項</span><br>
-ファイル名・フォルダ名の大文字・小文字の違いは unrankable な問題ではないため、必ずしも修正は必要ありません。
+<code>.osu</code> ファイル名の大文字・小文字の違いは unrankable な問題ではないため、必ずしも修正は必要ありません。
 </div>
 </section>
 

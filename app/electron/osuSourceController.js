@@ -83,11 +83,7 @@ function createOsuSourceController({ t, invalidateLoads, handleFile, clearResult
     osuLastSkipped = false;
     try {
       const file = new File([res.buffer], res.name, { type: "application/octet-stream" });
-      const songFolderName = String(res.folder ?? "")
-        .split(/[\\/]/)
-        .filter(Boolean)
-        .pop() ?? "";
-      await handleFile(file, { songFolderName, mapsetFolder: res.folder });
+      await handleFile(file, { mapsetFolder: res.folder });
       if (loadId !== osuLoadId || osuSourceMode !== "osu") return;
       osuLastLoadedFolder = res.folder;
       // フォルダ監視による再解析では osu! 側のファイルパス自体は変わらないため、

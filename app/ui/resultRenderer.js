@@ -199,7 +199,6 @@ function createResultRenderer({ state, dom, t, getBnCompareUi }) {
   function renderFileCheckResult() {
     renderFileCheckResultFromResults(
       state.fileCheck,
-      state.songFolderCheck,
       dom,
       t
     );

@@ -85,14 +85,13 @@ function updateTabIssueStates(state) {
   setTabIssueLevel("contentPermission", getContentPermissionIssueLevel(state.contentPermission));
   setTabIssueLevel(
     "fileCheck",
-    getFileCheckIssueLevel(state.fileCheck, state.songFolderCheck)
+    getFileCheckIssueLevel(state.fileCheck)
   );
 }
 
-function getFileCheckIssueLevel(results, songFolderResult) {
+function getFileCheckIssueLevel(results) {
   return (
-    results?.some(result => result.checked !== false && !result.matches) ||
-    (songFolderResult?.checked && !songFolderResult.matches)
+    results?.some(result => result.checked !== false && !result.matches)
   )
     ? TAB_LEVEL_WARN
     : TAB_LEVEL_NONE;

@@ -304,7 +304,6 @@ document.addEventListener("DOMContentLoaded", () => {
     previewPoint: null,
     bgOffset: null,
     fileCheck: null,
-    songFolderCheck: null,
     epilepsyWarning: null,
     spread: {
       results: null,

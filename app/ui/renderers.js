@@ -399,7 +399,7 @@ function renderSpreadResultFromResults(spreadState, dom, t) {
   });
 }
 
-function renderFileCheckResultFromResults(results, songFolderResult, dom, t) {
+function renderFileCheckResultFromResults(results, dom, t) {
   if (!dom.fileCheckOutput) return;
 
   if (!results) {
@@ -409,7 +409,6 @@ function renderFileCheckResultFromResults(results, songFolderResult, dom, t) {
 
   dom.fileCheckOutput.innerHTML = formatFileCheckResult(
     results,
-    songFolderResult,
     t
   );
 }

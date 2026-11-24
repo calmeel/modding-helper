@@ -340,6 +340,20 @@ const updateHistoryEntries = [
       ]
     }
   },
+  {
+    date: "2026/11/25",
+    type: "update",
+    items: {
+      en: [
+        "Various bug fixes",
+        "Removed the folder name check feature."
+      ],
+      ja: [
+        "種々のバグ修正",
+        "「フォルダ名」チェック機能を削除"
+      ]
+    }
+  },
 ];
 
 const updateHistoryTypeLabels = {

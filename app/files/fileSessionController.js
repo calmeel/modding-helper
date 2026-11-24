@@ -107,7 +107,6 @@ function createFileSessionController({ state, dom, t, isChartPopout,
       state.previewPoint = result.previewPoint;
       state.bgOffset = result.bgOffset;
       state.fileCheck = result.fileCheck;
-      state.songFolderCheck = result.songFolderCheck;
       state.epilepsyWarning = result.epilepsyWarning;
       state.spread.results = result.spread;
       const restoredPreferences = restoreSpreadDiffPreferences(result.spread || [],
