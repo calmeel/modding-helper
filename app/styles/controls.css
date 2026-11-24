@@ -113,7 +113,7 @@ pre {
   max-width: none;
   max-height: calc(100dvh - 48px);
   padding: 22px;
-  border: 1px solid #555;
+  border: 0;
   border-radius: 10px;
   background: #1e1e26;
   color: #eee;
@@ -132,7 +132,7 @@ body:has(.settings-dialog[open]) {
   overflow: hidden;
 }
 
-.settings-dialog-header {
+.popup-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -140,14 +140,26 @@ body:has(.settings-dialog[open]) {
   margin-bottom: 18px;
 }
 
-.settings-dialog-header h2 {
+.popup-header h2 {
   margin: 0;
   font-size: 20px;
 }
 
-.settings-dialog-close {
+.popup-close {
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
   cursor: pointer;
   font-size: 20px;
+  line-height: 1;
+}
+
+.popup-close:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
 }
 
 .settings-dialog .tab-settings-panel {
@@ -354,18 +366,13 @@ body:has(.settings-dialog[open]) {
 }
 
 .modal-content {
+  box-sizing: border-box;
   background: #1e1e26;
   padding: 20px 24px;
   border-radius: 10px;
-  max-width: 500px;
-  width: 90%;
+  max-width: none;
+  width: min(720px, calc(100vw - 32px));
   color: #eee;
-}
-
-.close {
-  float: right;
-  cursor: pointer;
-  font-size: 20px;
 }
 
 /* ヘッダーを2列に分割 */

@@ -52,6 +52,7 @@ const i18n = {
     showWhistle: "Show Whistle timestamps",
     tabSettings: "Tab settings",
     closeSettings: "Close settings",
+    closeUpdateHistory: "Close update history",
     tabSvVolume: "Early Volume",
     tabSampleSet: "SampleSet",
 
@@ -734,6 +735,7 @@ const i18n = {
     showWhistle: "Whistle のタイムスタンプを表示",
     tabSettings: "タブ設定",
     closeSettings: "設定を閉じる",
+    closeUpdateHistory: "更新履歴を閉じる",
     tabSvVolume: "ボリューム早入り",
     tabSampleSet: "Sampleset",
 

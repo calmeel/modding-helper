@@ -63,9 +63,9 @@
 
     <section class="tab-visibility-settings">
       <dialog id="tabSettingsModal" class="settings-dialog" aria-labelledby="tabSettingsTitle">
-        <div class="settings-dialog-header">
+        <div class="popup-header">
           <h2 id="tabSettingsTitle" data-i18n="tabSettings">Tab settings</h2>
-          <button id="closeTabSettings" class="doc-btn settings-dialog-close" type="button" autofocus>
+          <button id="closeTabSettings" class="popup-close" type="button" autofocus>
             <span aria-hidden="true">&times;</span>
             <span class="visually-hidden" data-i18n="closeSettings">Close settings</span>
           </button>
@@ -952,8 +952,13 @@
 
   <div id="updateModal" class="modal hidden">
     <div class="modal-content">
-      <span id="closeUpdate" class="close">&times;</span>
-      <h2 data-i18n="updateHistoryTitle">Update History</h2>
+      <div class="popup-header">
+        <h2 data-i18n="updateHistoryTitle">Update History</h2>
+        <button id="closeUpdate" class="popup-close" type="button">
+          <span aria-hidden="true">&times;</span>
+          <span class="visually-hidden" data-i18n="closeUpdateHistory">Close update history</span>
+        </button>
+      </div>
       <div id="updateHistoryContent"></div>
     </div>
   </div>
