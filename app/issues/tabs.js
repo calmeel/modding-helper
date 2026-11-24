@@ -231,8 +231,6 @@ function getUnappliedSvIssueLevel(results) {
 function getSvVolumeIssueLevel(sources) {
   if (!sources) return TAB_LEVEL_NONE;
 
-  let hasWarn = false;
-
   for (const source of sources) {
     const result = runSvVolumeCheck(source.text, source.fileName, {
       thresholdMode: "5ms",
@@ -240,16 +238,10 @@ function getSvVolumeIssueLevel(sources) {
       largeChangeThreshold: 15
     });
 
-    for (const item of result.results ?? []) {
-      if ((item.volumeDiff ?? 0) >= 15) {
-        return TAB_LEVEL_ERROR;
-      }
-
-      hasWarn = true;
-    }
+    if (result.results?.length > 0) return TAB_LEVEL_WARN;
   }
 
-  return hasWarn ? TAB_LEVEL_WARN : TAB_LEVEL_NONE;
+  return TAB_LEVEL_NONE;
 }
 
 function getVolumeCompareIssueLevel(sources) {
