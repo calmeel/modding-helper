@@ -72,7 +72,7 @@ body {
   background: #2d2d38;
 }
 
-.beatmap-page-button {
+.doc-btn.beatmap-page-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -80,6 +80,7 @@ body {
   box-sizing: border-box;
   width: 30px;
   height: 30px;
+  padding: 4px;
   cursor: pointer;
 }
 
