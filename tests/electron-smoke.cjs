@@ -2,6 +2,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const Module = require('node:module');
 const { app, BrowserWindow, clipboard, shell } = require('electron');
 const { withTimeout, waitFor } = require('./helpers/wait.cjs');
 const sourceRoot = path.resolve(__dirname, '..');
@@ -18,11 +19,10 @@ if (root !== sourceRoot) {
 }
 
 // Never start the real game memory watcher or alter the user's clipboard/settings.
-const watcherPath = path.join(root, 'electron', 'osu', 'osuWatcher.js');
 let currentOsuPath = null;
-require.cache[watcherPath] = { id: watcherPath, filename: watcherPath, loaded: true, exports: {
+const watcherMock = {
   setDeliver() {}, start() {}, stop() {}, resendMapInfo() {}, getCurrentOsuPath() { return currentOsuPath; },
-} };
+};
 let copiedText;
 clipboard.writeText = async text => { copiedText = text; };
 const openedLinks = [];
@@ -108,7 +108,19 @@ async function selectFile(win, filePath, expectedName = path.basename(filePath))
   await until(async () => (await evaluate(win, 'window.__loadedDiffs?.[0]?.fileName')) === expectedName, 'beatmap loading');
 }
 
-require(path.join(root, 'electron', 'main.js'));
+// Intercept before path resolution so the private watcher file need not exist.
+// Limit the override to main.js loading and restore it even if startup throws.
+const mainPath = path.join(root, 'electron', 'main.js');
+const originalLoad = Module._load;
+Module._load = function (request, parent, isMain) {
+  if (request === './osu/osuWatcher' && parent?.filename === mainPath) return watcherMock;
+  return originalLoad.call(this, request, parent, isMain);
+};
+try {
+  require(mainPath);
+} finally {
+  Module._load = originalLoad;
+}
 app.whenReady().then(async () => {
   await until(() => BrowserWindow.getAllWindows().length, 'main window');
   const main = BrowserWindow.getAllWindows()[0];

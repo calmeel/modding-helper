@@ -35,6 +35,8 @@ Detailed instructions are available in the [English documentation](https://calme
 
 ## Development
 
+This repository is public primarily for transparency of the check logic. Some osu! real-time monitoring files are private, so builds from this repository lack that feature. For regular use, download the [latest release](https://github.com/calmeel/modding-helper/releases/latest).
+
 Use Node.js 24.22.2 or newer (see `.node-version`).<br>
 The desktop app uses its own Node.js runtime bundled with Electron.
 
