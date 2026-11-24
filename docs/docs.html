@@ -1350,7 +1350,7 @@ BPM と SV から osu!taiko のスクロール速度を推定し、16:9 環境�
 
 <div class="section section-bg">
 <span class="label label-bg">■ 背景</span><br>
-Artist / ArtistUnicode は、mapset内の全diffで基本的に一致している必要があります。<br><br>
+Artist / ArtistUnicode は、mapset 内の全 diff で一致している必要があります。<br><br>
 
 また、<code>feat.</code>、<code>vs.</code>、<code>CV:</code> などの marker は、
 <a href="https://osu.ppy.sh/wiki/en/Ranking_criteria/Metadata" target="_blank" rel="noopener noreferrer">Ranking Criteria</a> に沿った標準表記にする必要があります。
@@ -1380,7 +1380,7 @@ Artist / ArtistUnicode は、mapset内の全diffで基本的に一致してい�
 
 <div class="section section-bg">
 <span class="label label-bg">■ 背景</span><br>
-Title / TitleUnicode は、mapset内の全diffで基本的に一致している必要があります。<br><br>
+Title / TitleUnicode は、mapset 内の全 diff で一致している必要があります。<br><br>
 また、<code>(TV Size)</code>、<code>(Short Ver.)</code>、<code>(Game Ver.)</code> などの version marker は、
 <a href="https://osu.ppy.sh/wiki/en/Ranking_criteria/Metadata" target="_blank" rel="noopener noreferrer">Ranking Criteria</a> に沿った標準表記にする必要があります。
 </div>
@@ -1415,31 +1415,26 @@ Title / TitleUnicode は、mapset内の全diffで基本的に一致している�
 
 <div class="section section-bg">
 <span class="label label-bg">■ 背景</span><br>
-東方作品の Source は、一般的に
-<code>日本語タイトル + 全角スペース + 全角チルダ + 半角スペース + 英語タイトル + ピリオド</code><br>
-という独特な形式で表記されることが多いです。<br><br>
-
-例：
-<code>東方風神録　～ Mountain of Faith.</code><br>
+Source は、mapset 内の全 diff で一致している必要があります。
 </div>
 
 <div class="section section-detect">
 <span class="label label-detect">■ 共通チェック</span><br>
-全diffで Source が一致しているかを確認します（Mapset Verifier と同一の機能）。
+全diffで Source が一致しているかを確認します。
 </div>
 
 <div class="section section-detect">
 <span class="label label-detect">■ 検出内容 1：東方作品</span><br>
-Source を東方作品名のリストと照合します。<br>
-<a href="touhouSources.html" target="_blank" rel="noopener noreferrer">
-  チェックリスト
-</a><br><br>
+東方作品の Source は、一般的に<br>
+<code>日本語タイトル + 全角スペース + 全角チルダ + 半角スペース + 英語タイトル + ピリオド</code><br>
+例：<code>東方風神録　～ Mountain of Faith.</code><br>
+という独特な形式で表記されることが多いです。（例外あり）<br><br>
 
-東方作品と思われる Source で、公式の作品名と表記が異なる場合は、スペルミスやスペースの全角 / 半角ミスの可能性があるため警告します。
-その場合、推奨表記と参照リンクを表示します。<br>
-完全一致する場合は OK として表示します。<br><br>
+本ツールは Source を<a href="touhouSources.html" target="_blank" rel="noopener noreferrer">東方作品名のリスト</a>と照合します。<br><br>
 
-また、<code>東方</code> や <code>Touhou</code> などの汎用的な表記のみの場合も、具体的な作品名が不足している可能性があるため確認対象として表示します。
+東方作品と思われる Source で、公式の作品名と表記が異なる場合は、スペルミスやスペースの全角 / 半角ミスの可能性があるため警告します。<br><br>
+
+<code>東方</code> や <code>Touhou</code>、<code>東方Project</code> などの汎用的な表記のみの場合は、具体的な作品名が不足している可能性があるため確認対象として表示します。
 </div>
 
 <div class="section section-detect">
@@ -1467,6 +1462,7 @@ Source を東方作品名のリストと照合します。<br>
 
 <div class="section section-bg">
 <span class="label label-bg">■ 背景</span><br>
+Tags は、mapset 内の全 diff で一致している必要があります。<br><br>
 Tag と Tag の間は、<code>半角スペース1つ</code> で区切る必要があります。<br><br>
 <code>2つ以上の半角スペース</code> や<code>全角スペース</code> が含まれている場合、AiMod や Mapset Verifier では、検知できません。
 </div>
