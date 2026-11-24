@@ -1,13 +1,10 @@
+# Dependencies
 node_modules/
-dist/
 
 # Build artifacts
+dist/
 electron/dist/
 electron/dist-verify/
-
-# Claude Code
-.claude/
-CLAUDE.md
 
 # Features related to real-time monitoring (osu! memory monitoring) are kept private (to prevent misuse by third parties).
 electron/osu/osuMemory.ps1
