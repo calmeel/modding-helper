@@ -125,7 +125,9 @@ async function run() {
   const version = await command('Browser.getVersion');
   // Previously saved visibility settings must not restore the retired tab.
   await command('Page.addScriptToEvaluateOnNewDocument', {
-    source: `localStorage.setItem('moddingHelperVisibleTabs', JSON.stringify({ timeline: true }));`
+    source: `if (!localStorage.getItem('moddingHelperVisibleTabs')) {
+      localStorage.setItem('moddingHelperVisibleTabs', JSON.stringify({ timeline: true }));
+    }`
   });
   for (const pageUrl of [`http://127.0.0.1:${server.address().port}/`, pathToFileURL(path.join(root, 'index.html')).href]) {
     await command('Page.navigate', { url: pageUrl });
@@ -143,6 +145,48 @@ async function run() {
       const docsPath = language === 'Ja' ? 'docs/docs.html' : 'docs/docs-en.html';
       assert.equal(await evaluate(`document.getElementById('manualLink').href`), new URL(docsPath, pageUrl).href);
     }
+    await evaluate(`document.getElementById('langJa').click();
+      document.getElementById('toggleTabSettings').focus();
+      document.getElementById('toggleTabSettings').click(); true`);
+    assert.equal(await evaluate(`document.getElementById('tabSettingsModal').matches(':modal')`), true);
+    assert.deepEqual(await evaluate(`Array.from(document.querySelectorAll('.tab-settings-group legend'), el => el.textContent)`),
+      ['ノーツ', 'Kiai', 'SV', 'ボリューム', 'メタデータ', 'スプレッド比較', 'その他', 'ツール']);
+    assert.equal(await evaluate(`getComputedStyle(document.querySelector('.tab-settings-group [data-electron-only]')).display`), 'none');
+    await evaluate(`document.querySelector('.tab-visibility-toggle[data-target-tab="clapWhistle"]').click(); true`);
+    assert.equal(await evaluate(`document.querySelector('.tab-button[data-tab="clapWhistle"]').classList.contains('hidden-tab')`), true);
+    assert.equal(await evaluate(`JSON.parse(localStorage.getItem('moddingHelperVisibleTabs')).clapWhistle`), false);
+
+    if (pageUrl.startsWith('http')) {
+      for (const [name, width, height] of [['desktop', 1280, 900], ['mobile', 390, 740]]) {
+        await command('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
+        assert.equal(await evaluate(`(() => {
+          const r = document.getElementById('tabSettingsModal').getBoundingClientRect();
+          const panel = document.getElementById('tabSettingsPanel');
+          return r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight &&
+            panel.scrollWidth <= panel.clientWidth;
+        })()`), true, `${name} settings fit the viewport`);
+        const screenshot = await command('Page.captureScreenshot', { format: 'png' });
+        fs.writeFileSync(path.join(output, `settings-${name}.png`), Buffer.from(screenshot.data, 'base64'));
+      }
+      await command('Emulation.clearDeviceMetricsOverride');
+    }
+    await evaluate(`document.getElementById('closeTabSettings').click(); true`);
+    assert.equal(await evaluate(`document.getElementById('tabSettingsModal').open`), false);
+    assert.equal(await evaluate('document.activeElement.id'), 'toggleTabSettings');
+    await command('Page.reload');
+    await until(async () => await evaluate(`document.readyState === 'complete' && typeof window.__loadModdingHelperFile === 'function'`), 'settings persistence after reload');
+    assert.equal(await evaluate(`document.querySelector('.tab-visibility-toggle[data-target-tab="clapWhistle"]').checked`), false);
+    await evaluate(`document.getElementById('toggleTabSettings').click();
+      document.querySelector('.tab-visibility-toggle[data-target-tab="clapWhistle"]').click(); true`);
+    await command('Input.dispatchKeyEvent', { type: 'rawKeyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+    await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+    await until(async () => await evaluate(`!document.getElementById('tabSettingsModal').open`), 'Escape closes settings');
+    await evaluate(`document.getElementById('toggleTabSettings').click(); true`);
+    await command('Input.dispatchMouseEvent', { type: 'mousePressed', x: 2, y: 2, button: 'left', clickCount: 1 });
+    await command('Input.dispatchMouseEvent', { type: 'mouseReleased', x: 2, y: 2, button: 'left', clickCount: 1 });
+    assert.equal(await evaluate(`document.getElementById('tabSettingsModal').open`), false);
+    await evaluate(`document.getElementById('langEn').click(); true`);
+    console.log('PASS grouped settings dialog, saved visibility, close button, Escape and backdrop');
     await selectFile(osuFile, path.basename(osuFile));
     await until(async () => await evaluate(`!document.getElementById('openBeatmapPage').disabled && document.getElementById('output').textContent.includes('Oni')`), 'osu results');
     assert.deepEqual(await evaluate(`document.getElementById('shiftOutput').textContent.split('\\n').find(line => line.startsWith('[Oni]') && line.includes(' | ')).split(' | ').slice(1, 4).map(cell => cell.trim())`), ['3', '0', '0']);

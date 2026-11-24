@@ -51,6 +51,7 @@ const i18n = {
     showClap: "Show Clap timestamps",
     showWhistle: "Show Whistle timestamps",
     tabSettings: "Tab settings",
+    closeSettings: "Close settings",
     tabSvVolume: "Early Volume",
     tabSampleSet: "SampleSet",
 
@@ -732,6 +733,7 @@ const i18n = {
     showClap: "Clap のタイムスタンプを表示",
     showWhistle: "Whistle のタイムスタンプを表示",
     tabSettings: "タブ設定",
+    closeSettings: "設定を閉じる",
     tabSvVolume: "ボリューム早入り",
     tabSampleSet: "Sampleset",
 

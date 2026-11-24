@@ -357,12 +357,23 @@ function setupPersistentOptions(options) {
 function setupTabVisibilitySettings() {
   const toggleButton = document.getElementById("toggleTabSettings");
   const panel = document.getElementById("tabSettingsPanel");
+  const dialog = document.getElementById("tabSettingsModal");
+  const closeButton = document.getElementById("closeTabSettings");
   const checkboxes = document.querySelectorAll(".tab-visibility-toggle");
 
   if (!toggleButton || !panel || !checkboxes.length) return;
 
   toggleButton.addEventListener("click", () => {
-    panel.classList.toggle("hidden");
+    // Electron moves the controls into its own settings screen.
+    if (!window.electronAPI && dialog && !dialog.open) dialog.showModal();
+  });
+
+  closeButton?.addEventListener("click", () => dialog.close());
+  dialog?.addEventListener("click", event => {
+    if (event.target !== dialog) return;
+    const rect = dialog.getBoundingClientRect();
+    if (event.clientX < rect.left || event.clientX > rect.right ||
+        event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
   });
 
   const saved = loadTabVisibilitySettings();

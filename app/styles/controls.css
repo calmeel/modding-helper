@@ -70,7 +70,7 @@ pre {
 }
 
 .tab-visibility-settings {
-  margin-top: 20px;
+  margin: 0;
 }
 
 .settings-button {
@@ -105,6 +105,100 @@ pre {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.settings-dialog {
+  box-sizing: border-box;
+  width: min(720px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 48px);
+  padding: 22px;
+  border: 1px solid #555;
+  border-radius: 10px;
+  background: #1e1e26;
+  color: #eee;
+}
+
+.settings-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+body:has(.settings-dialog[open]) {
+  overflow: hidden;
+}
+
+.settings-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.settings-dialog-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.settings-dialog-close {
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.settings-dialog .tab-settings-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px;
+  overflow-y: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 4px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.tab-settings-group {
+  min-width: 0;
+  margin: 0;
+  padding: 10px 12px 12px;
+  border: 1px solid #444;
+  border-radius: 8px;
+}
+
+.tab-settings-group legend {
+  padding: 0 6px;
+  color: inherit;
+  font-weight: 700;
+}
+
+.tab-settings-group label {
+  padding: 5px 0;
+  cursor: pointer;
+}
+
+.tab-settings-group input {
+  flex-shrink: 0;
+}
+
+.settings-dialog .osu-source-settings {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 560px) {
+  .settings-dialog {
+    padding: 16px;
+  }
+
+  .settings-dialog .tab-settings-panel {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .tab-button.hidden-tab {

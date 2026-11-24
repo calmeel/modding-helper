@@ -36,7 +36,7 @@
            data-i18n="otherTools">Other Tools</a>
         <button id="updateBtn" class="doc-btn" data-i18n="updateHistory">Update history</button>
         <span id="updateHistoryUnread" class="visually-hidden" data-i18n="updateHistoryUnread">New updates available</span>
-        <button id="toggleTabSettings" class="doc-btn">⚙</button>
+        <button id="toggleTabSettings" class="doc-btn" type="button" title="Tab settings" data-i18n-title="tabSettings" aria-haspopup="dialog" aria-controls="tabSettingsModal">⚙</button>
       </div>
       <div class="language-switch">
         <button id="langEn" class="lang-button active">English</button>
@@ -62,149 +62,188 @@
     </section>
 
     <section class="tab-visibility-settings">
-
-      <div id="tabSettingsPanel" class="tab-settings-panel hidden">
-        <div id="osuSourceSettings" class="osu-source-settings" hidden>
-          <div class="osu-source-title" data-i18n="checkSourceTitle">Check target</div>
-          <label class="osu-source-option">
-            <input type="radio" name="osuSource" value="file" checked>
-            <span data-i18n="checkSourceFile">File (select / drag &amp; drop)</span>
-          </label>
-          <label class="osu-source-option">
-            <input type="radio" name="osuSource" value="osu">
-            <span data-i18n="checkSourceOsu">Beatmap open in osu!</span>
-          </label>
-          <button id="osuReloadBtn" class="doc-btn osu-source-reload" data-i18n="checkSourceReload" hidden>🔄 Reload</button>
-          <div id="osuSourceStatus" class="osu-source-status"></div>
-          <label class="osu-source-option">
-            <input id="skipMultipleAudioMapsets" type="checkbox" aria-describedby="skipMultipleAudioHint" disabled>
-            <span data-i18n="skipMultipleAudioMapsets">Do not load mapsets with multiple audio tracks</span>
-          </label>
-          <div id="skipMultipleAudioHint" class="osu-source-status" data-i18n="skipMultipleAudioHint">Only applies to beatmaps open in osu!.</div>
+      <dialog id="tabSettingsModal" class="settings-dialog" aria-labelledby="tabSettingsTitle">
+        <div class="settings-dialog-header">
+          <h2 id="tabSettingsTitle" data-i18n="tabSettings">Tab settings</h2>
+          <button id="closeTabSettings" class="doc-btn settings-dialog-close" type="button" autofocus>
+            <span aria-hidden="true">&times;</span>
+            <span class="visually-hidden" data-i18n="closeSettings">Close settings</span>
+          </button>
         </div>
+        <div id="tabSettingsPanel" class="tab-settings-panel">
+          <div id="osuSourceSettings" class="osu-source-settings" hidden>
+            <div class="osu-source-title" data-i18n="checkSourceTitle">Check target</div>
+            <label class="osu-source-option">
+              <input type="radio" name="osuSource" value="file" checked>
+              <span data-i18n="checkSourceFile">File (select / drag &amp; drop)</span>
+            </label>
+            <label class="osu-source-option">
+              <input type="radio" name="osuSource" value="osu">
+              <span data-i18n="checkSourceOsu">Beatmap open in osu!</span>
+            </label>
+            <button id="osuReloadBtn" class="doc-btn osu-source-reload" data-i18n="checkSourceReload" hidden>🔄 Reload</button>
+            <div id="osuSourceStatus" class="osu-source-status"></div>
+            <label class="osu-source-option">
+              <input id="skipMultipleAudioMapsets" type="checkbox" aria-describedby="skipMultipleAudioHint" disabled>
+              <span data-i18n="skipMultipleAudioMapsets">Do not load mapsets with multiple audio tracks</span>
+            </label>
+            <div id="skipMultipleAudioHint" class="osu-source-status" data-i18n="skipMultipleAudioHint">Only applies to beatmaps open in osu!.</div>
+          </div>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="clapWhistle" checked>
-          <span data-i18n="tabClapWhistle">Clap & Whistle</span>
-        </label>
+          <fieldset class="tab-settings-group">
+            <legend data-i18n="tabGroupNotes">Notes</legend>
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="clapWhistle" checked>
+              <span data-i18n="tabClapWhistle">Clap & Whistle</span>
+            </label>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="shift1ms" checked>
-          <span data-i18n="tabOffset">1ms Offset</span>
-        </label>
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="shift1ms" checked>
+              <span data-i18n="tabOffset">1ms Offset</span>
+            </label>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="sampleSet" checked>
-          <span data-i18n="tabSampleSet">SampleSet</span>
-        </label>
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="coordinates">
-          <span data-i18n="tabCoordinates">Position</span>
-        </label>
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="sampleSet" checked>
+              <span data-i18n="tabSampleSet">SampleSet</span>
+            </label>
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="coordinates">
+              <span data-i18n="tabCoordinates">Position</span>
+            </label>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="kiaiCompare" checked>
-          <span data-i18n="tabKiaiCompare">Kiai Compare</span>
-        </label>
+          </fieldset>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="kiaiSnap" checked>
-          <span data-i18n="tabKiaiSnap">Kiai Snap</span>
-        </label>
+          <fieldset class="tab-settings-group">
+            <legend data-i18n="tabGroupKiai">Kiai</legend>
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="kiaiCompare" checked>
+              <span data-i18n="tabKiaiCompare">Kiai Compare</span>
+            </label>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="kiaiFlash" checked>
-          <span data-i18n="tabKiaiFlash">Kiai Flash</span>
-        </label>
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="kiaiSnap" checked>
+              <span data-i18n="tabKiaiSnap">Kiai Snap</span>
+            </label>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="doubleBarline" checked>
-          <span data-i18n="tabDoubleSv">Double SV</span>
-        </label>
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="kiaiFlash" checked>
+              <span data-i18n="tabKiaiFlash">Kiai Flash</span>
+            </label>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="barline" checked>
-          <span data-i18n="tabBarline">Barline</span>
-        </label>
+          </fieldset>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="unappliedSv" checked>
-          <span data-i18n="tabUnappliedSv">Unapplied SV</span>
-        </label>
+          <fieldset class="tab-settings-group">
+            <legend data-i18n="tabGroupSv">SV</legend>
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="doubleBarline" checked>
+              <span data-i18n="tabDoubleSv">Double SV</span>
+            </label>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="redGreenMatch" checked>
-          <span data-i18n="tabRedGreenMatch">Red/Green Match</span>
-        </label>
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="barline" checked>
+              <span data-i18n="tabBarline">Barline</span>
+            </label>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="sliderSettings" checked>
-          <span data-i18n="tabSliderSettings">Slider settings</span>
-        </label>
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="unappliedSv" checked>
+              <span data-i18n="tabUnappliedSv">Unapplied SV</span>
+            </label>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="svVolume" checked>
-          <span data-i18n="tabSvVolume">Early Volume</span>
-        </label>
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="redGreenMatch" checked>
+              <span data-i18n="tabRedGreenMatch">Red/Green Match</span>
+            </label>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="volumeCompare" checked>
-          <span data-i18n="tabVolumeCompare">Volume Compare</span>
-        </label>
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="sliderSettings" checked>
+              <span data-i18n="tabSliderSettings">Slider settings</span>
+            </label>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="metadata" checked>
-          <span data-i18n="tabMetadata">Metadata</span>
-        </label>
+          </fieldset>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="spread" checked>
-          <span data-i18n="tabSpread">Spread</span>
-        </label>
+          <fieldset class="tab-settings-group">
+            <legend data-i18n="tabGroupVolume">Volume</legend>
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="svVolume" checked>
+              <span data-i18n="tabSvVolume">Early Volume</span>
+            </label>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="previewPoint" checked>
-          <span data-i18n="tabPreviewPoint">Preview point</span>
-        </label>
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="volumeCompare" checked>
+              <span data-i18n="tabVolumeCompare">Volume Compare</span>
+            </label>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="fileCheck" checked>
-          <span data-i18n="tabFile">File</span>
-        </label>
+          </fieldset>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="earlyNote" checked>
-          <span data-i18n="tabEarlyNote">Early notes</span>
-        </label>
+          <fieldset class="tab-settings-group">
+            <legend data-i18n="tabMetadata">Metadata</legend>
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="metadata" checked>
+              <span data-i18n="tabMetadata">Metadata</span>
+            </label>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="bgOffset" checked>
-          <span data-i18n="tabBgOffset">BG</span>
-        </label>
+          </fieldset>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="offsetWaveform">
-          <span data-i18n="tabOffsetWaveform">Audio waveform</span>
-        </label>
+          <fieldset class="tab-settings-group">
+            <legend data-i18n="tabSpread">Spread</legend>
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="spread" checked>
+              <span data-i18n="tabSpread">Spread</span>
+            </label>
 
-        <label data-electron-only>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="spectrogram" checked>
-          <span data-i18n="tabSpectrogram">Spectrogram</span>
-        </label>
+          </fieldset>
 
-        <!-- Timeline temporarily disabled. Uncomment its setting, tab button,
-             and panel to restore it; the check and formatter code is retained.
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="timeline">
-          <span data-i18n="tabTimeline">Timeline</span>
-        </label>
-        -->
+          <fieldset class="tab-settings-group">
+            <legend data-i18n="tabMisc">Misc</legend>
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="previewPoint" checked>
+              <span data-i18n="tabPreviewPoint">Preview point</span>
+            </label>
 
-        <label>
-          <input type="checkbox" class="tab-visibility-toggle" data-target-tab="bnCompare">
-          <span data-i18n="tabBnCompare">BN Compare</span>
-        </label>
-      </div>
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="fileCheck" checked>
+              <span data-i18n="tabFile">File</span>
+            </label>
+
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="earlyNote" checked>
+              <span data-i18n="tabEarlyNote">Early notes</span>
+            </label>
+
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="bgOffset" checked>
+              <span data-i18n="tabBgOffset">BG</span>
+            </label>
+
+          </fieldset>
+
+          <fieldset class="tab-settings-group">
+            <legend data-i18n="tabGroupTools">Tools</legend>
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="offsetWaveform">
+              <span data-i18n="tabOffsetWaveform">Audio waveform</span>
+            </label>
+
+            <label data-electron-only>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="spectrogram" checked>
+              <span data-i18n="tabSpectrogram">Spectrogram</span>
+            </label>
+
+            <!-- Timeline temporarily disabled. Uncomment its setting, tab button,
+                 and panel to restore it; the check and formatter code is retained.
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="timeline">
+              <span data-i18n="tabTimeline">Timeline</span>
+            </label>
+            -->
+
+            <label>
+              <input type="checkbox" class="tab-visibility-toggle" data-target-tab="bnCompare">
+              <span data-i18n="tabBnCompare">BN Compare</span>
+            </label>
+          </fieldset>
+        </div>
+      </dialog>
     </section>
 
     <section class="tabs">
