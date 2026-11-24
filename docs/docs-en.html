@@ -1785,8 +1785,8 @@ osu! normally creates <code>.osu</code> files using the following naming convent
 
 <code>Artist - Title (Creator) [Diff name].osu</code><br><br>
 
-However, if Artist or Title is changed in the osu! editor after the file has been created,
-or if the mapper changes their osu! username, the existing file name may retain the old value.<br><br>
+However, changing only the letter case of fields such as Artist or Title in the osu!stable editor and saving over the existing file does not update the actual file name.<br>
+This is because Windows normally treats file names that differ only in letter case as referring to the same file and preserves the original capitalization of the file name.<br><br>
 
 When receiving a Guest Difficulty from another mapper, the file name may also retain suffixes added by the browser or operating system,
 such as <code>(1)</code> or <code>- Copy</code>.
@@ -1805,9 +1805,7 @@ For each <code>.osu</code> file, the tool reads the following values from the <c
 
 The expected file name is built from these values and compared with the actual file name using an exact match.<br>
 Differences in capitalization, outdated Artist / Title / Creator values, and extra text such as
-<code>(1)</code> or <code>- Copy</code> are detected and displayed as warnings.<br><br>
-
-If an <code>.osz</code> contains multiple osu!taiko difficulties, every <code>.osu</code> file is checked separately.
+<code>(1)</code> or <code>- Copy</code> are detected and displayed as warnings.
 </div>
 
 <div class="section section-warning">
@@ -1833,12 +1831,18 @@ Unsubmitted map (the <code>BeatmapSetID</code> is empty, <code>0</code>, or nega
 <code>Artist - Title</code><br><br>
 
 Differences in capitalization and extra suffixes such as <code>[no video]</code> or <code>(1)</code>
-are treated as mismatches and displayed as warnings.<br><br>
+are treated as mismatches and displayed as warnings.
+</div>
 
-The folder name is available in the desktop app when loading a standalone <code>.osu</code> file or using
-the “beatmap open in osu!” source.<br>
+<div class="section section-detect">
+<span class="label label-detect">■ Detection 3: .osz file name formatting</span><br>
 When an <code>.osz</code> file is loaded in either the browser or desktop app, its file name is compared with an expected <code>.osz</code> file name generated separately from the metadata.<br><br>
-This check is skipped when loading a standalone <code>.osu</code> file in the browser app because the song folder name is unavailable.
+
+Submitted map:<br>
+<code>BeatmapSetID Artist - Title.osz</code><br><br>
+
+Unsubmitted map (the <code>BeatmapSetID</code> is empty, <code>0</code>, or negative):<br>
+<code>Artist - Title.osz</code>
 </div>
 
 <div class="section section-warning">
@@ -1848,17 +1852,20 @@ The characters <code>\</code>, <code>/</code>, <code>:</code>, <code>*</code>, <
 <code>&lt;</code>, <code>&gt;</code>, and <code>|</code> are converted to <code>_</code>.<br><br>
 
 Example:<br>
-<code>2518995 ryo (supercell) feat. Kaguya (CV_ Yuko Natsuyoshi) - Melt CPK! Remix (Kaguya Ver.)</code><br>
-→ <code>2518995 ryo (supercell) feat Kaguya (CV: Yuko Natsuyoshi) - Melt CPK! Remix (Kaguya Ver)</code>
+<code>2518995 ryo feat. Kaguya (CV: Yuko Natsuyoshi) - Melt CPK! Remix (Kaguya Ver.)</code><br>
+→ <code>2518995 ryo feat Kaguya (CV_ Yuko Natsuyoshi) - Melt CPK! Remix (Kaguya Ver)</code>
 </div>
 
 <div class="section section-warning">
-<span class="label label-warning">■ Checking names from .osz files</span><br>
-The expected <code>.osz</code> file name is <code>BeatmapSetID Artist - Title.osz</code> for submitted maps and <code>Artist - Title.osz</code> for unsubmitted maps.<br>
-Unlike song folder names, periods (<code>.</code>) in Artist / Title are preserved.<br>
+<span class="label label-warning">■ Unsupported .osz file name characters</span><br>
+Unlike song folder names, periods (<code>.</code>) are preserved.<br>
 The unsupported file name characters <code>\</code>, <code>/</code>, <code>:</code>, <code>*</code>, <code>?</code>, <code>&quot;</code>, <code>&lt;</code>, <code>&gt;</code>, and <code>|</code> are converted to <code>_</code>.<br><br>
-For <code>.osz</code> files, this check uses the loaded file name rather than the actual song folder name on the creator's computer.<br>
 If the <code>.osz</code> file is renamed afterwards, a warning may be displayed even when the original song folder name is correct.
+</div>
+
+<div class="section section-warning">
+<span class="label label-warning">■ Notes</span><br>
+Differences in capitalization in file or folder names do not make a beatmap unrankable, so correcting them is not always necessary.
 </div>
 </section>
 
