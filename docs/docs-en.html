@@ -1401,10 +1401,14 @@ should follow the standard formatting defined in the
 </div>
 
 <div class="section section-detect">
+<span class="label label-detect">■ Common Check</span><br>
+This check verifies whether the Artist / ArtistUnicode fields are consistent across all difficulties.
+</div>
+
+<div class="section section-detect">
 <span class="label label-detect">■ Detection Content</span><br>
 This check detects the following:
 <ul>
-  <li>Whether <code>Artist</code> / <code>ArtistUnicode</code> are consistent across all diffs</li>
   <li>Whether special symbols are converted into recommended Romanised representations</li>
   <li>Whether markers such as <code>feat.</code>, <code>vs.</code>, <code>CV:</code>, and <code>VO:</code> are formatted correctly</li>
   <li>Whether commas are followed by a space</li>
@@ -1435,10 +1439,14 @@ should follow the standard formatting defined in the
 </div>
 
 <div class="section section-detect">
+<span class="label label-detect">■ Common Check</span><br>
+This check verifies whether the Title / TitleUnicode fields are consistent across all difficulties.
+</div>
+
+<div class="section section-detect">
 <span class="label label-detect">■ Detection Content</span><br>
 This check detects the following:
 <ul>
-  <li>Whether <code>Title</code> / <code>TitleUnicode</code> are consistent across all diffs</li>
   <li>Whether special symbols are converted into recommended Romanised representations</li>
   <li>Whether title markers such as <code>(Short Ver.)</code>, <code>(Game Ver.)</code>, and <code>(Movie Ver.)</code> are formatted correctly</li>
   <li>Whether <code>(feat. Artist)</code> formatting inside the title is correct</li>
@@ -1525,11 +1533,14 @@ cannot be detected by AiMod or Mapset Verifier.
 </div>
 
 <div class="section section-detect">
-<span class="label label-detect">■ Detection Content</span><br>
-First, this check verifies whether Tags are consistent across all difficulties
-(same functionality as Mapset Verifier).<br><br>
+<span class="label label-detect">■ Common Check</span><br>
+This check verifies whether the Tags field is consistent across all difficulties
+(same functionality as Mapset Verifier).
+</div>
 
-It then detects the following issues in each difficulty's Tags:
+<div class="section section-detect">
+<span class="label label-detect">■ Detection Content</span><br>
+This check detects the following issues in each difficulty's Tags:
 <ul>
   <li>Two or more consecutive half-width spaces between tags</li>
   <li>Full-width spaces between tags</li>

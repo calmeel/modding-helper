@@ -1359,10 +1359,14 @@ Artist / ArtistUnicode は、mapset 内の全 diff で一致している必要�
 </div>
 
 <div class="section section-detect">
+<span class="label label-detect">■ 共通チェック</span><br>
+全 diff で Artist / ArtistUnicode が一致しているかを確認します。
+</div>
+
+<div class="section section-detect">
 <span class="label label-detect">■ 検出内容</span><br>
 以下を検出します。
 <ul>
-  <li>全diffで <code>Artist</code> / <code>ArtistUnicode</code> が一致しているか</li>
   <li>特殊記号が推奨Romanised表記に変換されているか</li>
   <li><code>feat.</code>、<code>vs.</code>、<code>CV:</code>、<code>VO:</code> などの marker 表記が正しいか</li>
   <li>カンマの後ろにスペースがあるか</li>
@@ -1388,10 +1392,14 @@ Title / TitleUnicode は、mapset 内の全 diff で一致している必要が�
 </div>
 
 <div class="section section-detect">
+<span class="label label-detect">■ 共通チェック</span><br>
+全 diff で Title / TitleUnicode が一致しているかを確認します。
+</div>
+
+<div class="section section-detect">
 <span class="label label-detect">■ 検出内容</span><br>
 以下を検出します。
 <ul>
-  <li>全diffで <code>Title</code> / <code>TitleUnicode</code> が一致しているか</li>
   <li>特殊記号が推奨Romanised表記に変換されているか</li>
   <li><code>(Short Ver.)</code>、<code>(Game Ver.)</code>、<code>(Movie Ver.)</code> などの title marker 表記が正しいか</li>
   <li>タイトル内の <code>(feat. Artist)</code> 表記が正しいか</li>
@@ -1422,7 +1430,7 @@ Source は、mapset 内の全 diff で一致している必要があります。
 
 <div class="section section-detect">
 <span class="label label-detect">■ 共通チェック</span><br>
-全diffで Source が一致しているかを確認します。
+全 diff で Source が一致しているかを確認します。
 </div>
 
 <div class="section section-detect">
@@ -1470,9 +1478,13 @@ Tag と Tag の間は、<code>半角スペース1つ</code> で区切る必要�
 </div>
 
 <div class="section section-detect">
+<span class="label label-detect">■ 共通チェック</span><br>
+全 diff で Tags が一致しているかを確認します（Mapset Verifier と同一の機能）。
+</div>
+
+<div class="section section-detect">
 <span class="label label-detect">■ 検出内容</span><br>
-まず、全diffで Tags が一致しているかを確認します（Mapset Verifier と同一の機能）。<br><br>
-その後、各diffの Tags に対して、以下の問題を検出します：
+各 diff の Tags に対して、以下の問題を検出します：
 <ul>
   <li>Tag と Tag の間に、2つ以上の半角スペースが含まれている場合</li>
   <li>Tag と Tag の間に、全角スペースが含まれている場合</li>
