@@ -191,7 +191,7 @@ function drawKiaiCompareRows(
   if (hasMismatchRow) {
     rows.push({
       label: kiaiCompareChartState.t("kiaiCompareGraphMismatch"),
-      intervals: mismatchSections,
+      intervals: getKiaiCompareDrawingIntervals(mismatchSections),
       color: "rgba(255, 107, 107, 0.72)",
       labelColor: "#ff8b8b"
     });
@@ -244,6 +244,21 @@ function drawKiaiCompareRows(
     ctx.lineTo(plot.right, top + plot.rowHeight);
     ctx.stroke();
   });
+}
+
+// Comparison sections retain per-difficulty states for tooltips. Draw adjacent
+// sections as one band to avoid seams between translucent rectangles.
+function getKiaiCompareDrawingIntervals(sections) {
+  const intervals = [];
+  for (const section of sections) {
+    const last = intervals[intervals.length - 1];
+    if (last && section.start <= last.end) {
+      last.end = Math.max(last.end, section.end);
+    } else {
+      intervals.push({ start: section.start, end: section.end });
+    }
+  }
+  return intervals;
 }
 
 function drawKiaiCompareTimeGrid(ctx, plot, viewStart, viewEnd, xForTime) {
