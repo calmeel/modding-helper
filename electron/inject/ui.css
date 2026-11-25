@@ -105,7 +105,34 @@
         z-index: 7;
       }
       .etb-chart-detach:hover { background: #3a3a48; color: #fff; }
-      /* 音声波形の説明はカラム幅を使い、640px 制限による途中折り返しを避ける。 */
-      #electron-layout .offset-waveform-chart-section .volume-compare-chart-header p {
+      /* グラフの説明はカラム幅を使い、640px 制限による途中折り返しを避ける。 */
+      #electron-layout .offset-waveform-chart-section .volume-compare-chart-header p,
+      #electron-layout .volume-compare-chart-section .volume-compare-chart-header p,
+      #electron-layout .spread-density-chart-section .volume-compare-chart-header p,
+      #electron-layout .spread-rest-chart-section .volume-compare-chart-header p,
+      #electron-layout .spread-scroll-chart-section .volume-compare-chart-header p {
         max-width: none;
+      }
+
+      /* オプションは見出しと同じ行に置き、説明文にはカード全幅を確保する。 */
+      #electron-layout .spread-scroll-chart-section .volume-compare-chart-header {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 6px 16px;
+      }
+      #electron-layout .spread-scroll-chart-section .volume-compare-chart-header > div:first-child {
+        display: contents;
+      }
+      #electron-layout .spread-scroll-chart-section .volume-compare-chart-header h3 {
+        flex: 1 1 auto;
+      }
+      #electron-layout .spread-scroll-chart-section .spread-scroll-header-actions {
+        order: 1;
+        flex: 0 1 auto;
+        min-width: 0;
+      }
+      #electron-layout .spread-scroll-chart-section .volume-compare-chart-header p {
+        order: 2;
+        flex: 0 0 100%;
+        min-width: 0;
       }
