@@ -105,3 +105,7 @@
         z-index: 7;
       }
       .etb-chart-detach:hover { background: #3a3a48; color: #fff; }
+      /* 音声波形の説明はカラム幅を使い、640px 制限による途中折り返しを避ける。 */
+      #electron-layout .offset-waveform-chart-section .volume-compare-chart-header p {
+        max-width: none;
+      }

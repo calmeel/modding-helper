@@ -354,6 +354,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const osuSource = createOsuSourceController({
     t, invalidateLoads: fileSession.invalidateLoads, handleFile: fileSession.handleFile,
     clearResults: fileSession.clearResults,
+    showDiffOrderLoading: fileSession.showDiffOrderLoading,
+    showEarlyDiffOrder: fileSession.showEarlyDiffOrder,
+    finishEarlyDiffOrder: fileSession.finishEarlyDiffOrder,
     onModeChanged(mode) {
       if (mode === "osu") fileSession.publishChartSourceFile(null);
 

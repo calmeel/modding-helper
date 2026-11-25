@@ -189,3 +189,39 @@ test('chart source publication uses native paths and discards stale buffer reads
   await f.controller.publishChartSourceFile(null);
   assert.equal(sources[1], null);
 });
+
+test('early difficulty list restores saved versions without publishing incomplete analysis', () => {
+  const f = fixture();
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '../app/files/fileLoader.js'), 'utf8'), f.scope);
+  f.scope.resetDifficultyNameRegistry();
+  const attributes = new Map();
+  f.dom.spreadOrderOutput = { setAttribute: (key, value) => attributes.set(key, value),
+    removeAttribute: key => attributes.delete(key) };
+  f.dom.spreadResetOrderButton = { disabled: false };
+  let displayed;
+  f.scope.formatSpreadDiffOrderTable = (results, t, order, categories) => {
+    displayed = plain({ results, order, categories });
+    return 'early list';
+  };
+  f.dom.spreadOrderOutput.innerHTML = 'previous mapset';
+  f.controller.showDiffOrderLoading();
+  assert.equal(f.dom.spreadOrderOutput.innerHTML, 'previous mapset');
+  assert.equal(f.dom.spreadOrderOutput.textContent, undefined);
+  const source = (fileName, version, mode = 1) => ({ fileName,
+    text: `[General]\nMode:${mode}\n[Metadata]\nVersion:${version}\n[HitObjects]\n256,192,1000,1,0\n` });
+  f.controller.showEarlyDiffOrder([source('a.osu', 'Kantan'), source('b.osu', 'Oni'),
+    source('standard.osu', 'Standard', 0)], { keyType: 'version', diffOrder: ['Oni', 'Kantan'],
+    manualCategories: { Oni: 'innerPlus' } });
+  assert.deepEqual(displayed.order, ['b.osu', 'a.osu']);
+  assert.deepEqual(displayed.categories, { 'b.osu': 'innerPlus' });
+  assert.equal(displayed.results.length, 2);
+  assert.equal(displayed.results[0].noteCount, 1);
+  assert.equal(f.scope.window.__loadedDiffs, undefined);
+  assert.equal(f.state.spread.results, null);
+  assert.equal(f.dom.spreadOrderOutput.inert, true);
+  assert.equal(f.dom.spreadResetOrderButton.disabled, true);
+  f.controller.finishEarlyDiffOrder(false);
+  assert.equal(f.dom.spreadOrderOutput.inert, false);
+  assert.equal(f.dom.spreadResetOrderButton.disabled, false);
+  assert.equal(attributes.has('aria-busy'), false);
+});

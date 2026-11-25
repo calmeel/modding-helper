@@ -10,7 +10,7 @@ function audioFilename(text) {
   return value ? path.win32.normalize(value.replace(/^"(.*)"$/, '$1')).toLowerCase() : '';
 }
 
-async function readMapset(folder, { knownFolder, skipMultipleAudio = true } = {}) {
+async function readMapset(folder, { knownFolder, skipMultipleAudio = true, onBeatmaps } = {}) {
   if (knownFolder === folder) return { unchanged: true, folder };
   let entries;
   try { entries = await fs.readdir(folder, { withFileTypes: true }); }
@@ -32,6 +32,10 @@ async function readMapset(folder, { knownFolder, skipMultipleAudio = true } = {}
     }
   }
   if (!beatmaps.size) return null;
+
+  // Publish the difficulty list before reading media or constructing the archive.
+  if (onBeatmaps) await onBeatmaps(Array.from(beatmaps, ([fileName, buffer]) =>
+    ({ fileName, text: buffer.toString('utf8') })));
 
   const zip = new JSZip();
   for (const [name, buffer] of beatmaps) zip.file(name, buffer);

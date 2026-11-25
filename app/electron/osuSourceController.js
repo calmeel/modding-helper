@@ -1,5 +1,6 @@
 // Electronの読み込みモード、保存監視、再読み込みと状態表示を管理する。
-function createOsuSourceController({ t, invalidateLoads, handleFile, clearResults, onModeChanged }) {
+function createOsuSourceController({ t, invalidateLoads, handleFile, clearResults, onModeChanged,
+  showDiffOrderLoading, showEarlyDiffOrder, finishEarlyDiffOrder }) {
   let osuSourceMode        = "file";
   let osuLastLoadedFolder  = null;
   let osuLastSkipped = false;
@@ -23,6 +24,7 @@ function createOsuSourceController({ t, invalidateLoads, handleFile, clearResult
   }
 
   function applyOsuSourceMode(mode) {
+    finishEarlyDiffOrder?.(false);
     ++osuLoadId;
     invalidateLoads();
     osuLastLoadedFolder = null;
@@ -54,21 +56,24 @@ function createOsuSourceController({ t, invalidateLoads, handleFile, clearResult
     let res;
     try {
       res = await window.electronAPI.getCurrentMapset(force ? null : osuLastLoadedFolder, {
-        skipMultipleAudio: skipMultipleAudioMapsets
+        skipMultipleAudio: skipMultipleAudioMapsets, requestId: loadId
       });
     } catch {
       if (loadId !== osuLoadId || osuSourceMode !== "osu") return;
+      finishEarlyDiffOrder?.(false);
       setOsuStatus("osuSourceNoMap", "error");
       return;
     }
     if (loadId !== osuLoadId || osuSourceMode !== "osu") return;
 
     if (!res) {
+      finishEarlyDiffOrder?.(false);
       osuLastLoadedFolder = null;
       setOsuStatus("osuSourceNoMap", "error");
       return;
     }
     if (res.unchanged) {
+      finishEarlyDiffOrder?.(true);
       setOsuStatus(osuLastSkipped ? "osuSourceMultipleAudioSkipped" : "osuSourceLoaded", osuLastSkipped ? "" : "ok");
       return;
     }
@@ -76,6 +81,7 @@ function createOsuSourceController({ t, invalidateLoads, handleFile, clearResult
       osuLastLoadedFolder = res.folder;
       osuLastSkipped = true;
       clearResults();
+      finishEarlyDiffOrder?.(false);
       setOsuStatus("osuSourceMultipleAudioSkipped", "");
       return;
     }
@@ -83,8 +89,10 @@ function createOsuSourceController({ t, invalidateLoads, handleFile, clearResult
     osuLastSkipped = false;
     try {
       const file = new File([res.buffer], res.name, { type: "application/octet-stream" });
-      await handleFile(file, { mapsetFolder: res.folder });
+      const loaded = await handleFile(file, { mapsetFolder: res.folder });
       if (loadId !== osuLoadId || osuSourceMode !== "osu") return;
+      finishEarlyDiffOrder?.(loaded === true);
+      if (!loaded) { setOsuStatus("osuSourceNoMap", "error"); return; }
       osuLastLoadedFolder = res.folder;
       // フォルダ監視による再解析では osu! 側のファイルパス自体は変わらないため、
       // osuWatcher はメタデータを自動では読み直さない。現在開いている .osu を
@@ -95,6 +103,7 @@ function createOsuSourceController({ t, invalidateLoads, handleFile, clearResult
       setOsuStatus("osuSourceLoaded", "ok");
     } catch {
       if (loadId !== osuLoadId || osuSourceMode !== "osu") return;
+      finishEarlyDiffOrder?.(false);
       setOsuStatus("osuSourceNoMap", "error");
     }
   }
@@ -107,6 +116,14 @@ function createOsuSourceController({ t, invalidateLoads, handleFile, clearResult
       return;
     }
     settings.hidden = false;
+    window.electronAPI.onMapsetProgress?.(progress => {
+      if (osuSourceMode !== 'osu' || progress.requestId !== osuLoadId) return;
+      if (progress.phase === 'loading' && progress.folder !== osuLastLoadedFolder) {
+        showDiffOrderLoading?.();
+      } else if (progress.phase === 'beatmaps') {
+        showEarlyDiffOrder?.(progress.sources, progress.preferences);
+      }
+    });
 
     let saved = "file";
     try { saved = localStorage.getItem("moddingHelperCheckSource") || "file"; } catch {}

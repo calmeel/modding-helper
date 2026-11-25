@@ -30,6 +30,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getCurrentMapset: (knownFolder, options) => ipcRenderer.invoke('osu-get-current-mapset', knownFolder, options),
   requestMapInfo:   () => ipcRenderer.send('osu-request-map-info'),
   onMapsetChanged:  (cb) => subscribe('osu-mapset-changed', cb),
+  onMapsetProgress: (cb) => subscribe('osu-mapset-progress', cb),
   setChartSourceFile: (source) => ipcRenderer.send('chart-source-file', source),
   onChartSourceFile: (cb) => subscribe('chart-source-file', cb),
   setChartSourceMode: (mode) => ipcRenderer.send('chart-source-mode', mode),

@@ -262,7 +262,7 @@ function renderSpreadResultFromResults(spreadState, dom, t) {
 
   if (!results) {
     updateSpreadSubtabIssueStates(spreadState);
-    if (dom.spreadOrderOutput) dom.spreadOrderOutput.innerHTML = t("noFileLoaded");
+    if (dom.spreadOrderOutput && !dom.spreadOrderOutput.inert) dom.spreadOrderOutput.innerHTML = t("noFileLoaded");
     if (dom.spreadOdHpOutput) dom.spreadOdHpOutput.innerHTML = t("noFileLoaded");
     if (dom.spreadScrollSpeedOutput) dom.spreadScrollSpeedOutput.innerHTML = t("noFileLoaded");
     if (dom.spreadNoteCountOutput) dom.spreadNoteCountOutput.innerHTML = t("noFileLoaded");
@@ -281,7 +281,7 @@ function renderSpreadResultFromResults(spreadState, dom, t) {
   const restMomentOptions = getSpreadRestMomentOptionsFromDom(dom);
   const restResults = applySpreadRestMomentOptions(results, restMomentOptions);
 
-  if (dom.spreadOrderOutput) {
+  if (dom.spreadOrderOutput && !dom.spreadOrderOutput.inert) {
     dom.spreadOrderOutput.innerHTML = formatSpreadDiffOrderTable(
       results,
       t,

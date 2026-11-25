@@ -45,3 +45,21 @@ test('disabling the option loads multiple songs and unchanged folder avoids all 
   t.mock.method(fs, 'readdir', () => { throw new Error('should not re-read known folder'); });
   assert.deepEqual(await readMapset(folder, { knownFolder: folder }), { unchanged: true, folder });
 });
+
+test('difficulty sources are published before any media is read', async t => {
+  const text = beatmap('audio.mp3');
+  const folder = await fixture(t, { 'a.osu': text, 'audio.mp3': 'audio', 'bg.png': 'image' });
+  const originalRead = fs.readFile;
+  let published = false;
+  t.mock.method(fs, 'readFile', async (...args) => {
+    if (!args[0].endsWith('.osu')) assert.ok(published, 'media must wait for the early list');
+    return originalRead(...args);
+  });
+  const result = await readMapset(folder, { onBeatmaps: async sources => {
+    assert.deepEqual(sources, [{ fileName: 'a.osu', text }]);
+    published = true;
+  } });
+  assert.ok(published);
+  assert.ok((await JSZip.loadAsync(result.buffer)).file('audio.mp3'));
+  await readMapset(folder, { knownFolder: folder, onBeatmaps() { assert.fail('unchanged mapset'); } });
+});

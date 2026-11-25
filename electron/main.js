@@ -339,11 +339,21 @@ app.whenReady().then(() => {
     if (!osuPath) { mapsetWatcher.watch(null); return null; }
 
     const folder = path.dirname(osuPath);
+    const sendProgress = payload => {
+      if (!event.sender.isDestroyed()) event.sender.send('osu-mapset-progress', {
+        requestId: options?.requestId, folder, ...payload
+      });
+    };
+    if (knownFolder !== folder) sendProgress({ phase: 'loading' });
     // このフォルダの .osu 更新を監視（保存で自動反映）
     mapsetWatcher.watch(folder, event.sender);
     return readMapset(folder, {
       knownFolder,
-      skipMultipleAudio: options?.skipMultipleAudio !== false
+      skipMultipleAudio: options?.skipMultipleAudio !== false,
+      onBeatmaps: async sources => {
+        const preferences = await diffOrderPreferences.load(folder);
+        sendProgress({ phase: 'beatmaps', sources, preferences });
+      }
     });
   });
 });

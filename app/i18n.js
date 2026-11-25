@@ -516,7 +516,7 @@ const i18n = {
 
     tabOffsetWaveform: "Audio waveform",
     offsetWaveformGraphTitle: "Audio waveform",
-    offsetWaveformGraphHelp: "This graph shows the audio waveform and generated barlines from the loaded .osu timing. Use the mouse wheel to zoom and left-drag to move horizontally.\nRight-click a peak to calculate a recommended offset.\nThis offset estimate is not always correct, so use it with care.",
+    offsetWaveformGraphHelp: "This graph shows the audio waveform and generated barlines from the loaded .osu timing. Use the mouse wheel to zoom and left-drag to move horizontally.\nRight-click a peak to calculate a recommended offset (the estimate is not always correct).",
     offsetWaveformAudio: "Audio waveform",
     offsetWaveformBarline: "Generated barline",
     offsetWaveformEstimatedBarline: "Estimated offset barline",
@@ -1201,7 +1201,7 @@ const i18n = {
 
     tabOffsetWaveform: "音声波形",
     offsetWaveformGraphTitle: "音声波形",
-    offsetWaveformGraphHelp: "読み込んだ .osu の音声波形と、赤線から生成した小節線を表示します。マウスホイールで拡大・縮小でき、左ドラッグで表示区間を左右に移動できます。\nピークを右クリックすると推奨オフセットを算出します。\nこのオフセット推定は必ずしも正しいとは限らないので、注意してください。",
+    offsetWaveformGraphHelp: "読み込んだ .osu の音声波形と、赤線から生成した小節線を表示します。マウスホイールで拡大・縮小でき、左ドラッグで表示区間を左右に移動できます。\nピークを右クリックすると推奨オフセットを算出します（必ずしも正しいとは限りません）。",
     offsetWaveformAudio: "音声波形",
     offsetWaveformBarline: "生成小節線",
     offsetWaveformEstimatedBarline: "推定オフセット小節線",

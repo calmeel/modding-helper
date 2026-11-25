@@ -3,6 +3,44 @@ function createFileSessionController({ state, dom, t, isChartPopout,
   getSourceMode, getReceivedDiffOrder, synchronizeDiffOrder, renderLoadedFileResults, onCleared }) {
   const { openBeatmapPage, fileName, timelineOutput, output } = dom;
   let activeMapsetFolder = null;
+  let earlyDiffOrderVisible = false;
+  function showDiffOrderLoading() {
+    if (!dom.spreadOrderOutput) return;
+    earlyDiffOrderVisible = true;
+    dom.spreadOrderOutput.inert = true;
+    if (dom.spreadResetOrderButton) dom.spreadResetOrderButton.disabled = true;
+    dom.spreadOrderOutput.setAttribute('aria-busy', 'true');
+    // Keep the previous list until the new ordering data is ready to avoid a flash.
+  }
+  function showEarlyDiffOrder(sources, preferences) {
+    if (!dom.spreadOrderOutput) return;
+    const taikoSources = sources.filter(source => parseMode(source.text) === 1);
+    // Only ordering data is needed here; media and the other checks remain in processFile.
+    const results = taikoSources.map(source => {
+      registerDifficultyName(source.fileName, source.text);
+      return { fileName: source.fileName, sortInfo: getSpreadSortInfo(source.fileName),
+        noteCount: countCircleNotes(source.text) };
+    });
+    const restored = restoreSpreadDiffPreferences(results,
+      resolveSpreadDiffPreferences(taikoSources, preferences));
+    earlyDiffOrderVisible = true;
+    dom.spreadOrderOutput.inert = true;
+    if (dom.spreadResetOrderButton) dom.spreadResetOrderButton.disabled = true;
+    dom.spreadOrderOutput.setAttribute('aria-busy', 'true');
+    dom.spreadOrderOutput.innerHTML = formatSpreadDiffOrderTable(results, t,
+      restored.diffOrder, restored.manualCategories);
+  }
+  function finishEarlyDiffOrder(success) {
+    if (!earlyDiffOrderVisible || !dom.spreadOrderOutput) return;
+    earlyDiffOrderVisible = false;
+    dom.spreadOrderOutput.inert = false;
+    if (dom.spreadResetOrderButton) dom.spreadResetOrderButton.disabled = false;
+    dom.spreadOrderOutput.removeAttribute('aria-busy');
+    if (success && state.spread.results) {
+      dom.spreadOrderOutput.innerHTML = formatSpreadDiffOrderTable(state.spread.results, t,
+        state.spread.diffOrder, state.spread.manualCategories);
+    } else dom.spreadOrderOutput.textContent = t('osuSourceNoMap');
+  }
   // プレビュー側はファイル名を使い、永続化時にDiff順と同じVersionキーへ変換する。
   window.__setPreviewHiddenDiffs = function (hiddenDiffs) {
     state.spread.hiddenDiffs = Object.keys(hiddenDiffs).filter(name => hiddenDiffs[name]);
@@ -195,6 +233,7 @@ function createFileSessionController({ state, dom, t, isChartPopout,
   }
 
   function clearOsuCheckResults() {
+    finishEarlyDiffOrder(false);
     ++beatmapPageLoadId;
     beatmapPageUrl = null;
     if (openBeatmapPage) openBeatmapPage.disabled = true;
@@ -215,6 +254,7 @@ function createFileSessionController({ state, dom, t, isChartPopout,
   }
 
   return {
+    showDiffOrderLoading, showEarlyDiffOrder, finishEarlyDiffOrder,
     handleFile, persistDiffPreferences, publishChartSourceFile, renderFileMetaToPanel,
     clearResults: clearOsuCheckResults,
     invalidateLoads() { ++beatmapPageLoadId; },
