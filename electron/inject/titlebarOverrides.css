@@ -24,6 +24,12 @@
         -webkit-app-region: no-drag !important;
       }
 
+      /* フォントの見た目の中心を SVG に揃える。ボタンとアイコンは動かさない。 */
+      #etb-nav .etb-nav-label,
+      #etb-language .etb-nav-label {
+        transform: translateY(1px);
+      }
+
       #etb-nav > a:hover,
       #etb-nav > button:hover,
       #etb-language > a:hover,

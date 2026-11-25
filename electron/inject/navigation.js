@@ -1,7 +1,8 @@
 // 上部タブ、説明書・言語リンク、リアルタイム表示ボタンを担当する。
 function setupElectronNavigation({ topLinks, text: electronText, selectView, refreshView, refreshTitles, onLanguageChanged }) {
   var svgBook = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>';
-  /* ⚙設定 ボタンで設定モードを切替 */
+  var svgSettings = '<svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9.5 2.3-.6 2.4-1.8 1-2.4-.7-2.5 4.3 1.8 1.7v2l-1.8 1.7 2.5 4.3 2.4-.7 1.8 1 .6 2.4h5l.6-2.4 1.8-1 2.4.7 2.5-4.3-1.8-1.7v-2l1.8-1.7-2.5-4.3-2.4.7-1.8-1L14.5 2.3z"/><circle cx="12" cy="12" r="3"/></svg>';
+  /* 設定ボタンで設定モードを切替 */
   var settingsToggleBtn = document.getElementById('toggleTabSettings');
   if (settingsToggleBtn) {
     settingsToggleBtn.addEventListener('click', function() {
@@ -24,7 +25,13 @@ function setupElectronNavigation({ topLinks, text: electronText, selectView, ref
         var languageEl = document.getElementById('etb-language');
         ['langEn', 'langJa'].forEach(function(id) {
           var button = langSwitch.querySelector('#' + id);
-          if (button) languageEl.appendChild(button);
+          if (button) {
+            var languageLabel = document.createElement('span');
+            languageLabel.className = 'etb-nav-label';
+            languageLabel.textContent = button.textContent;
+            button.replaceChildren(languageLabel);
+            languageEl.appendChild(button);
+          }
         });
       }
       topLinks.remove();
@@ -41,7 +48,11 @@ function setupElectronNavigation({ topLinks, text: electronText, selectView, ref
       var updateNavItem = function(el, svg) {
         if (!el) return;
         var text = el.textContent.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').replace(/^\s+/, '');
-        el.innerHTML = svg + text;
+        el.innerHTML = svg;
+        var label = document.createElement('span');
+        label.className = 'etb-nav-label';
+        label.textContent = text;
+        el.appendChild(label);
       };
 
       /* 説明書リンクを GitHub Pages URL に向ける */
@@ -81,9 +92,14 @@ function setupElectronNavigation({ topLinks, text: electronText, selectView, ref
         }).observe(langEnBtn, { attributes: true, attributeFilter: ['class'] });
       }
 
-      /* 設定ボタンのテキスト（歯車は付けない） */
+      /* 設定は SVG の歯車だけを表示し、名前はツールチップと読み上げ用に残す。 */
       var settingsBtn = document.getElementById('toggleTabSettings');
-      if (settingsBtn) settingsBtn.textContent = electronText('electronSettings');
+      if (settingsBtn) {
+        settingsBtn.removeAttribute('data-i18n');
+        settingsBtn.innerHTML = svgSettings;
+        settingsBtn.title = electronText('electronSettings');
+        settingsBtn.setAttribute('aria-label', electronText('electronSettings'));
+      }
 
       /* 表示切替タブを設定の前に追加する。 */
       if (settingsBtn && settingsBtn.parentNode && !document.getElementById('etb-tab-main')) {

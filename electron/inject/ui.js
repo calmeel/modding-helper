@@ -185,6 +185,16 @@
           var set = function(id, key) {
             var el = document.getElementById(id);
             if (!el) return;
+            if (id.indexOf('etb-tab-') === 0) {
+              var label = el.querySelector('.etb-nav-label');
+              if (!label) {
+                label = document.createElement('span');
+                label.className = 'etb-nav-label';
+                el.replaceChildren(label);
+              }
+              el.removeAttribute('data-i18n');
+              el = label;
+            }
             el.setAttribute('data-i18n', key);
             el.textContent = electronText(key);
           };
@@ -221,7 +231,9 @@
           set('etb-tab-preview',         'electronPreview');
           set('etb-tab-notepad',         'electronNotepad');
           set('etb-tab-realtime',        'electronRealtime');
-          set('toggleTabSettings',       'electronSettings');
+          setTitle('toggleTabSettings',  'electronSettings');
+          var settingsBtn = document.getElementById('toggleTabSettings');
+          if (settingsBtn) settingsBtn.setAttribute('aria-label', electronText('electronSettings'));
           set('etb-spread-snap-text',    'electronBeatSnapDivisor');
           set('etb-spread-sfx-text',     'electronHitSounds');
           set('etb-preview-other-title', 'electronOtherSettings');
