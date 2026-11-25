@@ -475,6 +475,30 @@ test("Muzzle-lab song rules require the corresponding artist in either metadata 
   }
 });
 
+test("Noma Nadeshiko is excluded without hiding separate NOMA or other artists", () => {
+  const check = metadata => context.runContentPermissionCheck(`[Metadata]\n${metadata}\n`, "test.osu");
+  for (const field of ["Artist", "ArtistUnicode", "Title", "TitleUnicode", "Tags"]) {
+    for (const value of ["Noma Nadeshiko", "NOMA NADESHIKO", "noma nadeshiko",
+      "(Noma Nadeshiko)", "Noma　Nadeshiko", "Noma  Nadeshiko", "Noma Nadeshiko / Noma Nadeshiko"]) {
+      assert.equal(check(`${field}:${value}`).results.length, 0, `${field}: ${value}`);
+    }
+    for (const value of ["NOMA", "Noma Nadeshiko feat. NOMA", "NOMA feat. Noma Nadeshiko",
+      "Noma Nadeshiko / NOMA / Noma Nadeshiko", "Noma Nadeshikox"]) {
+      const item = check(`${field}:${value}`).results.find(item => item.matchedKeywords.includes("NOMA"));
+      assert.ok(item, `${field}: ${value}`);
+      assert.equal(item.level, field.startsWith("Artist") ? "error" : "warn");
+    }
+    const item = check(`${field}:Noma Nadeshiko feat. 40mP`).results.find(item => item.category === "disallowedArtist");
+    assert.ok(item);
+    assert.ok(item.matchedKeywords.includes("40mP"));
+    assert.ok(!item.matchedKeywords.includes("NOMA"));
+  }
+  const result = check("Artist:Noma Nadeshiko\nTags:NOMA");
+  assert.equal(result.results.length, 1);
+  assert.equal(result.results[0].level, "warn");
+  assert.deepEqual(Array.from(result.results[0].matchedFields, item => item.field), ["tags"]);
+});
+
 test("NOMA and Avans do not match inside unrelated names or words", () => {
   assert.equal(detects("Artist", "Tsunomaki Watame", "NOMA"), false);
   assert.equal(detects("Title", "caravans", "Avans"), false);

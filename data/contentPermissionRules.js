@@ -462,6 +462,7 @@ const CONTENT_PERMISSION_RULES = [
       "NOMA"
     ],
     keywordMatchModes: { NOMA: "word" },
+    keywordExcludedPhrases: { NOMA: ["Noma Nadeshiko"] },
 
     title: "Disallowed artists",
 

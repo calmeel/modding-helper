@@ -70,7 +70,8 @@ function runContentPermissionCheck(text, fileName) {
         matchesContentPermissionKeyword(
           targetText,
           keyword,
-          rule.keywordMatchModes?.[keyword] ?? rule.matchMode
+          rule.keywordMatchModes?.[keyword] ?? rule.matchMode,
+          rule.keywordExcludedPhrases?.[keyword]
         ) && (!rule.keywordArtists?.[keyword] || rule.keywordArtists[keyword].some(name =>
           matchesContentPermissionKeyword(artist, name, "word") ||
           matchesContentPermissionKeyword(artistUnicode, name, "word")
@@ -121,11 +122,29 @@ function runContentPermissionCheck(text, fileName) {
   };
 }
 
-function matchesContentPermissionKeyword(targetText, keyword, matchMode = "contains") {
+function matchesContentPermissionKeyword(targetText, keyword, matchMode = "contains", excludedPhrases = []) {
   const normalizedKeyword = normalizeContentPermissionText(keyword);
 
   if (!normalizedKeyword) {
     return false;
+  }
+
+  // Mask only the allowed name for this keyword, preserving other occurrences
+  // of the keyword and matches for every other artist in the same field.
+  for (const phrase of excludedPhrases) {
+    const normalizedPhrase = normalizeContentPermissionText(phrase);
+    if (!normalizedPhrase) continue;
+    let index = 0;
+    while (index < targetText.length) {
+      const start = targetText.indexOf(normalizedPhrase, index);
+      if (start === -1) break;
+      const end = start + normalizedPhrase.length;
+      if (!isContentPermissionWordChar(targetText[start - 1] ?? "") &&
+          !isContentPermissionWordChar(targetText[end] ?? "")) {
+        targetText = targetText.slice(0, start) + " ".repeat(normalizedPhrase.length) + targetText.slice(end);
+      }
+      index = end;
+    }
   }
 
   if (matchMode === "word") {
