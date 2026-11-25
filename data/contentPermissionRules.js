@@ -449,11 +449,13 @@ const CONTENT_PERMISSION_RULES = [
 
     keywords: [
       "40mP",
+      "40㍍P",
       "a_hisa",
       "Draw the Emotional",
       "Enter Shikari",
       "EZFG",
       "Hatsuki Yura",
+      "葉月ゆら",
       "kamome sano",
       "kozato",
       "NOMA"
@@ -630,16 +632,19 @@ const CONTENT_PERMISSION_RULES = [
       "Frums",
       "gxxberlol",
       "HoneyComeBear",
+      "ハニカムベアー",
       "Igorrr",
       "Jun Kuroda",
       "Lusumi",
       "Mlumìn",
       "SoundWarper",
       "Morimori Atsushi",
+      "モリモリあつし",
       "Reku Mochizuki",
       "Silentroom",
       "Synthion",
       "Yuyoyuppe",
+      "ゆよゆっぺ",
       "DJ'TEKINA//SOMETHING",
       "Zekk"
     ],
