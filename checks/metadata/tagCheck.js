@@ -251,7 +251,6 @@ function compareTagsAcrossDiffs(results) {
 
   const base = results[0];
   const baseTags = base.tags ?? "";
-  const baseNormalizedTags = normalizeTagsForCompare(baseTags);
   const baseWords = getTagWords(baseTags);
   const baseSet = new Set(baseWords.map(normalizeTagToken));
 
@@ -259,21 +258,29 @@ function compareTagsAcrossDiffs(results) {
 
   for (const result of results.slice(1)) {
     const tags = result.tags ?? "";
-    const normalizedTags = normalizeTagsForCompare(tags);
 
-    if (normalizedTags === baseNormalizedTags) continue;
+    if (tags === baseTags) continue;
 
     const words = getTagWords(tags);
     const set = new Set(words.map(normalizeTagToken));
 
     const removed = baseWords.filter(tag => !set.has(normalizeTagToken(tag)));
     const added = words.filter(tag => !baseSet.has(normalizeTagToken(tag)));
+    const details = getTagComparisonDetails(baseTags, tags);
+    const differenceTypes = Object.entries({
+      case: details.caseChanges.length,
+      order: details.orderChanged,
+      spacing: details.spacingChanges.length,
+      count: details.countChanges.length
+    }).filter(([, changed]) => changed).map(([type]) => type);
 
     mismatches.push({
       fileName: result.fileName,
       baseFileName: base.fileName,
       removed,
       added,
+      differenceTypes,
+      ...details,
       tags,
       baseTags
     });
@@ -284,6 +291,55 @@ function compareTagsAcrossDiffs(results) {
     base,
     mismatches
   };
+}
+
+function getTagComparisonDetails(baseTags, tags) {
+  const tokenize = value => {
+    const counts = new Map();
+    return getTagWords(value).map(word => {
+      const key = normalizeTagToken(word);
+      const occurrence = counts.get(key) ?? 0;
+      counts.set(key, occurrence + 1);
+      return { word, key, id: JSON.stringify([key, occurrence]) };
+    });
+  };
+  const base = tokenize(baseTags);
+  const current = tokenize(tags);
+  const baseById = new Map(base.map(token => [token.id, token]));
+  const currentById = new Map(current.map(token => [token.id, token]));
+  const caseChanges = base.filter(token => currentById.has(token.id) &&
+    token.word !== currentById.get(token.id).word)
+    .map(token => ({ base: token.word, current: currentById.get(token.id).word }));
+  const sharedBase = base.filter(token => currentById.has(token.id));
+  const sharedCurrent = current.filter(token => baseById.has(token.id));
+  const orderChanged = sharedBase.some((token, index) => token.id !== sharedCurrent[index].id);
+  const countChanges = [];
+  for (const key of new Set(base.map(token => token.key))) {
+    const baseCount = base.filter(token => token.key === key).length;
+    const currentCount = current.filter(token => token.key === key).length;
+    if (currentCount && baseCount !== currentCount) {
+      countChanges.push({ tag: base.find(token => token.key === key).word, baseCount, currentCount });
+    }
+  }
+
+  const gaps = (value, tokens) => value.split(/\S+/u).map((whitespace, index) => ({
+    whitespace,
+    key: JSON.stringify([tokens[index - 1]?.id ?? null, tokens[index]?.id ?? null]),
+    left: tokens[index - 1]?.word ?? null,
+    right: tokens[index]?.word ?? null
+  }));
+  const baseGaps = gaps(baseTags, base);
+  const currentGaps = gaps(tags, current);
+  const baseGapsByKey = new Map(baseGaps.map(gap => [gap.key, gap]));
+  const spacingChanges = [];
+  for (const [index, gap] of currentGaps.entries()) {
+    const baseGap = baseGapsByKey.get(gap.key) ?? (base.length === current.length ? baseGaps[index] : null);
+    if (baseGap && baseGap.whitespace !== gap.whitespace) {
+      spacingChanges.push({ base: baseGap, current: gap });
+    }
+  }
+  return { caseChanges, orderChanged, orderBase: sharedBase, orderCurrent: sharedCurrent,
+    spacingChanges, countChanges };
 }
 
 function findTagSpellingSuggestions(tags) {

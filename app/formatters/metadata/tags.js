@@ -32,6 +32,8 @@ function formatMultipleTagResults(results, t) {
       lines.push(getDifficultyName(mismatch.fileName));
       lines.push("");
 
+      lines.push(...formatTagComparisonDetails(mismatch, t));
+
       if (mismatch.removed.length) {
         lines.push(`<span class="result-error">${escapeHtml(t("tagRemoved"))}:</span> ${mismatch.removed.map(tag => `<code>${escapeHtml(tag)}</code>`).join(" ")}`);
       }
@@ -167,6 +169,67 @@ function formatMultipleTagResults(results, t) {
   }
 
   return lines.join("\n").trimEnd();
+}
+
+function formatTagComparisonDetails(mismatch, t) {
+  const lines = [];
+  const message = (key, values) => t(key).replace(/\{(\w+)\}/g, (_, name) => String(values[name]));
+  const title = key => `<span class="result-warn">${escapeHtml(t(key))}</span>`;
+  const pair = (base, current) =>
+    `${escapeHtml(t("tagBaseValue"))}: ${base} / ${escapeHtml(t("tagCurrentValue"))}: ${current}`;
+  const code = text => `<code>${escapeHtml(text)}</code>`;
+
+  for (const change of mismatch.caseChanges) {
+    const diff = formatTextDiffPair(change.base, change.current, "source-text-diff");
+    lines.push(`${title("tagCaseDifference")} ${pair(`<code>${diff.actual}</code>`, `<code>${diff.expected}</code>`)}`);
+  }
+  if (mismatch.orderChanged) {
+    const base = mismatch.orderBase;
+    const current = mismatch.orderCurrent;
+    const first = base.findIndex((token, index) => token.id !== current[index].id);
+    const start = Math.max(0, first - 1);
+    const stop = Math.min(base.length, first + 3);
+    const snippet = (tokens, other) => {
+      const value = tokens.slice(start, stop).map((token, index) => {
+        const chars = Array.from(token.word);
+        const word = escapeHtml(chars.slice(0, 40).join("") + (chars.length > 40 ? "…" : ""));
+        return token.id !== other[start + index].id ? `<span class="source-text-diff">${word}</span>` : word;
+      }).join(" ");
+      return `<code>${start ? "… " : ""}${value}${stop < tokens.length ? " …" : ""}</code>`;
+    };
+    lines.push(`${title("tagOrderDifference")} ${pair(snippet(base, current), snippet(current, base))}`);
+  }
+  const describeWhitespace = whitespace => {
+    if (!whitespace) return t("tagWhitespaceNone");
+    const types = { " ": "tagWhitespaceHalf", "　": "tagWhitespaceFull", "\t": "tagWhitespaceTab" };
+    return Array.from(whitespace.matchAll(/([\s\S])\1*/gu), match => message(
+      types[match[1]] ?? "tagWhitespaceOther", { count: Array.from(match[0]).length }
+    )).join(t("tagWhitespaceJoin"));
+  };
+  const gapContext = gap => {
+    if (!gap.left && !gap.right) return t("tagWhitespaceEntire");
+    if (!gap.left) return message("tagWhitespaceStart", { right: gap.right });
+    if (!gap.right) return message("tagWhitespaceEnd", { left: gap.left });
+    return message("tagWhitespaceBetween", { left: gap.left, right: gap.right });
+  };
+  for (const change of mismatch.spacingChanges) {
+    const baseContext = gapContext(change.base);
+    const currentContext = gapContext(change.current);
+    const baseValue = escapeHtml(describeWhitespace(change.base.whitespace));
+    const currentValue = escapeHtml(describeWhitespace(change.current.whitespace));
+    const context = baseContext === currentContext ? `${escapeHtml(baseContext)}: ` : "";
+    lines.push(`${title("tagSpacingDifference")} ${context}${pair(
+      (context ? "" : `${escapeHtml(baseContext)}: `) + `<span class="source-text-diff">${baseValue}</span>`,
+      (context ? "" : `${escapeHtml(currentContext)}: `) + `<span class="source-text-diff">${currentValue}</span>`
+    )}`);
+  }
+  for (const change of mismatch.countChanges) {
+    lines.push(`${title("tagCountDifference")} ${code(change.tag)} — ${pair(
+      escapeHtml(message("tagOccurrenceCount", { count: change.baseCount })),
+      escapeHtml(message("tagOccurrenceCount", { count: change.currentCount }))
+    )}`);
+  }
+  return lines;
 }
 
 /** Tagを一覧表示 */
