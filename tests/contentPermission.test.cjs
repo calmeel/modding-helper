@@ -24,6 +24,54 @@ function detects(field, value, keyword, artist = "") {
   ));
 }
 
+test("Disallowed artist severity follows the matched metadata fields", () => {
+  const keywords = ["40mP", "40㍍P", "a_hisa", "Draw the Emotional", "Enter Shikari",
+    "EZFG", "Hatsuki Yura", "葉月ゆら", "kamome sano", "kozato", "NOMA"];
+  const check = metadata => context.runContentPermissionCheck(`[Metadata]\n${metadata}\n`, "test.osu");
+  for (const keyword of keywords) {
+    for (const field of ["Artist", "ArtistUnicode", "Title", "TitleUnicode", "Tags"]) {
+      const result = check(`${field}:${keyword}`);
+      const matched = result.results.filter(item => item.category === "disallowedArtist");
+      assert.equal(matched.length, 1, `${field}: ${keyword}`);
+      assert.equal(matched[0].level, field.startsWith("Artist") ? "error" : "warn", `${field}: ${keyword}`);
+    }
+    for (const metadata of [
+      `Artist:${keyword}\nTitle:${keyword}\nTags:${keyword}`,
+      `ArtistUnicode:${keyword}\nTitleUnicode:${keyword}`
+    ]) {
+      assert.equal(check(metadata).results.find(item => item.category === "disallowedArtist").level, "error");
+    }
+    assert.ok(!check(`Source:${keyword}`).results.some(item => item.category === "disallowedArtist"));
+  }
+  for (const field of ["Title", "TitleUnicode"]) {
+    const result = check(`Artist:アビドス高等学校対策委員会\n${field}:青春のアーカイブ\nTags:40mP`);
+    assert.ok(result.results.some(item => item.messageJa.includes("作詞・作曲・編曲") && item.level === "error"));
+    assert.ok(result.results.some(item => item.matchedKeywords.includes("40mP") && item.level === "warn"));
+  }
+});
+
+test("Content permission message colors and tab levels follow field-based severity", () => {
+  const display = vm.createContext({ window: {}, localStorage: { getItem: () => "ja" } });
+  for (const file of ["app/i18n.js", "app/formatters/common.js",
+    "app/formatters/metadata/contentPermission.js", "app/issues/tabs.js"]) {
+    vm.runInContext(fs.readFileSync(path.join(__dirname, "..", file), "utf8"), display);
+  }
+  display.sortResultsForDisplay = results => results;
+  for (const [metadata, level] of [
+    ["Tags:40mP", "warn"],
+    ["Title:葉月ゆら", "warn"],
+    ["Artist:Hatsuki Yura\nTags:40mP", "error"],
+    ["ArtistUnicode:NOMA\nTitle:40mP", "error"],
+    ["Artist:アビドス高等学校対策委員会\nTitle:青春のアーカイブ", "error"]
+  ]) {
+    const results = [context.runContentPermissionCheck(`[Metadata]\n${metadata}\n`, "test.osu")];
+    assert.equal(display.getContentPermissionIssueLevel(results), level);
+    const html = display.formatMultipleContentPermissionResults(results, key => display.window.i18n.ja[key] || "");
+    assert.ok(html.includes(`<span class="result-${level}">`), metadata);
+    if (level === "warn") assert.ok(!html.includes('class="result-error"'), metadata);
+  }
+});
+
 test("removed music labels no longer produce content permission warnings", () => {
   for (const keyword of ["HARDCORE TANO*C", "OpenTracks", "DOVA-SYNDROME"]) {
     for (const field of ["Artist", "ArtistUnicode", "Title", "TitleUnicode", "Source", "Tags"]) {

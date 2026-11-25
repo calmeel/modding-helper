@@ -444,6 +444,7 @@ const CONTENT_PERMISSION_RULES = [
   {
     category: "disallowedArtist",
     level: "error",
+    fieldLevels: { title: "warn", titleUnicode: "warn", tags: "warn" },
 
     fields: ["artist", "artistUnicode", "title", "titleUnicode", "tags"],
 

@@ -99,7 +99,10 @@ function runContentPermissionCheck(text, fileName) {
 
     results.push({
       category: rule.category,
-      level: rule.level,
+      level: rule.fieldLevels
+        ? (matchedFields.some(item => (rule.fieldLevels[item.field] ?? rule.level) === "error")
+          ? "error" : "warn")
+        : rule.level,
       title: rule.title,
       messageJa: rule.messageJa,
       messageEn: rule.messageEn,
